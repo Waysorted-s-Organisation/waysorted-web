@@ -111,7 +111,7 @@ const WaitlistWay = ({ goToNextPage }) => {
           {/* Logo */}
           <motion.div
             key="waitlistLogo"
-            className="w-full flex justify-center mt-20 md:mt-8"
+            className="w-full flex justify-center mt-12 md:mt-8"
             variants={logoVariants}
             initial="initial"
             animate="animate"
