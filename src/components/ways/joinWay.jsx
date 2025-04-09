@@ -88,7 +88,7 @@ const JoinWay = ({ goToNextPage }) => {
           {/* Logo */}
           <motion.div
             key="fundLogo"
-            className="w-full flex justify-center mt-20 md:mt-8"
+            className="w-full flex justify-center mt-12 md:mt-8"
             variants={logoVariants}
             initial="initial"
             animate="animate"
@@ -145,11 +145,13 @@ const JoinWay = ({ goToNextPage }) => {
               exit="exit"
               transition={{ duration: 0.5, delay: 0.3 }}
             >
+              <a href="https://www.linkedin.com/jobs/view/4204500667/">
               <Button
                 label="Join Way"
                 className="bg-[#FCFDFF] text-white text-2xl hanken-font-medium"
                 circleClassName="bg-[#5C1909]"
               ></Button>
+              </a>
             </motion.div>
 
             {/* Scroll Down */}
