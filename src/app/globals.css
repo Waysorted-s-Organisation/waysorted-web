@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+.hanken-font {
+  font-family: var(--font-hanken-grotesk);
+}
+
+.hanken-font-regular {
+  font-family: var(--font-hanken-grotesk);
+  font-weight: 400;
+}
+
+.hanken-font-medium {
+  font-family: var(--font-hanken-grotesk);
+  font-weight: 500;
+}
+
+.hanken-font-semibold {
+  font-family: var(--font-hanken-grotesk);
+  font-weight: 600;
+}
+
+.hanken-font-bold {
+  font-family: var(--font-hanken-grotesk);
+  font-weight: 700;
+}
