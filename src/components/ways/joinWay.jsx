@@ -204,7 +204,7 @@ const JoinWay = ({ goToNextPage }) => {
       {/* Mascot - positioned at the bottom */}
       <motion.div
         key="mascotFund"
-        className="hidden sm:block absolute -bottom-48 -left-32 overflow-hidden"
+        className="hidden sm:block absolute lg:-bottom-48 lg:-left-32 overflow-hidden md:-bottom-32 md:-left-24"
         variants={mascotVariants}
         initial="initial"
         animate="animate"
@@ -213,7 +213,7 @@ const JoinWay = ({ goToNextPage }) => {
         <img
           src="/gif/mascot2.gif"
           alt="Mascot"
-          className="w-auto h-auto max-w-[510px]"
+          className="w-auto h-auto lg:max-w-[510px] md:max-w-[325px]"
         />
       </motion.div>
 
