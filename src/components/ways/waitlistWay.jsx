@@ -275,7 +275,7 @@ const WaitlistWay = ({ goToNextPage }) => {
       {/* Mascot - positioned at the bottom */}
       <motion.div
         key="mascotWaitlist"
-        className="fixed md:-bottom-28 md:-left-32 -bottom-12 -left-20 overflow-hidden"
+        className="fixed lg:-bottom-28 lg:-left-32 md:-bottom-20 md:-left-36 -bottom-12 -left-20 overflow-hidden"
         variants={mascotVariants}
         initial="initial"
         animate="animate"
@@ -284,7 +284,7 @@ const WaitlistWay = ({ goToNextPage }) => {
         <img
           src="/gif/mascot4.gif"
           alt="Mascot"
-          className="h-auto max-w-[325px] md:max-w-full"
+          className="h-auto max-w-[325px] lg:max-w-full md:max-w-[400px]"
         />
       </motion.div>
 

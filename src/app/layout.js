@@ -17,7 +17,7 @@ export const metadata = {
   title: "Waysorted",
   description: "Designers, Tired of Chaos? Way Better Workflow Arrives Soon!",
   icons: {
-    icon: "/favicon.png",
+     rel: "icon", url: "/favicon.ico" ,
   },
 };
 
