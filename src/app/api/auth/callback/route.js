@@ -69,9 +69,11 @@ export async function GET(request) {
       `
       <html><body>
         <h1>Login complete — you may close this tab.</h1>
-      </body></html>
-    `,
-      { status: 200, headers: { "Content-Type": "text/html" } }
+      </body></html>`,
+      {
+        status: 200,
+        headers: { "Content-Type": "text/html" },
+      }
     );
   } catch (err) {
     console.error("OAuth callback error", err);

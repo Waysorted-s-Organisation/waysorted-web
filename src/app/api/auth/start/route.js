@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import dbConnect from "../../../../lib/db";
 import Session from "../../../../models/session";
 
-export async function GET(request) {
+export async function GET() {
   try {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const redirectUri = process.env.OAUTH_REDIRECT_URI;
@@ -16,7 +16,6 @@ export async function GET(request) {
     const sessionId = uuidv4();
     await Session.create({ sessionId, createdAt: new Date() });
 
-    // Build URL with proper encoding
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams(
       {
         client_id: clientId,
@@ -28,32 +27,9 @@ export async function GET(request) {
       }
     ).toString()}`;
 
-    console.log("Generated auth URL:", authUrl); // Debug log
-
-    return NextResponse.json(
-      { sessionId, authUrl },
-      {
-        status: 200,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type, Authorization",
-        },
-      }
-    );
+    return NextResponse.json({ sessionId, authUrl });
   } catch (error) {
     console.error("Error in /api/auth/start:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-}
-
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type, Authorization",
-    },
-  });
 }
