@@ -1,68 +1,45 @@
-// app/api/subscribe/route.js
-import { NextResponse } from 'next/server';
-import { MongoClient } from 'mongodb';
-
-const uri = process.env.MONGODB_URI;
+import { NextResponse } from "next/server";
+import dbConnect from "../../../lib/db"; // adjust path if needed
+import Subscriber from "../../../models/subscriber";
 
 export async function POST(request) {
   try {
-    // Parse the request body
     const { email } = await request.json();
-    
-    // Validate email
-    if (!email || !email.includes('@')) {
+
+    // Basic validation
+    if (!email || !email.includes("@")) {
       return NextResponse.json(
-        { error: 'Valid email is required' },
+        { error: "Valid email is required" },
         { status: 400 }
       );
     }
-    
-    // Connect to MongoDB
-    const client = new MongoClient(uri, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        tls: true, // or ssl: true
-        tlsAllowInvalidCertificates: true // if testing with self-signed
-      });
-      
-    await client.connect();
-    
-    const database = client.db('myapp');
-    const subscribers = database.collection('subscribers');
-    
+
+    // Connect to the database
+    await dbConnect();
+
     // Check if email already exists
-    const existingUser = await subscribers.findOne({ email });
-    
-    if (existingUser) {
-      await client.close();
+    const existing = await Subscriber.findOne({ email });
+    if (existing) {
       return NextResponse.json(
-        { message: 'Email already registered' },
+        { message: "Email already registered" },
         { status: 200 }
       );
     }
-    
-    // Add email to database
-    const result = await subscribers.insertOne({ 
-      email, 
-      createdAt: new Date() 
-    });
-    
-    // Close the connection
-    await client.close();
-    
-    // Return success response
+
+    // Save new subscriber
+    const newSubscriber = await Subscriber.create({ email });
+
     return NextResponse.json(
-      { 
-        message: 'Subscription successful',
-        id: result.insertedId
+      {
+        message: "Subscription successful",
+        id: newSubscriber._id,
       },
       { status: 201 }
     );
-    
   } catch (error) {
-    console.error('Error processing subscription:', error);
+    console.error("Error in subscription route:", error);
     return NextResponse.json(
-      { error: 'Failed to process subscription' },
+      { error: "Failed to process subscription" },
       { status: 500 }
     );
   }
