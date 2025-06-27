@@ -64,17 +64,8 @@ export async function GET(request) {
       }
     );
 
-    /* ─── 5 ▸ simple “you may close” page ────────────────────────────── */
-    return new NextResponse(
-      `
-      <html><body>
-        <h1>Login complete — you may close this tab.</h1>
-      </body></html>`,
-      {
-        status: 200,
-        headers: { "Content-Type": "text/html" },
-      }
-    );
+    const successUrl = new URL("/success", request.url);
+    return NextResponse.redirect(successUrl);
   } catch (err) {
     console.error("OAuth callback error", err);
     return NextResponse.json(
