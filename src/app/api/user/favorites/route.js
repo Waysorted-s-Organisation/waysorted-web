@@ -1,8 +1,8 @@
 // /app/api/user/favorites/route.ts
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/db";
-import Session from "@/models/session";
-import User from "@/models/user";
+import dbConnect from "../../../../lib/db";
+import Session from "../../../../models/session";
+import User from "../../../../models/user";
 
 export async function PUT(req) {
   const auth = req.headers.get("authorization") ?? "";
