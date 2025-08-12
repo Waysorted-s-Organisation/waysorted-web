@@ -1,0 +1,53 @@
+'use client'
+import Image from 'next/image'
+import Link from 'next/link'
+import products from "@/data/products.json"
+
+export interface ProductsMenuProps {
+  isOpen: boolean;
+  className?: string;
+}
+
+export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className }) => {
+  return (
+    <div
+      className={`products-menu absolute top-full mt-2 w-[800px] 
+        bg-white menu-shadow rounded-xl overflow-hidden ${className}
+        transition-all duration-300 origin-top
+        ${isOpen ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0'}`}
+    >
+      {/* Grid area with bg-menu-bg */}
+      <div className="bg-menu-bg grid grid-cols-3 max-h-[247px] rounded-md overflow-y-auto custom-scrollbar m-2">
+        {products.map(product => (
+          <Link
+            key={product.id}
+            href={product.href}
+            className="flex space-x-3 p-4 rounded-xl bg-menu-bg hover:bg-white transition-colors"
+          >
+            <Image
+              src={product.icon}
+              alt={product.name}
+              width={40}
+              height={40}
+              className="rounded-md"
+            />
+            <div>
+              <h3 className="font-normal text-sm text-primary-dark">{product.name}</h3>
+              <p className="text-[10px] font-medium text-primary-dark-70">{product.description}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* CTA section */}
+      <div className="product-cta p-4 text-center m-2 rounded-md">
+        <Link
+          href="/request-feature"
+          className="text-blue-600 font-medium hover:underline"
+        >
+          Request a Feature →
+        </Link>
+      </div>
+    </div>
+  )
+}
