@@ -1,5 +1,4 @@
-// /api/auth/callback/route.ts
-import User from "../../../../models/user"; // ① NEW
+import User from "../../../../models/user";
 import Session from "../../../../models/session";
 import dbConnect from "../../../../lib/db";
 import axios from "axios";
@@ -15,7 +14,7 @@ export async function GET(request) {
       return new NextResponse("Missing code or sessionId", { status: 400 });
     }
 
-    /* ─── 1 ▸ exchange the code for Google tokens ────────────────────── */
+    /* ─── 1 ▸ Exchange the code for tokens ─── */
     const tokenRes = await axios.post(
       "https://oauth2.googleapis.com/token",
       new URLSearchParams({
@@ -28,9 +27,12 @@ export async function GET(request) {
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
 
-    const { access_token, id_token } = tokenRes.data;
+    const { access_token, refresh_token, expires_in, id_token } = tokenRes.data;
 
-    /* ─── 2 ▸ pull the Google profile ────────────────────────────────── */
+    // Calculate expiry timestamp (milliseconds)
+    const accessTokenExpiresAt = Date.now() + expires_in * 1000;
+
+    /* ─── 2 ▸ Fetch user's Google profile ─── */
     const { data: googleUser } = await axios.get(
       "https://www.googleapis.com/oauth2/v3/userinfo",
       { headers: { Authorization: `Bearer ${access_token}` } }
@@ -38,26 +40,27 @@ export async function GET(request) {
 
     await dbConnect();
 
-    /* ─── 3 ▸ find-or-create our own user document ───────────────────── */
-    // inside /api/auth/callback
+    /* ─── 3 ▸ Find or create user ─── */
     const user = await User.findOneAndUpdate(
-      { email: googleUser.email }, // lookup
+      { email: googleUser.email },
       {
-        email: googleUser.email, // keep for first insert
-        name: googleUser.name, // update every login
+        email: googleUser.email,
+        name: googleUser.name,
         picture: googleUser.picture,
       },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
 
-    /* ─── 4 ▸ record / update the session row ────────────────────────── */
+    /* ─── 4 ▸ Update session with tokens and user ref ─── */
     await Session.updateOne(
-      { sessionId }, // session row created earlier by “/init”
+      { sessionId },
       {
         $set: {
           accessToken: access_token,
+          refreshToken: refresh_token, // NEW
+          accessTokenExpiresAt, // NEW
           idToken: id_token,
-          user: user._id, // store a reference, not the whole object
+          user: user._id,
           completed: true,
           completedAt: new Date(),
         },

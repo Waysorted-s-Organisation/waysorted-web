@@ -23,7 +23,8 @@ export async function GET() {
         response_type: "code",
         scope: "openid email profile",
         state: sessionId,
-        prompt: "consent",
+        access_type: "offline", // REQUIRED for refresh tokens
+        prompt: "consent", // REQUIRED to guarantee refresh token returned
       }
     ).toString()}`;
 
