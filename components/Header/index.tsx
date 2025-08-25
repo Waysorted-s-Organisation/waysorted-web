@@ -18,12 +18,12 @@ const Header = () => {
   return (
     <header className="w-full bg-white border-b border-gray-200 fixed top-0 z-50">
       {/* Top banner */}
-      <div className="w-full bg-primary-dark text-white text-center py-2 text-sm">
-        Get a FREE Unlimited personal file editors
+      <div className="w-full bg-header-bg text-white text-center py-2 text-sm">
+        Get early access to WAYSORTED...Click here
       </div>
 
       {/* Main header */}
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="max-w-7xl mx-auto px-1 sm:px-2 lg:px-3">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="block">
@@ -38,7 +38,7 @@ const Header = () => {
           </Link>
 
           {/* Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-5 pl-12">
             {/* Products */}
             <div
               className="relative flex items-center space-x-1 text-primary-dark font-medium text-sm cursor-pointer"
@@ -70,7 +70,7 @@ const Header = () => {
 
 
             {/* Support */}
-            <div className="flex items-center space-x-1 text-primary-dark font-medium text-sm cursor-pointer">
+            <div className="flex items-center pr-3 text-primary-dark font-medium text-sm cursor-pointer">
               <span>Support</span>
             </div>
 
@@ -82,7 +82,7 @@ const Header = () => {
           </div>
 
           {/* Right side */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             {/* Light mode toggle */}
             <button
               className="border border-primary-dark-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer"
@@ -100,27 +100,20 @@ const Header = () => {
 
             {/* Login button */}
             <button
-              className="text-primary-dark font-medium text-base border border-primary-dark-20 rounded-lg px-4 py-2 cursor-pointer transition-colors active:scale-95"
-              title="Log in or Sign up"
-              aria-label="Log in or Sign up"
+              className="text-primary-dark font-medium text-base border border-primary-dark-20 rounded-lg px-6 py-2 cursor-pointer transition-colors active:scale-95"
+              title="Log in"
+              aria-label="Log in"
             >
-              Log in / Sign up
+              Log in
             </button>
 
             {/* Figma plugin */}
             <button
-              className="bg-primary-dark font-medium text-base text-white px-4 py-2 rounded-lg flex items-center space-x-2 active:scale-95 transition-colors duration-100 cursor-pointer"
-              title="Open Figma Plugin"
-              aria-label="Open Figma Plugin"
+              className="bg-primary-dark font-medium text-base text-white px-6 py-2 rounded-lg flex items-center active:scale-95 transition-colors duration-100 cursor-pointer"
+              title="Sign Up"
+              aria-label="Sign Up"
             >
-              <Image
-                src="/icons/figma.svg"
-                alt="Figma Icon"
-                width={14}
-                height={14}
-                className="cursor-pointer"
-              />
-              <span>Open Plugin</span>
+              <span>Sign up</span>
             </button>
 
             {/* Language selector */}

@@ -6,10 +6,15 @@
   --primary-dark: #0D1218;
   --primary-dark-70: #565A5E;
   --primary-dark-20: #CFD0D1;
+  --primary-dark-5: #F3F3F3;
   --primary-light: #F7FAFF;
+  --secondary-01: #ECF2FF;
+  --secondary-02: #91ADEA;
+  --header-bg: #265BD1;
   --new-bg: #E67224;
   --save-bg: #5641F3;
   --menu-bg: #F7FAFF;
+  --shadow-color: black;
 }
 
 
@@ -18,9 +23,14 @@ body {
 }
 
 @theme {
+  --color-shadow-color: var(--shadow-color);
   --color-primary-dark: var(--primary-dark);
   --color-primary-dark-70: var(--primary-dark-70);
   --color-primary-dark-20: var(--primary-dark-20);
+  --color-primary-dark-5: var(--primary-dark-5);
+  --color-secondary-01: var(--secondary-01);
+  --color-secondary-02: var(--secondary-02);
+  --color-header-bg: var(--header-bg);
   --color-new-bg: var(--new-bg);
   --color-save-bg: var(--save-bg);
   --color-menu-bg: var(--menu-bg);
@@ -88,4 +98,21 @@ body::-webkit-scrollbar {
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background-color: rgba(0, 0, 0, 0.3); /* scrollbar thumb */
   border-radius: 9999px; /* rounded scrollbar */
+}
+
+html, body {
+  overflow-x: hidden;
+}
+
+@keyframes line-shadow {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 100% 0;
+  }
+}
+
+.after\:animate-line-shadow::after {
+  animation: line-shadow 7s linear infinite;
 }

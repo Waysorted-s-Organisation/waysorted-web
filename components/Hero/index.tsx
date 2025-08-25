@@ -1,10 +1,11 @@
 import Image from 'next/image'
+
 const Hero = () => {
   return (
-    <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-9">
-      <div className="text-center">
+    <section id="hero" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-8">
+      <div id="hero-content" className="text-center">
         {/* Badge */}
-        <div className="relative inline-flex items-center bg-white border border-primary-dark-20 rounded-full px-5 py-2 text-sm text-primary-dark mb-2">
+        <button className="relative inline-flex items-center bg-white border border-primary-dark-20 rounded-full px-5 py-2 text-sm text-primary-dark mb-4 active:scale-95 transition-transform cursor-pointer">
           <Image
             src="/icons/tools.svg"
             alt="Hero Badge"
@@ -12,37 +13,52 @@ const Hero = () => {
             height={16}
             className="mr-2"
           />
-          Unified Tools Hub for Makers
-        </div>
-
+          Request a feature
+          <span className="text-header-bg font-medium pl-1.5">Learn More</span>
+        </button>
 
         {/* Main heading */}
-        <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-primary-dark leading-tight mb-2">
-          Plan. Design.<br />
-          Build. Maintain.
+        <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-primary-dark leading-tight mb-4">
+          A single toolkit to<br />
+          accelerate every idea.
         </h1>
 
         {/* Subheading */}
-        <p className="text-base font-medium max-w-2xl mx-auto mb-9 leading-relaxed">
-          <span className="font-bold text-primary-dark">10+ expert-approved Figma tools</span> <span className="text-primary-dark-70">— bundled by use case, optimized for performance,<br />
-          and designed to help you work smarter, not harder.</span>
+        <p className="text-base font-semibold max-w-2xl mx-auto mb-12 leading-relaxed">
+          <span className="text-primary-dark">
+            We provide a single hub to empower every creator.
+          </span>
         </p>
 
         {/* CTA buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <button className="bg-primary-dark text-white text-base font-semibold px-10 py-4 rounded-xl flex items-center space-x-3 active:scale-95 transition-transform cursor-pointer">
-            <span>See Pricing</span>
+          <button className="border border-primary-dark-20 text-primary-dark text-base font-semibold px-13 py-3 rounded-xl flex items-center space-x-2 active:scale-95 transition-transform cursor-pointer">
             <Image
-              src="/icons/arrow-white.svg"
+              src="/icons/waystudio.svg"
+              alt="Waysorted Studio"
+              width={16}
+              height={16}
+              className="mr-2"
+            />
+            <span>Way Studio</span>
+            <Image
+              src="/icons/arrow-black.svg"
               alt="Arrow Right"
               width={12}
               height={12}
             />
           </button>
-          <button className="border border-primary-dark-20 font-semibold text-base button-shadow text-primary-dark px-5 py-4 rounded-xl flex items-center space-x-3 active:scale-95 transition-transform cursor-pointer">
-            <span>Request Feature</span>
+          <button className="border bg-primary-dark text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl flex items-center space-x-2 active:scale-95 transition-transform cursor-pointer">
             <Image
-              src="/icons/arrow-black.svg"
+              src="/icons/figma.svg"
+              alt="Waysorted for Figma"
+              width={16}
+              height={16}
+              className="mr-2"
+            />
+            <span>Waysorted for figma</span>
+            <Image
+              src="/icons/arrow-white.svg"
               alt="Arrow Right"
               width={12}
               height={12}
