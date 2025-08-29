@@ -14,7 +14,13 @@
   --new-bg: #E67224;
   --save-bg: #5641F3;
   --menu-bg: #F7FAFF;
+  --sky: #24B7FD;
+  --orange: #FF7920;
+  --green: #01A04E;
+  --purple: #7531F9;
   --shadow-color: black;
+  --section-text: #006AFF;
+  --section-bg : #ECF6FF;
 }
 
 
@@ -34,6 +40,12 @@ body {
   --color-new-bg: var(--new-bg);
   --color-save-bg: var(--save-bg);
   --color-menu-bg: var(--menu-bg);
+  --color-sky: var(--sky);
+  --color-orange: var(--orange);
+  --color-green: var(--green);
+  --color-purple: var(--purple);
+  --color-section-text: var(--section-text);
+  --color-section-bg: var(--section-bg);
   --font-sans: 'Hanken Grotesk', sans-serif;
 }
 

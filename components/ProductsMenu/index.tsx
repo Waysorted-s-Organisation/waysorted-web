@@ -12,17 +12,17 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
   return (
     <div
       className={`products-menu absolute top-full mt-2 w-[800px] 
-        bg-white menu-shadow rounded-xl overflow-hidden ${className}
+        bg-menu-bg menu-shadow rounded-xl overflow-hidden ${className}
         transition-all duration-300 origin-top
         ${isOpen ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0'}`}
     >
       {/* Grid area with bg-menu-bg */}
-      <div className="bg-menu-bg grid grid-cols-3 max-h-[247px] rounded-md overflow-y-auto custom-scrollbar m-2">
+      <div className="bg-primary-light grid grid-cols-3 max-h-[240px] rounded-md overflow-y-auto custom-scrollbar m-2">
         {products.map(product => (
           <Link
             key={product.id}
             href={product.href}
-            className="flex space-x-3 p-4 rounded-xl bg-menu-bg hover:bg-white transition-colors"
+            className="flex space-x-3 p-2 rounded-xl bg-menu-bg hover:bg-white transition-colors mx-2 my-2"
           >
             <Image
               src={product.icon}
@@ -32,7 +32,7 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
               className="rounded-md"
             />
             <div>
-              <h3 className="font-normal text-sm text-primary-dark">{product.name}</h3>
+              <p className="font-normal text-sm text-primary-dark">{product.name}</p>
               <p className="text-[10px] font-medium text-primary-dark-70">{product.description}</p>
             </div>
           </Link>

@@ -20,10 +20,10 @@ const HEADLINE =
   "Experience seamless integration and super-fast performance. Your data is always secure, while a personalized toolkit adapts precisely to your team's unique needs.";
 
 const COLOR_INDEX_MAP: Record<number, string> = {
-  1: "text-sky-500", // "seamless"
-  4: "text-orange-400", // "super-fast"
-  10: "text-green-600", // "secure"
-  13: "text-purple-600", // "personalized"
+  1: "text-sky", // "seamless"
+  4: "text-orange", // "super-fast"
+  10: "text-green", // "secure"
+  13: "text-purple", // "personalized"
 };
 
 export default function ToolsGrid() {
@@ -134,7 +134,7 @@ export default function ToolsGrid() {
         opacity: 1,
         y: 0,
         filter: "blur(0px)",
-        duration: 2,
+        duration: 3,
         stagger: 0.15,
         ease: "power1.out",
       },
@@ -147,7 +147,7 @@ export default function ToolsGrid() {
       start: "top 50%",
       end: "bottom 50%",
       animation: masterTimeline,
-      scrub: 3, // Slower scrub (higher number = slower)
+      scrub: 4, // Slower scrub (higher number = slower)
       pin: true,
       markers: true,
       pinSpacing: true,
@@ -171,7 +171,7 @@ export default function ToolsGrid() {
     <section
       ref={sectionRef}
       className="relative max-w-7xl mx-auto"
-      style={{ minHeight: "50vh" }} // Taller section for more scroll space
+      style={{ minHeight: "50vh" }}
     >
       <div className="max-w-7xl mx-auto px-6 relative">
         {/* Icons row */}
@@ -185,13 +185,7 @@ export default function ToolsGrid() {
               ref={(el) => {
                 iconsRefs.current[index] = el;
               }}
-              className="bg-white rounded-2xl shadow-lg border border-gray-200 flex items-center justify-center transition-shadow duration-300"
-              style={{
-                width: "160px",
-                height: "160px",
-                borderRadius: "999px",
-                position: "relative",
-              }}
+              className="bg-transparent flex items-center justify-center"
             >
               <Image
                 src={icon.src}
@@ -206,8 +200,8 @@ export default function ToolsGrid() {
         </div>
 
         {/* Headline overlay */}
-        <div className="absolute translate-x-[20%] translate-y-[-85%] flex flex-col items-center justify-center pointer-events-none">
-          <div className="text-5xl"
+        <div className="absolute translate-x-0 translate-y-[-125%] flex flex-col items-center justify-center pointer-events-none">
+          <div className="font-medium text-primary-dark text-3xl mb-8"
             ref={transformRef}
           >
             <span>Transform your</span>
@@ -219,12 +213,7 @@ export default function ToolsGrid() {
           </span>
           </div>
           <h2
-            className="text-center font-bold max-w-4xl px-4"
-            style={{
-              fontSize: "clamp(24px, 5vw, 56px)",
-              lineHeight: "1.2",
-              color: "#1a1a1a",
-            }}
+            className="text-center leading-snug font-semibold max-w-7xl px-4 text-5xl"
           >
             {HEADLINE.split(" ").map((word, index) => (
               <span
