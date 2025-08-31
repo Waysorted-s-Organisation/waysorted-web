@@ -1,4 +1,6 @@
+"use client"
 import Image from 'next/image';
+import { useRouter } from "next/navigation";
 
 interface ResourcesMenuProps {
   isOpen: boolean;
@@ -6,6 +8,10 @@ interface ResourcesMenuProps {
 }
 
 export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps) {
+  const router = useRouter();
+  const handleClick = (link: string) => () => {
+    router.push(`/${link}`);
+  };
   return (
     <div
       className={`absolute top-full mt-2 w-[749px] bg-white rounded-xl menu-shadow overflow-hidden ${className} transition-all duration-300 origin-top 
@@ -14,14 +20,15 @@ export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps)
       {/* Top section */}
       <div className="grid grid-cols-3 gap-3 p-2 rounded-md bg-menu-bg m-2">
         {[
-          { title: 'Learning', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/learning.svg' },
-          { title: 'Documentation', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/documentation.svg' },
-          { title: 'Security', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/security.svg' },
-          { title: 'About us', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/about.svg' },
+          { title: 'Learning', link:'learning', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/learning.svg' },
+          { title: 'Documentation', link:'documentations', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/documentation.svg' },
+          { title: 'Security', link:'security', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/security.svg' },
+          { title: 'About us', link:'about-us', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/about.svg' },
         ].map((item, idx) => (
           <button
             key={idx}
             className="flex items-center space-x-3 rounded-lg hover:bg-white cursor-pointer p-2 w-full text-left focus:outline-none"
+            onClick={handleClick(item.link)}
           >
             <div className="flex-shrink-0 rounded-md">
               <Image src={item.icon} alt={item.title} width={60} height={60} />

@@ -2,13 +2,17 @@
 import { useState, useRef } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ChevronDown } from 'lucide-react'
 import Badge from '../Badge'
 import {ProductsMenu} from '../ProductsMenu'
 import ResourcesMenu from '../ResourcesMenu'
 import LanguageDropdown from '../LanguageDropdown'
 
-const Header = () => {
+interface HeaderProps {
+  showBanner: boolean;
+  setShowBanner: (value: boolean) => void;
+}
+
+const Header = ({showBanner, setShowBanner}: HeaderProps) => {
   const [productsOpen, setProductsOpen] = useState(false)
   const [resourcesOpen, setResourcesOpen] = useState(false)
   const [languageOpen, setLanguageOpen] = useState(false)
@@ -18,9 +22,27 @@ const Header = () => {
   return (
     <header className="w-full bg-white border-b border-gray-200 fixed top-0 z-50">
       {/* Top banner */}
-      <div className="w-full bg-header-bg text-white text-center py-2 text-sm">
-        Get early access to WAYSORTED...Click here
-      </div>
+      {showBanner && (
+        <div className="w-full bg-header-bg text-white text-center py-2 text-sm relative">
+          Get early access to WAYSORTED...Click here
+          {/* Close button */}
+          <button
+            onClick={() => setShowBanner(false)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
+            aria-label="Close banner"
+          >
+            <div className='bg-white/10 p-2 rounded-lg'>
+            <Image
+              src="/icons/close.svg"
+              alt="Close"
+              width={10}
+              height={10}
+              className=""
+            />
+            </div>
+          </button>
+        </div>
+      )}
 
       {/* Main header */}
       <nav className="max-w-7xl mx-auto px-1 sm:px-2 lg:px-3">
@@ -47,8 +69,12 @@ const Header = () => {
             >
               <span>Products</span>
               <Badge variant='orange'>New</Badge>
-              <ChevronDown
-                className={`h-4 w-4 transition-transform duration-300 ${
+              <Image
+                src="/icons/chevron-down.svg"
+                alt="Chevron Down"
+                width={8}
+                height={4}
+                className={`transition-transform duration-300 ${
                   productsOpen ? 'rotate-180' : ''
                 }`}
               />
@@ -62,8 +88,12 @@ const Header = () => {
               onMouseLeave={() => setResourcesOpen(false)}
             >
               <span>Resources</span>
-              <ChevronDown
-                className={`h-4 w-4 transition-transform duration-300 ${resourcesOpen ? 'rotate-180' : ''}`}
+              <Image
+                src="/icons/chevron-down.svg"
+                alt="Chevron Down"
+                width={8}
+                height={4}
+                className={`transition-transform duration-300 ${resourcesOpen ? 'rotate-180' : ''}`}
               />
               <ResourcesMenu isOpen={resourcesOpen} className="absolute translate-x-[-20%] translate-y-4" />
             </div>

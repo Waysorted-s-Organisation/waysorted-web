@@ -1,6 +1,7 @@
 import './globals.css'
 import type { Metadata } from 'next'
 import { Hanken_Grotesk } from 'next/font/google'
+import { BannerProvider } from '@/context/BannerContext'
 
 const hanken = Hanken_Grotesk({ subsets: ['latin'] })
 
@@ -16,7 +17,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={hanken.className}>{children}</body>
+      <body className={hanken.className}>
+        <BannerProvider>{children}</BannerProvider>
+      </body>
     </html>
   )
 }

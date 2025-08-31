@@ -20,6 +20,7 @@
   --purple: #7531F9;
   --shadow-color: black;
   --section-text: #006AFF;
+  --team-card: #182DEE;
   --section-bg : #ECF6FF;
 }
 
@@ -46,6 +47,7 @@ body {
   --color-purple: var(--purple);
   --color-section-text: var(--section-text);
   --color-section-bg: var(--section-bg);
+  --color-team-card: var(--team-card);
   --font-sans: 'Hanken Grotesk', sans-serif;
 }
 
@@ -71,6 +73,11 @@ body {
   box-shadow: 0 7px 12px rgba(0, 0, 0, 0.08);
 }
 
+.join-shadow {
+  width: 743px;
+  height: 168px;
+  box-shadow: inset 0px -24px 33px rgba(255, 255, 255, 0.25);
+}
 
 body {
   -ms-overflow-style: none;  /* Internet Explorer 10+ */
@@ -127,4 +134,16 @@ html, body {
 
 .after\:animate-line-shadow::after {
   animation: line-shadow 7s linear infinite;
+}
+
+.bg-dots {
+  background-color: #0D1218; 
+  background-image: radial-gradient(#ffffff80 0.5px, transparent 1px);
+  background-size: 18px 18px; 
+}
+
+.orange-bg-dots {
+  background-color: rgba(249, 119, 49, 0.1); 
+  background-image: radial-gradient(#ffffff80 0.5px, transparent 1px);
+  background-size: 18px 18px;
 }

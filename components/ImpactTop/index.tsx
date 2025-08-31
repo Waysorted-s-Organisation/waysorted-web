@@ -7,16 +7,17 @@ export default function ImpactTop() {
   return (
     <section className="w-full flex flex-col items-center justify-center text-center">
       {/* Badge */}
-      <div className="px-2 py-2 mb-4 bg-primary-dark-5 text-primary-dark-70 text-xs rounded-lg flex items-center gap-1">
-        <Image
-          src="/icons/impact.svg"
-          alt="Our Impact"
-          width={18}
-          height={18}
-          className="inline-block"
-        />
-        Available On
-      </div>
+      <span className="inline-flex items-center text-sm font-medium bg-[#F3F3F3] text-[#565A5E] rounded-md mb-4">
+  <Image
+    src="/icons/impact.svg"
+    alt="Our Impact"
+    width={24}
+    height={24}
+    className="block"
+  />
+  <span className="px-3 py-1">Available On</span>
+</span>
+
 
       {/* Heading */}
       <h1 className="text-3xl sm:text-4xl font-semibold text-primary-dark mb-4">
