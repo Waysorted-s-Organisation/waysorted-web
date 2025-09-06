@@ -25,8 +25,8 @@ const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image }) => {
           priority
         />
       </div>
-      <h3 className="text-xl font-semibold text-primary-dark">{name}</h3>
-      <p className="text-primary-dark/50 font-medium text-xl">{role}</p>
+      <h3 className="text-xl font-semibold text-secondary-db-100">{name}</h3>
+      <p className="text-secondary-db-100/50 font-regular text-xl">{role}</p>
     </div>
   );
 };
@@ -37,30 +37,30 @@ export default function TeamSection() {
 
   return (
 
-    <section className="bg-white px-6 md:px-20 lg:px-32 py-16 text-center">
+    <section className="bg-white px-6 md:px-20 lg:px-32 py-40 text-center">
       {/* Heading */}
-      <span className="inline-flex items-center text-sm font-medium bg-[#F3F3F3] text-[#565A5E] rounded-md mb-4">
+      <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md mb-6">
         <Image
           src="/icons/avail.svg"
           alt="Our Team"
-          width={24}
-          height={24}
-          className="block"
+          width={30}
+          height={30}
+          className="block p-1"
         />
-        <span className="px-3 py-1">Our Team</span>
+        <span className="pl-1 pr-2 py-1 text-secondary-db-100">Way Team</span>
       </span>
 
-      <h2 className="text-3xl md:text-4xl font-bold text-[#0D1218] mb-2">
-        Meet the <span className="bg-[#182DEE]/10 rounded-xl text-[#182DEE] px-2">
+      <h2 className="text-3xl md:text-4xl font-bold text-secondary-db-100 mb-3">
+        Meet the <span className="bg-tertiary-vivid-blue-500/10 rounded-xl text-tertiary-vivid-blue-500 px-2">
           Minds
         </span> Behind the Magic
       </h2>
-      <p className="text-[#565A5E] max-w-xl mx-auto mb-10 text-lg">
+      <p className="text-secondary-db-70 max-w-xl mx-auto mb-16 text-lg">
         A small team with a big mission — turning chaotic workflows into seamless creativity.
       </p>
 
       {/* Team Members Grid */}
-      <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center max-w-6xl mx-auto">
+      <div className="grid gap-y-8 gap-x-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center max-w-6xl mx-auto">
         {team.map((member, index) => (
           <TeamMember
             key={index}
@@ -72,24 +72,25 @@ export default function TeamSection() {
 
         {/* Call to Action Card */}
         <div
-          className="relative bg-[var(--team-card)] w-[276px] h-[300px] text-white rounded-xl flex flex-col justify-center p-5"
+          className="relative bg-[var(--tertiary-vivid-blue-500)] w-[276px] h-[300px] text-white rounded-xl flex flex-col justify-center p-5"
         >
             <Image
                 src="/icons/bow.svg"
                 alt="Bow"
-                width={50}
-                height={50}
-                className="absolute -top-5 -right-4 z-40"
+                width={72}
+                height={72}
+                className="absolute -top-7 -right-4 z-10"
             />
           <p className="text-3xl font-semibold mb-2 text-left">Join our <br /> Team!</p>
-          <p className="text-base text-white/70 mb-4 text-center font-medium">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-          </p>
+          <div className="text-base text-secondary-db-5 mb-4 text-left font-medium">
+            <p className="mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+          </div>
           <a
             href="https://discord.gg/"
             target="_blank"
             rel="noopener noreferrer"
-            className="bg-primary-dark text-white px-4 py-2 font-semibold text-base rounded-xl"
+            className="bg-secondary-db-100 text-white px-4 py-2 font-semibold text-base rounded-xl"
           >
             Join Our Discord
             <Image
@@ -102,7 +103,7 @@ export default function TeamSection() {
           </a>
         </div>
       </div>
-      <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center max-w-6xl mt-8 mx-auto">
+      <div className="grid gap-y-8 gap-x-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center max-w-6xl mt-8 mx-auto">
             {team1.map((member, index) => (
             <TeamMember
                 key={index}

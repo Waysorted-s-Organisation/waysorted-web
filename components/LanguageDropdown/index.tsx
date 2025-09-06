@@ -57,7 +57,7 @@ const LanguageDropdown = ({
             }`}
           >
             <span>{lang}</span>
-            {lang === selected && <Check className="w-4 h-4 text-primary-dark" />}
+            {lang === selected && <Check className="w-4 h-4 text-secondary-db-100" />}
           </button>
         ))}
       </div>

@@ -32,8 +32,8 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
               className="rounded-md"
             />
             <div>
-              <p className="font-normal text-sm text-primary-dark">{product.name}</p>
-              <p className="text-[10px] font-medium text-primary-dark-70">{product.description}</p>
+              <p className="font-normal text-sm text-secondary-db-100">{product.name}</p>
+              <p className="text-[10px] font-medium text-secondary-db-70">{product.description}</p>
             </div>
           </Link>
         ))}

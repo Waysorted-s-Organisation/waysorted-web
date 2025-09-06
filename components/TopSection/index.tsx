@@ -10,27 +10,27 @@ export default function TopSection() {
   return (
     <section className="w-full flex flex-col items-center justify-center text-center">
       {/* Badge */}
-      <span className="inline-flex items-center text-sm font-medium bg-[#F3F3F3] text-[#565A5E] rounded-md mb-4">
+      <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 rounded-md mb-4">
         <Image
           src="/icons/avail.svg"
           alt="Our Impact"
-          width={24}
-          height={24}
-          className="block"
+          width={30}
+          height={30}
+          className="block p-1"
         />
-        <span className="px-3 py-1">Available On</span>
+        <span className="pl-1 pr-2 py-1 text-secondary-db-100">Available On</span>
       </span>
 
       {/* Heading */}
-      <h1 className="text-3xl sm:text-4xl font-semibold text-primary-dark mb-4">
+      <h1 className="text-3xl sm:text-4xl font-semibold text-secondary-db-100 mb-4">
         Designed for Every{" "}
-        <span className="bg-section-bg text-section-text px-2">
+        <span className="bg-section-bg text-tertiary-blue-500 px-2">
           Workflow
         </span>
       </h1>
 
       {/* Description */}
-      <p className="max-w-6xl text-primary-dark-70 text-base sm:text-lg leading-relaxed mb-6">
+      <p className="max-w-6xl text-secondary-db-70 text-base sm:text-lg leading-relaxed mb-6">
         Use Waysorted in your browser or directly inside your favorite design
         space seamlessly fitting into how you already work.
       </p>
@@ -42,8 +42,8 @@ export default function TopSection() {
           onClick={() => setActiveTab("waystudio")}
           className={`flex items-center gap-2 px-9 py-1.75 rounded-full cursor-pointer border transition-all duration-200 ${
             activeTab === "waystudio"
-              ? "bg-white border-primary-dark text-primary-dark"
-              : "bg-primary-dark-5 border-gray-200 text-primary-dark-70 hover:text-primary-dark"
+              ? "bg-white border-secondary-db-100 text-secondary-db-100"
+              : "bg-secondary-db-5 border-gray-200 text-secondary-db-70 hover:text-secondary-db-100"
           }`}
         >
           <Image
@@ -60,8 +60,8 @@ export default function TopSection() {
           onClick={() => setActiveTab("figma")}
           className={`flex items-center gap-2 px-6 py-1.75 rounded-full cursor-pointer border transition-all duration-200 ${
             activeTab === "figma"
-              ? "bg-white border-primary-dark text-primary-dark shadow-md"
-              : "bg-primary-dark-5 border-gray-200 text-primary-dark-70 hover:text-primary-dark"
+              ? "bg-white border-secondary-db-100 text-secondary-db-100 shadow-md"
+              : "bg-secondary-db-5 border-gray-200 text-secondary-db-70 hover:text-secondary-db-100"
           }`}
         >
           <Image
@@ -79,7 +79,7 @@ export default function TopSection() {
         {activeTab === "figma" ? (
           <FeatureFlex />
         ) : (
-          <div className="text-primary-dark text-base">
+          <div className="text-secondary-db-100 text-base">
             <p>
               Way Studio coming soon.
             </p>

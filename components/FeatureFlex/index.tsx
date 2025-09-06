@@ -64,7 +64,7 @@ export default function FeatureFlex() {
               <p className="text-gray-600 text-sm">
                 Lorem ipsum dolor sit amet consectetur.
               </p>
-              <Image src="/icons/green-tick.svg" alt="Secure Data" className="left-0" width={50} height={50} />
+              <Image src="/icons/tertiary-green-500-tick.svg" alt="Secure Data" className="left-0" width={50} height={50} />
             </div>
 
             {/* Glass Mode */}

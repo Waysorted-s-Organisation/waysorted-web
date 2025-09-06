@@ -2,26 +2,49 @@
 
 :root {
   --background: #ffffff;
-
-  --primary-dark: #0D1218;
-  --primary-dark-70: #565A5E;
-  --primary-dark-20: #CFD0D1;
-  --primary-dark-5: #F3F3F3;
+  --primary-way-100: #265BD1;
+  --primary-way-90: #3B6DD7;
+  --primary-way-80: #507EDD;
+  --primary-way-70: #658FE3;
+  --primary-way-60: #7A9FE8;
+  --primary-way-50: #90AFED;
+  --primary-way-40: #A5BFF1;
+  --primary-way-30: #BBCFF5;
+  --primary-way-20: #D1DFF9;
+  --primary-way-10: #E8EFFC;
+  --secondary-db-100: #0D1218;
+  --secondary-db-90: #282C32;
+  --secondary-db-80: #43474B;
+  --secondary-db-70: #565A5E;
+  --secondary-db-60: #797B7F;
+  --secondary-db-50: #939698;
+  --secondary-db-40: #AEB0B2;
+  --secondary-db-30: #C9CACC;
+  --secondary-db-20: #CFD0D1;
+  --secondary-db-5: #F3F3F3;
   --primary-light: #F7FAFF;
-  --secondary-01: #ECF2FF;
-  --secondary-02: #91ADEA;
-  --header-bg: #265BD1;
   --new-bg: #E67224;
   --save-bg: #5641F3;
   --menu-bg: #F7FAFF;
-  --sky: #24B7FD;
-  --orange: #FF7920;
-  --green: #01A04E;
-  --purple: #7531F9;
+  --tertiary-cyan-500: #24B7FD;
+  --tertiary-orange-500: #FF7920;
+  --tertiary-orange-100: #FFF1E8;
+  --tertiary-orange-dark: #3D2B21;
+  --tertiary-green-500: #01A04E;
+  --tertiary-green-100: #E5F5ED;
+  --tertiary-green-dark: #0A2E23;
+  --tertiary-voilet-500: #7531F9;
+  --tertiary-voilet-100: #F1EAFE;
+  --tertiary-voilet-dark: #211842;
+  --tertiary-cyan-100: #E9F7FE;
+  --tertiary-cyan-dark: #112C3C;  
   --shadow-color: black;
-  --section-text: #006AFF;
-  --team-card: #182DEE;
+  --tertiary-blue-500: #006AFF;
+  --tertiary-blue-100: #ECF6FF;
+  --tertiary-vivid-blue-500: #182DEE;
+  --tertiary-vivid-blue-100: #E8EAFD;
   --section-bg : #ECF6FF;
+  --gold: #FFCD00;
 }
 
 
@@ -31,27 +54,51 @@ body {
 
 @theme {
   --color-shadow-color: var(--shadow-color);
-  --color-primary-dark: var(--primary-dark);
-  --color-primary-dark-70: var(--primary-dark-70);
-  --color-primary-dark-20: var(--primary-dark-20);
-  --color-primary-dark-5: var(--primary-dark-5);
-  --color-secondary-01: var(--secondary-01);
-  --color-secondary-02: var(--secondary-02);
-  --color-header-bg: var(--header-bg);
+  --color-secondary-db-100: var(--secondary-db-100);
+  --color-secondary-db-90: var(--secondary-db-90);
+  --color-secondary-db-80: var(--secondary-db-80);
+  --color-secondary-db-70: var(--secondary-db-70);
+  --color-secondary-db-60: var(--secondary-db-60);
+  --color-secondary-db-50: var(--secondary-db-50);
+  --color-secondary-db-40: var(--secondary-db-40);
+  --color-secondary-db-30: var(--secondary-db-30);
+  --color-secondary-db-20: var(--secondary-db-20);
+  --color-secondary-db-5: var(--secondary-db-5);
+  --color-primary-way-100: var(--primary-way-100);
+  --color-primary-way-90: var(--primary-way-90);
+  --color-primary-way-80: var(--primary-way-80);
+  --color-primary-way-70: var(--primary-way-70);
+  --color-primary-way-60: var(--primary-way-60);
+  --color-primary-way-50: var(--primary-way-50);
+  --color-primary-way-40: var(--primary-way-40);
+  --color-primary-way-30: var(--primary-way-30);
+  --color-primary-way-20: var(--primary-way-20);
+  --color-primary-way-10: var(--primary-way-10);
+  --color-tertiary-blue-500: var(--tertiary-blue-500);
+  --color-tertiary-blue-100: var(--tertiary-blue-100);
+  --color-tertiary-cyan-500: var(--tertiary-cyan-500);
+  --color-tertiary-cyan-100: var(--tertiary-cyan-100);
+  --color-tertiary-cyan-dark: var(--tertiary-cyan-dark);
+  --color-tertiary-vivid-blue-500: var(--tertiary-vivid-blue-500);
+  --color-tertiary-vivid-blue-100: var(--tertiary-vivid-blue-100);
   --color-new-bg: var(--new-bg);
   --color-save-bg: var(--save-bg);
   --color-menu-bg: var(--menu-bg);
-  --color-sky: var(--sky);
-  --color-orange: var(--orange);
-  --color-green: var(--green);
-  --color-purple: var(--purple);
-  --color-section-text: var(--section-text);
+  --color-tertiary-orange-500: var(--tertiary-orange-500);
+  --color-tertiary-orange-100: var(--tertiary-orange-100);
+  --color-tertiary-orange-dark: var(--tertiary-orange-dark);
+  --color-tertiary-green-500: var(--tertiary-green-500);
+  --color-tertiary-green-100: var(--tertiary-green-100);
+  --color-tertiary-green-dark: var(--tertiary-green-dark);
+  --color-tertiary-voilet-500: var(--tertiary-voilet-500);
+  --color-tertiary-voilet-100: var(--tertiary-voilet-100);
+  --color-tertiary-voilet-dark: var(--tertiary-voilet-dark);
+  --color-gold: var(--gold);
   --color-section-bg: var(--section-bg);
-  --color-team-card: var(--team-card);
   --font-sans: 'Hanken Grotesk', sans-serif;
 }
 
-.badge-orange {
+.badge-tertiary-orange-500 {
   background-color: #E67224;
   box-shadow: 
     inset 0 -4px 4px rgba(255, 255, 255, 0.23),
@@ -138,12 +185,24 @@ html, body {
 
 .bg-dots {
   background-color: #0D1218; 
-  background-image: radial-gradient(#ffffff80 0.5px, transparent 1px);
-  background-size: 18px 18px; 
+  background-image: radial-gradient(#ffffff80 0.25px, transparent 1px);
+  background-size: 25px 25px; 
 }
 
-.orange-bg-dots {
+.gray-bg-dots {
+  background-color: #0D1218; 
+  background-image: radial-gradient(#797B7F80 0.25px, transparent 1px);
+  background-size: 25px 25px; 
+}
+
+.tertiary-orange-500-bg-dots {
   background-color: rgba(249, 119, 49, 0.1); 
-  background-image: radial-gradient(#ffffff80 0.5px, transparent 1px);
-  background-size: 18px 18px;
+  background-image: radial-gradient(#43474B 0.25px, transparent 1px);
+  background-size: 25px 25px;
+}
+
+.blue-bg-dots {
+  background-color: #265BD1; 
+  background-image: radial-gradient(#ffffff80 0.25px, transparent 1px);
+  background-size: 25px 25px; 
 }

@@ -6,6 +6,7 @@ import Badge from '../Badge'
 import {ProductsMenu} from '../ProductsMenu'
 import ResourcesMenu from '../ResourcesMenu'
 import LanguageDropdown from '../LanguageDropdown'
+import { useRouter } from "next/navigation";
 
 interface HeaderProps {
   showBanner: boolean;
@@ -17,13 +18,14 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
   const [resourcesOpen, setResourcesOpen] = useState(false)
   const [languageOpen, setLanguageOpen] = useState(false)
   const buttonRef = useRef<HTMLButtonElement | null>(null)
+  const router = useRouter();
 
 
   return (
-    <header className="w-full bg-white border-b border-gray-200 fixed top-0 z-50">
+    <header className="w-full bg-white border-b border-gray-200 fixed top-0 z-40">
       {/* Top banner */}
       {showBanner && (
-        <div className="w-full bg-header-bg text-white text-center py-2 text-sm relative">
+        <div className="w-full bg-primary-way-100 text-white text-center py-2 text-sm relative">
           Get early access to WAYSORTED...Click here
           {/* Close button */}
           <button
@@ -45,7 +47,7 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
       )}
 
       {/* Main header */}
-      <nav className="max-w-7xl mx-auto px-1 sm:px-2 lg:px-3">
+      <nav className="mx-auto px-6 md:px-16 z-40">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="block">
@@ -63,12 +65,12 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
           <div className="hidden md:flex items-center space-x-5 pl-12">
             {/* Products */}
             <div
-              className="relative flex items-center space-x-1 text-primary-dark font-medium text-sm cursor-pointer"
+              className="relative flex items-center space-x-1 text-secondary-db-100 font-medium text-sm cursor-pointer"
               onMouseEnter={() => setProductsOpen(true)}
               onMouseLeave={() => setProductsOpen(false)}
             >
               <span>Products</span>
-              <Badge variant='orange'>New</Badge>
+              <Badge variant='tertiary-orange-500'>New</Badge>
               <Image
                 src="/icons/chevron-down.svg"
                 alt="Chevron Down"
@@ -83,7 +85,7 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
 
             {/* Resources */}
             <div
-              className="relative flex items-center space-x-1 text-primary-dark font-medium text-sm cursor-pointer"
+              className="relative flex items-center space-x-1 text-secondary-db-100 font-medium text-sm cursor-pointer"
               onMouseEnter={() => setResourcesOpen(true)}
               onMouseLeave={() => setResourcesOpen(false)}
             >
@@ -100,12 +102,14 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
 
 
             {/* Support */}
-            <div className="flex items-center pr-3 text-primary-dark font-medium text-sm cursor-pointer">
-              <span>Support</span>
-            </div>
+            <button className="flex items-center pr-3 text-secondary-db-100 font-medium text-sm cursor-pointer"
+            onClick={() => router.push("/support")}
+            >
+              Support
+            </button>
 
             {/* Pricing */}
-            <div className="flex items-center space-x-1 text-primary-dark font-medium text-sm cursor-pointer">
+            <div className="flex items-center space-x-1 text-secondary-db-100 font-medium text-sm cursor-pointer">
               <span>Pricing</span>
               <Badge variant="blue">Save upto 90%</Badge>
             </div>
@@ -115,7 +119,7 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
           <div className="flex items-center space-x-2">
             {/* Light mode toggle */}
             <button
-              className="border border-primary-dark-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer"
+              className="border border-secondary-db-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer"
               title="Toggle Light Mode"
               aria-label="Toggle Light Mode"
             >
@@ -130,7 +134,7 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
 
             {/* Login button */}
             <button
-              className="text-primary-dark font-medium text-base border border-primary-dark-20 rounded-lg px-6 py-2 cursor-pointer transition-colors active:scale-95"
+              className="text-secondary-db-100 font-medium text-base border border-secondary-db-20 rounded-lg px-6 py-2 cursor-pointer transition-colors active:scale-95"
               title="Log in"
               aria-label="Log in"
             >
@@ -139,7 +143,7 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
 
             {/* Figma plugin */}
             <button
-              className="bg-primary-dark font-medium text-base text-white px-6 py-2 rounded-lg flex items-center active:scale-95 transition-colors duration-100 cursor-pointer"
+              className="bg-secondary-db-100 font-medium text-base text-white px-6 py-2 rounded-lg flex items-center active:scale-95 transition-colors duration-100 cursor-pointer"
               title="Sign Up"
               aria-label="Sign Up"
             >
@@ -150,7 +154,7 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
             <div className="relative">
               <button
                 onClick={() => setLanguageOpen((prev) => !prev)}
-                className="bg-primary-dark p-2 rounded-lg hover:brightness-110 active:scale-95 transition-all"
+                className="bg-secondary-db-100 p-2 rounded-lg hover:brightness-110 active:scale-95 transition-all"
                 title="Change Language"
                 aria-label="Change Language"
               >

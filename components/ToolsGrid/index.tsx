@@ -20,10 +20,10 @@ const HEADLINE =
   "Experience seamless integration and super-fast performance. Your data is always secure, while a personalized toolkit adapts precisely to your team's unique needs.";
 
 const COLOR_INDEX_MAP: Record<number, string> = {
-  1: "text-sky", // "seamless"
-  4: "text-orange", // "super-fast"
-  10: "text-green", // "secure"
-  13: "text-purple", // "personalized"
+  1: "text-cyan-500", // "seamless"
+  4: "text-tertiary-orange-500", // "super-fast"
+  10: "text-tertiary-green-500", // "secure"
+  13: "text-violet-500", // "personalized"
 };
 
 export default function ToolsGrid() {
@@ -97,8 +97,8 @@ export default function ToolsGrid() {
     // Using fixed relative positions instead of dynamic calculations
     const scatterPositions = [
       { x: -300, y: -200 }, // top-left
-      { x: 600, y: -200 },  // top-right
-      { x: -600, y: 200 },  // bottom-left
+      { x: -500, y: 200 },  // bottom-left
+      { x: 500, y: -200 },  // top-right
       { x: 300, y: 200 },   // bottom-right
     ];
 
@@ -149,7 +149,7 @@ export default function ToolsGrid() {
       animation: masterTimeline,
       scrub: 4, // Slower scrub (higher number = slower)
       pin: true,
-      markers: true,
+      markers: false,
       pinSpacing: true,
       anticipatePin: 1,
       invalidateOnRefresh: true,
@@ -201,7 +201,7 @@ export default function ToolsGrid() {
 
         {/* Headline overlay */}
         <div className="absolute translate-x-0 translate-y-[-125%] flex flex-col items-center justify-center pointer-events-none">
-          <div className="font-medium text-primary-dark text-3xl mb-8"
+          <div className="font-medium text-secondary-db-100 text-3xl mb-8"
             ref={transformRef}
           >
             <span>Transform your</span>

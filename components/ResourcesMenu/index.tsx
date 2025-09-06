@@ -34,10 +34,10 @@ export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps)
               <Image src={item.icon} alt={item.title} width={60} height={60} />
             </div>
             <div className="flex flex-col justify-center">
-              <p className="font-normal text-sm text-primary-dark leading-none mb-1">
+              <p className="font-normal text-sm text-secondary-db-100 leading-none mb-1">
                 {item.title}
               </p>
-              <p className="text-[10px] text-primary-dark-70 font-medium leading-tight">
+              <p className="text-[10px] text-secondary-db-70 font-medium leading-tight">
                 {item.desc}
               </p>
             </div>
