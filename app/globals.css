@@ -3,27 +3,26 @@
 :root {
   --background: #ffffff;
 
-  --primary-dark: #0D1218;
-  --primary-dark-70: #565A5E;
-  --primary-dark-20: #CFD0D1;
-  --primary-dark-5: #F3F3F3;
-  --primary-light: #F7FAFF;
-  --secondary-01: #ECF2FF;
-  --secondary-02: #91ADEA;
-  --header-bg: #265BD1;
-  --new-bg: #E67224;
-  --save-bg: #5641F3;
-  --menu-bg: #F7FAFF;
-  --sky: #24B7FD;
-  --orange: #FF7920;
-  --green: #01A04E;
-  --purple: #7531F9;
+  --primary-dark: #0d1218;
+  --primary-dark-70: #565a5e;
+  --primary-dark-20: #cfd0d1;
+  --primary-dark-5: #f3f3f3;
+  --primary-light: #f7faff;
+  --secondary-01: #ecf2ff;
+  --secondary-02: #91adea;
+  --header-bg: #265bd1;
+  --new-bg: #e67224;
+  --save-bg: #5641f3;
+  --menu-bg: #f7faff;
+  --sky: #24b7fd;
+  --orange: #ff7920;
+  --green: #01a04e;
+  --purple: #7531f9;
   --shadow-color: black;
-  --section-text: #006AFF;
-  --team-card: #182DEE;
-  --section-bg : #ECF6FF;
+  --section-text: #006aff;
+  --team-card: #182dee;
+  --section-bg: #ecf6ff;
 }
-
 
 body {
   color: var(--foreground);
@@ -48,20 +47,18 @@ body {
   --color-section-text: var(--section-text);
   --color-section-bg: var(--section-bg);
   --color-team-card: var(--team-card);
-  --font-sans: 'Hanken Grotesk', sans-serif;
+  --font-sans: "Hanken Grotesk", sans-serif;
 }
 
 .badge-orange {
-  background-color: #E67224;
-  box-shadow: 
-    inset 0 -4px 4px rgba(255, 255, 255, 0.23),
+  background-color: #e67224;
+  box-shadow: inset 0 -4px 4px rgba(255, 255, 255, 0.23),
     0 4px 8.6px rgba(255, 255, 255, 0.07);
 }
 
 .badge-blue {
-  background-color: #5641F3;
-  box-shadow: 
-    inset 0 -4px 4px rgba(255, 255, 255, 0.23),
+  background-color: #5641f3;
+  box-shadow: inset 0 -4px 4px rgba(255, 255, 255, 0.23),
     0 4px 8.6px rgba(86, 65, 243, 0.07);
 }
 
@@ -80,13 +77,8 @@ body {
 }
 
 body {
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
   overflow-y: scroll; /* Ensures layout consistency */
-
-}
-
-body::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
 }
 
 .products-menu {
@@ -105,21 +97,39 @@ body::-webkit-scrollbar {
   color: rgba(34, 34, 34, 0.7);
 }
 
-/* For Chrome, Edge, Safari */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 2px; /* scrollbar thickness */
+*::-webkit-scrollbar {
+  width: 8px; /* slightly wider so centering looks better */
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent; /* track color */
+*::-webkit-scrollbar-track {
+  /* background: #f7faff; */
+  background: #111111;
+  /* border-radius: 999px; */
+  height: 90%;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.3); /* scrollbar thumb */
-  border-radius: 9999px; /* rounded scrollbar */
+*::-webkit-scrollbar-thumb {
+  background: #e67427;
+  /* border-radius: 999px; */
+
+  /* “fake” left-right spacing → centers blue inside green */
+  /* border-left: 2px solid rgb(102, 168, 102);
+  border-right: 2px solid rgb(102, 168, 102); */
 }
 
-html, body {
+/* For Chrome, Edge, and Safari */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* For Firefox */
+.no-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+
+html,
+body {
   overflow-x: hidden;
 }
 
@@ -137,13 +147,104 @@ html, body {
 }
 
 .bg-dots {
-  background-color: #0D1218; 
+  background-color: #0d1218;
   background-image: radial-gradient(#ffffff80 0.5px, transparent 1px);
-  background-size: 18px 18px; 
+  background-size: 18px 18px;
 }
 
 .orange-bg-dots {
-  background-color: rgba(249, 119, 49, 0.1); 
+  background-color: rgba(249, 119, 49, 0.1);
   background-image: radial-gradient(#ffffff80 0.5px, transparent 1px);
   background-size: 18px 18px;
+}
+
+.click-circle {
+  position: fixed;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #000; /* Circle border */
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.5);
+  opacity: 0.8;
+  left: 0;
+  top: 0;
+  animation: clickPulse 0.6s ease-out forwards;
+}
+
+@keyframes clickPulse {
+  to {
+    transform: translate(-50%, -50%) scale(2);
+    opacity: 0;
+  }
+}
+
+/* Masking for shine Effect */
+
+.security-key {
+  width: 115.41px;
+  -webkit-mask-image: url("/icons/security-key.svg"); /* black-white silhouette */
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+
+  mask-image: url("/icons/security-key.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+
+  background: url("/icons/security-key.svg") no-repeat center/contain; /* original key */
+}
+
+.card-masking {
+  width: 480px;
+  -webkit-mask-image: url("/icons/ID-card.svg"); /* black-white silhouette */
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+
+  mask-image: url("/icons/ID-card.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+
+  background: url("/icons/ID-card.svg") no-repeat center/contain; /* original key */
+}
+
+.masking-cloud {
+  width: 126.57px;
+  -webkit-mask-image: url("/icons/locked-cloud.svg"); /* black-white silhouette */
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+
+  mask-image: url("/icons/locked-cloud.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+
+  background: url("/icons/locked-cloud.svg") no-repeat center/contain; /* original key */
+}
+
+.lock-masking {
+  width: 67.94px;
+  -webkit-mask-image: url("/icons/num-lock.svg"); /* black-white silhouette */
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  -webkit-mask-size: contain;
+
+  mask-image: url("/icons/num-lock.svg");
+  mask-repeat: no-repeat;
+  mask-position: center;
+  mask-size: contain;
+
+  background: url("/icons/num-lock.svg") no-repeat center/contain; /* original key */
+}
+
+/* custom -cursor  */
+.custom-cursor {
+  cursor: url("/icons/custom-cursor.svg") 16 16, auto;
+}
+.custom-cursor:hover {
+  cursor: url("/icons/custom-cursor.svg") 16 16, auto;
 }

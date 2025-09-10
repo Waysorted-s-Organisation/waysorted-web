@@ -1,26 +1,25 @@
-'use client'
-import { useState, useRef } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
-import Badge from '../Badge'
-import {ProductsMenu} from '../ProductsMenu'
-import ResourcesMenu from '../ResourcesMenu'
-import LanguageDropdown from '../LanguageDropdown'
+"use client";
+import { useState, useRef } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import Badge from "../Badge";
+import { ProductsMenu } from "../ProductsMenu";
+import ResourcesMenu from "../ResourcesMenu";
+import LanguageDropdown from "../LanguageDropdown";
 
 interface HeaderProps {
   showBanner: boolean;
   setShowBanner: (value: boolean) => void;
 }
 
-const Header = ({showBanner, setShowBanner}: HeaderProps) => {
-  const [productsOpen, setProductsOpen] = useState(false)
-  const [resourcesOpen, setResourcesOpen] = useState(false)
-  const [languageOpen, setLanguageOpen] = useState(false)
-  const buttonRef = useRef<HTMLButtonElement | null>(null)
-
+const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
+  const [productsOpen, setProductsOpen] = useState(false);
+  const [resourcesOpen, setResourcesOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   return (
-    <header className="w-full bg-white border-b border-gray-200 fixed top-0 z-50">
+    <header className="w-full bg-white border-b border-gray-200 fixed top-0 z-50 ">
       {/* Top banner */}
       {showBanner && (
         <div className="w-full bg-header-bg text-white text-center py-2 text-sm relative">
@@ -31,14 +30,14 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
             className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
             aria-label="Close banner"
           >
-            <div className='bg-white/10 p-2 rounded-lg'>
-            <Image
-              src="/icons/close.svg"
-              alt="Close"
-              width={10}
-              height={10}
-              className=""
-            />
+            <div className="bg-white/10 p-2 rounded-lg">
+              <Image
+                src="/icons/close.svg"
+                alt="Close"
+                width={10}
+                height={10}
+                className=""
+              />
             </div>
           </button>
         </div>
@@ -68,17 +67,20 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
               onMouseLeave={() => setProductsOpen(false)}
             >
               <span>Products</span>
-              <Badge variant='orange'>New</Badge>
+              <Badge variant="orange">New</Badge>
               <Image
                 src="/icons/chevron-down.svg"
                 alt="Chevron Down"
                 width={8}
                 height={4}
                 className={`transition-transform duration-300 ${
-                  productsOpen ? 'rotate-180' : ''
+                  productsOpen ? "rotate-180" : ""
                 }`}
               />
-              <ProductsMenu isOpen={productsOpen} className="absolute translate-y-4" />
+              <ProductsMenu
+                isOpen={productsOpen}
+                className="absolute translate-y-4"
+              />
             </div>
 
             {/* Resources */}
@@ -93,11 +95,15 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
                 alt="Chevron Down"
                 width={8}
                 height={4}
-                className={`transition-transform duration-300 ${resourcesOpen ? 'rotate-180' : ''}`}
+                className={`transition-transform duration-300 ${
+                  resourcesOpen ? "rotate-180" : ""
+                }`}
               />
-              <ResourcesMenu isOpen={resourcesOpen} className="absolute translate-x-[-20%] translate-y-4" />
+              <ResourcesMenu
+                isOpen={resourcesOpen}
+                className="absolute translate-x-[-20%] translate-y-4"
+              />
             </div>
-
 
             {/* Support */}
             <div className="flex items-center pr-3 text-primary-dark font-medium text-sm cursor-pointer">
@@ -174,7 +180,7 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
         </div>
       </nav>
     </header>
-  )
-}
+  );
+};
 
-export default Header
+export default Header;

@@ -1,23 +1,23 @@
-'use client'
-import { useEffect, useState } from 'react'
-import Image from 'next/image'
+"use client";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export const FloatingButton = () => {
-  const [scrolled, setScrolled] = useState(false)
-  const [closed, setClosed] = useState(false)
+  const [scrolled, setScrolled] = useState(false);
+  const [closed, setClosed] = useState(false);
 
   useEffect(() => {
     const onScroll = () => {
-      setScrolled(window.scrollY > 100)
-    }
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
+      setScrolled(window.scrollY > 100);
+    };
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-  const handleCloseClick = () => setClosed(true)
-  const handleFloatingClick = () => setClosed(false)
+  const handleCloseClick = () => setClosed(true);
+  const handleFloatingClick = () => setClosed(false);
 
-  const shouldHideText = scrolled || closed
+  const shouldHideText = scrolled || closed;
 
   return (
     <div className="fixed bottom-8 right-8 z-50 flex items-center gap-2">
@@ -30,7 +30,12 @@ export const FloatingButton = () => {
               onClick={handleCloseClick}
               className="w-6 h-6 rounded-full hover:bg-gray-100 flex items-center justify-center mr-2"
             >
-              <Image src="/icons/close.svg" alt="Close" width={16} height={16} />
+              <Image
+                src="/icons/close.svg"
+                alt="Close"
+                width={16}
+                height={16}
+              />
             </button>
 
             {/* Text content */}
@@ -68,5 +73,5 @@ export const FloatingButton = () => {
         />
       </button>
     </div>
-  )
-}
+  );
+};

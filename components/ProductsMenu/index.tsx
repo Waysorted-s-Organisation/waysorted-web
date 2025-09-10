@@ -1,24 +1,27 @@
-'use client'
-import Image from 'next/image'
-import Link from 'next/link'
-import products from "@/data/products.json"
+"use client";
+import Image from "next/image";
+import Link from "next/link";
+import products from "@/data/products.json";
 
 export interface ProductsMenuProps {
   isOpen: boolean;
   className?: string;
 }
 
-export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className }) => {
+export const ProductsMenu: React.FC<ProductsMenuProps> = ({
+  isOpen,
+  className,
+}) => {
   return (
     <div
       className={`products-menu absolute top-full mt-2 w-[800px] 
         bg-menu-bg menu-shadow rounded-xl overflow-hidden ${className}
         transition-all duration-300 origin-top
-        ${isOpen ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0'}`}
+        ${isOpen ? "scale-y-100 opacity-100" : "scale-y-0 opacity-0"}`}
     >
       {/* Grid area with bg-menu-bg */}
-      <div className="bg-primary-light grid grid-cols-3 max-h-[240px] rounded-md overflow-y-auto custom-scrollbar m-2">
-        {products.map(product => (
+      <div className="bg-primary-light grid grid-cols-3 max-h-[240px] rounded-md overflow-y-auto  m-2">
+        {products.map((product) => (
           <Link
             key={product.id}
             href={product.href}
@@ -32,8 +35,12 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
               className="rounded-md"
             />
             <div>
-              <p className="font-normal text-sm text-primary-dark">{product.name}</p>
-              <p className="text-[10px] font-medium text-primary-dark-70">{product.description}</p>
+              <p className="font-normal text-sm text-primary-dark">
+                {product.name}
+              </p>
+              <p className="text-[10px] font-medium text-primary-dark-70">
+                {product.description}
+              </p>
             </div>
           </Link>
         ))}
@@ -49,5 +56,5 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
         </Link>
       </div>
     </div>
-  )
-}
+  );
+};

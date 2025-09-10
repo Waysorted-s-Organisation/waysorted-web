@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import Header from "@/components/Header";
 import HeroSection from "./comonents/HeroSection";
 import VisionSection from "./comonents/VisionSection";
@@ -13,11 +13,12 @@ export default function AboutUs() {
   const { showBanner, setShowBanner } = useBanner();
   return (
     <>
-    <main className={`min-h-screen bg-gray-50 transition-all duration-300 ${
-        showBanner ? "pt-24" : "pt-16"
-      }`}
-    >
-      <Header showBanner={showBanner} setShowBanner={setShowBanner}/>
+      <main
+        className={`min-h-screen bg-gray-50 transition-all duration-300 ${
+          showBanner ? "pt-24" : "pt-16"
+        }`}
+      >
+        <Header showBanner={showBanner} setShowBanner={setShowBanner} />
         <HeroSection />
         <StorySection />
         <VisionSection />
