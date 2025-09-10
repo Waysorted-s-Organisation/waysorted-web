@@ -21,7 +21,7 @@ export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps)
       <div className="grid grid-cols-3 gap-3 p-2 rounded-md bg-menu-bg m-2">
         {[
           { title: 'Learning', link:'learning', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/learning.svg' },
-          { title: 'Documentation', link:'documentations', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/documentation.svg' },
+          { title: 'Documentation', link:'documents', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/documentation.svg' },
           { title: 'Security', link:'security', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/security.svg' },
           { title: 'About us', link:'about-us', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/about.svg' },
         ].map((item, idx) => (

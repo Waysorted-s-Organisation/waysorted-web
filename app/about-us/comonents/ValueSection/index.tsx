@@ -79,7 +79,7 @@ export default function ValuesSection() {
 
   return (
     <section className="tertiary-orange-500-bg-dots px-6 md:px-20 lg:px-32 py-12">
-      <h2 className="text-8xl font-semibold text-center mb-12 text-black/19">Our Values</h2>
+      <h2 className="text-8xl font-semibold text-center mb-12 text-tertiary-orange-500">Our Values</h2>
 
       <div className="max-w-xl mx-auto">
         {values.map((value, index) => (

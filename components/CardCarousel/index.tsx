@@ -63,7 +63,7 @@ const CardCarousel = () => {
             key={index}
             type="button"
             className={`w-3 h-3 rounded-full ${
-              index === 0 ? "bg-gray-200" : "bg-gray-500"
+              index === 0 ? "bg-gray-200" : "bg-white0"
             }`}
             aria-current={index === 0 ? "true" : "false"}
             aria-label={`Slide ${index + 1}`}
@@ -86,8 +86,8 @@ const CardCarousel = () => {
 
               <div className="flex gap-2 justify-center items-center">
                 <span className="w-3 h-1 bg-gray-200 rounded-full"></span>
-                <span className="w-2 h-1 bg-gray-500 rounded-full"></span>
-                <span className="w-2 h-1 bg-gray-500 rounded-full"></span>
+                <span className="w-2 h-1 bg-white0 rounded-full"></span>
+                <span className="w-2 h-1 bg-white0 rounded-full"></span>
               </div>
             </div>
 

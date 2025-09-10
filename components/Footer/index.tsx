@@ -77,8 +77,8 @@ export default function Footer() {
 
               <div className="flex gap-2 justify-center items-center">
                 <span className="w-3 h-1 bg-gray-200 rounded-full"></span>
-                <span className="w-2 h-1 bg-gray-500 rounded-full"></span>
-                <span className="w-2 h-1 bg-gray-500 rounded-full"></span>
+                <span className="w-2 h-1 bg-white0 rounded-full"></span>
+                <span className="w-2 h-1 bg-white0 rounded-full"></span>
               </div>
             </div>
           </div>
@@ -137,8 +137,20 @@ export default function Footer() {
                 placeholder="Your email"
                 className="w-full px-4 py-2 text-secondary-db-60 focus:outline-none"
               />
-              <button className="bg-transparent px-4 text-xl text-gray-700">↗</button>
+              <button
+                className="flex items-center justify-center -ml-10 rounded-lg cursor-pointer w-7 h-7 hover:bg-secondary-db-5 hover:bg-secondary-db-10 transition-colors"
+                title="Send"
+              >
+                <Image
+                  src="/icons/arrow-black.svg"
+                  alt="Send"
+                  width={16}
+                  height={16}
+                  className="object-contain"
+                />
+              </button>
             </div>
+
             <p className="text-xs text-secondary-db-60 mt-2 max-w-xs">
               Be the first to know about our updates. Unsubscribe anytime.
             </p>

@@ -29,7 +29,7 @@ const HeroSection: React.FC = () => {
 
         {/* Team Image */}
         <div className="mt-16 flex justify-center px-4 sm:px-6 md:px-8">
-          <div className="relative w-full max-w-[90vw] sm:max-w-3xl md:max-w-4xl h-[250px] md:h-[475px] shadow-xl border-[16px] border-white bg-primary-way-20">
+          <div className="relative w-full max-w-[90vw] sm:max-w-3xl md:max-w-4xl h-[250px] md:h-[475px] rounded-xl shadow-xl border-[12px] border-white bg-primary-way-20">
             <Image
               src="/images/team-placeholder.png"
               alt="Our Team"

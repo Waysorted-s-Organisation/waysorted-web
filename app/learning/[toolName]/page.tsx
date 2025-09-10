@@ -3,9 +3,12 @@ import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ToolsData from "../data/index";
+import {useBanner } from "@/context/BannerContext";
+import Header from "@/components/Header";
 
 
 export default function LearnMorePage({ params }: { params: Promise<{ toolName: string }> }) {
+  const { showBanner, setShowBanner } = useBanner();
   const router = useRouter();
 
   const { toolName } = React.use(params);
@@ -22,6 +25,12 @@ export default function LearnMorePage({ params }: { params: Promise<{ toolName: 
 
   return (
     <div>
+      <main
+        className={`min-h-screen bg-white transition-all duration-300 ${
+          showBanner ? "pt-24" : "pt-16"
+        }`}
+        >
+        <Header showBanner={showBanner} setShowBanner={setShowBanner} />
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-5 my-16">
         <nav className="text-base font-medium text-secondary-db-100/50">
@@ -71,6 +80,7 @@ export default function LearnMorePage({ params }: { params: Promise<{ toolName: 
           Pick colors online, view tints, shades, codes, and perfect complements<span className="text-secondary-db-70">—all in one tool.</span>
         </p>
       </div>
+      </main>
     </div>
   );
 }

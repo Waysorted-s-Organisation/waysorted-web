@@ -1,10 +1,7 @@
-"use client";
-
 import "./globals.css";
 import type { Metadata } from "next";
 import { Hanken_Grotesk } from "next/font/google";
-import { BannerProvider, useBanner } from "@/context/BannerContext";
-import Header from "@/components/Header";
+import { BannerProvider } from "@/context/BannerContext";
 import Footer from "@/components/Footer";
 
 const hanken = Hanken_Grotesk({ subsets: ["latin"] });
@@ -16,20 +13,11 @@ const metadata: Metadata = {
 };
 
 function LayoutContent({ children }: { children: React.ReactNode }) {
-  const { showBanner, setShowBanner } = useBanner();
+  
 
   return (
     <>
-      <Header showBanner={showBanner} setShowBanner={setShowBanner} />
-
-      <main
-        className={`min-h-screen bg-gray-50 transition-all duration-300 ${
-          showBanner ? "pt-24" : "pt-16"
-        }`}
-      >
         {children}
-      </main>
-
       <Footer />
     </>
   );

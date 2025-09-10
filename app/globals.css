@@ -154,7 +154,7 @@ body::-webkit-scrollbar {
 
 /* For Chrome, Edge, Safari */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 2px; /* scrollbar thickness */
+  width: 4px; /* scrollbar thickness */
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -205,4 +205,40 @@ html, body {
   background-color: #265BD1; 
   background-image: radial-gradient(#ffffff80 0.25px, transparent 1px);
   background-size: 25px 25px; 
+}
+
+.purple-bg-dots {
+  background-color: #F1EAFE50; 
+  background-image: radial-gradient(#797B7F 0.25px, transparent 1px);
+  background-size: 25px 25px; 
+}
+
+.shake-hover {
+  display: inline-block;
+  transition: transform 0.2s ease-in-out;
+}
+
+.shake-hover:hover {
+  animation: coffee-shake 0.5s ease-in-out;
+}
+
+@keyframes coffee-shake {
+  0% {
+    transform: rotate(0deg) skew(0deg) translate(0, 0);
+  }
+  20% {
+    transform: rotate(10deg) skew(3deg) translate(4px, 0);
+  }
+  40% {
+    transform: rotate(16deg) skew(4deg) translate(4px, -2px);
+  }
+  60% {
+    transform: rotate(14deg) skew(2deg) translate(2px, 0);
+  }
+  80% {
+    transform: rotate(13deg) skew(2deg) translate(2px, -1px);
+  }
+  100% {
+    transform: rotate(0deg) skew(0deg) translate(0, 0);
+  }
 }

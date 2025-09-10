@@ -34,7 +34,7 @@ export default function VisionSection() {
     gsap.set(wordsRefs.current, {
       opacity: 0,
       y: 0,
-      filter: "blur(1px)",
+      filter: "blur(0px)",
     });
 
     masterTimeline.to(wordsRefs.current, {
@@ -49,8 +49,8 @@ export default function VisionSection() {
     // ScrollTrigger animation
     ScrollTrigger.create({
       trigger: sectionRef.current,
-      start: "top 70%",
-      end: "bottom 50%",
+      start: "top 50%",
+      end: "bottom 60%",
       animation: masterTimeline,
       scrub: 3,
       pin: false,
