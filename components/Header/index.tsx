@@ -26,7 +26,7 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
       {/* Top banner */}
       {showBanner && (
         <div className="w-full bg-primary-way-100 text-white text-center py-2 text-sm relative">
-          Get early access to WAYSORTED...Click here
+          Get early access to Waysorted Figma...<Link href="/get-early-access" className="underline">Click here</Link>
           {/* Close button */}
           <button
             onClick={() => setShowBanner(false)}
@@ -99,7 +99,12 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
               />
               <ResourcesMenu isOpen={resourcesOpen} className="absolute translate-x-[-20%] translate-y-4" />
             </div>
-
+            {/* About Us */}
+            <button className="flex items-center pr-3 text-secondary-db-100 font-medium text-sm cursor-pointer"
+            onClick={() => router.push("/about-us")}
+            >
+              About Us
+            </button>
 
             {/* Support */}
             <button className="flex items-center pr-3 text-secondary-db-100 font-medium text-sm cursor-pointer"
@@ -107,12 +112,6 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
             >
               Support
             </button>
-
-            {/* Pricing */}
-            <div className="flex items-center space-x-1 text-secondary-db-100 font-medium text-sm cursor-pointer">
-              <span>Pricing</span>
-              <Badge variant="blue">Save upto 90%</Badge>
-            </div>
           </div>
 
           {/* Right side */}
@@ -131,30 +130,10 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
                 className="cursor-pointer"
               />
             </button>
-
-            {/* Login button */}
-            <button
-              className="text-secondary-db-100 font-medium text-base border border-secondary-db-20 rounded-lg px-6 py-2 cursor-pointer transition-colors active:scale-95"
-              title="Log in"
-              aria-label="Log in"
-            >
-              Log in
-            </button>
-
-            {/* Figma plugin */}
-            <button
-              className="bg-secondary-db-100 font-medium text-base text-white px-6 py-2 rounded-lg flex items-center active:scale-95 transition-colors duration-100 cursor-pointer"
-              title="Sign Up"
-              aria-label="Sign Up"
-            >
-              <span>Sign up</span>
-            </button>
-
-            {/* Language selector */}
             <div className="relative">
               <button
                 onClick={() => setLanguageOpen((prev) => !prev)}
-                className="bg-secondary-db-100 p-2 rounded-lg hover:brightness-110 active:scale-95 transition-all"
+                className="border border-secondary-db-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer"
                 title="Change Language"
                 aria-label="Change Language"
               >
@@ -174,6 +153,25 @@ const Header = ({showBanner, setShowBanner}: HeaderProps) => {
                 buttonRef={buttonRef}
               />
             </div>
+
+            <button
+              className="bg-secondary-db-100 font-medium text-base text-white px-5 py-2 rounded-lg flex items-center active:scale-95 transition-colors duration-100 cursor-pointer"
+              title="Get Early Access"
+              aria-label="Get Early Access"
+              onClick={() => router.push("/get-early-access")}
+            >
+              <span>Get Early Access</span>
+            </button>
+
+            {/* Login button */}
+            <button
+              className="text-secondary-db-100 font-medium text-base border border-secondary-db-20 rounded-lg px-5 py-2 cursor-pointer transition-colors active:scale-95"
+              title="Sign Up"
+              onClick={() => router.push("/signup")}
+              aria-label="Sign Up"
+            >
+              Sign Up
+            </button>
           </div>
         </div>
       </nav>

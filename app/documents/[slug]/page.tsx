@@ -1,4 +1,3 @@
-// app/documents/[slug]/page.tsx  (server component)
 import { notFound } from "next/navigation";
 
 import GettingStarted from "./content/getting-started";

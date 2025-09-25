@@ -4,9 +4,10 @@ import { useLayoutEffect, useRef } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import SplitText from "gsap/SplitText";
 
 if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger, SplitText);
 }
 
 const icons = [
@@ -64,7 +65,6 @@ export default function ToolsGrid() {
     gsap.set(wordsEls, {
       opacity: 0,
       y: 0,
-      filter: "blur(1px)",
     });
 
     gsap.set(transformEl, { // ✅ Hide "Transform your workflow" initially
@@ -128,6 +128,16 @@ export default function ToolsGrid() {
     );
 
     // Phase 3: reveal text word-by-word (40% of timeline)
+    masterTimeline.to(
+      wordsEls,
+      {
+        opacity: 0.2,
+        y: 0,
+        scale: 1,
+        ease: "power3.out",
+      },
+      "+=0.2" // Add delay before text appears
+    );
     masterTimeline.to(
       wordsEls,
       {
@@ -205,12 +215,12 @@ export default function ToolsGrid() {
             ref={transformRef}
           >
             <span>Transform your</span>
-          <span
-            className="relative shadow-color z-0 inline-flex after:absolute after:left-[0.04em] after:top-[0.04em] after:content-[attr(data-text)] after:bg-[linear-gradient(45deg,transparent_45%,var(--shadow-color)_45%,var(--shadow-color)_55%,transparent_0)] after:-z-10 after:bg-[length:0.06em_0.06em] after:bg-clip-text after:text-transparent after:animate-line-shadow italic tracking-tighter font-bold"
-            data-text="workflow"
-          >
-            workflow
-          </span>
+            <span
+              className="relative shadow-color z-0 inline-flex after:absolute after:left-[0.04em] after:top-[0.04em] after:content-[attr(data-text)] after:bg-[linear-gradient(45deg,transparent_45%,var(--shadow-color)_45%,var(--shadow-color)_55%,transparent_0)] after:-z-10 after:bg-[length:0.06em_0.06em] after:bg-clip-text after:text-transparent after:animate-line-shadow italic tracking-tighter font-bold"
+              data-text="workflow"
+            >
+              workflow
+            </span>
           </div>
           <h2
             className="text-center leading-snug font-semibold max-w-7xl px-4 text-5xl"

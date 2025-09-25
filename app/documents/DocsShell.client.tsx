@@ -5,6 +5,7 @@ import { useEffect, useState, PropsWithChildren } from "react";
 import Image from "next/image";
 import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export interface SidebarItem {
   title: string;
@@ -78,15 +79,15 @@ export default function DocsShell({ children }: PropsWithChildren) {
   }, [pathname]);
 
   return (
-    <div className="min-h-screen bg-white pb-45">
+    <div className="min-h-screen bg-white">
       <main
-        className={`min-h-screen bg-white transition-all duration-300 ${
+        className={`min-h-screen bg-white transition-all duration-300 pb-45${
           showBanner ? "pt-24" : "pt-16"
         }`}
       >
         <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 
-        <div className="max-w-7xl bg-white mx-auto px-5 py-16">
+        <div className="max-w-7xl bg-white mx-auto px-5 py-24">
           <nav className="text-base font-medium text-secondary-db-100/50">
             <span
               className="cursor-pointer hover:text-secondary-db-100 hover:border-b-2 hover:border-b-primary-way-100"
@@ -116,7 +117,7 @@ export default function DocsShell({ children }: PropsWithChildren) {
             <div className="flex items-center gap-2 my-4">
               <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md">
                 <Image
-                  src="/icons/waylearn.svg"
+                  src="/icons/waydocs.svg"
                   alt="WayDocs"
                   width={30}
                   height={30}
@@ -235,6 +236,7 @@ export default function DocsShell({ children }: PropsWithChildren) {
           </main>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

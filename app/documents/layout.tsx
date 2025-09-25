@@ -1,4 +1,3 @@
-// app/documents/layout.tsx
 import DocsShell from "./DocsShell.client";
 
 export const metadata = {

@@ -5,6 +5,7 @@ import JoinCommunity from "@/components/JoinCommunity";
 import FAQ from "./components/FAQs";
 import {useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export default function SupportPage() {
     const { showBanner, setShowBanner } = useBanner();
@@ -21,7 +22,7 @@ export default function SupportPage() {
                 {/* Badge */}
                 <span className="inline-flex items-center text-center text-sm font-medium bg-secondary-db-5 rounded-md mb-4">
                     <Image
-                        src="/icons/avail.svg"
+                        src="/icons/support.svg"
                         alt="Support"
                         width={30}
                         height={30}
@@ -38,9 +39,9 @@ export default function SupportPage() {
                 </h1>
 
                 {/* Contact Section */}
-                <div className="blue-bg-dots px-7 py-13 my-12 rounded-2xl md:min-w-6xl mx-auto flex flex-col md:flex-row text-white relative">
+                <div className="blue-bg-dots px-8 py-8 my-12 rounded-2xl md:min-w-6xl mx-auto flex flex-col md:flex-row text-white relative">
                     {/* Left Section */}
-                    <div className="flex-1">
+                    <div className="flex-1 mt-6">
                         <h1 className="text-4xl text-left font-semibold mb-3">
                             Contact Us
                         </h1>
@@ -71,7 +72,7 @@ export default function SupportPage() {
                 {/* Badge */}
                 <span className="inline-flex items-center text-center text-sm font-medium bg-secondary-db-5 rounded-md">
                     <Image
-                        src="/icons/avail.svg"
+                        src="/icons/faqs.svg"
                         alt="FAQs"
                         width={30}
                         height={30}
@@ -95,6 +96,7 @@ export default function SupportPage() {
                 <FAQ />
                 <JoinCommunity />
             </section>
+            <Footer />
         </main>
         </>
     );

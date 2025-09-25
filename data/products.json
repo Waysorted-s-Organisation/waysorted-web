@@ -2,92 +2,29 @@
   {
     "id": 1,
     "name": "Palettable",
-    "description": "Lorem ipsum dolor sit amet, consectet.",
+    "description": "Create color palettes with variations and accessibility ch...",
     "icon": "/icons/palettable.svg",
     "href": "#"
   },
   {
     "id": 2,
-    "name": "Another Tool",
-    "description": "Sed ut perspiciatis unde omnis iste natus.",
-    "icon": "/icons/palettable.svg",
+    "name": "Frames to PDF",
+    "description": "Turn your designs into share-ready PDFs in seconds.",
+    "icon": "/icons/frames-to-pdf.svg",
     "href": "#"
   },
   {
     "id": 3,
-    "name": "Yet Another Tool",
-    "description": "At vero eos et accusamus et iusto odio dignissimos.",
-    "icon": "/icons/palettable.svg",
+    "name": "Unit Converter",
+    "description": "Effortlessly convert design dimensions between units.",
+    "icon": "/icons/unit-converter.svg",
     "href": "#"
   },
   {
     "id": 4,
-    "name": "New Tool",
-    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    "icon": "/icons/palettable.svg",
-    "href": "#"
-  },
-  {
-    "id": 5,
-    "name": "Another New Tool",
-    "description": "Sed ut perspiciatis unde omnis iste natus.",
-    "icon": "/icons/palettable.svg",
-    "href": "#"
-  },
-  {
-    "id": 6,
-    "name": "Yet Another New Tool",
-    "description": "At vero eos et accusamus et iusto odio dignissimos.",
-    "icon": "/icons/palettable.svg",
-    "href": "#"
-  },
-  {
-    "id": 7,
-    "name": "New Tool",
-    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    "icon": "/icons/palettable.svg",
-    "href": "#"
-  },
-  {
-    "id": 8,
-    "name": "Another New Tool",
-    "description": "Sed ut perspiciatis unde omnis iste natus.",
-    "icon": "/icons/palettable.svg",
-    "href": "#"
-  },
-  {
-    "id": 9,
-    "name": "New Tool",
-    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    "icon": "/icons/palettable.svg",
-    "href": "#"
-  },
-  {
-    "id": 10,
-    "name": "Another New Tool",
-    "description": "Sed ut perspiciatis unde omnis iste natus.",
-    "icon": "/icons/palettable.svg",
-    "href": "#"
-  },
-  {
-    "id": 11,
-    "name": "New Tool",
-    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    "icon": "/icons/palettable.svg",
-    "href": "#"
-  },
-  {
-    "id": 12,
-    "name": "Another New Tool",
-    "description": "Sed ut perspiciatis unde omnis iste natus.",
-    "icon": "/icons/palettable.svg",
-    "href": "#"
-  },
-  {
-    "id": 13,
-    "name": "New Tool",
-    "description": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-    "icon": "/icons/palettable.svg",
+    "name": "File Importer",
+    "description": "Import files effortlessly with smart font handling and previews.",
+    "icon": "/icons/file-importer.svg",
     "href": "#"
   }
 ]

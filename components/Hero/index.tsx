@@ -32,22 +32,6 @@ const Hero = () => {
 
         {/* CTA buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <button className="border border-secondary-db-20 text-secondary-db-100 text-base font-semibold px-13 py-3 rounded-xl flex items-center space-x-2 active:scale-95 transition-transform cursor-pointer">
-            <Image
-              src="/icons/waystudio.svg"
-              alt="Waysorted Studio"
-              width={16}
-              height={16}
-              className="mr-2"
-            />
-            <span>Way Studio</span>
-            <Image
-              src="/icons/arrow-black.svg"
-              alt="Arrow Right"
-              width={12}
-              height={12}
-            />
-          </button>
           <button className="border bg-secondary-db-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl flex items-center space-x-2 active:scale-95 transition-transform cursor-pointer">
             <Image
               src="/icons/figma.svg"

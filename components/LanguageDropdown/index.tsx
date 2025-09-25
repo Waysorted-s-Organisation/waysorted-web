@@ -14,7 +14,7 @@ const LanguageDropdown = ({
   const dropdownRef = useRef<HTMLDivElement>(null)
   const [selected, setSelected] = useState('English')
 
-  const languages = ['English', 'Hindi', 'Spanish', 'French', 'German', 'Chinese', 'Japanese', 'Korean']
+  const languages = ['English', 'Hindi']
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -42,9 +42,9 @@ const LanguageDropdown = ({
   return (
     <div
       ref={dropdownRef}
-      className="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg p-2 z-50"
+      className="absolute right-0 mt-3 w-56 bg-white rounded-md shadow-lg p-2 z-50"
     >
-      <div className="grid grid-cols-2 gap-x-4">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
         {languages.map((lang) => (
           <button
             key={lang}
@@ -52,8 +52,8 @@ const LanguageDropdown = ({
               setSelected(lang)
               onClose()
             }}
-            className={`flex items-center text-base font-medium justify-between px-2 py-1 rounded hover:bg-gray-100 ${
-              lang === selected ? 'border border-gray-300' : ''
+            className={`flex items-center text-base font-medium justify-between px-5 py-1 rounded cursor-pointer ${
+              lang === selected ? 'border border-secondary-db-100' : ''
             }`}
           >
             <span>{lang}</span>

@@ -1,3 +1,8 @@
+export interface ToolBadge {
+  label: string;
+  tone: "green" | "blue" | "gray";
+}
+
 export interface Tool {
   id: number;
   icon: string;
@@ -5,6 +10,8 @@ export interface Tool {
   slug: string;
   description: string;
   isNew?: boolean;
+  badge?: ToolBadge;
+  disabled?: boolean;
 }
 
 export interface SearchAndViewProps {
@@ -12,4 +19,21 @@ export interface SearchAndViewProps {
   setSearchTerm: (value: string) => void;
   isGridView: boolean;
   setIsGridView: (value: boolean) => void;
+}
+
+export interface SlideData {
+  toolName: string;
+  title: string;
+  subtitle: string;
+  bullets: string[];
+  image: string;
+  imageAlt: string;
+}
+
+export interface SlideWithoutToolName {
+  title: string;
+  subtitle: string;
+  bullets: string[];
+  image: string;
+  imageAlt: string;
 }

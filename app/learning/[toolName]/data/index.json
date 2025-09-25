@@ -1,0 +1,62 @@
+[
+  {
+    "toolName": "palettable",
+    "title": "Selecting Colors",
+    "subtitle": "Pick Your Color",
+    "bullets": [
+      "Choose colors via HEX, RGB, or HSL.",
+      "Copy color code from shapes in file.",
+      "Instantly preview shades and swatches."
+    ],
+    "image": "/images/palettable-brief-1.svg",
+    "imageAlt": "Color selection"
+  },
+  {
+    "toolName": "palettable",
+    "title": "Color Variations",
+    "subtitle": "Play with Variations",
+    "bullets": [
+      "Adjust brightness, darkness saturation, monochrome and hue.",
+      "Generate multiple steps for smooth gradients.",
+      "Perfect for UI states, themes, or highlights."
+    ],
+    "image": "/images/palettable-brief-2.svg",
+    "imageAlt": "Palettes preview"
+  },
+  {
+    "toolName": "palettable",
+    "title": "Color Schemes",
+    "subtitle": "Generate Smart Schemes",
+    "bullets": [
+      "Explore Analogous, and Complementary palettes.",
+      "Quickly build consistent themes.",
+      "Check Complementary schemes for instant use."
+    ],
+    "image": "/images/palettable-brief-3.svg",
+    "imageAlt": "Contrast checks"
+  },
+  {
+    "toolName": "palettable",
+    "title": "Color Contrast & Accessibility",
+    "subtitle": "Check Contrast level",
+    "bullets": [
+      "Test your color pairs against WCAG & APCA standards.",
+      "Get compliance scores for normal and large text.",
+      "Run blindness checks."
+    ],
+    "image": "/images/palettable-brief-4.svg",
+    "imageAlt": "Accessibility checks"
+  },
+  {
+    "toolName": "palettable",
+    "title": "Export & Apply",
+    "subtitle": "Take Your Palette Anywhere",
+    "bullets": [
+      "Export single colors or full palettes.",
+      "Integrate with your design system instantly.",
+      "Save time, keep consistency, and design faster."
+    ],
+    "image": "/images/palettable-brief-5.svg",
+    "imageAlt": "Accessibility checks"
+  }
+]

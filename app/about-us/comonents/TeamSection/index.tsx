@@ -41,7 +41,7 @@ export default function TeamSection() {
       {/* Heading */}
       <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md mb-6">
         <Image
-          src="/icons/avail.svg"
+          src="/icons/team.svg"
           alt="Our Team"
           width={30}
           height={30}

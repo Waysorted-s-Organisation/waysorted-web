@@ -9,6 +9,7 @@ import ToolsGrid from "./components/ToolsGrid";
 import ToolsList from "./components/ToolsList";
 import {useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export default function LearnPage() {
   const [isGridView, setIsGridView] = useState(true);
@@ -20,9 +21,9 @@ export default function LearnPage() {
   );
 
   return (
-    <div className="min-h-screen pb-45">
+    <div className="min-h-screen">
       <main
-        className={`min-h-screen bg-white transition-all duration-300 ${
+        className={`min-h-screen bg-white transition-all duration-300 pb-45 ${
           showBanner ? "pt-24" : "pt-16"
         }`}
         >
@@ -43,6 +44,7 @@ export default function LearnPage() {
         )}
       </div>
       </main>
+      <Footer />
     </div>
   );
 }

@@ -19,7 +19,7 @@ export default function ToolListItem({ tool }: { tool: Tool }) {
           />
         </div>
         <div>
-          <h2 className="font-medium w-[170px] text-xl text-secondary-db-100 flex items-center">
+          <h2 className="font-medium w-xs text-xl text-secondary-db-100 flex items-center">
             {tool.name}
             {tool.isNew && (
               <span className="text-xs font-normal text-secondary-db-100 p-1 mx-2">

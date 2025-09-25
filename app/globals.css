@@ -12,6 +12,7 @@
   --primary-way-30: #BBCFF5;
   --primary-way-20: #D1DFF9;
   --primary-way-10: #E8EFFC;
+  --primary-way-5: #F7F9FE;
   --secondary-db-100: #0D1218;
   --secondary-db-90: #282C32;
   --secondary-db-80: #43474B;
@@ -74,6 +75,7 @@ body {
   --color-primary-way-30: var(--primary-way-30);
   --color-primary-way-20: var(--primary-way-20);
   --color-primary-way-10: var(--primary-way-10);
+  --color-primary-way-5: var(--primary-way-5);
   --color-tertiary-blue-500: var(--tertiary-blue-500);
   --color-tertiary-blue-100: var(--tertiary-blue-100);
   --color-tertiary-cyan-500: var(--tertiary-cyan-500);
@@ -166,6 +168,15 @@ body::-webkit-scrollbar {
   border-radius: 9999px; /* rounded scrollbar */
 }
 
+.no-scrollbar {
+  -ms-overflow-style: none;        /* IE 10+ and old Edge */
+  scrollbar-width: none;           /* Firefox */
+}
+.no-scrollbar::-webkit-scrollbar { /* Chrome, Safari, new Edge */
+  width: 0 !important;
+  height: 0 !important;
+}
+
 html, body {
   overflow-x: hidden;
 }
@@ -189,9 +200,21 @@ html, body {
   background-size: 25px 25px; 
 }
 
+.bg-tool-brief {
+  background-color: #E8EFFC; 
+  background-image: radial-gradient(#000000 0.25px, transparent 1px);
+  background-size: 25px 25px; 
+}
+
 .gray-bg-dots {
   background-color: #0D1218; 
   background-image: radial-gradient(#797B7F80 0.25px, transparent 1px);
+  background-size: 25px 25px; 
+}
+
+.error-bg-dots {
+  background-color: white; 
+  background-image: radial-gradient(#507EDD 0.25px, transparent 1px);
   background-size: 25px 25px; 
 }
 
@@ -241,4 +264,44 @@ html, body {
   100% {
     transform: rotate(0deg) skew(0deg) translate(0, 0);
   }
+}
+
+@keyframes springUp {
+  0% {
+    transform: translateY(18px) scale(0.985);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-8px) scale(1.02);
+    opacity: 1;
+  }
+  80% {
+    transform: translateY(4px) scale(0.995);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* exit: slightly fade and move down a bit */
+@keyframes springDown {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(12px) scale(0.99);
+    opacity: 0;
+  }
+}
+
+/* apply when opening */
+.spring-up {
+  animation: springUp 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* apply when closing */
+.spring-down {
+  animation: springDown 220ms ease-in both;
 }
