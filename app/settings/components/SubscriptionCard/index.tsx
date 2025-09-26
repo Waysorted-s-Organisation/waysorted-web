@@ -80,7 +80,7 @@ export default function SubscriptionCard({ user }: Props) {
                     className="object-contain"
                   />
                   <p className="text-sm text-primary-way-100">
-                    You’re on an Early Access subscription! Enjoy exclusive Waysorted benefits before anyone else — you have unlocked Early bird badge.
+                    You&apost;re on an Early Access subscription! Enjoy exclusive Waysorted benefits before anyone else — you have unlocked Early bird badge.
                   </p>
                 </div>
               </div>
@@ -96,7 +96,7 @@ export default function SubscriptionCard({ user }: Props) {
         )}
 
         {/* Meta Info */}
-        <dl className="my-6 grid grid-cols-1 text-sm space-y-2">
+        <div className="my-6 grid grid-cols-1 text-sm space-y-2">
           <div className="inline-block space-x-1">
             <span className="text-secondary-db-70">Status:</span>
             <span className="font-medium text-secondary-db-100">{statusDisplay}</span>
@@ -109,7 +109,7 @@ export default function SubscriptionCard({ user }: Props) {
             <span className="text-secondary-db-70">Next Renewal:</span>
             <span className="font-medium text-secondary-db-100">{renewalDisplay ?? "N/A"}</span>
           </div>
-        </dl>
+        </div>
 
         {/* Credits */}
         <div className="flex flex-col gap-4 rounded-md border border-secondary-db-5 px-4 py-3 md:flex-row md:items-center md:justify-between">

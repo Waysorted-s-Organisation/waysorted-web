@@ -122,13 +122,9 @@ export default function ProfileCard({ user }: { user: User }) {
           <p className="mt-2 text-sm text-secondary-db-90">
             Receive newsletters, updates and news from Waysorted Company.
           </p>
-          <p className="mt-1 text-xs leading-5 text-secondary-db-80">
-            Freepik will process your data to send you information about our products and services,
-            promotions, surveys, raffles, based on our legitimate interest, and updates from the creators
-            you follow, if you have consented to this. Your data will not be disclosed to third parties.
-            They will be communicated outside the EU under the terms of the privacy policy. You can opt
-            out of our notifications with the slider.
-          </p>
+            <p className="mt-1 text-xs leading-5 text-secondary-db-80">
+            We will process your data to send you information about our products and services, promotions, surveys, and other relevant updates. You can unsubscribe at any time. For more details, please review our privacy policy.
+            </p>
         </section>
       </div>
     </section>

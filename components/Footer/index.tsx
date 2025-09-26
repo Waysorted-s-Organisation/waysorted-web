@@ -85,7 +85,7 @@ export default function Footer() {
         </div>
 
         {/* Divider and bottom sections unchanged */}
-        <div className="border-t border-gray-700 my-6"></div>
+        <div className="dashed-line-white my-6"></div>
         <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3 text-gray-400">
                 <div className="w-8 h-8 rounded-md outline outline-1 outline-secondary-db-80 flex items-center justify-center cursor-pointer">
@@ -192,7 +192,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-gray-700 pt-3 flex flex-col md:flex-row justify-between items-center text-secondary-db-50 text-sm">
+        <div className="border-t border-white/10 pt-3 flex flex-col md:flex-row justify-between items-center text-secondary-db-50 text-sm">
           <span>© 2025 Waysorted</span>
           <div className="flex gap-6 mt-4 md:mt-0">
             <a href="#" className="hover:text-white">Privacy Policy</a>

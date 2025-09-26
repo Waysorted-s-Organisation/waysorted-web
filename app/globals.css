@@ -336,6 +336,16 @@ html, body {
     );
 }
 
+.dashed-line-white {
+  height: 1px;                    /* line thickness */
+  background:
+    repeating-linear-gradient(
+      to right,
+      #FFFFFF1A 0 2px,              /* dash length */
+      transparent 8px 16px        /* gap length */
+    );
+}
+
 [data-doc-content] h1,
 [data-doc-content] h2,
 [data-doc-content] h3 {
