@@ -2,9 +2,11 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Tool } from "../../types";
+import { Badge } from "../Badge";
 
 export default function ToolCard({ tool }: { tool: Tool }) {
   const router = useRouter();
+  const badge = tool.badge;
 
   return (
     <div className="bg-white rounded-2xl border border-secondary-db-5 p-4">
@@ -18,13 +20,9 @@ export default function ToolCard({ tool }: { tool: Tool }) {
             className="object-contain"
           />
         </div>
-        {tool.isNew && (
-          <span className="absolute top-0 right-0 bg-tertiary-green-500 text-white text-xs px-4 py-1 rounded-md font-medium">
-            New
-          </span>
-        )}
+        {tool.badge && <Badge type={tool.badge.type} label={tool.badge.label} showDot={false} />}
       </div>
-      <h2 className="font-medium text-xl text-secondary-db-100">{tool.name}</h2>
+      <h2 className="font-medium text-xl text-secondary-db-100">{tool.name} {tool.nameLogo && <Image src={tool.nameLogo} alt={tool.name} width={20} height={20} className="inline-block ml-1" />}</h2>
       <a className="text-xs text-secondary-db-70 cursor-pointer">
         <Image
           src="/icons/open.svg"

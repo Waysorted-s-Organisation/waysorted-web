@@ -40,6 +40,16 @@
   --tertiary-cyan-100: #E9F7FE;
   --tertiary-cyan-dark: #112C3C;  
   --shadow-color: black;
+  --error-500: #B20000;
+  --error-400: #CC0E0E;
+  --error-300: #E01010;
+  --error-200: #E95959;
+  --error-100: #FEEAEB;
+  --success-500: #01913A;
+  --success-400: #0BAB4B;
+  --success-300: #0BC556;
+  --success-200: #56D689;
+  --success-100: #EBFFF6;
   --tertiary-blue-500: #006AFF;
   --tertiary-blue-100: #ECF6FF;
   --tertiary-vivid-blue-500: #182DEE;
@@ -76,6 +86,16 @@ body {
   --color-primary-way-20: var(--primary-way-20);
   --color-primary-way-10: var(--primary-way-10);
   --color-primary-way-5: var(--primary-way-5);
+  --color-success-500: var(--success-500);
+  --color-success-400: var(--success-400);
+  --color-success-300: var(--success-300);
+  --color-success-200: var(--success-200);
+  --color-success-100: var(--success-100);
+  --color-error-500: var(--error-500);
+  --color-error-400: var(--error-400);
+  --color-error-300: var(--error-300);
+  --color-error-200: var(--error-200);
+  --color-error-100: var(--error-100);
   --color-tertiary-blue-500: var(--tertiary-blue-500);
   --color-tertiary-blue-100: var(--tertiary-blue-100);
   --color-tertiary-cyan-500: var(--tertiary-cyan-500);
@@ -178,7 +198,7 @@ body::-webkit-scrollbar {
 }
 
 html, body {
-  overflow-x: hidden;
+  overflow-x: visible;
 }
 
 @keyframes line-shadow {
@@ -304,4 +324,25 @@ html, body {
 /* apply when closing */
 .spring-down {
   animation: springDown 220ms ease-in both;
+}
+
+.dashed-line {
+  height: 1px;                    /* line thickness */
+  background:
+    repeating-linear-gradient(
+      to right,
+      #AEB0B2 0 8px,              /* dash length */
+      transparent 8px 16px        /* gap length */
+    );
+}
+
+[data-doc-content] h1,
+[data-doc-content] h2,
+[data-doc-content] h3 {
+  scroll-margin-top: 140px;
+}
+
+/* Optional: help visualize sticky during debugging */
+.debug-outline [aria-label="Table of contents"] {
+  outline: 1px dashed #6aa0ff;
 }

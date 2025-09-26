@@ -1,15 +1,15 @@
 export interface ToolBadge {
   label: string;
-  tone: "green" | "blue" | "gray";
+  type: "new" | "up next" | "unlock soon";
 }
 
 export interface Tool {
   id: number;
   icon: string;
   name: string;
+  nameLogo?: string;
   slug: string;
   description: string;
-  isNew?: boolean;
   badge?: ToolBadge;
   disabled?: boolean;
 }

@@ -2,22 +2,12 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Tool } from "@/app/learning/types";
-
-function badgeToneClasses(tone: Tool["badge"] extends infer B ? B extends { tone: infer T } ? T : never : never) {
-  switch (tone) {
-    case "green":
-      return "text-secondary-db-100 p-1 mx-2 bg-tertiary-green-500 text-white rounded-md";
-    case "blue":
-      return "text-secondary-db-100 p-1 mx-2 bg-primary-way-10 text-primary-way-100 rounded-md";
-    case "gray":
-    default:
-      return "text-secondary-db-70 p-1 mx-2 bg-secondary-db-10 rounded-md";
-  }
-}
+import { Badge } from "@/app/learning/components/Badge";
 
 export default function ToolListItem({ tool }: { tool: Tool }) {
   const router = useRouter();
   const isDisabled = tool.disabled === true;
+  const badge = tool.badge;
 
   const onLearnMore = () => {
     if (isDisabled) return;
@@ -43,10 +33,8 @@ export default function ToolListItem({ tool }: { tool: Tool }) {
         <div>
           <h2 className="font-medium w-xs text-xl text-secondary-db-100 flex items-center">
             {tool.name}
-            {(tool.badge?.label || tool.isNew) && (
-              <span className={badgeToneClasses(tool.badge?.tone || (tool.isNew ? "green" : "gray"))}>
-              </span>
-            )}
+            {tool.nameLogo && <Image src={tool.nameLogo} alt={tool.name} width={20} height={20} className="inline-block ml-1" />}
+            {badge && <Badge type={badge.type} label={badge.label} showDot={true} />}
           </h2>
           <a className="text-xs text-secondary-db-70 cursor-default">
             <Image

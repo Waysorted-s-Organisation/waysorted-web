@@ -5,7 +5,7 @@ const tools = [
     name: "Palettable",
     slug: "palettable",
     description: "Turn your designs into share-ready PDFs in seconds.",
-    isNew: true,
+    badge: { label: "New", type: "new" },
   },
   {
     id: 2,
@@ -13,7 +13,7 @@ const tools = [
     name: "Frames to PDF",
     slug: "frames-to-pdf",
     description: "Effortlessly convert design dimensions between units.",
-    isNew: true,
+    badge: { label: "New", type: "new" },
   },
   {
     id: 3,
@@ -21,15 +21,16 @@ const tools = [
     name: "File Importer",
     slug: "file-importer",
     description: "Import files effortlessly with smart font handling and previews.",
-    isNew: true,
+    badge: { label: "New", type: "new" },
   },
   {
     id: 4,
     icon: "/icons/comment-summarizer.svg",
     name: "Comment Summarizer",
+    nameLogo:"/icons/ai-logo.svg",
     slug: "comment-summarizer",
     description: "Summarize comments and feedback with ease.",
-    isNew: true,
+    badge: { label: "Coming Soon", type: "up next" },
   },
   {
     id: 5,
@@ -37,7 +38,7 @@ const tools = [
     name: "Unit Converter",
     slug: "unit-converter",
     description: "Convert units effortlessly with smart handling and previews.",
-    isNew: true,
+    badge: { label: "New", type: "new" },
   },
   {
     id: 6,
@@ -45,6 +46,7 @@ const tools = [
     name: "Filter & effects",
     slug: "filter-effects",
     description: "Apply filters and effects to your designs with ease.",
+    badge: { label: "Unlock Soon", type: "unlock soon" },
   },
   {
     id: 7,
@@ -52,6 +54,7 @@ const tools = [
     name: "Font Pairer",
     slug: "font-pairer",
     description: "Pair fonts effortlessly with smart handling and previews.",
+    badge: { label: "Unlock Soon", type: "unlock soon" },
   }
 ];
 
