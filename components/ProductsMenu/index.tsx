@@ -16,7 +16,7 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
       className={`products-menu absolute top-full mt-2 w-[780px] 
         bg-white menu-shadow rounded-xl overflow-hidden ${className}
         transition-all duration-300 origin-top
-        ${isOpen ? 'scale-y-100 opacity-100' : 'scale-y-0 opacity-0'}`}
+        ${isOpen ? "scale-y-100 opacity-100" : "scale-y-0 opacity-0"}`}
     >
       {/* Grid area with bg-menu-bg */}
       <div className="bg-white grid grid-cols-3 max-h-[240px] rounded-md overflow-y-auto custom-scrollbar m-2">
@@ -35,8 +35,12 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
             />
             
             <div>
-              <p className="font-normal text-sm text-secondary-db-100">{product.name}</p>
-              <p className="text-[10px] font-medium text-secondary-db-70">{product.description}</p>
+              <p className="font-normal text-sm text-secondary-db-100">
+                {product.name}
+              </p>
+              <p className="text-[10px] font-medium text-secondary-db-70">
+                {product.description}
+              </p>
             </div>
           </Link>
         ))}
@@ -61,5 +65,5 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
       </div>
 
     </div>
-  )
-}
+  );
+};

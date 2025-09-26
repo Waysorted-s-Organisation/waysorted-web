@@ -1,8 +1,11 @@
-import Image from 'next/image'
+import Image from "next/image";
 
 const Hero = () => {
   return (
-    <section id="hero" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-8">
+    <section
+      id="hero"
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-8"
+    >
       <div id="hero-content" className="text-center">
         {/* Badge */}
         <button className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-5 py-2 text-sm text-secondary-db-100 mb-4 active:scale-95 transition-transform cursor-pointer">
@@ -14,12 +17,15 @@ const Hero = () => {
             className="mr-2"
           />
           Request a feature
-          <span className="text-primary-way-100 font-medium pl-1.5">Learn More</span>
+          <span className="text-primary-way-100 font-medium pl-1.5">
+            Learn More
+          </span>
         </button>
 
         {/* Main heading */}
         <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-secondary-db-100 leading-tight mb-4">
-          A single toolkit to<br />
+          A single toolkit to
+          <br />
           accelerate every idea.
         </h1>
 
@@ -51,7 +57,7 @@ const Hero = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default Hero
+export default Hero;
