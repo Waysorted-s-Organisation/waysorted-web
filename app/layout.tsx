@@ -12,7 +12,6 @@ export const metadata: Metadata = {
     "10+ expert-approved Figma tools bundled by use case, optimized for performance, and designed to help you work smarter, not harder.",
 };
 
-
 export default function RootLayout({
   children,
 }: {
@@ -20,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={hanken.className}>
+      <body className={`${hanken.className} no-scrollbar`}>
         <BannerProvider>
           {children}
           <EarlyAccessPopup />

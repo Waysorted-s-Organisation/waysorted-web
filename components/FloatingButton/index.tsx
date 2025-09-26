@@ -1,6 +1,6 @@
-'use client'
-import { useEffect, useState } from 'react'
-import Image from 'next/image'
+"use client";
+import { useEffect, useState } from "react";
+import Image from "next/image";
 
 export default function FloatingButton() {
   const [scrolled, setScrolled] = useState(false)

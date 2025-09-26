@@ -12,8 +12,8 @@ if (typeof window !== "undefined") {
 
 const icons = [
   { src: "/icons/image1.svg", alt: "CleanShot" },
-  { src: "/icons/image2.svg", alt: "Mosaic" },
   { src: "/icons/image3.svg", alt: "Reeder" },
+  { src: "/icons/image2.svg", alt: "Mosaic" },
   { src: "/icons/image4.svg", alt: "DomainLore" },
 ];
 
@@ -67,7 +67,8 @@ export default function ToolsGrid() {
       y: 0,
     });
 
-    gsap.set(transformEl, { // ✅ Hide "Transform your workflow" initially
+    gsap.set(transformEl, {
+      // ✅ Hide "Transform your workflow" initially
       opacity: 0,
       y: 0,
       scale: 0.95,
@@ -77,19 +78,27 @@ export default function ToolsGrid() {
     const moveUpPhase = gsap.timeline();
 
     if (heroContent) {
-      moveUpPhase.to(heroContent, {
-        y: -50,
-        opacity: 0,
-        duration: 1.5,
-        ease: "power3.inOut"
-      }, 0);
+      moveUpPhase.to(
+        heroContent,
+        {
+          y: -50,
+          opacity: 0,
+          duration: 1.5,
+          ease: "power3.inOut",
+        },
+        0
+      );
     }
 
-    moveUpPhase.to(iconsEls, {
-      yPercent: -50,
-      duration: 2,
-      ease: "power2.out",
-    }, 0);
+    moveUpPhase.to(
+      iconsEls,
+      {
+        yPercent: -50,
+        duration: 2,
+        ease: "power2.out",
+      },
+      0
+    );
 
     masterTimeline.add(moveUpPhase);
 
@@ -97,9 +106,9 @@ export default function ToolsGrid() {
     // Using fixed relative positions instead of dynamic calculations
     const scatterPositions = [
       { x: -300, y: -200 }, // top-left
-      { x: -500, y: 200 },  // bottom-left
-      { x: 500, y: -200 },  // top-right
-      { x: 300, y: 200 },   // bottom-right
+      { x: -500, y: 200 }, // bottom-left
+      { x: 500, y: -200 }, // top-right
+      { x: 300, y: 200 }, // bottom-right
     ];
 
     masterTimeline.to(
@@ -206,7 +215,8 @@ export default function ToolsGrid() {
 
         {/* Headline overlay */}
         <div className="absolute translate-x-0 translate-y-[-125%] flex flex-col items-center justify-center pointer-events-none">
-          <div className="font-medium text-secondary-db-100 text-3xl mb-8"
+          <div
+            className="font-medium text-secondary-db-100 text-3xl mb-8"
             ref={transformRef}
           >
             <span>Transform your</span>
@@ -217,18 +227,14 @@ export default function ToolsGrid() {
               workflow
             </span>
           </div>
-          <h2
-            className="text-center leading-snug font-semibold max-w-7xl px-4 text-5xl"
-          >
+          <h2 className="text-center leading-snug font-semibold max-w-7xl px-4 text-5xl">
             {HEADLINE.split(" ").map((word, index) => (
               <span
                 key={`word-${index}`}
                 ref={(el) => {
                   wordsRefs.current[index] = el;
                 }}
-                className={`inline-block mr-2 ${
-                  COLOR_INDEX_MAP[index] || ""
-                }`}
+                className={`inline-block mr-2 ${COLOR_INDEX_MAP[index] || ""}`}
               >
                 {word}
               </span>
