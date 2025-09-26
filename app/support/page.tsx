@@ -35,7 +35,7 @@ export default function SupportPage() {
 
                 {/* Heading */}
                 <h1 className="text-5xl mt-4 font-semibold text-secondary-db-100">
-                    We're Here to Help
+                    We&apos;re Here to Help
                 </h1>
 
                 {/* Contact Section */}
@@ -47,7 +47,7 @@ export default function SupportPage() {
                         </h1>
                         <p className="text-white font-normal text-left text-base leading-relaxed mb-8 max-w-sm">
                             Whether you have questions, need support, or just want to say hello,
-                            we’re here to help!
+                            we&apos;re here to help!
                         </p>
                         <div className="text-left mt-90">
                             <p className="text-left font-normal text-base">

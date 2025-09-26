@@ -1,14 +1,27 @@
 "use client";
 
-import { Loader2 } from "lucide-react"; // optional icon library
+import SequentialLogoLoader, { IconDef } from "@/components/SequentialLoader";
+import { InfinityIcon } from "@/components/icons/InfinityIcon";
+import { GridIcon } from "@/components/icons/GridIcon";
+import { BoltIcon } from "@/components/icons/BoltIcon";
+import { CheckIcon } from "@/components/icons/CheckIcon";
 
 export default function Loading() {
+  const icons: IconDef[] = [
+    { id: "infinity", Icon: InfinityIcon, activeClass: "text-[#24B7FD]", bgClass: "bg-[#E9F7FE]" },
+    { id: "grid", Icon: GridIcon, activeClass: "text-[#7531F9]", bgClass: "bg-[#F1EAFE]" },
+    { id: "bolt", Icon: BoltIcon, activeClass: "text-[#FF7920]", bgClass: "bg-[#FFF1E8]" },
+    { id: "check", Icon: CheckIcon, activeClass: "text-[#01A04E]", bgClass: "bg-[#E5F5ED]" },
+  ];
+
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-100">
-      <div className="flex flex-col items-center gap-4">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-        <p className="text-gray-700 text-lg font-medium">Loading...</p>
-      </div>
+    <div className="min-h-screen w-full flex items-center justify-center">
+      <SequentialLogoLoader
+        icons={icons}
+        estimatedMs={4000}
+        tileSizePx={188}  // tile is exactly 188x188 px
+        iconPx={96}       // tweak to taste (about ~50% of tile)
+      />
     </div>
   );
 }

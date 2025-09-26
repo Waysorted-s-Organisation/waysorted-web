@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 
 export default function FloatingButton() {
+  //eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [scrolled, setScrolled] = useState(false)
   const [visible, setVisible] = useState(true) // pill visible
   const [previewOpen, setPreviewOpen] = useState(false) // expanded preview state

@@ -6,7 +6,6 @@ if (!MONGODB_URI) {
 }
 
 declare global {
-  // eslint-disable-next-line no-var
   var _mongooseConn: { conn: Mongoose | null; promise: Promise<Mongoose> | null } | undefined;
 }
 

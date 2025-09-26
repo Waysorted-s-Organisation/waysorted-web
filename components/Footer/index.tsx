@@ -29,22 +29,22 @@ export default function Footer() {
                 <ul className="space-y-2 text-secondary-db-40 font-regular text-sm">
                   <li>
                     <a href="#" className="hover:text-white">
-                      Color
+                      Accessibility Tools
                     </a>
                   </li>
                   <li>
                     <a href="#" className="hover:text-white">
-                      Image
+                      Design Tools
                     </a>
                   </li>
                   <li>
                     <a href="#" className="hover:text-white">
-                      Text
+                      Utility Tools
                     </a>
                   </li>
                   <li>
                     <a href="#" className="hover:text-white">
-                      AI Tools
+                      Way AI Suite
                     </a>
                   </li>
                 </ul>

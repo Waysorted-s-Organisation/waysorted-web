@@ -1,6 +1,6 @@
 "use client"
 import Image from "next/image";
-export default function GLobalError({ error, reset }: { error: Error; reset: () => void }) {
+export default function GlobalError({ error }: { error: Error }) {
     if(error.message.includes("500")) {
         return (
             <main className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 error-bg-dots overflow-hidden">

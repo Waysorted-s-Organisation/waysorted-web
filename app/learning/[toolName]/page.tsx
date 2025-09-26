@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { use } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import ToolsData from '@/app/learning/data/index'
@@ -12,14 +13,14 @@ import type { SlideData, SlideWithoutToolName } from "@/app/learning/types/index
 import JoinCommunity from '@/components/GetStarted'
 import ExploreMore from './components/ExploreMore'
 import Footer from "@/components/Footer";
+import type { Tool } from '@/app/learning/types'
 
 // NOTE: params is not a Promise in Next.js app router pages.
-export default function LearnMorePage({ params }: { params: { toolName: string } }) {
-  const [isGridView, setIsGridView] = React.useState(true)
+export default function LearnMorePage({ params }: { params: Promise<{ toolName: string }> }) {
   const { showBanner, setShowBanner } = useBanner()
   const router = useRouter()
 
-  const { toolName } = params
+  const { toolName } = use(params);
   const tool = ToolsData.find((t) => t.slug === toolName)
 
   if (!tool) {
@@ -32,6 +33,7 @@ export default function LearnMorePage({ params }: { params: { toolName: string }
 
   const slides: SlideWithoutToolName[] = (allSlides as SlideData[])
     .filter((s: SlideData) => s.toolName === toolName)
+    //eslint-disable-next-line @typescript-eslint/no-unused-vars
     .map(({ toolName: _ignore, ...rest }: SlideData) => rest)  
 
   return (
@@ -104,7 +106,7 @@ export default function LearnMorePage({ params }: { params: { toolName: string }
             <ToolBriefCarousel slides={slides} />
           </div>
         </div>
-        <ExploreMore  tools={ToolsData} />
+        <ExploreMore tools={ToolsData as Tool[]} />
         <JoinCommunity />
         
       </main>

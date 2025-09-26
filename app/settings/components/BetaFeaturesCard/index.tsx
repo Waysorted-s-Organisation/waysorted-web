@@ -77,6 +77,7 @@ export default function BetaFeaturesCard({ user, features }: BetaFeaturesCardPro
 
         {/* Feature List */}
         <ul className="space-y-3">
+          {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
           {features.map((f, i) => (
             <li
               key={f.id}

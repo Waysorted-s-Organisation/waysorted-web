@@ -5,11 +5,9 @@ import { AnimatePresence, motion } from "framer-motion";
 import FeatureCard from "@/app/get-early-access/components/FeatureCard";
 import EarlyAccessForm from "@/app/get-early-access/components/EarlyAccessForm";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 
 export default function EarlyAccessPopup() {
   const [showPopup, setShowPopup] = useState(false);
-  const router = useRouter();
 
   useEffect(() => {
     const seen = localStorage.getItem("earlyAccessSeen");

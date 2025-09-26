@@ -29,8 +29,8 @@ export async function GET() {
     ).toString()}`;
 
     return NextResponse.json({ sessionId, authUrl });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in /api/auth/start:", error);
-    return NextResponse.json({ error: error.message || "start_failed" }, { status: 500 });
+    return NextResponse.json({ error: (error as Error).message || "start_failed" }, { status: 500 });
   }
 }

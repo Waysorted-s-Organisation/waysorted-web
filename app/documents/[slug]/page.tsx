@@ -1,10 +1,11 @@
 import { notFound } from "next/navigation";
 import GettingStarted from "./content/getting-started";
 
-
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
   "getting-started": GettingStarted,
 };
+
 
 export async function generateStaticParams() {
   return Object.keys(CONTENT_MAP).map((slug) => ({ slug }));

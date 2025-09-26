@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import type { User } from "@/app/settings/lib/user";
+import type { IUser } from "@/models/user";
 
 type Props = {
-  user: User;
+  user: IUser;
 };
 
 export default function SubscriptionCard({ user }: Props) {
@@ -14,6 +14,7 @@ export default function SubscriptionCard({ user }: Props) {
   const creditsTotal = earlyAccess ? 200 : 5;
   const creditsUsed = Math.max(0, creditsTotal - (creditsRemaining ?? 0));
   const remaining = Math.max(0, creditsRemaining ?? 0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const exhausted = creditsUsed >= creditsTotal;
 
   const startedDisplay = earlyAccess ? "Sep 6th, 2025" : "N/A"; // example

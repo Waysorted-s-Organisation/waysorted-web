@@ -22,6 +22,7 @@ export default function ToolBriefCarousel({
 
   // Total items = all ToolBrief slides + 1 feedback slide
   const totalItems = slides.length + 1
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const lastIndex = totalItems - 1
 
   // Track scroll to update index

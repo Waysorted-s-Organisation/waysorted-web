@@ -1,18 +1,18 @@
 import dbConnect from "@/lib/db";
-import User from "@/models/user";
-import Session from "@/models/session";
+import Session, { ISession } from "@/models/session";
+import type { IUser, IUserMethods } from "@/models/user";
 import { cookies } from "next/headers";
+import type { HydratedDocument } from "mongoose";
 
-export type User = {
-  id: string;
-  name: string;
-  email: string;
-  initials: string;
-  earlyAccess: boolean;
-  creditsRemaining: number;
+// A session where user is populated
+type PopulatedSession = Omit<ISession, "user"> & {
+  user: HydratedDocument<IUser, IUserMethods>;
 };
 
-export async function getCurrentUser(): Promise<User | null> {
+// The public user shape we return
+export type PublicUser = ReturnType<IUserMethods["toPublic"]>;
+
+export async function getCurrentUser(): Promise<PublicUser | null> {
   await dbConnect();
 
   // Get session cookie
@@ -21,25 +21,12 @@ export async function getCurrentUser(): Promise<User | null> {
   if (!sessionId) return null;
 
   // Find session and populate user
-  const session = await Session.findOne({ sessionId }).populate("user").lean() as any;
-  if (!session || !session.user) return null;
+  const session = await Session.findOne({ sessionId })
+    .populate("user")
+    .exec() as (PopulatedSession | null);
 
-  const u = session.user;
+  if (!session?.user) return null;
 
-  // Calculate initials
-  const initials =
-    (u.name
-      ?.split(/\s+/)
-      .map((s: string) => s[0].toUpperCase())
-      .slice(0, 2)
-      .join("") || u.email.slice(0, 2).toUpperCase()) ?? "NA";
-
-  return {
-    id: u._id.toString(),
-    name: u.name || "",
-    email: u.email,
-    initials,
-    earlyAccess: u.earlyAccess,
-    creditsRemaining: u.creditsRemaining ?? (u.earlyAccess ? 200 : 5),
-  };
+  // Use the model's built-in method to build a safe DTO
+  return session.user.toPublic();
 }

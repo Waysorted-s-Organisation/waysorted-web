@@ -36,14 +36,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
     }
   }
 
-  const getInitials = (name: string) =>
-    name
-      .split(' ')
-      .filter(Boolean)
-      .map((n) => n[0].toUpperCase())
-      .slice(0, 2)
-      .join('');
-
   return (
     <header className="w-full bg-white border-b border-gray-200 fixed top-0 z-40">
       {showBanner && (

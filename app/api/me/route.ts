@@ -16,13 +16,13 @@ export async function GET() {
     await dbConnect();
 
     // Fetch session and populate user
-    const session = await Session.findOne({ sessionId }).populate("user");
+    const session = await Session.findOne({ sessionId }).populate<{ user: IUser }>("user");
 
     if (!session || !session.user) {
       return NextResponse.json({ user: null }, { status: 200 });
     }
 
-    const user = session.user as IUser;
+    const user = session.user;
 
     // Compute initials dynamically
     const initials =

@@ -95,8 +95,12 @@ export async function GET(request: Request) {
     });
 
     return response;
-  } catch (err: any) {
-    console.error("OAuth callback error:", err?.response?.data || err);
+    } catch (err: unknown) {
+    if (axios.isAxiosError(err) && err.response) {
+      console.error("OAuth callback error:", err.response.data);
+    } else {
+      console.error("OAuth callback error:", err);
+    }
     return NextResponse.redirect(
       new URL(`/signup?error=${encodeURIComponent("oauth_failed")}`, request.url)
     );

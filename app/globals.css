@@ -291,10 +291,6 @@ html, body {
   }
 }
 
-<<<<<<< HEAD
-
-/* apply when opening */
-=======
 .click-circle {
   position: fixed;
   width: 20px;
@@ -395,7 +391,6 @@ html, body {
 
 
 
->>>>>>> a1aab96c640483f3dfd6d2b4f46ac9daefeed454
 .dashed-line {
   height: 1px;                    /* line thickness */
   background:

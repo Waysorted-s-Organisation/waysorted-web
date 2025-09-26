@@ -20,7 +20,7 @@ export default function ToolCard({ tool }: { tool: Tool }) {
             className="object-contain"
           />
         </div>
-        {tool.badge && <Badge type={tool.badge.type} label={tool.badge.label} showDot={false} />}
+        {badge && <Badge type={badge.type} label={badge.label} showDot={false} />}
       </div>
       <h2 className="font-medium text-xl text-secondary-db-100">{tool.name} {tool.nameLogo && <Image src={tool.nameLogo} alt={tool.name} width={20} height={20} className="inline-block ml-1" />}</h2>
       <a className="text-xs text-secondary-db-70 cursor-pointer">

@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@/hooks/useUser";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function Signup() {
   const [loading, setLoading] = useState(false);
@@ -35,7 +36,7 @@ export default function Signup() {
     <div className="min-h-screen blue-bg-dots flex justify-center items-center p-4">
       <div className="bg-white rounded-xl shadow-md max-w-md w-full flex flex-col justify-center items-center">
         <div className="flex flex-col justify-center items-center gap-4 px-8 pt-8 pb-4 w-full">
-          <img src="/icons/success.svg" alt="" />
+          <Image src="/icons/success.svg" alt="Success" width={40} height={40} />
           <h1 className="text-xl font-semibold text-black">Create an account</h1>
           <h3 className="text-sm text-secondary-db-70 text-center">
             Sign up quickly using your Google account.
@@ -46,7 +47,7 @@ export default function Signup() {
             disabled={loading}
             className="bg-secondary-db-5 hover:bg-primary-way-100 text-secondary-db-100 hover:text-white w-full py-2 flex items-center justify-center gap-2 rounded-lg cursor-pointer transition-all duration-200 disabled:opacity-60"
           >
-            <img src="/icons/google.svg" alt="Google" className="w-5 h-5" />
+            <Image src="/icons/google.svg" alt="Google" width={20} height={20} />
             {loading ? "Redirecting..." : "Continue with Google"}
           </button>
 

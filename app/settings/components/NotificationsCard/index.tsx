@@ -72,6 +72,7 @@ export default function NotificationsCard({ hasAny, categories = [] }: Notificat
             </div>
 
             <div className="space-y-3">
+              {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
               {categories.map((c, i) => (
                 <button
                   key={c.id}

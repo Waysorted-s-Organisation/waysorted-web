@@ -13,6 +13,7 @@ export default function CreditsUsageCard({ user }: Props) {
   // Compute total and used credits dynamically
   const total = earlyAccess ? 200 : 5;
   const remaining = Math.max(0, creditsRemaining);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const used = total - remaining;
   const exhausted = remaining <= 0;
 
