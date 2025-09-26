@@ -30,15 +30,22 @@ export default function VisionSection() {
 
     const masterTimeline = gsap.timeline();
     gsap.set(wordsRefs.current, {
-      opacity: 0.2,
+      opacity: 0,
     });
 
     masterTimeline.to(wordsRefs.current, {
-      opacity: 1,
-      duration: 2,
+      opacity: 0.2,
+      duration: 1,
       stagger: 0.15,
       ease: "power3.out",
-    });
+    })
+    .to(wordsRefs.current, {
+      opacity: 1,
+      duration: 1,
+      stagger: 0.15,
+      ease: "power3.out",
+    }, 0.5);
+
 
     // ScrollTrigger animation
     ScrollTrigger.create({

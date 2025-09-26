@@ -43,13 +43,23 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
       </div>
 
       {/* CTA section */}
-      <div className="bg-primary-way-100 p-4 m-2 rounded-md ">
-        <button className="text-white font-medium hover:underline"
-          title='Request a Feature'
-          onClick={()=> router.push('/request-feature')}>
+      <div
+        className="bg-primary-way-100 p-4 m-2 rounded-md flex items-center justify-between cursor-pointer"
+        onClick={() => router.push('/request')}
+        title="Request a Feature"
+      >
+        <span className="text-white font-medium hover:underline">
           Request a Feature
-        </button>
+        </span>
+        <Image
+          src="/icons/arrow-right-white.svg"
+          alt="Arrow Right"
+          width={16}
+          height={16}
+          className="inline-block"
+        />
       </div>
+
     </div>
   )
 }

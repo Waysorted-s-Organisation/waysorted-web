@@ -18,7 +18,7 @@ export default function Comments() {
 
     // Reset initial styles for words
     gsap.set(wordsRefs.current, {
-      opacity: 0.2,
+      opacity: 0,
     });
 
     // Create scroll-synced animation
@@ -35,11 +35,17 @@ export default function Comments() {
 
     // Animate words in sequence
     masterTimeline.to(wordsRefs.current, {
+      opacity: 0.2,
+      duration: 1,
+      stagger: 0.15,
+      ease: "power3.out",
+    })
+    .to(wordsRefs.current, {
       opacity: 1,
       duration: 1,
-      stagger: 0.1,
+      stagger: 0.15,
       ease: "power3.out",
-    });
+    }, 0.5);
 
     return () => {
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());

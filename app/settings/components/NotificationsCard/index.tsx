@@ -86,12 +86,13 @@ export default function NotificationsCard({ hasAny, categories = [] }: Notificat
                       {c.body}
                     </p>
                   </div>
-                  <span
-                    aria-hidden="true"
-                    className="mt-1 text-secondary-db-50 text-lg leading-none"
-                  >
-                    →
-                  </span>
+                  <Image
+                    src="/icons/arrow-right-gray.svg"
+                    alt="Chevron Right"
+                    width={16}
+                    height={16}
+                    className="object-contain ml-1"
+                  />
                 </button>
               ))}
             </div>
