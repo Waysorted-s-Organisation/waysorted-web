@@ -50,7 +50,7 @@ export default function FeatureFlex() {
             </div>
 
             {/* MIDDLE COLUMN */}
-            <div className="w-[346px] h-[467px] p-6 rounded-2xl bg-white shadow border border-gray-100 flex flex-col items-center text-center custom-cursor">
+            <div className="w-[346px] h-[467px] p-6 rounded-2xl bg-white shadow border border-gray-100 flex flex-col items-center text-center wayspace-cursor">
               <h3 className="text-xl font-semibold text-gray-900">
                 Get Wayspace
               </h3>
@@ -78,6 +78,13 @@ export default function FeatureFlex() {
               </p>
               <Image
                 src="/icons/green-tick.svg"
+                alt="Secure Data"
+                className="left-0"
+                width={50}
+                height={50}
+              />
+              <Image
+                src="/icons/tertiary-green-500-tick.svg"
                 alt="Secure Data"
                 className="left-0"
                 width={50}

@@ -1,13 +1,13 @@
 interface BadgeProps {
   className?: string
   children?: React.ReactNode
-  variant?: 'orange' | 'blue' ;
+  variant?: 'tertiary-orange-500' | 'blue' ;
 }
 
 const Badge = ({ 
   className = "", 
   children = "New", 
-  variant = 'orange' 
+  variant = 'tertiary-orange-500' 
 }: BadgeProps) => {
   const variantClass = `badge-${variant}`
   

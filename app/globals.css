@@ -2,26 +2,49 @@
 
 :root {
   --background: #ffffff;
-
-  --primary-dark: #0d1218;
-  --primary-dark-70: #565a5e;
-  --primary-dark-20: #cfd0d1;
-  --primary-dark-5: #f3f3f3;
+  --primary-way-100: #265bd1;
+  --primary-way-90: #3b6dd7;
+  --primary-way-80: #507edd;
+  --primary-way-70: #658fe3;
+  --primary-way-60: #7a9fe8;
+  --primary-way-50: #90afed;
+  --primary-way-40: #a5bff1;
+  --primary-way-30: #bbcff5;
+  --primary-way-20: #d1dff9;
+  --primary-way-10: #e8effc;
+  --secondary-db-100: #0d1218;
+  --secondary-db-90: #282c32;
+  --secondary-db-80: #43474b;
+  --secondary-db-70: #565a5e;
+  --secondary-db-60: #797b7f;
+  --secondary-db-50: #939698;
+  --secondary-db-40: #aeb0b2;
+  --secondary-db-30: #c9cacc;
+  --secondary-db-20: #cfd0d1;
+  --secondary-db-5: #f3f3f3;
   --primary-light: #f7faff;
-  --secondary-01: #ecf2ff;
-  --secondary-02: #91adea;
-  --header-bg: #265bd1;
   --new-bg: #e67224;
   --save-bg: #5641f3;
   --menu-bg: #f7faff;
-  --sky: #24b7fd;
-  --orange: #ff7920;
-  --green: #01a04e;
-  --purple: #7531f9;
+  --tertiary-cyan-500: #24b7fd;
+  --tertiary-orange-500: #ff7920;
+  --tertiary-orange-100: #fff1e8;
+  --tertiary-orange-dark: #3d2b21;
+  --tertiary-green-500: #01a04e;
+  --tertiary-green-100: #e5f5ed;
+  --tertiary-green-dark: #0a2e23;
+  --tertiary-voilet-500: #7531f9;
+  --tertiary-voilet-100: #f1eafe;
+  --tertiary-voilet-dark: #211842;
+  --tertiary-cyan-100: #e9f7fe;
+  --tertiary-cyan-dark: #112c3c;
   --shadow-color: black;
-  --section-text: #006aff;
-  --team-card: #182dee;
+  --tertiary-blue-500: #006aff;
+  --tertiary-blue-100: #ecf6ff;
+  --tertiary-vivid-blue-500: #182dee;
+  --tertiary-vivid-blue-100: #e8eafd;
   --section-bg: #ecf6ff;
+  --gold: #ffcd00;
 }
 
 body {
@@ -30,27 +53,51 @@ body {
 
 @theme {
   --color-shadow-color: var(--shadow-color);
-  --color-primary-dark: var(--primary-dark);
-  --color-primary-dark-70: var(--primary-dark-70);
-  --color-primary-dark-20: var(--primary-dark-20);
-  --color-primary-dark-5: var(--primary-dark-5);
-  --color-secondary-01: var(--secondary-01);
-  --color-secondary-02: var(--secondary-02);
-  --color-header-bg: var(--header-bg);
+  --color-secondary-db-100: var(--secondary-db-100);
+  --color-secondary-db-90: var(--secondary-db-90);
+  --color-secondary-db-80: var(--secondary-db-80);
+  --color-secondary-db-70: var(--secondary-db-70);
+  --color-secondary-db-60: var(--secondary-db-60);
+  --color-secondary-db-50: var(--secondary-db-50);
+  --color-secondary-db-40: var(--secondary-db-40);
+  --color-secondary-db-30: var(--secondary-db-30);
+  --color-secondary-db-20: var(--secondary-db-20);
+  --color-secondary-db-5: var(--secondary-db-5);
+  --color-primary-way-100: var(--primary-way-100);
+  --color-primary-way-90: var(--primary-way-90);
+  --color-primary-way-80: var(--primary-way-80);
+  --color-primary-way-70: var(--primary-way-70);
+  --color-primary-way-60: var(--primary-way-60);
+  --color-primary-way-50: var(--primary-way-50);
+  --color-primary-way-40: var(--primary-way-40);
+  --color-primary-way-30: var(--primary-way-30);
+  --color-primary-way-20: var(--primary-way-20);
+  --color-primary-way-10: var(--primary-way-10);
+  --color-tertiary-blue-500: var(--tertiary-blue-500);
+  --color-tertiary-blue-100: var(--tertiary-blue-100);
+  --color-tertiary-cyan-500: var(--tertiary-cyan-500);
+  --color-tertiary-cyan-100: var(--tertiary-cyan-100);
+  --color-tertiary-cyan-dark: var(--tertiary-cyan-dark);
+  --color-tertiary-vivid-blue-500: var(--tertiary-vivid-blue-500);
+  --color-tertiary-vivid-blue-100: var(--tertiary-vivid-blue-100);
   --color-new-bg: var(--new-bg);
   --color-save-bg: var(--save-bg);
   --color-menu-bg: var(--menu-bg);
-  --color-sky: var(--sky);
-  --color-orange: var(--orange);
-  --color-green: var(--green);
-  --color-purple: var(--purple);
-  --color-section-text: var(--section-text);
+  --color-tertiary-orange-500: var(--tertiary-orange-500);
+  --color-tertiary-orange-100: var(--tertiary-orange-100);
+  --color-tertiary-orange-dark: var(--tertiary-orange-dark);
+  --color-tertiary-green-500: var(--tertiary-green-500);
+  --color-tertiary-green-100: var(--tertiary-green-100);
+  --color-tertiary-green-dark: var(--tertiary-green-dark);
+  --color-tertiary-voilet-500: var(--tertiary-voilet-500);
+  --color-tertiary-voilet-100: var(--tertiary-voilet-100);
+  --color-tertiary-voilet-dark: var(--tertiary-voilet-dark);
+  --color-gold: var(--gold);
   --color-section-bg: var(--section-bg);
-  --color-team-card: var(--team-card);
   --font-sans: "Hanken Grotesk", sans-serif;
 }
 
-.badge-orange {
+.badge-tertiary-orange-500 {
   background-color: #e67224;
   box-shadow: inset 0 -4px 4px rgba(255, 255, 255, 0.23),
     0 4px 8.6px rgba(255, 255, 255, 0.07);
@@ -102,7 +149,6 @@ body {
 }
 
 *::-webkit-scrollbar-track {
-  /* background: #f7faff; */
   background: #111111;
   /* border-radius: 999px; */
   height: 90%;
@@ -110,11 +156,7 @@ body {
 
 *::-webkit-scrollbar-thumb {
   background: #e67427;
-  /* border-radius: 999px; */
-
-  /* “fake” left-right spacing → centers blue inside green */
-  /* border-left: 2px solid rgb(102, 168, 102);
-  border-right: 2px solid rgb(102, 168, 102); */
+  border-radius: 999px;
 }
 
 /* For Chrome, Edge, and Safari */
@@ -148,14 +190,62 @@ body {
 
 .bg-dots {
   background-color: #0d1218;
-  background-image: radial-gradient(#ffffff80 0.5px, transparent 1px);
-  background-size: 18px 18px;
+  background-image: radial-gradient(#ffffff80 0.25px, transparent 1px);
+  background-size: 25px 25px;
 }
 
-.orange-bg-dots {
+.gray-bg-dots {
+  background-color: #0d1218;
+  background-image: radial-gradient(#797b7f80 0.25px, transparent 1px);
+  background-size: 25px 25px;
+}
+
+.tertiary-orange-500-bg-dots {
   background-color: rgba(249, 119, 49, 0.1);
-  background-image: radial-gradient(#ffffff80 0.5px, transparent 1px);
-  background-size: 18px 18px;
+  background-image: radial-gradient(#43474b 0.25px, transparent 1px);
+  background-size: 25px 25px;
+}
+
+.blue-bg-dots {
+  background-color: #265bd1;
+  background-image: radial-gradient(#ffffff80 0.25px, transparent 1px);
+  background-size: 25px 25px;
+}
+
+.purple-bg-dots {
+  background-color: #f1eafe50;
+  background-image: radial-gradient(#797b7f 0.25px, transparent 1px);
+  background-size: 25px 25px;
+}
+
+.shake-hover {
+  display: inline-block;
+  transition: transform 0.2s ease-in-out;
+}
+
+.shake-hover:hover {
+  animation: coffee-shake 0.5s ease-in-out;
+}
+
+@keyframes coffee-shake {
+  0% {
+    transform: rotate(0deg) skew(0deg) translate(0, 0);
+  }
+  20% {
+    transform: rotate(10deg) skew(3deg) translate(4px, 0);
+  }
+  40% {
+    transform: rotate(16deg) skew(4deg) translate(4px, -2px);
+  }
+  60% {
+    transform: rotate(14deg) skew(2deg) translate(2px, 0);
+  }
+  80% {
+    transform: rotate(13deg) skew(2deg) translate(2px, -1px);
+  }
+  100% {
+    transform: rotate(0deg) skew(0deg) translate(0, 0);
+  }
 }
 
 .click-circle {
@@ -242,9 +332,18 @@ body {
 }
 
 /* custom -cursor  */
-.custom-cursor {
-  cursor: url("/icons/custom-cursor.svg") 16 16, auto;
+.wayspace-cursor {
+  cursor: url("/icons/wayspace-cursor.svg") 8 8, auto;
 }
-.custom-cursor:hover {
-  cursor: url("/icons/custom-cursor.svg") 16 16, auto;
+.wayspace-cursor:hover {
+  cursor: url("/icons/wayspace-cursor.svg") 8 8, auto;
 }
+
+.orange-cursor {
+  cursor: url("/icons/orange-cursor.svg") 8 8, auto;
+}
+.orange-cursor:hover {
+  cursor: url("/icons/orange-cursor.svg") 8 8, auto;
+}
+
+/* violet circles for 2nd animation SemiCircleSvg*/

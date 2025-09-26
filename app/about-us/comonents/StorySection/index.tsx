@@ -2,29 +2,29 @@
 import Image from "next/image";
 export default function StorySection() {
   return (
-    <section className="bg-white text-primary-dark px-100 mx-auto py-16">
+    <section className="bg-white text-secondary-db-100 px-100 mx-auto py-40">
       {/* Label */}
-      
-      <span className="inline-flex items-center text-sm font-medium bg-[#F3F3F3] text-[#565A5E] rounded-md mb-4">
-  <Image
-    src="/icons/avail.svg"
-    alt="Our Story"
-    width={24}
-    height={24}
-    className="block"
-  />
-  <span className="px-3 py-1">Our Story</span>
-</span>
+
+      <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md mb-6">
+        <Image
+          src="/icons/avail.svg"
+          alt="Our Story"
+          width={30}
+          height={30}
+          className="block p-1"
+        />
+        <span className="pl-1 pr-2 py-1 text-secondary-db-100">Our Story</span>
+      </span>
 
 
 
       {/* Heading */}
-      <h2 className="text-3xl md:text-4xl font-bold mb-6">
+      <h2 className="text-3xl md:text-4xl font-bold mb-3">
         This is what we believe.
       </h2>
 
       {/* Paragraphs */}
-      <div className="space-y-6 text-primary-dark-70 text-lg leading-relaxed max-w-3xl">
+      <div className="space-y-6 text-secondary-db-80 text-xl font-regular leading-relaxed max-w-3xl">
         <p>
           Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce rutrum cursus lorem,
           ac euismod dolor volutpat sit amet. Vivamus sed semper felis. Interdum et malesuada

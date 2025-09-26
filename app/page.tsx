@@ -11,6 +11,12 @@ import TopSection from "@/components/TopSection/index";
 import { useBanner } from "@/context/BannerContext";
 import SecureCards from "./../components/SecureCards/index";
 
+import GetStarted from "@/components/GetStarted";
+import Testimonials from "@/components/Testimonials";
+import WithTop from "@/components/WithTop";
+import Coffee from "@/components/Coffee";
+import Comments from "@/components/Comments";
+
 export default function Home() {
   const { showBanner, setShowBanner } = useBanner();
   const [showSecureCards, setShowSecureCards] = useState(false);
@@ -37,7 +43,7 @@ export default function Home() {
 
   return (
     <main
-      className={`min-h-screen bg-gray-50 transition-all duration-300 ${
+      className={`min-h-screen bg-white transition-all duration-300 ${
         showBanner ? "pt-24" : "pt-16"
       }`}
     >
@@ -62,6 +68,11 @@ export default function Home() {
       >
         <SecureCards />
       </section>
+      <Coffee />
+      <Comments />
+      <WithTop />
+      <Testimonials />
+      <GetStarted />
     </main>
   );
 }

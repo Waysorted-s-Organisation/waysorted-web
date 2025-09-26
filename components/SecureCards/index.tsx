@@ -31,29 +31,21 @@ export default function SecureCards() {
         your work. We have no control, <br /> nor do we want any.
       </p>
 
-      <div className="relative grid grid-cols-18 grid-rows-10 gap-2 w-full h-full">
-        <div className="absolute flex row-start-1 row-end-5 col-start-4 col-end-8 items-end justify-start left-30">
-          <Card1 />
+      <div className="flex  flex-wrap  h-[455.11px] w-[1034px] justify-end gap-3">
+        <div className="flex flex-col h-[455.11px] w-[706.4px] flex-wrap gap-3  justify-end">
+          <div className="flex gap-3  flex-wrap items-start justify-end  h-[199.17px] w-[706.4px]">
+            <Card1 />
+            <Card2 />
+          </div>
+          <div className="flex gap-3 flex-wrap items-start justify-end h-[241.05px] w-[706.4px]">
+            <Card3 />
+
+            <Card4 />
+          </div>
         </div>
 
-        {/* Card 2 */}
-        <div className="flex row-start-1 row-end-5 col-start-8 col-end-13 items-end justify-start absolute left-0 ">
-          <Card2 />
-        </div>
-
-        {/* Card 5 - spans both rows */}
-        <div className="absolute row-start-1 row-end-10 col-start-13 col-end-19  flex justify-start items-center -left-28 top-57">
+        <div className=" w-[312.71px] h-[455.11px]">
           <Card5 />
-        </div>
-
-        {/* Card 3 */}
-        <div className=" absolute flex row-start-5 row-end-10 col-start-4 col-end-9  items-center justify-start top-22 left-30">
-          <Card3 />
-        </div>
-
-        {/* Card 4 */}
-        <div className="absolute flex row-start-5 row-end-10 col-start-9 col-end-14  justify-start items-end top-52 -left-12">
-          <Card4 />
         </div>
       </div>
     </section>

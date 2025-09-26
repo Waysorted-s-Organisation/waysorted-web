@@ -21,26 +21,25 @@ const AnimatedCard: React.FC<AnimatedCardProps> = ({
       <div
         ref={cardRef}
         className={`
-          relative overflow-hidden rounded-2xl bg-[#F97731]
-          p-8 text-white w-[491px]
+          relative overflow-hidden rounded-2xl bg-tertiary-orange-500
+          p-8 text-white w-xl
           ${className}
         `}>
-        {/* Regular dots pattern */}
         
         <div className="relative z-10 flex items-start gap-6">
           {/* Number badge */}
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl border-2 border-white/30 bg-white/10 backdrop-blur-sm">
-            <span className="text-lg font-bold">
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl hover:border-2 hover:border-white/30 bg-white/10 backdrop-blur-sm">
+            <span className="text-2xl font-semibold">
               {number}
             </span>
           </div>
           
           {/* Content */}
           <div className="flex-1 space-y-3">
-            <h3 className="text-xl font-bold leading-tight">
+            <h3 className="text-2xl font-semibold leading-tight">
               {title}
             </h3>
-            <p className="text-white/90 leading-relaxed">
+            <p className="text-white text-xl font-medium leading-relaxed">
               {description}
             </p>
           </div>
@@ -79,8 +78,8 @@ export default function ValuesSection() {
   ];
 
   return (
-    <section className="orange-bg-dots px-6 md:px-20 lg:px-32 py-16">
-      <h2 className="text-8xl font-bold text-center mb-12 text-black/19">Our Values</h2>
+    <section className="tertiary-orange-500-bg-dots px-6 md:px-20 lg:px-32 py-12">
+      <h2 className="text-8xl font-semibold text-center mb-12 text-tertiary-orange-500">Our Values</h2>
 
       <div className="max-w-xl mx-auto">
         {values.map((value, index) => (

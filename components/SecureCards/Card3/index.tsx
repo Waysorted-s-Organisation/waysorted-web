@@ -44,7 +44,7 @@ const Card3 = () => {
 
   return (
     <div
-      className=" bg-gradient-to-b from-[#2A2E34] to-[#525252]   absolute rounded-xl overflow-hidden "
+      className=" bg-gradient-to-b from-[#2A2E34] to-[#525252]  relative rounded-xl overflow-hidden "
       style={{ width: "345.29px", height: "241.05px" }}
     >
       <Image
