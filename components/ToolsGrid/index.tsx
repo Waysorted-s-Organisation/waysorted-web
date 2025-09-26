@@ -4,9 +4,10 @@ import { useLayoutEffect, useRef } from "react";
 import Image from "next/image";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import SplitText from "gsap/SplitText";
 
 if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
+  gsap.registerPlugin(ScrollTrigger, SplitText);
 }
 
 const icons = [
@@ -64,7 +65,6 @@ export default function ToolsGrid() {
     gsap.set(wordsEls, {
       opacity: 0,
       y: 0,
-      filter: "blur(1px)",
     });
 
     gsap.set(transformEl, {
@@ -137,18 +137,23 @@ export default function ToolsGrid() {
     );
 
     // Phase 3: reveal text word-by-word (40% of timeline)
-    masterTimeline.to(
-      wordsEls,
-      {
-        opacity: 1,
-        y: 0,
-        filter: "blur(0px)",
-        duration: 3,
-        stagger: 0.15,
-        ease: "power1.out",
-      },
-      "+=1" // Add delay before text appears
-    );
+    const wordsTimeline = gsap.timeline({ delay: 0.5 }); // 0.5s initial pause
+
+    wordsTimeline.to(wordsEls, {
+      opacity: 0.2,
+      duration: 2,
+      stagger: 0.15,
+      ease: "power3.out",
+    }, 0); // start at time 0 of this nested timeline
+
+    wordsTimeline.to(wordsEls, {
+      opacity: 1,
+      duration: 2,
+      stagger: 0.15,
+      ease: "power3.out",
+    }, 1); // start at the same time as previous tween
+
+    masterTimeline.add(wordsTimeline); 
 
     // ScrollTrigger with much slower scrub
     const scrollTrigger = ScrollTrigger.create({

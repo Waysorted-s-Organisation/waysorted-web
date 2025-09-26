@@ -2,21 +2,22 @@
 
 :root {
   --background: #ffffff;
-  --primary-way-100: #265bd1;
-  --primary-way-90: #3b6dd7;
-  --primary-way-80: #507edd;
-  --primary-way-70: #658fe3;
-  --primary-way-60: #7a9fe8;
-  --primary-way-50: #90afed;
-  --primary-way-40: #a5bff1;
-  --primary-way-30: #bbcff5;
-  --primary-way-20: #d1dff9;
-  --primary-way-10: #e8effc;
-  --secondary-db-100: #0d1218;
-  --secondary-db-90: #282c32;
-  --secondary-db-80: #43474b;
-  --secondary-db-70: #565a5e;
-  --secondary-db-60: #797b7f;
+  --primary-way-100: #265BD1;
+  --primary-way-90: #3B6DD7;
+  --primary-way-80: #507EDD;
+  --primary-way-70: #658FE3;
+  --primary-way-60: #7A9FE8;
+  --primary-way-50: #90AFED;
+  --primary-way-40: #A5BFF1;
+  --primary-way-30: #BBCFF5;
+  --primary-way-20: #D1DFF9;
+  --primary-way-10: #E8EFFC;
+  --primary-way-5: #F7F9FE;
+  --secondary-db-100: #0D1218;
+  --secondary-db-90: #282C32;
+  --secondary-db-80: #43474B;
+  --secondary-db-70: #565A5E;
+  --secondary-db-60: #797B7F;
   --secondary-db-50: #939698;
   --secondary-db-40: #aeb0b2;
   --secondary-db-30: #c9cacc;
@@ -39,12 +40,22 @@
   --tertiary-cyan-100: #e9f7fe;
   --tertiary-cyan-dark: #112c3c;
   --shadow-color: black;
-  --tertiary-blue-500: #006aff;
-  --tertiary-blue-100: #ecf6ff;
-  --tertiary-vivid-blue-500: #182dee;
-  --tertiary-vivid-blue-100: #e8eafd;
-  --section-bg: #ecf6ff;
-  --gold: #ffcd00;
+  --error-500: #B20000;
+  --error-400: #CC0E0E;
+  --error-300: #E01010;
+  --error-200: #E95959;
+  --error-100: #FEEAEB;
+  --success-500: #01913A;
+  --success-400: #0BAB4B;
+  --success-300: #0BC556;
+  --success-200: #56D689;
+  --success-100: #EBFFF6;
+  --tertiary-blue-500: #006AFF;
+  --tertiary-blue-100: #ECF6FF;
+  --tertiary-vivid-blue-500: #182DEE;
+  --tertiary-vivid-blue-100: #E8EAFD;
+  --section-bg : #ECF6FF;
+  --gold: #FFCD00;
 }
 
 body {
@@ -73,6 +84,17 @@ body {
   --color-primary-way-30: var(--primary-way-30);
   --color-primary-way-20: var(--primary-way-20);
   --color-primary-way-10: var(--primary-way-10);
+  --color-primary-way-5: var(--primary-way-5);
+  --color-success-500: var(--success-500);
+  --color-success-400: var(--success-400);
+  --color-success-300: var(--success-300);
+  --color-success-200: var(--success-200);
+  --color-success-100: var(--success-100);
+  --color-error-500: var(--error-500);
+  --color-error-400: var(--error-400);
+  --color-error-300: var(--error-300);
+  --color-error-200: var(--error-200);
+  --color-error-100: var(--error-100);
   --color-tertiary-blue-500: var(--tertiary-blue-500);
   --color-tertiary-blue-100: var(--tertiary-blue-100);
   --color-tertiary-cyan-500: var(--tertiary-cyan-500);
@@ -170,9 +192,18 @@ body {
   -ms-overflow-style: none; /* IE and Edge */
 }
 
-html,
-body {
-  overflow-x: hidden;
+
+.no-scrollbar-1 {
+  -ms-overflow-style: none;        /* IE 10+ and old Edge */
+  scrollbar-width: none;           /* Firefox */
+}
+.no-scrollbar-1::-webkit-scrollbar { /* Chrome, Safari, new Edge */
+  width: 0 !important;
+  height: 0 !important;
+}
+
+html, body {
+  overflow-x: visible;
 }
 
 @keyframes line-shadow {
@@ -194,10 +225,22 @@ body {
   background-size: 25px 25px;
 }
 
+.bg-tool-brief {
+  background-color: #E8EFFC; 
+  background-image: radial-gradient(#000000 0.25px, transparent 1px);
+  background-size: 25px 25px; 
+}
+
 .gray-bg-dots {
   background-color: #0d1218;
   background-image: radial-gradient(#797b7f80 0.25px, transparent 1px);
   background-size: 25px 25px;
+}
+
+.error-bg-dots {
+  background-color: white; 
+  background-image: radial-gradient(#507EDD 0.25px, transparent 1px);
+  background-size: 25px 25px; 
 }
 
 .tertiary-orange-500-bg-dots {
@@ -346,4 +389,25 @@ body {
   cursor: url("/icons/orange-cursor.svg") 8 8, auto;
 }
 
-/* violet circles for 2nd animation SemiCircleSvg*/
+
+
+.dashed-line {
+  height: 1px;                    /* line thickness */
+  background:
+    repeating-linear-gradient(
+      to right,
+      #AEB0B2 0 8px,              /* dash length */
+      transparent 8px 16px        /* gap length */
+    );
+}
+
+[data-doc-content] h1,
+[data-doc-content] h2,
+[data-doc-content] h3 {
+  scroll-margin-top: 140px;
+}
+
+/* Optional: help visualize sticky during debugging */
+.debug-outline [aria-label="Table of contents"] {
+  outline: 1px dashed #6aa0ff;
+}

@@ -1,38 +1,7 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
-
-interface FAQItem {
-  question: string;
-  answer: string;
-}
-
-const faqData: FAQItem[] = [
-  {
-    question: "Quisque molestie ex id velit vestibulum mattis. Pellentesque id metus dapib?",
-    answer: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque felis dui, accumsan eu facilisis vel, accumsan ac lorem. Proin rutrum magna id purus tincidunt, et sagittis sem interdum. Proin ac sem sapien. Orci varius natoque penatibus et magnis.",
-  },
-  {
-    question: "Quisque molestie ex id velit vestibulum mattis. Pellentesque id metus dapib?",
-    answer: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque felis dui, accumsan eu facilisis vel, accumsan ac lorem. Proin rutrum magna id purus tincidunt, et sagittis sem interdum. Proin ac sem sapien. Orci varius natoque penatibus et magnis.",
-  },
-  {
-    question: "Quisque molestie ex id velit vestibulum mattis. Pellentesque id metus dapib?",
-    answer: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque felis dui, accumsan eu facilisis vel, accumsan ac lorem. Proin rutrum magna id purus tincidunt, et sagittis sem interdum. Proin ac sem sapien. Orci varius natoque penatibus et magnis.",
-  },
-  {
-    question: "Quisque molestie ex id velit vestibulum mattis. Pellentesque id metus dapib?",
-    answer: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque felis dui, accumsan eu facilisis vel, accumsan ac lorem. Proin rutrum magna id purus tincidunt, et sagittis sem interdum. Proin ac sem sapien. Orci varius natoque penatibus et magnis.",
-  },
-  {
-    question: "Quisque molestie ex id velit vestibulum mattis. Pellentesque id metus dapib?",
-    answer: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque felis dui, accumsan eu facilisis vel, accumsan ac lorem. Proin rutrum magna id purus tincidunt, et sagittis sem interdum. Proin ac sem sapien. Orci varius natoque penatibus et magnis.",
-  },
-  {
-    question: "Quisque molestie ex id velit vestibulum mattis. Pellentesque id metus dapib?",
-    answer: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque felis dui, accumsan eu facilisis vel, accumsan ac lorem. Proin rutrum magna id purus tincidunt, et sagittis sem interdum. Proin ac sem sapien. Orci varius natoque penatibus et magnis.",
-  },
-];
+import { faqData } from "@/app/support/data";
 
 export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
@@ -42,7 +11,7 @@ export default function FAQ() {
   };
 
   return (
-    <section className="max-w-4xl mx-auto px-4 py-16">
+    <section className="max-w-4xl mx-auto px-5 py-16">
       <div className="space-y-4">
         {faqData.map((faq, index) => (
           <div
@@ -51,7 +20,7 @@ export default function FAQ() {
           >
             <button
               onClick={() => toggleFAQ(index)}
-              className={`relative flex items-center justify-center w-full py-4 text-center focus:outline-none cursor-pointer space-x-6 ${
+              className={`relative flex items-center justify-between w-full py-4 pl-16 focus:outline-none cursor-pointer space-x-6 ${
                 openIndex !== index ? "hover:bg-tertiary-voilet-100 hover:outline-none hover:rounded-xl" : ""
               }`}
             >

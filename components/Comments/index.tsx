@@ -35,11 +35,17 @@ export default function Comments() {
 
     // Animate words in sequence
     masterTimeline.to(wordsRefs.current, {
+      opacity: 0.2,
+      duration: 1,
+      stagger: 0.15,
+      ease: "power3.out",
+    })
+    .to(wordsRefs.current, {
       opacity: 1,
       duration: 1,
-      stagger: 0.1,
+      stagger: 0.15,
       ease: "power3.out",
-    });
+    }, 0.5);
 
     return () => {
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
@@ -54,7 +60,7 @@ export default function Comments() {
         className="w-full bg-white flex flex-col items-center justify-center text-center py-40"
       >
         <div className="blue-bg-dots rounded-3xl max-w-6xl mx-auto text-white">
-          <p className="text-white font-normal text-base leading-relaxed py-35 px-30">
+          <p className="text-white font-normal text-2xl leading-relaxed py-35 px-35">
             {VISION_STATEMENT.split(" ").map((word, index) => (
               <span
                 key={`word-${index}`}

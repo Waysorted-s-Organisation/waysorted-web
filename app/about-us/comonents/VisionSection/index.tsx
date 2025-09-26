@@ -11,11 +11,9 @@ export default function VisionSection() {
   const wordsRefs = useRef<HTMLSpanElement[]>([]);
   const sectionRef = useRef<HTMLElement | null>(null);
 
-  // Vision statement headline
   const VISION_STATEMENT =
     "Our Vision is to create a world where designers can focus entirely on their ideas—without losing time, energy, or creativity to tool chaos";
 
-  // Word color mapping (only 2 highlights)
   const COLOR_INDEX_MAP: Record<number, string> = {
     0: "text-primary-way-100", // "Our"
     1: "text-primary-way-100", // "Vision"
@@ -33,18 +31,21 @@ export default function VisionSection() {
     const masterTimeline = gsap.timeline();
     gsap.set(wordsRefs.current, {
       opacity: 0,
-      y: 0,
-      filter: "blur(0px)",
     });
 
     masterTimeline.to(wordsRefs.current, {
-      opacity: 1,
-      y: 0,
-      filter: "blur(0px)",
-      duration: 2,
+      opacity: 0.2,
+      duration: 1,
       stagger: 0.15,
       ease: "power3.out",
-    });
+    })
+    .to(wordsRefs.current, {
+      opacity: 1,
+      duration: 1,
+      stagger: 0.15,
+      ease: "power3.out",
+    }, 0.5);
+
 
     // ScrollTrigger animation
     ScrollTrigger.create({
@@ -73,7 +74,7 @@ export default function VisionSection() {
       {/* Label */}
       <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md mb-6">
         <Image
-          src="/icons/avail.svg"
+          src="/icons/mission.svg"
           alt="Our Mission"
           width={30}
           height={30}

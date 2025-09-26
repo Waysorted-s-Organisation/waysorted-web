@@ -14,20 +14,18 @@ export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps)
   };
   return (
     <div
-      className={`absolute top-full mt-2 w-[749px] bg-white rounded-xl menu-shadow overflow-hidden ${className} transition-all duration-300 origin-top 
+      className={`absolute top-full mt-2 w-[281px] bg-white rounded-xl menu-shadow overflow-hidden ${className} transition-all duration-300 origin-top 
         ${isOpen ? 'opacity-100 scale-y-100' : 'opacity-0 scale-y-0'}`}
     >
       {/* Top section */}
-      <div className="grid grid-cols-3 gap-3 p-2 rounded-md bg-menu-bg m-2">
+      <div className="flex flex-col p-2 rounded-md bg-white m-2">
         {[
-          { title: 'Learning', link:'learning', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/learning.svg' },
-          { title: 'Documentation', link:'documents', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/documentation.svg' },
-          { title: 'Security', link:'security', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/security.svg' },
-          { title: 'About us', link:'about-us', desc: 'Lorem ipsum dolor sit amet, consec tetur elit uspendisse.', icon: '/icons/about.svg' },
+          { title: 'Learning', link:'learning', desc: 'Quick tips and tutorials to get you started fast.', icon: '/icons/learning.svg' },
+          { title: 'Documentation', link:'documents', desc: 'Everything you need, explained in detail.', icon: '/icons/documentation.svg' },
         ].map((item, idx) => (
           <button
             key={idx}
-            className="flex items-center space-x-3 rounded-lg hover:bg-white cursor-pointer p-2 w-full text-left focus:outline-none"
+            className="flex items-center space-x-3 rounded-lg hover:bg-primary-way-10 cursor-pointer p-2 w-full text-left focus:outline-primary-way-10"
             onClick={handleClick(item.link)}
           >
             <div className="flex-shrink-0 rounded-md">
@@ -43,11 +41,6 @@ export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps)
             </div>
           </button>
         ))}
-      </div>
-
-      {/* Bottom blog preview section */}
-      <div className="blog-preview h-[133px] m-2 rounded-md">
-        <p className="text-center text-gray-700">Blog preview section here</p>
       </div>
     </div>
   );

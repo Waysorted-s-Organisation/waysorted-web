@@ -66,21 +66,21 @@ export default function Testimonials() {
             <section className="w-full flex flex-col items-center justify-center text-center pt-11">
                 <span className="inline-flex items-center text-center text-sm font-medium bg-white rounded-md">
                     <Image
-                        src="/icons/avail.svg"
-                        alt="FAQs"
+                        src="/icons/mavens.svg"
+                        alt="Mavens"
                         width={30}
                         height={30}
                         className="inline block p-1"
                     />
                     <span className="pl-1 pr-2 py-1 inline text-secondary-db-100">
-                        Testimonial
+                        Mavens
                     </span>
                 </span>
 
                 <h1 className="mt-4 mb-3 text-4xl font-semibold text-secondary-db-100">
                     Hear From Way{" "}
                     <span className="bg-tertiary-voilet-500/10 rounded-xl text-tertiary-voilet-500 px-4">
-                        Experts
+                        Mavens
                     </span>
                 </h1>
                 <p className="text-secondary-db-70 max-w-4xl mx-auto text-lg">
@@ -107,7 +107,7 @@ export default function Testimonials() {
                         <button
                             key={testimonial.id}
                             onClick={() => setActiveIndex(index)}
-                            className={`relative w-16 h-16 rounded-2xl transition-all duration-500 ${
+                            className={`relative w-16 h-16 rounded-2xl transition-all duration-500 cursor-pointer ${
                                 activeIndex === index
                                     ? "scale-125 shadow-xl -mt-4 -translate-y-5"
                                     : "scale-100 opacity-70"

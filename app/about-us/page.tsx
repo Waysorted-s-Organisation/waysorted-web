@@ -12,6 +12,7 @@ import TeamCollage from "./comonents/TeamCollage";
 import JoinCommunity from "@/components/JoinCommunity";
 import {useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 
 export default function AboutUs() {
   const { showBanner, setShowBanner } = useBanner();
@@ -45,7 +46,11 @@ export default function AboutUs() {
       <VisionSection />
       <TeamCollage />
       <JoinCommunity />
+<<<<<<< HEAD
 >>>>>>> b8f5e461e82c582b415a3e5856f4139a74996934
+=======
+      <Footer />
+>>>>>>> 06e297960e3c6566d296151cb4b0f23c49fc30c8
       </main>
     </>
   );

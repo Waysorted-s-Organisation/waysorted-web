@@ -5,7 +5,7 @@ import Image from "next/image";
 export default function ImpactTop() {
 
   return (
-    <section className="w-full flex flex-col items-center justify-center text-center">
+    <section className="w-full pt-64 flex flex-col items-center justify-center text-center">
       {/* Badge */}
       <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md mb-4">
   <Image
@@ -15,7 +15,7 @@ export default function ImpactTop() {
     height={30}
     className="block p-1"
   />
-  <span className="pl-1 pr-2 py-1 text-secondary-db-100">Available On</span>
+  <span className="pl-1 pr-2 py-1 text-secondary-db-100">Our Impact</span>
 </span>
 
 

@@ -1,4 +1,3 @@
-// app/documents/layout.tsx
 import DocsShell from "./DocsShell.client";
 
 export const metadata = {
@@ -10,5 +9,5 @@ export default function DocumentsLayout({ children }: { children: React.ReactNod
   // children will be whatever the specific static page renders.
   return <DocsShell>
     <div className="bg-white">{children}</div>
-  </DocsShell>;
+  </DocsShell>
 }

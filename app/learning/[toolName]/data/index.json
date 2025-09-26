@@ -1,0 +1,140 @@
+[
+  {
+    "toolName": "palettable",
+    "title": "Selecting Colors",
+    "subtitle": "Pick Your Color",
+    "bullets": [
+      "Choose colors via HEX, RGB, or HSL.",
+      "Copy color code from shapes in file.",
+      "Instantly preview shades and swatches."
+    ],
+    "image": "/images/palettable-brief-1.svg",
+    "imageAlt": "Color selection"
+  },
+  {
+    "toolName": "palettable",
+    "title": "Color Variations",
+    "subtitle": "Play with Variations",
+    "bullets": [
+      "Adjust brightness, darkness saturation, monochrome and hue.",
+      "Generate multiple steps for smooth gradients.",
+      "Perfect for UI states, themes, or highlights."
+    ],
+    "image": "/images/palettable-brief-2.svg",
+    "imageAlt": "Palettes preview"
+  },
+  {
+    "toolName": "palettable",
+    "title": "Color Schemes",
+    "subtitle": "Generate Smart Schemes",
+    "bullets": [
+      "Explore Analogous, and Complementary palettes.",
+      "Quickly build consistent themes.",
+      "Check Complementary schemes for instant use."
+    ],
+    "image": "/images/palettable-brief-3.svg",
+    "imageAlt": "Contrast checks"
+  },
+  {
+    "toolName": "palettable",
+    "title": "Color Contrast & Accessibility",
+    "subtitle": "Check Contrast level",
+    "bullets": [
+      "Test your color pairs against WCAG & APCA standards.",
+      "Get compliance scores for normal and large text.",
+      "Run blindness checks."
+    ],
+    "image": "/images/palettable-brief-4.svg",
+    "imageAlt": "Accessibility checks"
+  },
+  {
+    "toolName": "palettable",
+    "title": "Export & Apply",
+    "subtitle": "Take Your Palette Anywhere",
+    "bullets": [
+      "Export single colors or full palettes.",
+      "Integrate with your design system instantly.",
+      "Save time, keep consistency, and design faster."
+    ],
+    "image": "/images/palettable-brief-5.svg",
+    "imageAlt": "Accessibility checks"
+  },
+  {
+    "toolName": "unit-converter",
+    "title": "Convert units into pixels",
+    "subtitle": "The Unit Conversion tool helps you convert different measurements into pixels",
+    "bullets": [
+      "Directly convert different units into pixels",
+      "Get instant sizes at different DPI’s"
+    ],
+    "image": "/images/unit-converter-brief-1.svg",
+    "imageAlt": "Unit conversion"
+  },
+  {
+    "toolName": "unit-converter",
+    "title": "Change Units",
+    "subtitle": "Allows you to easily switch between different measurement systems, ensuring your designs are perfect for any output.",
+    "bullets": [
+      "Select your desired unit from the dropdown menu, including MM, CM, Meter, Inch, and Feet."
+    ],
+    "image": "/images/unit-converter-brief-2.svg",
+    "imageAlt": "Unit conversion"
+  },
+  {
+    "toolName": "unit-converter",
+    "title": "Change DPI",
+    "subtitle": "Full control over the resolution of your exported files.",
+    "bullets": [
+      "Select your desired DPI from the dropdown menu to match your output needs.",
+      "Changing the DPI will directly affect the pixel dimensions of your frame, giving you precise control over your final output."
+    ],
+    "image": "/images/unit-converter-brief-3.svg",
+    "imageAlt": "DPI settings"
+  },
+  {
+    "toolName": "unit-converter",
+    "title": "Add Bleed Marks",
+    "subtitle": "Add professional bleed marks to your design",
+    "bullets": [
+      "Enable bleed with a simple click",
+      "Customize the margins on each side",
+      "Use the link icon to apply a uniform bleed across your frame."
+    ],
+    "image": "/images/unit-converter-brief-4.svg",
+    "imageAlt": "Bleed marks"
+  },
+  {
+    "toolName": "unit-converter",
+    "title": "Export as Frame & Save as Preset",
+    "subtitle": "Instantly create a new frame in your Figma file with the exact pixel dimensions you've set.",
+    "bullets": [
+      "Save your current frame size and settings as a custom preset.",
+      "Quickly switch your frame from portrait to landscape orientation."
+    ],
+    "image": "/images/unit-converter-brief-5.svg",
+    "imageAlt": "Export options"
+  },
+  {
+    "toolName": "unit-converter",
+    "title": "Access to pre built presets",
+    "subtitle": "Instant access to a library of pre-built, professional frame sizes for all your project needs.",
+    "bullets": [
+      "A comprehensive library of standard, industry-specific frame sizes.",
+      "Easily filter the presets by category to find the perfect starting point for your project."
+    ],
+    "image": "/images/unit-converter-brief-6.svg",
+    "imageAlt": "Presets"
+  },
+  {
+    "toolName": "unit-converter",
+    "title": "Make your own presets",
+    "subtitle": "Save any custom frame size and settings as a new preset.",
+    "bullets": [
+      "Manage all of the presets you have personally created.",
+      "Click the \"Save as Preset\" button and give your preset a unique name.",
+      "Find your presets in the \"Your Presets\" section."
+    ],
+    "image": "/images/unit-converter-brief-7.svg",
+    "imageAlt": "Custom presets"
+  }
+]

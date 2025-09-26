@@ -39,20 +39,17 @@ export default function TopSection() {
       <div className="flex gap-3 flex-wrap justify-center">
         {/* Way Studio Button */}
         <button
-          onClick={() => setActiveTab("waystudio")}
-          className={`flex items-center gap-2 px-9 py-1.75 rounded-full cursor-pointer border transition-all duration-200 ${
-            activeTab === "waystudio"
-              ? "bg-white border-secondary-db-100 text-secondary-db-100"
-              : "bg-secondary-db-5 border-gray-200 text-secondary-db-70 hover:text-secondary-db-100"
-          }`}
+          disabled
+          className="flex items-center gap-2 px-9 py-1.75 rounded-full cursor-not-allowed border bg-secondary-db-5 border-gray-200 text-secondary-db-50 opacity-60"
         >
           <Image
             src="/icons/waystudio-icon.svg"
             alt="Way Studio"
             width={20}
             height={20}
+            className="opacity-70"
           />
-          <span className="text-sm font-medium">Way Studio</span>
+          <span className="text-sm font-medium">Way Studio (Coming Soon)</span>
         </button>
 
         {/* Waysorted for Figma Button */}
