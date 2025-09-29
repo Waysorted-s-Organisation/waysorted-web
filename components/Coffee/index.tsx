@@ -1,4 +1,5 @@
 "use client";
+import GlowingStarButton from "@/components/GlowStarButton";
 
 import Image from "next/image";
 
@@ -26,24 +27,26 @@ export default function ImpactTop() {
 
             {/* Button */}
             <div className="flex flex-col items-center py-16 space-y-2">
-                <button
-                    className="bg-secondary-db-100 text-white rounded-2xl text-lg font-semibold px-4 py-3 flex items-center cursor-pointer"
+                <GlowingStarButton
+                    className="bg-secondary-db-100 text-white rounded-2xl text-lg font-semibold px-4 py-3 flex items-center cursor-pointer inline-block shadow-glow"
                     title="Try Now"
                 >
-                    <span>It’s Free - Try now!</span>
+                    <span className="flex items-center justify-center gap-4 w-full">
+                    It’s Free - Try now!
                     <span
-                        className="ml-4 bg-white h-14 w-14 flex items-center justify-center rounded-xl"
+                        className="bg-white h-14 w-14 flex items-center justify-center rounded-xl"
                         aria-hidden="true"
                     >
                         <Image
-                            src="/icons/rocket.svg"
-                            alt="Launch"
-                            width={30}
-                            height={30}
-                            className="inline-block"
+                        src="/icons/rocket.svg"
+                        alt="Launch"
+                        width={30}
+                        height={30}
+                        className=""
                         />
                     </span>
-                </button>
+                    </span>
+                </GlowingStarButton>
                 <p className="text-secondary-db-60 font-regular text-sm">No credit card required.</p>
             </div>
 

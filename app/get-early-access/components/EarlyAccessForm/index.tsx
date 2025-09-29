@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import GlowStarButton from "@/components/GlowStarButton";
 
 export default function EarlyAccessForm() {
   const [name, setName] = useState("");
@@ -42,13 +43,13 @@ export default function EarlyAccessForm() {
           />
         </label>
 
-        <button
+        <GlowStarButton
           type="submit"
           className="group relative w-sm rounded-xl bg-secondary-db-100 px-4 py-3.5 text-white font-medium shadow-card cursor-pointer"
         >
           <span className="absolute inset-0 rounded-xl opacity-20 group-hover:opacity-30 transition-opacity" />
           <span className="relative">Continue</span>
-        </button>
+        </GlowStarButton>
       </form>
 
       {/* Popup Modal */}
@@ -82,12 +83,12 @@ export default function EarlyAccessForm() {
                 Exclusive sneak peeks, early access, and insider news—just for you.
               </p>
 
-              <button
+              <GlowStarButton
                 onClick={() => setShowPopup(false)}
                 className="mt-5 rounded-lg bg-black text-white px-20 py-2 hover:bg-gray-900 transition cursor-pointer"
               >
                 Subscribe to our Newsletter!
-              </button>
+              </GlowStarButton>
             </div>
           </div>
         )}

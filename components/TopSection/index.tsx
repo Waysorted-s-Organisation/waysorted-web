@@ -24,7 +24,7 @@ export default function TopSection() {
       {/* Heading */}
       <h1 className="text-3xl sm:text-4xl font-semibold text-secondary-db-100 mb-4">
         Designed for Every{" "}
-        <span className="bg-section-bg text-tertiary-blue-500 px-2">
+        <span className="bg-section-bg text-tertiary-blue-500 px-2 rounded-md">
           Workflow
         </span>
       </h1>

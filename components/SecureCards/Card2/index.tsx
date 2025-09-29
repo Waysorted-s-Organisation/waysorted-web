@@ -1,4 +1,3 @@
-/* eslint-disable no-dupe-keys */
 import React, { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";

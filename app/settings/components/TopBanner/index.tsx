@@ -10,7 +10,7 @@ export default function TopBanner({ earlyAccess }: TopBannerProps) {
   return (
     <div className="top-banner">
       {!earlyAccess && (
-        <div className="mx-auto flex max-w-screen-2xl items-center justify-between gap-4 px-4 py-3 sm:px-6 bg-primary-way-10">
+        <div className="mx-auto flex max-w-screen items-center justify-between gap-4 px-4 py-3 sm:px-6 bg-primary-way-10">
           <div className="flex items-center gap-3">
             <span
               aria-hidden="true"

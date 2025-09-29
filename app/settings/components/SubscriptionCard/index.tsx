@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import type { IUser } from "@/models/user";
+import type { PublicUser } from "@/app/settings/lib/user";
 
 type Props = {
-  user: IUser;
+  user: PublicUser;
 };
 
 export default function SubscriptionCard({ user }: Props) {

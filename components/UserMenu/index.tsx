@@ -3,11 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-
-interface User {
-  name: string;
-  email: string;
-}
+import { User } from "@/hooks/useUser";
 
 interface UserMenuProps {
   user: User;
@@ -18,8 +14,8 @@ export default function UserMenu({ user, handleLogout }: UserMenuProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  const getInitials = (name: string) =>
-    name
+  const getInitials = (name?: string) =>
+    (name || "User")
       .split(" ")
       .filter(Boolean)
       .map((n) => n[0].toUpperCase())
@@ -47,7 +43,7 @@ export default function UserMenu({ user, handleLogout }: UserMenuProps) {
               {getInitials(user.name)}
             </div>
             <div>
-              <p className="font-semibold text-secondary-db-100 text-sm">{user.name}</p>
+              <p className="font-semibold text-secondary-db-100 text-sm">{user.name || "User"}</p>
               <p className="text-xs text-secondary-db-70 font-medium truncate">{user.email}</p>
             </div>
           </div>

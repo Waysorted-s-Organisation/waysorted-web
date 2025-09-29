@@ -47,30 +47,6 @@ export default function NotificationsCard({ hasAny, categories = [] }: Notificat
         </div>
         ) : (
           <>
-            {/* Tabs */}
-            <div className="mb-5 flex items-center gap-6 text-sm">
-              <button
-                onClick={() => setActiveTab("email")}
-                className={`pb-1 font-medium transition cursor-pointer ${
-                  activeTab === "email"
-                    ? "text-primary-way-100 border-b-2 border-primary-way-100"
-                    : "text-secondary-db-60 hover:text-secondary-db-80"
-                }`}
-              >
-                Email
-              </button>
-              <button
-                onClick={() => setActiveTab("system")}
-                className={`pb-1 font-medium transition cursor-pointer ${
-                  activeTab === "system"
-                    ? "text-primary-way-100 border-b-2 border-primary-way-100"
-                    : "text-secondary-db-60 hover:text-secondary-db-80"
-                }`}
-              >
-                System Updates
-              </button>
-            </div>
-
             <div className="space-y-3">
               {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
               {categories.map((c, i) => (

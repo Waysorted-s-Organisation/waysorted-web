@@ -19,15 +19,16 @@ type TabKey =
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams?: { tab?: string };
+  searchParams?: Promise<{ tab?: string }>;
 }) {
   const user = await getCurrentUser();
-  const tab = await (searchParams?.tab as TabKey) || "general";
+  const params = await searchParams;
+  const tab = (params?.tab as TabKey) || "general";
 
   function renderTab() {
     switch (tab) {
       case "general":
-        return <GeneralTab user={user} />;
+        return <GeneralTab />;
       case "credits":
         return <CreditsUsageTab />;
       case "subscription":
@@ -39,8 +40,12 @@ export default async function ProfilePage({
       case "beta":
         return <BetaFeaturesTab />;
       default:
-        return <GeneralTab user={user} />;
+        return <GeneralTab />;
     }
+  }
+
+  if (!user) {
+    return <div>User not found.</div>;
   }
 
   return (

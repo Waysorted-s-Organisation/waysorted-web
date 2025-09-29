@@ -145,6 +145,10 @@ body {
   box-shadow: inset 0px -24px 33px rgba(255, 255, 255, 0.25);
 }
 
+.shadow-glow:hover {
+  box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.6);
+}
+
 body {
   -ms-overflow-style: none; /* Internet Explorer 10+ */
   overflow-y: scroll; /* Ensures layout consistency */
@@ -229,6 +233,12 @@ html, body {
   background-color: #E8EFFC; 
   background-image: radial-gradient(#000000 0.25px, transparent 1px);
   background-size: 25px 25px; 
+}
+
+.glass-bg {
+  background : #D9D9D9;
+  background-image: radial-gradient(#000000 0.25px, transparent 1px);
+  background-size: 25px 25px;
 }
 
 .gray-bg-dots {
@@ -382,6 +392,13 @@ html, body {
   cursor: url("/icons/wayspace-cursor.svg") 8 8, auto;
 }
 
+.wayspace-cursor-1 {
+  cursor: url("/icons/wayspace-cursor-1.svg") 8 8, auto;
+}
+.wayspace-cursor-1:hover {
+  cursor: url("/icons/wayspace-cursor-1.svg") 8 8, auto;
+}
+
 .orange-cursor {
   cursor: url("/icons/orange-cursor.svg") 8 8, auto;
 }
@@ -389,6 +406,44 @@ html, body {
   cursor: url("/icons/orange-cursor.svg") 8 8, auto;
 }
 
+.glass-cursor {
+  cursor: url("/icons/glass-cursor.svg") 8 8, auto;
+}
+.glass-cursor:hover {
+  cursor: url("/icons/glass-cursor.svg") 8 8, auto;
+}
+
+
+.glass {
+  position: relative;
+  background: transparent;
+  -webkit-backdrop-filter: blur(1px) saturate(180%);
+  backdrop-filter: blur(1px) saturate(180%);
+  border: inherit;
+  border-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 16px rgba(31,38,135,0.18),
+              inset 0 2px 10px rgba(255,255,255,0.23);
+  color: #222;
+  transition: box-shadow 0.2s, background 0.2s;
+  font-weight: 600;
+  z-index: 1;
+  /* REMOVE overflow: hidden; if you want to see the parent's dots through border radius */
+}
+
+.glass::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: transparent; /* LOWER opacity! */
+  border-radius: inherit;
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  box-shadow: none; /* Remove or reduce to see dots clearly */
+  opacity: 0.25;    /* LOWER opacity! */
+  z-index: -1;
+  pointer-events: none;
+}
 
 
 .dashed-line {
@@ -421,3 +476,302 @@ html, body {
 .debug-outline [aria-label="Table of contents"] {
   outline: 1px dashed #6aa0ff;
 }
+
+@property --glow-deg {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: -90deg;
+}
+
+@property --clr-1 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #84AAFC;
+}
+
+@property --clr-2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #FDEFA1;
+}
+
+@property --clr-3 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: white;
+}
+
+@property --clr-4 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: white;
+}
+
+
+.glowing-border {
+  --gradient-glow: var(--clr-1), var(--clr-1), var(--clr-2), var(--clr-3), var(--clr-4);
+
+  border: var(--border-width, 2px) solid transparent;
+  border-radius: 12px;
+  background: linear-gradient(var(--surface, white) 0 0) padding-box,
+    conic-gradient(from var(--glow-deg), var(--gradient-glow)) border-box;
+
+  position: relative;
+  isolation: isolate;
+
+  animation: glow 10s infinite linear;
+}
+
+@keyframes glow {
+  100% {
+    --glow-deg: 270deg;
+  }
+}
+
+.glowing-border::before,
+.glowing-border::after {
+  content: "";
+  position: absolute;
+  inset: 0; /* ✅ match parent size */
+  border-radius: inherit;
+}
+
+.glowing-border::before {
+  z-index: -1;
+  background: var(--surface, white);
+  filter: blur(var(--glow-size, 1rem));
+}
+
+.glowing-border::after {
+  z-index: -2;
+  background: conic-gradient(from var(--glow-deg), var(--gradient-glow));
+  filter: blur(var(--glow-size, 1rem));
+  opacity: var(--glow-intensity, 0.2);
+  border-radius: inherit;
+}
+
+.white-bg-dots {
+  background-color: #ffffff;
+  background-image: radial-gradient(#00000080 0.25px, transparent 1px);
+  background-size: 25px 25px;
+}
+
+/* Outward Glow — safe defaults (no black spot) */
+:root {
+  --glow-duration: 2.4s;
+  --glow-scale-start: 0.68;
+  --glow-scale-end: 2.5;
+  --glow-opacity: 0.24;
+  --glow-blur: 0px;          /* set to 0 to avoid premultiplied alpha artifacts */
+}
+
+.glow-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;         /* allow waves to expand */
+  /* DO NOT use contain: paint/size here; it clips the waves */
+  width: var(--glow-size, 64px);
+  height: var(--glow-size, 64px);
+  isolation: isolate;        /* keep blending local when enabled */
+}
+
+/* size and color presets */
+.glow--md { --glow-size: 64px; --glow-radius: 12px; }
+.glow--green { --glow-color: #01A04E; }
+
+/* Rings behind the icon (explicit stacking) */
+.glow-icon .glow-ring {
+  position: absolute;
+  inset: 0;
+  z-index: 0;                         /* behind */
+  border-radius: var(--glow-radius, 12px);
+  background: var(--glow-color, #01A04E);
+  opacity: var(--glow-opacity);
+  transform-origin: center;
+  filter: blur(var(--glow-blur));      /* set >0 only if you don't see artifacts */
+  animation: glow-rings var(--glow-duration) ease-out infinite;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* Stagger for continuous waves */
+.glow-icon .r2 { animation-delay: calc(var(--glow-duration) * 0.25); }
+.glow-icon .r3 { animation-delay: calc(var(--glow-duration) * 0.50); }
+.glow-icon .r4 { animation-delay: calc(var(--glow-duration) * 0.75); }
+
+/* SVG above the rings */
+.glow-icon .glow-svg {
+  position: relative;
+  z-index: 1;                         /* above */
+  width: 100%;
+  height: 100%;
+  transform: translateZ(0);           /* helps some GPU artifacts */
+}
+
+/* Optional: luminous mode for dark backgrounds.
+   Use ONLY when the wrapper sits on a solid (non-transparent) background. */
+.glow--luminous .glow-ring {
+  mix-blend-mode: screen;
+  opacity: calc(var(--glow-opacity) * 1.5);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .glow-icon .glow-ring { animation: none; display: none; }
+}
+
+@keyframes glow-rings {
+  0%   { transform: scale(var(--glow-scale-start)); opacity: var(--glow-opacity); }
+  60%  { opacity: calc(var(--glow-opacity) * 0.6); }
+  100% { transform: scale(var(--glow-scale-end)); opacity: 0; }
+}
+
+
+/* Container: keep layout/clip, but no button halo */
+.btn-glow {
+  position: relative;
+  overflow: hidden; /* keep star glows inside rounded corners */
+  isolation: isolate; /* text above star glows */
+}
+ 
+/* Remove any old button-level halo glow */
+.btn-glow::before,
+.btn-glow:hover::before,
+.btn-glow:focus-visible::before {
+  content: none !important;
+}
+ 
+/* Button content above stars/glows */
+.btn-inner {
+  position: relative;
+  z-index: 2;
+}
+ 
+/* Stars: hidden by default; start slightly below final spot */
+.btn-star {
+  position: absolute;
+  color: #fff;
+  width: var(--size, 8px);
+  height: var(--size, 8px);
+  top: var(--top, 50%);
+  left: var(--left, 50%);
+  opacity: 0; /* hidden initially */
+  transform:
+    translate(-50%, calc(-50% + var(--enter-offset, 18px)))
+    scale(var(--scale, 1))
+    rotate(var(--rot, 0deg));
+  filter:
+    drop-shadow(0 0 2px rgba(255, 255, 255, 0.4))
+    drop-shadow(0 0 6px rgba(110, 231, 255, 0.25))
+    drop-shadow(0 0 10px rgba(196, 113, 255, 0.18));
+  will-change: transform, filter, opacity;
+  z-index: 1;
+  pointer-events: none;
+ 
+  transition:
+    transform .25s ease,
+    opacity .22s ease,
+    filter .25s ease;
+}
+ 
+/* Per-star glow halo (off until hover) */
+.btn-star::before {
+  content: "";
+  position: absolute;
+  inset: -60%;
+  background:
+    radial-gradient(closest-side,
+      rgba(255, 255, 255, 0.7),
+      rgba(110, 231, 255, 0.4) 45%,
+      rgba(196, 113, 255, 0.28) 65%,
+      transparent 75%);
+  filter: blur(6px);
+  opacity: 0;
+  transform: scale(0.85);
+  transition:
+    opacity .28s ease,
+    transform .28s ease,
+    filter .28s ease;
+  z-index: -1;
+}
+ 
+/* On hover/focus: entrance, then floating loop.
+   IMPORTANT: use --enter-delay if provided, else fallback to --delay. */
+.btn-glow:hover .btn-star,
+.btn-glow:focus-visible .btn-star {
+  opacity: 1;
+  animation:
+    starEnter var(--enter-dur, .45s) cubic-bezier(.2,.8,.2,1) var(--enter-delay, var(--delay, 0s)) forwards,
+    btnStarFloat var(--dur, 2.1s) ease-in-out calc(var(--enter-delay, var(--delay, 0s)) + var(--enter-dur, .45s)) infinite alternate;
+  filter:
+    drop-shadow(0 0 4px rgba(255, 255, 255, 0.95))
+    drop-shadow(0 0 14px rgba(110, 231, 255, 0.75))
+    drop-shadow(0 0 22px rgba(196, 113, 255, 0.5));
+}
+ 
+.btn-glow:hover .btn-star::before,
+.btn-glow:focus-visible .btn-star::before {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(12px);
+  transition-delay: calc(var(--enter-delay, var(--delay, 0s)) + var(--enter-dur, .45s));
+}
+ 
+/* Entrance: rise from below into place */
+@keyframes starEnter {
+  0% {
+    opacity: 0;
+    transform:
+      translate(-50%, calc(-50% + var(--enter-offset, 18px)))
+      scale(calc(var(--scale, 1) * 0.95))
+      rotate(var(--rot, 0deg));
+  }
+  100% {
+    opacity: 1;
+    transform:
+      translate(-50%, -50%)
+      scale(var(--scale, 1))
+      rotate(var(--rot, 0deg));
+  }
+}
+ 
+/* Gentle float after arrival */
+@keyframes btnStarFloat {
+  0% {
+    transform:
+      translate(-50%, -50%)
+      scale(var(--scale, 1))
+      rotate(var(--rot, 0deg));
+  }
+  50% {
+    transform:
+      translate(calc(-50% + var(--dx, 3px)), calc(-50% - var(--dy, 3px)))
+      scale(calc(var(--scale, 1) * 1.08))
+      rotate(calc(var(--rot, 0deg) + var(--spin, 10deg)));
+  }
+  100% {
+    transform:
+      translate(-50%, -50%)
+      scale(var(--scale, 1))
+      rotate(var(--rot, 0deg));
+  }
+}
+ 
+/* Reduced motion: no movement, keep a visible glow */
+@media (prefers-reduced-motion: reduce) {
+  .btn-glow:hover .btn-star,
+  .btn-glow:focus-visible .btn-star {
+    animation: none !important;
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(var(--scale, 1)) rotate(var(--rot, 0deg));
+  }
+  .btn-star::before {
+    transition: none;
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(8px);
+  }
+}
+ 

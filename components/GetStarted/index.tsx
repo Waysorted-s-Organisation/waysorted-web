@@ -1,4 +1,5 @@
 import React from "react";
+import GlowingStarButton from "@/components/GlowStarButton";
 
 const JoinCommunity = () => {
   return (
@@ -14,12 +15,12 @@ const JoinCommunity = () => {
       </p>
 
       {/* Button */}
-      <button
+      <GlowingStarButton
         className="mt-12 rounded-4xl text-white font-medium text-7xl 
                    bg-secondary-db-100 join-shadow cursor-pointer"
       >
         Get Started!
-      </button>
+      </GlowingStarButton>
     </section>
   );
 };

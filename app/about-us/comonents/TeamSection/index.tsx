@@ -3,6 +3,7 @@
 import Image from "next/image";
 import {teams} from "@/app/about-us/data/team";
 import {team1 as team1Data} from "@/app/about-us/data/team1";
+import GlowStarButton from "@/components/GlowStarButton";
 
 interface TeamMemberProps {
   name: string;
@@ -86,11 +87,9 @@ export default function TeamSection() {
             <p className="mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
             <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
           </div>
-          <a
-            href="https://discord.gg/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-secondary-db-100 text-white px-4 py-2 font-semibold text-base rounded-xl"
+          <GlowStarButton
+            onClick={() => window.open("https://discord.gg/", "_blank")}                              
+            className="bg-secondary-db-100 text-white px-4 py-2 font-semibold text-base rounded-xl cursor-pointer"
           >
             Join Our Discord
             <Image
@@ -100,7 +99,7 @@ export default function TeamSection() {
                 height={12}
                 className="inline-block text-base ml-3"
             />
-          </a>
+          </GlowStarButton>
         </div>
       </div>
       <div className="grid gap-y-8 gap-x-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center max-w-6xl mt-8 mx-auto">

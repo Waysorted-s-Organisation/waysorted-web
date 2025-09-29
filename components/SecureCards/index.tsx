@@ -7,7 +7,7 @@ import Card5 from "./Card5/index";
 
 export default function SecureCards() {
   return (
-    <section className="w-full h-screen flex flex-col items-center  text-center bg-[#1E1E1E]">
+    <section className="w-full h-screen flex flex-col items-center  text-center bg-secondary-db-100">
       {/* Badge */}
       <span className="inline-flex mt-[67px] py-1 pl-1 pr-2 items-center text-sm font-medium bg-[#F3F3F3] text-[#0D1218] rounded-md mb-4">
         <Image

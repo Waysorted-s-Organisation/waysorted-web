@@ -81,7 +81,7 @@ export default function BetaFeaturesCard({ user, features }: BetaFeaturesCardPro
           {features.map((f, i) => (
             <li
               key={f.id}
-              className="rounded-md px-4 py-4 hover:bg-primary-way-10 transition cursor-pointer"
+              className="rounded-md px-4 py-4"
             >
               <p className="text-sm font-medium text-secondary-db-100">
                 {f.title}

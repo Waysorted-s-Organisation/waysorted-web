@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-
+ 
 type Props = {
   username?: string;
   role?: string;
@@ -9,7 +9,7 @@ type Props = {
   brandLogo?: string;
   className?: string;
 };
-
+ 
 export default function CommentCard({
   username = "Username",
   role = "Figma User",
@@ -23,7 +23,7 @@ export default function CommentCard({
       {/* soft rotated background to mimic the original depth */}
       <div className="relative">
         <div className="absolute -inset-1 transform rotate-1 rounded-2xl bg-slate-800/5 -z-10" />
-
+ 
         <div className="relative bg-white rounded-2xl shadow-[0_10px_30px_rgba(2,6,23,0.3)] border border-slate-200 p-4 flex gap-4 items-start rotate-[-1deg]">
           {/* avatar */}
           <div className="w-12 h-12 rounded-lg bg-slate-100 overflow-hidden flex-shrink-0 flex items-center justify-center">
@@ -38,7 +38,7 @@ export default function CommentCard({
               </svg>
             )}
           </div>
-
+ 
           {/* text */}
           <div className="flex-1">
             <div className="flex items-start justify-between gap-4">
@@ -46,7 +46,7 @@ export default function CommentCard({
                 <div className="text-sm font-semibold text-slate-900">{username}</div>
                 <div className="text-xs text-slate-500">{role}</div>
               </div>
-
+ 
               {/* small brand logo at top-right */}
               {brandLogo && (
                 <div className="ml-2 shrink-0" aria-hidden>
@@ -60,7 +60,7 @@ export default function CommentCard({
                 </div>
               )}
             </div>
-
+ 
             <p className="mt-3 text-sm text-slate-700 leading-relaxed">{comment}</p>
           </div>
         </div>
@@ -68,20 +68,3 @@ export default function CommentCard({
     </div>
   );
 }
-
-/*
-Usage example:
-
-import CommentCard from "./CommentCard";
-
-<CommentCard
-  username="Sushant Kumar"
-  role="Figma User"
-  avatarSrc="/path/to/avatar.jpg" // optional
-  comment="This is a short comment describing the user's feedback."
-/>
-
-Notes:
-- This component uses Tailwind CSS classes. Adjust spacing, rotations and colors to match your project theme.
-- To precisely match the original card (shadows and exact rotation), tweak the shadow and rotate utilities.
-*/

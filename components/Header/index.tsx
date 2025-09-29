@@ -9,6 +9,7 @@ import LanguageDropdown from '../LanguageDropdown';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/hooks/useUser';
 import UserMenu from '@/components/UserMenu';
+import GlowingStarButton from '@/components/GlowStarButton';
 
 interface HeaderProps {
   showBanner: boolean;
@@ -152,14 +153,14 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               />
             </div>
 
-            <button
-              className="bg-secondary-db-100 font-medium text-base text-white px-5 py-2 rounded-lg flex items-center active:scale-95 transition-colors duration-100 cursor-pointer"
+            <GlowingStarButton
+              className="bg-secondary-db-100 shadow-glow font-medium text-base text-white px-5 py-2 rounded-lg flex items-center active:scale-95 transition-colors duration-100 cursor-pointer"
               title="Get Early Access"
               aria-label="Get Early Access"
               onClick={() => router.push('/get-early-access')}
             >
               <span>Get Early Access</span>
-            </button>
+            </GlowingStarButton>
 
             {!loading && !user && (
               <button

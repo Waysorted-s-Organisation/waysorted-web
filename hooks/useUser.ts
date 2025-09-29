@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 
 export interface User {
   id: string;
-  name: string;
+  name?: string;
   email: string;
   picture?: string;
   favorites?: string[];

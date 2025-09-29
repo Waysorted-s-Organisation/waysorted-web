@@ -1,4 +1,6 @@
-const tools = [
+import { Tool } from "../types";
+
+const tools: Tool[] = [
   {
     id: 1,
     icon: "/icons/palettable.svg",

@@ -20,7 +20,7 @@ export default function FAQ() {
           >
             <button
               onClick={() => toggleFAQ(index)}
-              className={`relative flex items-center justify-between w-full py-4 pl-16 focus:outline-none cursor-pointer space-x-6 ${
+              className={`relative flex items-center justify-between w-full py-4 px-8 focus:outline-none cursor-pointer space-x-6 ${
                 openIndex !== index ? "hover:bg-tertiary-voilet-100 hover:outline-none hover:rounded-xl" : ""
               }`}
             >
@@ -30,7 +30,7 @@ export default function FAQ() {
               {/* Icon */}
               <div
                 className={`absolute right-5 transition-colors p-3 ${
-                  openIndex === index ? "bg-tertiary-voilet-100 rounded-full" : ""
+                  openIndex === index ? "hover:bg-tertiary-voilet-100 rounded-full" : ""
                 }`}
               >
                 <Image
@@ -47,10 +47,10 @@ export default function FAQ() {
             {/* Answer */}
             <div
               className={`overflow-hidden transition-all duration-300 ${
-                openIndex === index ? "max-h-40 px-5 pb-4" : "max-h-0"
+                openIndex === index ? "max-h-40 px-8 pb-4" : "max-h-0"
               }`}
             >
-              <p className="text-secondary-db-100 text-base font-regular">{faq.answer}</p>
+              <p className="text-secondary-db-100 text-base font-regular text-left">{faq.answer}</p>
             </div>
           </div>
         ))}
