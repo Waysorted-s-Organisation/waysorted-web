@@ -9,7 +9,6 @@ export type NotificationsCardProps = {
 };
 
 export default function NotificationsCard({ hasAny, categories = [] }: NotificationsCardProps) {
-  const [activeTab, setActiveTab] = useState<"email" | "system">("system");
 
   return (
     <section className="max-w-3xl rounded-lg border border-secondary-db-5 bg-white">

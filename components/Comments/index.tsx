@@ -153,7 +153,10 @@ export default function Comments() {
           inertia: {
             x: typeof vx === "number" ? { velocity: vx, resistance } : "auto",
             y: typeof vy === "number" ? { velocity: vy, resistance } : "auto",
-          } as any,
+          } as {
+            x: { velocity: number; resistance: number } | "auto";
+            y: { velocity: number; resistance: number } | "auto";
+          },
           x,
           y,
           onUpdate: checkBounds,
@@ -163,8 +166,8 @@ export default function Comments() {
  
       const checkBounds = () => {
         // Current position and velocity
-        const x = Number(cardProp("x") as any) || 0;
-        const y = Number(cardProp("y") as any) || 0;
+        const x = Number(cardProp("x") as string | number) || 0;
+        const y = Number(cardProp("y") as string | number) || 0;
  
         const w = card.offsetWidth;
         const h = card.offsetHeight;
