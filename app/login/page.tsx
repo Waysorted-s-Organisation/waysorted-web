@@ -2,12 +2,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import OTPInput from "@/app/signup/components/OTPInput";
+import OTPInput from "@/app/login/components/OTPInput";
 import { useUser } from "@/hooks/useUser";
 
 type Step = "choose" | "email" | "otp" | "verified";
 
-export default function Signup() {
+export default function Login() {
   const router = useRouter();
   const { user } = useUser();
 
@@ -15,9 +15,7 @@ export default function Signup() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-
   const [otp, setOtp] = useState("");
 
   useEffect(() => {
@@ -66,14 +64,13 @@ export default function Signup() {
     }
   };
 
-  const handleContinueWithEmail = () => {
+  const goEmailStep = () => {
     setError(null);
     setStep("email");
   };
 
-  const handleSendOtp = async () => {
+  const sendOtp = async () => {
     setError(null);
-    if (!name.trim()) return setError("Please enter your name.");
     if (!validateEmail(email)) return setError("Please enter a valid email address.");
 
     setLoading(true);
@@ -81,7 +78,7 @@ export default function Signup() {
       const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), email: email.trim() }),
+        body: JSON.stringify({ email: email.trim() }),
       });
       const data = await res.json();
       if (!res.ok || !data?.ok) {
@@ -97,7 +94,7 @@ export default function Signup() {
     }
   };
 
-  const handleResend = async () => {
+  const resendOtp = async () => {
     if (remainingSeconds > 0) return;
     setError(null);
     setLoading(true);
@@ -105,7 +102,7 @@ export default function Signup() {
       const res = await fetch("/api/auth/send-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim() || "User", email: email.trim() }),
+        body: JSON.stringify({ email: email.trim() }),
       });
       const data = await res.json();
       if (!res.ok || !data?.ok) {
@@ -120,7 +117,7 @@ export default function Signup() {
     }
   };
 
-  const handleVerify = async () => {
+  const verifyOtp = async () => {
     setError(null);
     if (otp.length !== 6) return setError("Please enter the 6-digit code.");
 
@@ -149,10 +146,10 @@ export default function Signup() {
       <div className="bg-white rounded-[22px] shadow-md max-w-lg w-full">
         {step === "choose" && (
           <div className="flex flex-col gap-4 px-6 sm:px-8 pt-8 pb-3 items-center">
-            <Image src="/icons/success.svg" alt="Create account" width={64} height={64} />
-            <h1 className="text-2xl font-semibold text-black text-center">Create an account</h1>
+            <Image src="/icons/success.svg" alt="Welcome back" width={64} height={64} />
+            <h1 className="text-2xl font-semibold text-black text-center">Welcome back!</h1>
             <p className="text-sm text-secondary-db-70 text-center">
-              Get started in minutes. Stay sorted forever
+              Log in to continue your way of working smarter.
             </p>
 
             <button
@@ -165,48 +162,25 @@ export default function Signup() {
             </button>
 
             <button
-              onClick={handleContinueWithEmail}
+              onClick={goEmailStep}
               disabled={loading}
               className="bg-secondary-db-5 text-secondary-db-100 cursor-pointer w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60"
             >
               Continue with Email
             </button>
-
-            <p className="text-xs text-secondary-db-70 text-center">
-              Creating an account means you agree to our{" "}
-              <span className="text-primary-way-100 underline cursor-pointer">Terms</span> and{" "}
-              <span className="text-primary-way-100 underline cursor-pointer">Privacy Policy</span>.
-            </p>
           </div>
         )}
 
         {step === "email" && (
-          <div className="flex flex-col gap-5 px-6 sm:px-8 pt-8 pb-3">
-            <h1 className="text-2xl font-semibold text-black text-center">Create an account</h1>
+          <div className="flex flex-col gap-4 px-6 sm:px-8 pt-8 pb-3 items-center">
+            <Image src="/icons/success.svg" alt="Welcome back" width={56} height={56} />
+            <h1 className="text-2xl font-semibold text-black text-center">Welcome back!</h1>
             <p className="text-sm text-secondary-db-70 text-center">
               Enter your email and we’ll send you a verification code
             </p>
 
-            {/* Name field with inline label */}
-            <div className="relative">
-              <label
-                className="absolute -top-2 left-3 px-1 bg-white text-xs text-secondary-db-70"
-                htmlFor="name"
-              >
-                Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                placeholder="Enter your name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-secondary-db-20 bg-white outline-none focus:ring-2 focus:ring-primary-way-100"
-              />
-            </div>
-
-            {/* Email field with subtle bg like mock */}
-            <div className="relative">
+            {/* Email field with inline label inside border */}
+            <div className="w-full relative">
               <label
                 className="absolute -top-2 left-3 px-1 bg-white text-xs text-secondary-db-70"
                 htmlFor="email"
@@ -219,25 +193,19 @@ export default function Signup() {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-secondary-db-20 bg-white outline-none focus:bg-white focus:ring-2 focus:ring-primary-way-100"
+                className="w-full px-4 py-3 rounded-lg border border-secondary-db-20 cursor-pointer bg-white outline-none focus:ring-2 focus:ring-primary-way-100"
               />
             </div>
 
-            {error && <p className="text-xs text-red-500">{error}</p>}
+            {error && <p className="text-xs text-red-500 w-full">{error}</p>}
 
             <button
-              onClick={handleSendOtp}
+              onClick={sendOtp}
               disabled={loading}
-              className="bg-primary-way-100 hover:bg-primary-way-90 cursor-pointer text-white w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60"
+              className="bg-primary-way-100 hover:bg-primary-way-90 text-white w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60"
             >
               {loading ? "Sending code..." : "Continue"}
             </button>
-
-            <p className="text-xs text-secondary-db-70 text-center">
-              Creating an account means you agree to our{" "}
-              <span className="text-primary-way-100 underline cursor-pointer">Terms</span> and{" "}
-              <span className="text-primary-way-100 underline cursor-pointer">Privacy Policy</span>.
-            </p>
           </div>
         )}
 
@@ -268,7 +236,7 @@ export default function Signup() {
             {error && <p className="text-xs text-red-500 text-center">{error}</p>}
 
             <button
-              onClick={handleVerify}
+              onClick={verifyOtp}
               disabled={loading}
               className="bg-primary-way-100 hover:bg-primary-way-90 text-white w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60"
             >
@@ -276,7 +244,7 @@ export default function Signup() {
             </button>
 
             <button
-              onClick={handleResend}
+              onClick={resendOtp}
               disabled={remainingSeconds > 0 || loading}
               className="text-sm text-primary-way-100 disabled:text-secondary-db-40"
             >
@@ -289,7 +257,7 @@ export default function Signup() {
           <div className="flex flex-col justify-center items-center gap-4 px-6 sm:px-8 pt-10 pb-8">
             <Image src="/icons/success.svg" alt="Verified" width={56} height={56} />
             <h2 className="text-xl font-semibold text-black">Account Verified</h2>
-            <p className="text-sm text-secondary-db-70 text-center">Welcome to Waysorted 🚀</p>
+            <p className="text-sm text-secondary-db-70 text-center">Welcome Back to Waysorted 🚀</p>
             <button
               onClick={() => router.replace("/")}
               className="bg-primary-way-100 hover:bg-primary-way-90 text-white w-full py-3 rounded-lg transition-all duration-200"
@@ -299,16 +267,16 @@ export default function Signup() {
           </div>
         )}
 
-        {/* Bottom divider + login link (visible on choose and email steps) */}
+        {/* Bottom divider with "Sign up" link on choose and email steps */}
         <div className="border-t border-secondary-db-5 w-full text-center py-4">
           {(step === "choose" || step === "email") && (
             <p className="text-sm text-secondary-db-70">
-              Already have an account?{" "}
+              Don’t have an account?{" "}
               <span
                 className="text-primary-way-100 underline cursor-pointer"
-                onClick={() => router.push("/login")}
+                onClick={() => router.push("/signup")}
               >
-                Log in
+                Sign up
               </span>
             </p>
           )}
