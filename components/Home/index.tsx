@@ -51,7 +51,9 @@ export default function Home() {
             <TopSection />
             <FloatingButton />
             <ImpactTop />
+            
             <InfoCards />
+            <div className="my-40" />
              {/* Section 1: Secure Animation */}
       <section className="h-[200vh]">
         <SecureAnimation />

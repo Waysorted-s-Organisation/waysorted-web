@@ -33,6 +33,7 @@ const tools: Tool[] = [
     slug: "comment-summarizer",
     description: "Summarize comments and feedback with ease.",
     badge: { label: "Coming Soon", type: "up next" },
+    disabled: true,
   },
   {
     id: 5,
@@ -49,6 +50,7 @@ const tools: Tool[] = [
     slug: "filter-effects",
     description: "Apply filters and effects to your designs with ease.",
     badge: { label: "Unlock Soon", type: "unlock soon" },
+    disabled: true,
   },
   {
     id: 7,
@@ -57,6 +59,7 @@ const tools: Tool[] = [
     slug: "font-pairer",
     description: "Pair fonts effortlessly with smart handling and previews.",
     badge: { label: "Unlock Soon", type: "unlock soon" },
+    disabled: true,
   }
 ];
 

@@ -284,7 +284,7 @@ export default function Comments() {
         {/* Cards container overlays the blue block exactly */}
         <div
           ref={cardsContainerRef}
-          className="absolute -inset-5 z-10"
+          className="absolute -inset-0 z-10"
           aria-hidden="true"
         >
           {Array.from({ length: 12 }).map((_, idx) => (

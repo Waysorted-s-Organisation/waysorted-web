@@ -266,7 +266,7 @@ export default function DocsShell({
         </div>
       </main>
 
-      <div id="footer-sentinel" className="dashed-line mx-16 mt-16" />
+      <div id="footer-sentinel" className="dashed-line mt-16" />
       <div className="pt-16 pb-30">
         <FeedbackRating
           title="Help us improve WayDocs!"

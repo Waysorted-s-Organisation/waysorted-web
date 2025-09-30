@@ -6,12 +6,12 @@ export default function GlassModeCard() {
   return (
     <div
       className={`w-[500px] h-[210px] p-6 rounded-2xl shadow border border-gray-100 flex flex-col justify-center items-center transition-all duration-300
-        ${isGlassMode ? "glass-bg glass-cursor" : "white-bg-dots wayspace-cursor-1"}
+        ${isGlassMode ? "glass-bg wayspace-cursor" : "white-bg-dots wayspace-cursor"}
       `}
     >
       <button
         className={`text-lg font-semibold max-w-40 px-4 py-2 rounded-xl transition
-          ${isGlassMode ? "text-black glass glass-cursor" : "text-white bg-primary-way-100 wayspace-cursor-1"}
+          ${isGlassMode ? "text-black glass wayspace-cursor" : "text-white bg-primary-way-100 wayspace-cursor"}
         `}
         onClick={() => setIsGlassMode((prev) => !prev)}
       >

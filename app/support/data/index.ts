@@ -18,7 +18,7 @@ export const faqData: FAQItem[] = [
   },
   {
     question: "Who creates these tools packs?",
-    answer: "The core packs are created by a team of highly skilled developers.",
+    answer: "The core packs are created by a team of highly skilled developers and designers.",
   },
   {
     question: "Can I suggest tools to be included?",

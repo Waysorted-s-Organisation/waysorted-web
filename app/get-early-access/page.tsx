@@ -67,14 +67,14 @@ export default function EarlyAccessPage() {
 
           {/* Right: Feature panel */}
           <section className="relative overflow-hidden rounded-3xl rounded-none bg-primary-way-10 ">
-            <div className="bg-primary-way-10 p-5 border-l border-primary-way-20 rounded-none">
-              <div className="rounded-3xl blue-bg-dots p-10">
+            <div className="bg-primary-way-10 p-4 border-l border-primary-way-20 rounded-none">
+              <div className="rounded-3xl blue-bg-dots p-8">
                 <div className="relative rounded-2xl">
                   <div className="flex items-start justify-between">
                     <h2 className="text-white text-2xl font-regular w-1/2">
                       Discover everything Way has to offer…
                     </h2>
-                    <div className="relative -mt-6 -mr-2">
+                    <div className="relative -mt-3 -mr-2">
                       <Image
                         src="/icons/Fastest.svg"
                         alt="Fastest"
@@ -108,7 +108,7 @@ export default function EarlyAccessPage() {
                     />
                   </div>
 
-                  <div className="relative -ml-10">
+                  <div className="relative -ml-8">
                     <Image
                       src="/icons/early-bird.svg"
                       alt="Early bird"

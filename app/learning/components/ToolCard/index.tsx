@@ -1,17 +1,26 @@
 "use client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Tool } from "../../types";
-import { Badge } from "../Badge";
+import { Tool } from "@/app/learning/types";
+import { Badge } from "@/app/learning/components/Badge";
 
 export default function ToolCard({ tool }: { tool: Tool }) {
   const router = useRouter();
+  const isDisabled = tool.disabled === true;
   const badge = tool.badge;
+  const onLearnMore = () => {
+    if (isDisabled) return;
+    router.push(`/learning/${tool.slug}`);
+  };
 
   return (
-    <div className="bg-white rounded-2xl border border-secondary-db-5 p-4">
+    <div
+      className={`bg-white rounded-2xl border border-secondary-db-5 p-4 relative ${
+        isDisabled ? "opacity-70" : "hover:bg-primary-way-10 cursor-pointer"
+      }`}
+    >
       <div className="flex items-center justify-between mb-2 relative">
-        <div className="w-12 h-12 rounded-xl bg-gray-200 relative">
+        <div className="w-12 h-12 rounded-xl bg-gray-200 relative overflow-hidden">
           <Image
             src={tool.icon}
             alt={tool.name}
@@ -22,8 +31,10 @@ export default function ToolCard({ tool }: { tool: Tool }) {
         </div>
         {badge && <Badge type={badge.type} label={badge.label} showDot={false} />}
       </div>
+
       <h2 className="font-medium text-xl text-secondary-db-100">{tool.name} {tool.nameLogo && <Image src={tool.nameLogo} alt={tool.name} width={20} height={20} className="inline-block ml-1" />}</h2>
-      <a className="text-xs text-secondary-db-70 cursor-pointer">
+
+      <a className="text-xs text-secondary-db-70 cursor-default">
         <Image
           src="/icons/open.svg"
           alt="Open in Figma"
@@ -33,19 +44,23 @@ export default function ToolCard({ tool }: { tool: Tool }) {
         />
         Figma Plugin
       </a>
+
       <p className="text-secondary-db-70 font-medium text-sm mt-3">{tool.description}</p>
+
       <button
-        onClick={() => router.push(`/learning/${tool.slug}`)}
-        className="text-secondary-db-100 hover:text-primary-way-100 mt-4 text-sm font-medium flex items-center cursor-pointer"
+        onClick={onLearnMore}
+        aria-label={isDisabled ? "Coming soon" : "Learn more about this tool"}
+        className={`mt-4 text-sm font-medium flex items-center ${
+          isDisabled
+            ? "text-secondary-db-40 cursor-not-allowed"
+            : "text-secondary-db-100 hover:text-primary-way-100 cursor-pointer"
+        }`}
       >
         Learn more
         <span className="relative ml-1 w-3 h-2">
-          <Image
-            src="/icons/arrow-right-black.svg"
-            alt="Arrow Right"
-            fill
-            className="object-contain"
-          />
+          <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 9L4.64645 5.35355C4.84171 5.15829 4.84171 4.84171 4.64645 4.64645L1 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
         </span>
       </button>
     </div>

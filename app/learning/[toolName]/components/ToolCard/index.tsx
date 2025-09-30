@@ -16,7 +16,7 @@ export default function ToolCard({ tool }: { tool: Tool }) {
   return (
     <div
       className={`bg-white rounded-2xl border border-secondary-db-5 p-4 relative ${
-        isDisabled ? "opacity-70" : ""
+        isDisabled ? "opacity-70" : "hover:bg-primary-way-10 cursor-pointer"
       }`}
     >
       <div className="flex items-center justify-between mb-2 relative">
@@ -58,12 +58,9 @@ export default function ToolCard({ tool }: { tool: Tool }) {
       >
         Learn more
         <span className="relative ml-1 w-3 h-2">
-          <Image
-            src="/icons/arrow-right-black.svg"
-            alt="Arrow Right"
-            fill
-            className="object-contain"
-          />
+          <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M1 9L4.64645 5.35355C4.84171 5.15829 4.84171 4.84171 4.64645 4.64645L1 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          </svg>
         </span>
       </button>
     </div>

@@ -20,7 +20,7 @@ export default function TopBanner({ earlyAccess }: TopBannerProps) {
             !
           </span>
           <p className="text-sm text-primary-way-100">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus empor vulputate.
+            Secure your early access and enjoy a head start with extra features, priority support, and special rewards.
           </p>
         </div>
         <div className="shrink-0">
