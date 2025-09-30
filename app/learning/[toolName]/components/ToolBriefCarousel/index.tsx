@@ -88,7 +88,7 @@ export default function ToolBriefCarousel({
     e.preventDefault()
   }
 
-  const endDrag = React.useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+  const endDrag = React.useCallback(() => {
     if (!isDragging) return
     const el = scrollerRef.current
     if (el && dragRef.current.pointerId != null) {
@@ -104,12 +104,12 @@ export default function ToolBriefCarousel({
 
   const onPointerUp: React.PointerEventHandler<HTMLDivElement> = (e) => {
     if (dragRef.current.pointerId !== e.pointerId) return
-    endDrag(e)
+    endDrag()
   }
 
   const onPointerCancel: React.PointerEventHandler<HTMLDivElement> = (e) => {
     if (dragRef.current.pointerId !== e.pointerId) return
-    endDrag(e)
+    endDrag()
   }
 
   // Prevent default browser drag (e.g., images) which interferes with mouse-drag scrolling
@@ -159,7 +159,7 @@ export default function ToolBriefCarousel({
           style={{
             touchAction: 'pan-y',
             // Disable snap while actively dragging for smoother feel
-            scrollSnapType: isDragging ? 'none' as any : undefined
+            scrollSnapType: isDragging ? 'none' : 'x mandatory'
           }}
           className={`no-scrollbar-1 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 md:px-0 scroll-px-4 md:scroll-px-0 ${
             isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'
