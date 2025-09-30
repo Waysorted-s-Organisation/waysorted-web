@@ -25,7 +25,6 @@ export default function OTPInput({
       const next = Array.from({ length }, (_, i) => value[i] || "");
       setDigits(next);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [value, length]);
 
   const code = useMemo(() => digits.join(""), [digits]);
