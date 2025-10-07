@@ -154,14 +154,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
 
           {/* Right actions */}
           <div className="flex items-center gap-2">
-            {/* Light mode toggle (always visible) */}
-            <button
-              className="border border-secondary-db-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer"
-              title="Toggle Light Mode"
-              aria-label="Toggle Light Mode"
-            >
-              <Image src="/icons/light.svg" alt="Light Mode" width={20} height={20} />
-            </button>
 
             {/* Language: hide on mobile, available inside drawer */}
             <div className="relative hidden md:block">
