@@ -5,39 +5,21 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { InertiaPlugin } from "gsap/InertiaPlugin";
 import CommentCard from "@/components/CommentCard";
+import { useTypewriter } from "@/hooks/useTypeWriter";
  
 gsap.registerPlugin(ScrollTrigger, InertiaPlugin);
 
  
 export default function Comments() {
-  const wordsRefs = useRef<HTMLSpanElement[]>([]);
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<HTMLDivElement[]>([]);
+  const typedText = useTypewriter(["searching", "hunting", "exploring"]);
   const cardsContainerRef = useRef<HTMLDivElement | null>(null); // container that cards stay inside
- 
-  const VISION_STATEMENT =
-    "Designers juggle 100+ tools weekly, wasting time switching and searching perfect tools. Waysorted tackle the chaotic workflow...";
- 
+  
   useEffect(() => {
-    if (!sectionRef.current || wordsRefs.current.length === 0) return;
+    if (!sectionRef.current) return;
  
     // Scroll-synced word animation
-    gsap.set(wordsRefs.current, { opacity: 0 });
- 
-    const masterTimeline = gsap.timeline({
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top 50%",
-        end: "bottom 90%",
-        scrub: 1,
-        markers: false,
-        invalidateOnRefresh: true,
-      },
-    });
- 
-    masterTimeline
-      .to(wordsRefs.current, { opacity: 0.2, duration: 1, stagger: 0.15, ease: "power3.out" })
-      .to(wordsRefs.current, { opacity: 1, duration: 1, stagger: 0.15, ease: "power3.out" }, 0.5);
  
     // Floating cards over the dedicated cards container
     let oldX = 0,
@@ -252,7 +234,6 @@ export default function Comments() {
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-      masterTimeline.kill();
       cleaners.forEach((c) => c());
     };
   }, []);
@@ -264,27 +245,31 @@ export default function Comments() {
     >
       {/* Wrap blue block and overlay a positioned container for the floating cards */}
       <div className="relative w-full max-w-6xl mx-auto">
-        {/* Background text (blue block) */}
-        <div className="bg-blue-500 rounded-3xl text-white relative z-0 w-full">
-          <p className="text-white font-normal text-2xl leading-relaxed py-35 px-35">
-            {VISION_STATEMENT.split(" ").map((word, index) => (
-              <span
-                key={`word-${index}`}
-                ref={(el) => {
-                  if (el) wordsRefs.current[index] = el;
-                }}
-                className="inline-block mx-1"
-              >
-                {word}
+        <div className="bg-dots rounded-3xl text-white relative z-0 w-full">
+          <section className="mx-auto max-w-5xl px-8 py-14 flex flex-col items-center">
+            <p className="text-white font-normal text-3xl md:text-6xl leading-tight text-center">
+              <span>Creators spend </span>
+              <span className="inline-block align-middle border-2 border-white/80 px-4 py-2 rounded-full animate-pulse whitespace-nowrap">
+                {typedText}
               </span>
-            ))}
-          </p>
+              <span className="block mt-3">
+                100+ tools daily than creating.
+              </span>
+            </p>
+
+            <button
+              className="mt-10 bg-secondary-db-100 tool-hunt text-white font-semibold text-base rounded-xl py-3 px-7 border border-white/20 cursor-pointer"
+              type="button"
+            >
+              End the Tool Hunt.
+            </button>
+          </section>
         </div>
  
         {/* Cards container overlays the blue block exactly */}
         <div
           ref={cardsContainerRef}
-          className="absolute -inset-0 z-10"
+          className="absolute -inset-0 z-10 pointer-events-none"
           aria-hidden="true"
         >
           {Array.from({ length: 12 }).map((_, idx) => (
@@ -294,7 +279,7 @@ export default function Comments() {
                 if (el) cardRefs.current[idx] = el;
               }}
               // Left/top 0 ensures GSAP's x/y are relative to container's top-left
-              className="absolute left-0 top-0 will-change-transform"
+              className="absolute left-0 top-0 will-change-transform pointer-events-auto"
               style={{ zIndex: 10 }}
             >
               <CommentCard

@@ -38,27 +38,8 @@ export default function TeamSection() {
 
   return (
 
-    <section className="bg-white px-6 md:px-20 lg:px-32 py-40 text-center">
+    <section className="bg-white px-6 md:px-20 lg:px-32 pt-12 pb-40 text-center">
       {/* Heading */}
-      <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md mb-6">
-        <Image
-          src="/icons/team.svg"
-          alt="Our Team"
-          width={30}
-          height={30}
-          className="block p-1"
-        />
-        <span className="pl-1 pr-2 py-1 text-secondary-db-100">Way Team</span>
-      </span>
-
-      <h2 className="text-3xl md:text-4xl font-bold text-secondary-db-100 mb-3">
-        Meet the <span className="bg-tertiary-vivid-blue-500/10 rounded-xl text-tertiary-vivid-blue-500 px-2">
-          Minds
-        </span> Behind the Magic
-      </h2>
-      <p className="text-secondary-db-70 max-w-xl mx-auto mb-16 text-lg">
-        A small team with a big mission — turning chaotic workflows into seamless creativity.
-      </p>
 
       {/* Team Members Grid */}
       <div className="grid gap-y-8 gap-x-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center max-w-6xl mx-auto">

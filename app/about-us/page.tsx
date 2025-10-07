@@ -21,10 +21,10 @@ export default function AboutUs() {
         >
     <Header showBanner={showBanner} setShowBanner={setShowBanner} />
       <HeroSection />
-      <StorySection />
-      <ValuesSection />
       <TeamSection />
       <VisionSection />
+      <ValuesSection />
+      <StorySection />
       <TeamCollage />
       <JoinCommunity />
       <Footer />

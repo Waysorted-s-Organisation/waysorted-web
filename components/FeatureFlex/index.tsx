@@ -80,7 +80,7 @@ export default function FeatureFlex() {
           <Focus />
 
           {/* CTA */}
-          <GlowStarButton className="w-[277px] h-[85px] bg-black text-white flex items-center justify-center rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-semibold cursor-pointer">
+          <GlowStarButton className="w-[277px] h-[85px] bg-black text-white shadow-glow flex items-center justify-center rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-semibold cursor-pointer">
             <span className="flex items-center justify-center gap-4 w-full">
               Start Instantly!
               <span

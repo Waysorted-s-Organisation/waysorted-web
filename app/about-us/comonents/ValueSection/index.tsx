@@ -252,10 +252,10 @@ function AnimatedCard({
       <motion.div
         ref={ref}
         style={motionStyle}
-        className={`relative overflow-hidden rounded-2xl bg-tertiary-orange-500 p-8 text-white w-xl transform-gpu will-change-transform ${className}`}
+        className={`relative overflow-hidden rounded-2xl bg-tertiary-orange-500 p-8 text-white w-2xl transform-gpu will-change-transform ${className}`}
       >
         <div className="relative z-10 flex items-start gap-6">
-          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl hover:border-2 hover:border-white/30 bg-white/10 backdrop-blur-sm">
+          <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl outline-1 outline:white/40 bg-white/10 backdrop-blur-sm">
             <span className="text-2xl font-semibold">{number}</span>
           </div>
           <div className="flex-1 space-y-3">

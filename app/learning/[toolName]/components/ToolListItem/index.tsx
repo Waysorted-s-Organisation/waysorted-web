@@ -3,6 +3,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Tool } from "@/app/learning/types";
 import { Badge } from "@/app/learning/components/Badge";
+import React from "react";
 
 export default function ToolListItem({ tool }: { tool: Tool }) {
   const router = useRouter();
@@ -14,10 +15,29 @@ export default function ToolListItem({ tool }: { tool: Tool }) {
     router.push(`/learning/${tool.slug}`);
   };
 
+  const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
+    if (isDisabled) return;
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onLearnMore();
+    }
+  };
+
   return (
     <div
-      className={`bg-white border border-secondary-db-5 rounded-xl p-4 flex items-center justify-between ${
-        isDisabled ? "opacity-70" : "hover:bg-primary-way-10 cursor-pointer"
+      onClick={onLearnMore}
+      onKeyDown={onKeyDown}
+      role="link"
+      tabIndex={isDisabled ? -1 : 0}
+      aria-label={
+        isDisabled
+          ? `${tool.name} is coming soon`
+          : `Learn more about ${tool.name}`
+      }
+      className={`group bg-white border border-secondary-db-5 rounded-xl p-4 flex items-center justify-between outline-none ${
+        isDisabled
+          ? "opacity-70 cursor-not-allowed"
+          : "hover:bg-primary-way-5 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary-way-100"
       }`}
     >
       <div className="flex items-center gap-4">
@@ -33,10 +53,21 @@ export default function ToolListItem({ tool }: { tool: Tool }) {
         <div>
           <h2 className="font-medium w-xs text-xl text-secondary-db-100 flex items-center">
             {tool.name}
-            {tool.nameLogo && <Image src={tool.nameLogo} alt={tool.name} width={20} height={20} className="inline-block ml-1" />}
-            {badge && <Badge type={badge.type} label={badge.label} showDot={true} />}
+            {tool.nameLogo && (
+              <Image
+                src={tool.nameLogo}
+                alt={tool.name}
+                width={20}
+                height={20}
+                className="inline-block ml-1"
+              />
+            )}
+            {badge && (
+              <Badge type={badge.type} label={badge.label} showDot={true} />
+            )}
           </h2>
-          <a className="text-xs text-secondary-db-70 cursor-default">
+          {/* Non-interactive since the whole row is clickable */}
+          <span className="text-xs text-secondary-db-70 cursor-default select-none">
             <Image
               src="/icons/open.svg"
               alt="Open in Figma"
@@ -45,7 +76,7 @@ export default function ToolListItem({ tool }: { tool: Tool }) {
               className="inline object-contain mr-1"
             />
             Figma Plugin
-          </a>
+          </span>
         </div>
       </div>
 
@@ -53,22 +84,33 @@ export default function ToolListItem({ tool }: { tool: Tool }) {
         {tool.description}
       </p>
 
-      <button
-        onClick={onLearnMore}
-        aria-label={isDisabled ? "Coming soon" : "Learn more about this tool"}
+      {/* Non-interactive "Learn more" since the whole row is clickable */}
+      <div
         className={`text-sm font-medium flex items-center ${
           isDisabled
-            ? "text-secondary-db-40 cursor-not-allowed"
-            : "text-secondary-db-100 hover:text-primary-way-100 cursor-pointer"
+            ? "text-secondary-db-40"
+            : "text-primary-way-100"
         }`}
       >
         Learn more
         <span className="relative ml-1 w-3 h-2">
-          <svg width="6" height="10" viewBox="0 0 6 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M1 9L4.64645 5.35355C4.84171 5.15829 4.84171 4.84171 4.64645 4.64645L1 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+          <svg
+            width="6"
+            height="10"
+            viewBox="0 0 6 10"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              d="M1 9L4.64645 5.35355C4.84171 5.15829 4.84171 4.84171 4.64645 4.64645L1 1"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+            />
           </svg>
         </span>
-      </button>
+      </div>
     </div>
   );
 }
