@@ -141,6 +141,7 @@ export default function Login() {
         body: JSON.stringify({ email: email.trim() }),
       });
       const text = await res.text();
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       let data: any = null; try { data = text ? JSON.parse(text) : null; } catch {}
 
       if (!res.ok) {
@@ -190,6 +191,7 @@ export default function Login() {
         body: JSON.stringify({ request_id: requestId, otp: code }),
       });
       const text = await res.text();
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       let data: any = null; try { data = text ? JSON.parse(text) : null; } catch {}
 
       if (!res.ok || data?.ok === false) {

@@ -93,6 +93,7 @@ export default function Signup() {
   // helper (optional)
   const parseResponse = async (res: Response) => {
     const text = await res.text();
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     let data: any = null;
     try { data = text ? JSON.parse(text) : null; } catch {}
     return { data, text };

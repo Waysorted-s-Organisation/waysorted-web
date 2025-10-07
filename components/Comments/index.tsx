@@ -17,7 +17,6 @@ const CARD_COUNT = 12;
 const CARD_WIDTH = 240;
 const CARD_HEIGHT = 160;
 const PADDING = 12;
-const MASS = 1; // All cards same mass for simplicity
 const BOUNCE = 0.9; // Elasticity for wall/collision
 
 

@@ -50,6 +50,7 @@ export async function POST(req: Request) {
     });
 
     const provText = await provRes.text();
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     let provData: any = null;
     try {
       provData = provText ? JSON.parse(provText) : null;

@@ -20,6 +20,7 @@ export default function ClientToolsSection() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
         if (!cancelled) setTools(json.data ?? []);
+        //eslint-disable-next-line @typescript-eslint/no-explicit-any
       } catch (e: any) {
         if (!cancelled) setError("Failed to load tools");
         console.error("ClientToolsSection fetch error:", e);

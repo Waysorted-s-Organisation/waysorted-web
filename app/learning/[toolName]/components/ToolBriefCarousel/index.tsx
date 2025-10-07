@@ -90,8 +90,7 @@ export default function ToolBriefCarousel({
         applyRightSpacer()
         // Start with the track flush-left: first card visible with no leading blank space
         gsap.set(trackEl, { x: 0 })
-
-        let { endShift } = measure()
+        const { endShift } = measure()
 
         // Horizontal tween from 0 to -endShift (only as much as needed to center the last card)
         const tween = gsap.to(trackEl, {
