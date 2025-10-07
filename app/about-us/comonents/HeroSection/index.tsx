@@ -6,38 +6,27 @@ import React from "react";
 const HeroSection: React.FC = () => {
   return (
     <section className="relative w-full">
-      {/* Background: Top half secondary-db-100, bottom half white */}
-      <div className="absolute inset-0">
-        {/* Top half */}
-        <div className="h-1/2 gray-bg-dots"></div>
-        {/* Bottom half */}
-        <div className="h-1/2 bg-white"></div>
-      </div>
-
       {/* Content */}
-      <div className="relative z-10 pt-12 md:pt-24">
-        {/* Heading */}
-        <div className="text-center px-4 sm:px-6 md:px-8">
-          <h2 className="text-4xl md:text-5xl font-semibold text-white">
-            Our Team
-          </h2>
-          <p className="mt-6 text-base sm:text-lg md:text-xl text-secondary-db-20 max-w-3xl font-medium mx-auto px-2 sm:px-0">
-            We are a crazy symphony of professionals, orchestrating ideas to visions, and fine tuning visions to WaySorted!
-          </p>
-        </div>
-
-        {/* Team Image */}
-        <div className="mt-16 flex justify-center px-4 sm:px-6 md:px-8">
-          <div className="relative w-full sm:max-w-3xl md:max-w-4xl lg:max-w-[959px] h-[250px] md:h-[475px] rounded-xl shadow-xl border-[12px] border-white bg-primary-way-20">
-            <Image
-              src="/icons/our-team.svg"
-              alt="Our Team"
-              fill
-              className="object-cover rounded"
-              priority
-            />
-          </div>
-        </div>
+      <div className="z-10 py-12 md:py-24 gray-bg-dots text-center">
+        <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md mb-6">
+                <Image
+                  src="/icons/team.svg"
+                  alt="Our Team"
+                  width={30}
+                  height={30}
+                  className="block p-1"
+                />
+                <span className="pl-1 pr-2 py-1 text-secondary-db-100">Way Team</span>
+              </span>
+        
+              <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+                Meet the <span className="bg-[#FF629B]/25 rounded-xl text-[#FF6CA1] px-2">
+                  Minds
+                </span> Behind the Magic
+              </h2>
+              <p className="text-secondary-db-30 max-w-xl mx-auto mb-16 text-lg">
+                A small team with a big mission — turning chaotic workflows into seamless creativity.
+              </p>
       </div>
     </section>
   );

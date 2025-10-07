@@ -1,6 +1,6 @@
 import mongoose, { Mongoose } from "mongoose";
 
-const { MONGODB_URI } = process.env;
+const MONGODB_URI = process.env.NEXT_PUBLIC_MONGODB_URI;
 if (!MONGODB_URI) {
   throw new Error("MONGODB_URI not set");
 }

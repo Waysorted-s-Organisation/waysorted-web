@@ -6,7 +6,7 @@ import Image from "next/image";
 type Ball = {
   x: number;
   y: number;
-  r: number;   // radius in CSS px
+  r: number;   // radius in CSS px (kept for clarity; constant in this demo)
   vy: number;  // vertical speed
   spin: number; // radians/sec
   rot: number; // current rotation radians
@@ -17,9 +17,13 @@ function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
 
-const EDGE_PAD = 6; // visual padding from track ends
+// Visual constants
+const EDGE_PAD = 1;        // padding from the rounded ends of the track
+const BUTTON_WIDTH = 168;  // fixed button width
+const BUTTON_HEIGHT = 40;  // fixed button height
+const BALL_RADIUS = 20;    // constant ball radius (ALL balls same size)
 
-// Your provided SVG, used as the sprite
+// Basketball SVG (sprite)
 const BALL_SVG = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M20.2606 27.4533C16.9631 29.0457 11.9354 28.5588 11.0039 27.5074L10.2922 27.2111C8.41446 27.044 4.58088 23.3962 3.77316 20.4894L3.56579 19.9614C2.45317 17.617 2.39338 12.4789 3.77921 10.6621L3.98203 10.2001C4.42665 7.7729 8.5026 4.14289 10.6955 3.77861L10.6964 3.77823C10.6955 3.77861 11.2317 3.57017 11.2317 3.57017C13.9115 2.09159 19.3139 2.75832 20.729 3.90832L21.3228 4.18929C23.1771 4.75141 27.0385 8.52247 27.4519 10.9346L27.4522 10.9356C27.5399 11.1603 27.5954 11.3977 27.6957 11.6154C28.9277 14.29 28.4971 18.5919 27.418 20.3096L27.2231 20.775C26.9363 22.979 22.7282 27.0131 20.9965 27.1323L20.2606 27.4533Z" fill="#FC822B"/>
 <path d="M11.0036 27.507C10.7637 27.4162 10.5263 27.3179 10.292 27.2107C12.9821 26.4687 15.3291 23.4586 18.3149 16.9322C18.3577 16.8372 18.4024 16.7415 18.4457 16.6451C18.4716 16.5871 18.4979 16.5301 18.5229 16.4725C21.5954 9.61887 21.2358 5.67631 20.7287 3.90811C20.9285 3.9963 21.127 4.08947 21.3225 4.18908C22.2779 8.31312 20.3301 13.6701 18.987 16.6723C18.9598 16.7352 18.9323 16.7949 18.9058 16.8542C18.8635 16.9479 18.821 17.0407 18.7793 17.133C15.8914 23.4482 13.636 26.484 11.0036 27.507Z" fill="#263238"/>
@@ -37,7 +41,6 @@ export default function PlaySecureCard() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const trackRef = useRef<HTMLDivElement | null>(null);
-  const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   const [isDemo, setIsDemo] = useState(false);
 
@@ -49,9 +52,7 @@ export default function PlaySecureCard() {
   // Animation
   const rafRef = useRef<number | null>(null);
   const lastTimeRef = useRef<number>(0);
-  const lastPointerMsRef = useRef<number>(0);
   const targetXRef = useRef<number>(0);
-  const elapsedMsRef = useRef<number>(0);
 
   // Metrics
   const metricsRef = useRef({
@@ -63,8 +64,8 @@ export default function PlaySecureCard() {
     trackBottom: 0,
     trackWidth: 0,
     trackHeight: 0,
-    halfBtnW: 40,
-    btnH: 36,
+    halfBtnW: BUTTON_WIDTH / 2,
+    btnH: BUTTON_HEIGHT,
   });
 
   // Sprite image for ball
@@ -80,9 +81,9 @@ export default function PlaySecureCard() {
   // Canvas DPR/size
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 });
 
-  // Load the SVG sprite once
+  // Load sprite
   useEffect(() => {
-    const img = new window.Image();
+    const img = document.createElement("img");
     img.width = 32;
     img.height = 32;
     img.decoding = "async";
@@ -91,16 +92,13 @@ export default function PlaySecureCard() {
       ballImgRef.current = img;
       ballReadyRef.current = true;
     };
-    img.onerror = () => {
-      console.warn("Failed to load basketball SVG sprite");
-    };
   }, []);
 
+  // Track + container metrics
   const updateContainerAndTrackMetrics = () => {
     const container = containerRef.current;
     const track = trackRef.current;
-    const btn = buttonRef.current;
-    if (!container || !track || !btn) return;
+    if (!container || !track) return;
 
     const cRect = container.getBoundingClientRect();
     const tRect = track.getBoundingClientRect();
@@ -113,7 +111,13 @@ export default function PlaySecureCard() {
     metricsRef.current.trackBottom = tRect.bottom - cRect.top;
     metricsRef.current.trackWidth = tRect.width;
     metricsRef.current.trackHeight = tRect.height;
-    metricsRef.current.btnH = btn.offsetHeight || 36;
+
+    // Lock Y to vertical center of the track
+    const yLocked =
+      metricsRef.current.trackTop +
+      metricsRef.current.trackHeight / 2 -
+      metricsRef.current.btnH / 2;
+    setBtnY(yLocked);
   };
 
   const resizeCanvas = () => {
@@ -138,55 +142,41 @@ export default function PlaySecureCard() {
     resizeCanvas();
     updateContainerAndTrackMetrics();
 
-    const roContainer = new ResizeObserver(() => {
+    const ro = new ResizeObserver(() => {
       resizeCanvas();
       updateContainerAndTrackMetrics();
     });
-    if (containerRef.current) roContainer.observe(containerRef.current);
-
-    // Keep button width up to date (used for clamping)
-    const roButton = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const w = Math.round(entry.contentRect.width);
-        if (w > 0) metricsRef.current.halfBtnW = w / 2;
-      }
-    });
-    if (buttonRef.current) roButton.observe(buttonRef.current);
-
-    return () => {
-      roContainer.disconnect();
-      roButton.disconnect();
-    };
+    if (containerRef.current) ro.observe(containerRef.current);
+    return () => ro.disconnect();
   }, []);
 
-  const startDemo = () => {
+  // Start/stop on hover
+  const startDemo = (clientX?: number) => {
     ballsRef.current = [];
     spawnTimerRef.current = 0;
     spawnIntervalRef.current = 650;
     idCounterRef.current = 0;
-    elapsedMsRef.current = 0;
 
     updateContainerAndTrackMetrics();
 
-    // Measure current button width immediately (for correct clamp)
-    if (buttonRef.current) {
-      const w = Math.round(buttonRef.current.offsetWidth);
-      if (w > 0) metricsRef.current.halfBtnW = w / 2;
+    const m = metricsRef.current;
+    const center = m.trackLeft + m.trackWidth / 2;
+    const minCenter = m.trackLeft + m.halfBtnW + EDGE_PAD;
+    const maxCenter = m.trackRight - m.halfBtnW - EDGE_PAD;
+
+    let startCenter = center;
+    if (clientX !== undefined && containerRef.current) {
+      const cRect = containerRef.current.getBoundingClientRect();
+      const localX = clientX - cRect.left;
+      startCenter = clamp(localX, minCenter, maxCenter);
     }
 
-    const { trackLeft, trackWidth, btnH, trackTop, trackHeight } = metricsRef.current;
-    const startCenter = trackLeft + trackWidth / 2;
-    setBtnX(startCenter);
     btnXRef.current = startCenter;
-
-    // Lock Y to the center of the track
-    setBtnY(trackTop + trackHeight / 2 - btnH / 2);
-
-    targetXRef.current = startCenter;
-    lastPointerMsRef.current = performance.now();
-
+    setBtnX(startCenter);
     setIsDemo(true);
     lastTimeRef.current = performance.now();
+    targetXRef.current = startCenter;
+
     rafRef.current = requestAnimationFrame(loop);
   };
 
@@ -196,29 +186,43 @@ export default function PlaySecureCard() {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
+    // Clear balls and recenter
+    ballsRef.current = [];
+    const m = metricsRef.current;
+    const center = m.trackLeft + m.trackWidth / 2;
+    btnXRef.current = center;
+    setBtnX(center);
+    const yLocked = m.trackTop + m.trackHeight / 2 - m.btnH / 2;
+    setBtnY(yLocked);
+    // Redraw clean background
+    draw();
   };
 
-  // Pointer: only horizontal follow inside the track (clamp the CENTER)
+  // Follow horizontally while inside the card
   const onMouseMove = (e: React.MouseEvent) => {
     if (!isDemo || !containerRef.current) return;
-
     const cRect = containerRef.current.getBoundingClientRect();
     const localX = e.clientX - cRect.left;
 
-    const { trackLeft, trackRight, halfBtnW } = metricsRef.current;
-    const minCenter = trackLeft + halfBtnW + EDGE_PAD;
-    const maxCenter = trackRight - halfBtnW - EDGE_PAD;
+    const m = metricsRef.current;
+    const minCenter = m.trackLeft + m.halfBtnW + EDGE_PAD;
+    const maxCenter = m.trackRight - m.halfBtnW - EDGE_PAD;
 
     targetXRef.current = clamp(localX, minCenter, maxCenter);
-    lastPointerMsRef.current = performance.now();
+  };
+
+  const onMouseEnter = (e: React.MouseEvent) => {
+    if (!isDemo) startDemo(e.clientX);
+  };
+  const onMouseLeave = () => {
+    if (isDemo) stopDemo();
   };
 
   const loop = (now: number) => {
     const dt = Math.min(0.04, (now - lastTimeRef.current) / 1000);
     lastTimeRef.current = now;
-    elapsedMsRef.current += dt * 1000;
 
-    update(dt, now);
+    update(dt);
     draw();
 
     rafRef.current = requestAnimationFrame(loop);
@@ -226,7 +230,7 @@ export default function PlaySecureCard() {
 
   const spawnBall = () => {
     const { w } = sizeRef.current;
-    const r = 10 + Math.random() * 12; // radius
+    const r = BALL_RADIUS; // constant size
     const margin = r + 8;
     const x = margin + Math.random() * (w - margin * 2);
     const y = -r - 6;
@@ -236,11 +240,10 @@ export default function PlaySecureCard() {
     ballsRef.current.push({ x, y, r, vy, spin, rot, id: idCounterRef.current++ });
   };
 
-  const update = (dt: number, now: number) => {
-    // Refresh layout metrics (width cached by observer)
+  const update = (dt: number) => {
     updateContainerAndTrackMetrics();
 
-    // Spawn cadence
+    // Spawn cadence (visual only)
     spawnTimerRef.current += dt * 1000;
     if (spawnTimerRef.current >= spawnIntervalRef.current) {
       spawnTimerRef.current = 0;
@@ -258,34 +261,20 @@ export default function PlaySecureCard() {
     }
     ballsRef.current = kept;
 
-    // Button motion (ease center X toward target; auto-oscillate when idle)
+    // Button horizontal ease toward target (clamped)
     const m = metricsRef.current;
     const minCenter = m.trackLeft + m.halfBtnW + EDGE_PAD;
     const maxCenter = m.trackRight - m.halfBtnW - EDGE_PAD;
 
-    let targetX = targetXRef.current;
-
-    // Idle sweep stays within [-radius, +radius] around center
-    if (now - lastPointerMsRef.current > 900) {
-      const center = m.trackLeft + m.trackWidth / 2;
-      const radius = Math.max(0, m.trackWidth / 2 - m.halfBtnW - EDGE_PAD);
-      const t = elapsedMsRef.current / 1000;
-      targetX = center + radius * Math.sin(t * 1.1);
-    }
-
-    // Ease then clamp to be extra safe against any drift
     const currentX = btnXRef.current;
-    const easedX = currentX + (targetX - currentX) * Math.min(1, dt * 12);
+    const targetX = targetXRef.current;
+    const easedX = currentX + (targetX - currentX) * Math.min(1, dt * 14);
     const clampedX = clamp(easedX, minCenter, maxCenter);
 
     if (Math.abs(clampedX - btnXRef.current) > 0.1) {
       btnXRef.current = clampedX;
       setBtnX(clampedX);
     }
-
-    // Y locked to track center
-    const yLocked = m.trackTop + m.trackHeight / 2 - m.btnH / 2;
-    setBtnY(yLocked);
   };
 
   // Draw one ball using the SVG sprite (rotated and scaled)
@@ -294,15 +283,14 @@ export default function PlaySecureCard() {
     ctx.translate(b.x, b.y);
     ctx.rotate(b.rot);
 
-    const size = b.r * 2; // scale sprite so 32x32 maps to desired radius
+    const size = BALL_RADIUS * 2; // constant diameter
     if (ballReadyRef.current && ballImgRef.current) {
       ctx.imageSmoothingEnabled = true;
       ctx.drawImage(ballImgRef.current, -size / 2, -size / 2, size, size);
     } else {
-      // Fallback: simple circle if sprite not ready yet
       ctx.fillStyle = "#F97316";
       ctx.beginPath();
-      ctx.arc(0, 0, b.r, 0, Math.PI * 2);
+      ctx.arc(0, 0, BALL_RADIUS, 0, Math.PI * 2);
       ctx.fill();
     }
 
@@ -343,60 +331,44 @@ export default function PlaySecureCard() {
       ref={containerRef}
       className="relative w-[346px] h-[290px] p-6 rounded-2xl shadow border border-gray-100 flex flex-col items-center text-center overflow-hidden white-bg-dots"
       onMouseMove={onMouseMove}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
-      {/* Canvas for dots and falling basketballs */}
-      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none rounded-2xl" aria-hidden="true" />
+      {/* Canvas for dots and falling basketballs (z-0 keeps it behind content) */}
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 pointer-events-none rounded-2xl z-0"
+        aria-hidden="true"
+      />
 
-      {/* Content hides during demo */}
-      {!isDemo && (
-        <>
-          <Image src="/icons/play-secure.svg" alt="Play Secure" width={60} height={60} />
-          <h3 className="mt-4 text-lg font-semibold text-gray-900">Play Easy, Play Secure</h3>
-          <p className="text-gray-600 text-sm mt-2">
-            Take a breather and sharpen your reflexes! In this minimalist arcade-style demo.
-          </p>
-        </>
-      )}
+      {/* Content (always visible, above the canvas) */}
+      <div className="relative z-10 flex flex-col items-center text-center">
+        <Image src="/icons/play-secure.svg" alt="Play Secure" width={60} height={60} />
+        <h3 className="mt-4 text-lg font-semibold text-gray-900">Play Easy, Play Secure</h3>
+        <p className="text-gray-600 text-sm mt-2">
+          Take a breather and sharpen your reflexes! In this minimalist arcade-style demo.
+        </p>
+      </div>
 
-      {/* Bottom track */}
+      {/* Bottom track (non-interactive) */}
       <div
         ref={trackRef}
-        className="absolute left-4 right-4 bottom-4 h-12 rounded-full bg-indigo-50/80 backdrop-blur-[1px] pointer-events-none"
+        className="absolute left-4 right-4 bottom-4 h-10 rounded-lg bg-primary-way-10 backdrop-blur-[1px] pointer-events-none z-10"
         role="presentation"
         aria-hidden="true"
       />
 
-      {/* Button that follows cursor horizontally on the track */}
+      {/* Button that follows horizontally on the track (fixed size) */}
       <button
-        ref={buttonRef}
-        title="Start the Play Secure demo"
-        aria-label="Start the Play Secure demo"
-        onClick={() => {
-          if (!isDemo) startDemo();
+        type="button"
+        className="absolute -translate-x-1/2 z-10 h-10 w-40 inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-secondary-db-100 text-white text-sm font-medium shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40"
+        style={{
+          left: btnX, // center X
+          top: btnY,  // vertically centered on the track
         }}
-        className={`bg-black text-white rounded-full px-6 py-2 text-sm font-medium shadow transition focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40 whitespace-nowrap min-w-[160px] ${
-          isDemo ? "absolute -translate-x-1/2 z-10" : "mt-auto z-10"
-        }`}
-        style={
-          isDemo
-            ? {
-                left: btnX, // center X (because of -translate-x-1/2)
-                top: btnY,
-              }
-            : undefined
-        }
       >
         Play Challenge
       </button>
-
-      {isDemo && (
-        <button
-          onClick={stopDemo}
-          className="absolute top-2 right-2 text-[10px] font-semibold text-gray-600 bg-white/80 backdrop-blur px-2 py-1 rounded-full shadow-sm z-20"
-        >
-          Stop
-        </button>
-      )}
     </div>
   );
 }

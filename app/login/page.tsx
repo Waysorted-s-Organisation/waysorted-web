@@ -5,7 +5,13 @@ import Image from "next/image";
 import OTPInput from "@/app/login/components/OTPInput";
 import { useUser } from "@/hooks/useUser";
 
-type Step = "choose" | "email" | "otp" | "verified";
+type Step = "choose" | "email" | "otp";
+
+const OTP_URI = process.env.NEXT_PUBLIC_OTP_URI;
+if (!OTP_URI) throw new Error("OTP_URI not set");
+
+const VERIFY_URI = process.env.NEXT_PUBLIC_VERIFY_URI;
+if (!VERIFY_URI) throw new Error("VERIFY_URI not set");
 
 export default function Login() {
   const router = useRouter();
@@ -17,6 +23,9 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
+
+  // request_id returned from send OTP, required for verify
+  const [requestId, setRequestId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) router.replace("/");
@@ -71,20 +80,46 @@ export default function Login() {
 
   const sendOtp = async () => {
     setError(null);
-    if (!validateEmail(email)) return setError("Please enter a valid email address.");
+    const trimmed = email.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      return setError("Please enter a valid email address.");
+    }
 
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/send-otp", {
+      // 1) Provider send
+      const res = await fetch(OTP_URI!, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: trimmed }),
       });
-      const data = await res.json();
-      if (!res.ok || !data?.ok) {
-        setError(data?.message || "Failed to send verification code.");
+      const { data, text } = await (async () => {
+        const t = await res.text(); let d = null; try { d = t ? JSON.parse(t) : null; } catch {}
+        return { data: d, text: t };
+      })();
+
+      if (!res.ok) {
+        setError(data?.message || text || "Failed to send verification code.");
         return;
       }
+
+      const reqId: string | undefined = data?.request_id;
+      const expiresIn: number | undefined = data?.expires_in;
+      if (!reqId) {
+        setError("Server did not return request_id. Please try again.");
+        return;
+      }
+
+      // 2) Save mapping on your server
+      await fetch("/api/auth/otp-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ request_id: reqId, email: trimmed, expires_in: expiresIn }),
+      });
+
+      // 3) Advance
+      setRequestId(reqId);
       setStep("otp");
       startResendCountdown(60);
     } catch {
@@ -99,16 +134,37 @@ export default function Login() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/send-otp", {
+      // 1) Provider resend (new request_id)
+      const res = await fetch(OTP_URI!, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim() }),
       });
-      const data = await res.json();
-      if (!res.ok || !data?.ok) {
-        setError(data?.message || "Failed to resend code.");
+      const text = await res.text();
+      let data: any = null; try { data = text ? JSON.parse(text) : null; } catch {}
+
+      if (!res.ok) {
+        setError(data?.message || text || "Failed to resend code.");
         return;
       }
+
+      const newReqId: string | undefined = data?.request_id;
+      const expiresIn: number | undefined = data?.expires_in;
+      if (!newReqId) {
+        setError("Server did not return request_id on resend. Please try again.");
+        return;
+      }
+
+      // 2) Update mapping on your server
+      await fetch("/api/auth/otp-request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ request_id: newReqId, email: email.trim(), expires_in: expiresIn }),
+      });
+
+      // 3) Update state
+      setRequestId(newReqId);
       startResendCountdown(60);
     } catch {
       setError("Failed to resend code. Please try again.");
@@ -119,27 +175,44 @@ export default function Login() {
 
   const verifyOtp = async () => {
     setError(null);
-    if (otp.length !== 6) return setError("Please enter the 6-digit code.");
+    const code = otp.trim();
+    if (!/^\d{6}$/.test(code)) return setError("Please enter the 6-digit code.");
+    if (!requestId) return setError("Missing request ID. Please send/resend OTP first.");
 
     setLoading(true);
     try {
+      // Verify against YOUR API (sets session cookie, returns user)
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), code: otp }),
+        credentials: "include",
+        cache: "no-store",
+        body: JSON.stringify({ request_id: requestId, otp: code }),
       });
-      const data = await res.json();
-      if (!res.ok || !data?.ok) {
-        setError(data?.message || "Invalid or expired code. Please try again.");
+      const text = await res.text();
+      let data: any = null; try { data = text ? JSON.parse(text) : null; } catch {}
+
+      if (!res.ok || data?.ok === false) {
+        setError(data?.message || text || "Invalid or expired code. Please try again.");
         return;
       }
-      setStep("verified");
+
+      router.replace("/");
     } catch {
       setError("Verification failed. Please try again.");
     } finally {
       setLoading(false);
     }
   };
+
+  const maskedEmail = useMemo(() => {
+    const trimmed = email.trim();
+    const [userPart, domain] = trimmed.split("@");
+    if (!userPart || !domain) return trimmed;
+    const visible = userPart.slice(0, 2);
+    const hidden = userPart.length > 2 ? "•".repeat(Math.max(1, userPart.length - 2)) : "";
+    return `${visible}${hidden}@${domain}`;
+  }, [email]);
 
   return (
     <div className="min-h-screen blue-bg-dots flex justify-center items-center p-4">
@@ -179,7 +252,6 @@ export default function Login() {
               Enter your email and we’ll send you a verification code
             </p>
 
-            {/* Email field with inline label inside border */}
             <div className="w-full relative">
               <label
                 className="absolute -top-2 left-3 px-1 bg-white text-xs text-secondary-db-70"
@@ -201,7 +273,7 @@ export default function Login() {
 
             <button
               onClick={sendOtp}
-              disabled={loading}
+              disabled={loading || !validateEmail(email)}
               className="bg-primary-way-100 hover:bg-primary-way-90 text-white w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60"
             >
               {loading ? "Sending code..." : "Continue"}
@@ -222,7 +294,7 @@ export default function Login() {
 
             <h2 className="text-2xl font-semibold text-black text-center">OTP Verification</h2>
             <p className="text-sm text-secondary-db-70 text-center">
-              We’ve sent a verification code OTP to Email.
+              We’ve sent a verification code to {maskedEmail || "your email"}.
               <br />
               Enter the code to verify and continue.
             </p>
@@ -237,7 +309,7 @@ export default function Login() {
 
             <button
               onClick={verifyOtp}
-              disabled={loading}
+              disabled={loading || otp.length !== 6 || !requestId}
               className="bg-primary-way-100 hover:bg-primary-way-90 text-white w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60"
             >
               {loading ? "Verifying..." : "Verify"}
@@ -253,21 +325,6 @@ export default function Login() {
           </div>
         )}
 
-        {step === "verified" && (
-          <div className="flex flex-col justify-center items-center gap-4 px-6 sm:px-8 pt-10 pb-8">
-            <Image src="/icons/success.svg" alt="Verified" width={56} height={56} />
-            <h2 className="text-xl font-semibold text-black">Account Verified</h2>
-            <p className="text-sm text-secondary-db-70 text-center">Welcome Back to Waysorted 🚀</p>
-            <button
-              onClick={() => router.replace("/")}
-              className="bg-primary-way-100 hover:bg-primary-way-90 text-white w-full py-3 rounded-lg transition-all duration-200"
-            >
-              Continue to Way
-            </button>
-          </div>
-        )}
-
-        {/* Bottom divider with "Sign up" link on choose and email steps */}
         <div className="border-t border-secondary-db-5 w-full text-center py-4">
           {(step === "choose" || step === "email") && (
             <p className="text-sm text-secondary-db-70">

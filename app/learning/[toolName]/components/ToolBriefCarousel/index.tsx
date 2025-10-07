@@ -1,174 +1,226 @@
 'use client'
 
 import React from 'react'
+import gsap from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import ToolBrief, { type ToolBriefProps } from '@/app/learning/[toolName]/components/ToolBrief'
 import FeedbackRating from '@/components/Feedback'
+
+gsap.registerPlugin(ScrollTrigger)
 
 type ToolBriefCarouselProps = {
   slides: ToolBriefProps[]
   className?: string
   onFeedbackSubmit?: (rating: number, comment: string) => Promise<void> | void
   feedbackTitle?: string
+  /**
+   * If your page uses a custom vertical scroll container (not window),
+   * pass a selector or HTMLElement here, and we’ll use it for ScrollTrigger’s `scroller`.
+   * Example: scroller="#main-scroll"
+   */
+  scroller?: string | HTMLElement
+  /**
+   * Enable GSAP markers to debug start/end/pin
+   */
+  debugMarkers?: boolean
 }
 
 export default function ToolBriefCarousel({
   slides,
   className,
   onFeedbackSubmit,
-  feedbackTitle = 'Rate the way these slides helped you.'
+  feedbackTitle = 'Rate the way these slides helped you.',
+  scroller,
+  debugMarkers = false
 }: ToolBriefCarouselProps) {
-  const scrollerRef = React.useRef<HTMLDivElement>(null)
+  const sectionRef = React.useRef<HTMLDivElement>(null)
+  const trackRef = React.useRef<HTMLDivElement>(null)
+  const slideRefs = React.useRef<HTMLElement[]>([])
+  const rightSpacerRef = React.useRef<HTMLDivElement>(null) // only RIGHT spacer
+
   const [index, setIndex] = React.useState(0)
-
-  // Total items = all ToolBrief slides + 1 feedback slide
+  const [progress, setProgress] = React.useState(0) // 0..1 for overlay bar
   const totalItems = slides.length + 1
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const lastIndex = totalItems - 1
 
-  // Drag state
-  const [isDragging, setIsDragging] = React.useState(false)
-  const dragRef = React.useRef<{
-    startX: number
-    startScrollLeft: number
-    pointerId: number | null
-    moved: boolean
-  }>({ startX: 0, startScrollLeft: 0, pointerId: null, moved: false })
-
-  // Track scroll to update index
-  React.useEffect(() => {
-    const el = scrollerRef.current
-    if (!el) return
-    const handler = () => {
-      const children = Array.from(el.children) as HTMLElement[]
-      if (!children.length) return
-      const centers = children.map((c) => {
-        const rect = c.getBoundingClientRect()
-        return Math.abs(rect.left + rect.width / 2 - window.innerWidth / 2)
-      })
-      const nearest = centers.indexOf(Math.min(...centers))
-      if (nearest !== -1 && nearest !== index) setIndex(nearest)
-    }
-    el.addEventListener('scroll', handler, { passive: true })
-    window.addEventListener('resize', handler)
-    handler()
-    return () => {
-      el.removeEventListener('scroll', handler)
-      window.removeEventListener('resize', handler)
-    }
-  }, [index])
-
-  // Mouse-drag handlers (keep touch/trackpad native)
-  const onPointerDown: React.PointerEventHandler<HTMLDivElement> = (e) => {
-    // Only enable custom dragging for mouse; touch/pen keep native scrolling
-    if (e.pointerType !== 'mouse') return
-    const el = scrollerRef.current
-    if (!el) return
-    dragRef.current.startX = e.clientX
-    dragRef.current.startScrollLeft = el.scrollLeft
-    dragRef.current.pointerId = e.pointerId
-    dragRef.current.moved = false
-    setIsDragging(true)
-    el.setPointerCapture(e.pointerId)
-    // Prevent text selection on drag start
-    // (We still avoid preventDefault on touch to keep native momentum)
-    e.preventDefault()
+  const registerSlideRef = (el: HTMLElement | null, i: number) => {
+    if (el) slideRefs.current[i] = el
   }
 
-  const onPointerMove: React.PointerEventHandler<HTMLDivElement> = (e) => {
-    if (!isDragging) return
-    if (dragRef.current.pointerId !== e.pointerId) return
-    const el = scrollerRef.current
-    if (!el) return
-    // Calculate delta from starting point
-    const dx = e.clientX - dragRef.current.startX
-    if (Math.abs(dx) > 2) dragRef.current.moved = true
-    // Scroll opposite to drag direction
-    el.scrollLeft = dragRef.current.startScrollLeft - dx
-    // Prevent selecting text/images while dragging
-    e.preventDefault()
-  }
+  React.useLayoutEffect(() => {
+    const sectionEl = sectionRef.current
+    const trackEl = trackRef.current
+    const slidesEls = slideRefs.current
+    const rightSpacerEl = rightSpacerRef.current
+    if (!sectionEl || !trackEl || slidesEls.length === 0 || !rightSpacerEl) return
 
-  const endDrag = React.useCallback(() => {
-    if (!isDragging) return
-    const el = scrollerRef.current
-    if (el && dragRef.current.pointerId != null) {
-      try {
-        el.releasePointerCapture(dragRef.current.pointerId)
-      } catch {
-        // no-op if not captured
+    // Resolve scroller if provided
+    let scrollerEl: Element | Window | undefined
+    if (typeof scroller === 'string') {
+      scrollerEl = document.querySelector(scroller) ?? undefined
+    } else if (scroller instanceof Element) {
+      scrollerEl = scroller
+    }
+
+    const ctx = gsap.context(() => {
+      // Apply ONLY the right spacer BEFORE measurements so the last card can center.
+      const applyRightSpacer = () => {
+        const viewportW = sectionEl.clientWidth
+        const maxSlideW = Math.max(...slidesEls.map((s) => s.offsetWidth || 0), 0)
+        const edgePx = Math.max(0, (viewportW - maxSlideW) / 2)
+        rightSpacerEl.style.width = `${edgePx}px`
+        // Force layout flush so scrollWidth and offsets are up-to-date
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        trackEl.scrollWidth
       }
-    }
-    dragRef.current.pointerId = null
-    setIsDragging(false)
-  }, [isDragging])
 
-  const onPointerUp: React.PointerEventHandler<HTMLDivElement> = (e) => {
-    if (dragRef.current.pointerId !== e.pointerId) return
-    endDrag()
-  }
+      const measure = () => {
+        const viewportW = sectionEl.clientWidth
+        // For each slide, compute how far the track must shift so that slide center aligns with viewport center.
+        const targetShifts = slidesEls.map((s) => {
+          const centerX = s.offsetLeft + s.offsetWidth / 2
+          return Math.max(0, centerX - viewportW / 2) // 0 means flush-left start
+        })
+        // The farthest shift we need to allow (typically the last slide's center)
+        const endShift = Math.max(0, ...targetShifts)
 
-  const onPointerCancel: React.PointerEventHandler<HTMLDivElement> = (e) => {
-    if (dragRef.current.pointerId !== e.pointerId) return
-    endDrag()
-  }
+        return { viewportW, targetShifts, endShift }
+      }
 
-  // Prevent default browser drag (e.g., images) which interferes with mouse-drag scrolling
-  const onDragStart: React.DragEventHandler<HTMLDivElement> = (e) => {
-    e.preventDefault()
-  }
+      const setup = () => {
+        applyRightSpacer()
+        // Start with the track flush-left: first card visible with no leading blank space
+        gsap.set(trackEl, { x: 0 })
 
-  // Optional: keyboard support to move between slides
-  const scrollToChild = (i: number) => {
-    const el = scrollerRef.current
-    if (!el) return
-    const child = el.children[i] as HTMLElement | undefined
-    if (!child) return
-    child.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' })
-  }
+        let { endShift } = measure()
 
-  const onKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
-    if (e.key === 'ArrowRight') {
-      e.preventDefault()
-      const next = Math.min(index + 1, totalItems - 1)
-      scrollToChild(next)
-    } else if (e.key === 'ArrowLeft') {
-      e.preventDefault()
-      const prev = Math.max(index - 1, 0)
-      scrollToChild(prev)
-    }
-  }
+        // Horizontal tween from 0 to -endShift (only as much as needed to center the last card)
+        const tween = gsap.to(trackEl, {
+          x: () => {
+            applyRightSpacer()
+            const { endShift: freshEnd } = measure()
+            return -freshEnd
+          },
+          ease: 'none'
+        })
+
+        const st = ScrollTrigger.create({
+          id: 'tool-brief-horizontal',
+          trigger: sectionEl,
+          animation: tween,
+          start: 'top top', // pin when this strip hits top
+          end: () => {
+            applyRightSpacer()
+            const { endShift: freshEnd } = measure()
+            return `+=${freshEnd}`
+          },
+          pin: true,        // pin ONLY the carousel strip
+          pinSpacing: true, // maintain page flow below
+          scrub: 1,
+          anticipatePin: 1,
+          invalidateOnRefresh: true,
+          scroller: scrollerEl,
+          markers: debugMarkers,
+          onRefreshInit: () => {
+            applyRightSpacer()
+            gsap.set(trackEl, { x: 0 })
+          },
+          // Snap to each slide's center, normalized to [0..1] of our custom range
+          ...(slidesEls.length > 1
+            ? {
+                snap: {
+                  snapTo: (value: number) => {
+                    applyRightSpacer()
+                    const { targetShifts, endShift: freshEnd } = measure()
+                    if (freshEnd <= 0) return 0
+                    const points = targetShifts.map((s) => s / freshEnd)
+                    return gsap.utils.snap(points, value)
+                  },
+                  duration: 0.25,
+                  ease: 'power1.inOut'
+                }
+              }
+            : {}),
+          onUpdate: (self) => {
+            setProgress(self.progress)
+
+            // Compute nearest slide to viewport center for index/progress rail
+            const { viewportW, endShift: freshEnd } = measure()
+            const x = -self.progress * freshEnd
+            const viewportCenterX = -x + viewportW / 2
+
+            let nearest = 0
+            let nearestDist = Infinity
+            for (let i = 0; i < slidesEls.length; i++) {
+              const s = slidesEls[i]
+              const centerX = s.offsetLeft + s.offsetWidth / 2
+              const dist = Math.abs(centerX - viewportCenterX)
+              if (dist < nearestDist) {
+                nearest = i
+                nearestDist = dist
+              }
+            }
+            setIndex(nearest)
+          }
+        })
+
+        return { st, tween }
+      }
+
+      const handles = setup()
+
+      const doRefresh = () => ScrollTrigger.refresh()
+      const onResize = () => {
+        applyRightSpacer()
+        doRefresh()
+      }
+      const onLoad = () => {
+        applyRightSpacer()
+        doRefresh()
+      }
+
+      window.addEventListener('resize', onResize)
+      window.addEventListener('load', onLoad)
+
+      // One extra pass after mount to catch late layout changes
+      const raf = requestAnimationFrame(() => {
+        applyRightSpacer()
+        doRefresh()
+      })
+
+      return () => {
+        window.removeEventListener('resize', onResize)
+        window.removeEventListener('load', onLoad)
+        cancelAnimationFrame(raf)
+        handles?.st?.kill()
+        handles?.tween?.kill()
+      }
+    }, sectionRef)
+
+    return () => ctx.revert()
+  }, [scroller, debugMarkers])
 
   return (
     <div className={className}>
-      <div className="relative">
-        {/* Scroll-snap row */}
+      {/* Pinned Section — only as tall as the cards; rest of the page keeps scrolling */}
+      <div
+        ref={sectionRef}
+        className="relative w-full overflow-hidden space-y-18 py-25"
+        role="region"
+        aria-roledescription="carousel"
+        aria-label={`Carousel with ${totalItems} items including one feedback form at the end.`}
+      >
+        {/* Horizontal track moved by GSAP */}
         <div
-          ref={scrollerRef}
-          /* Added aria-label so assistive tech knows how many total "slides" including feedback */
-          aria-label={`Carousel with ${totalItems} items including one feedback form at the end.`}
-          role="region"
-          aria-roledescription="carousel"
-          tabIndex={0}
-          onKeyDown={onKeyDown}
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerCancel}
-          onDragStart={onDragStart}
-          // Keep native touch/trackpad pan; we only handle mouse drag
-          style={{
-            touchAction: 'pan-y',
-            // Disable snap while actively dragging for smoother feel
-            scrollSnapType: isDragging ? 'none' : 'x mandatory'
-          }}
-          className={`no-scrollbar-1 flex snap-x snap-mandatory gap-6 overflow-x-auto px-4 md:px-0 scroll-px-4 md:scroll-px-0 ${
-            isDragging ? 'cursor-grabbing select-none' : 'cursor-grab'
-          }`}
+          ref={trackRef}
+          className="flex gap-10 items-center will-change-transform px-4 md:px-0"
         >
+          {/* NO left spacer — first card is flush-left at start */}
+
           {slides.map((props, i) => (
             <div
               key={i}
-              className="snap-center shrink-0 w-[min(100%,720px)]"
+              ref={(el) => registerSlideRef(el, i)}
+              className="shrink-0 w-[min(100%,720px)]"
               aria-label={`${i + 1} of ${totalItems}`}
               draggable={false}
             >
@@ -179,7 +231,8 @@ export default function ToolBriefCarousel({
           {/* Final Feedback Slide */}
           <div
             key="feedback-slide"
-            className="snap-center shrink-0 w-[min(100%,720px)] flex items-center justify-center"
+            ref={(el) => registerSlideRef(el, totalItems - 1)}
+            className="shrink-0 w-[min(100%,720px)] flex items-center justify-center"
             aria-label={`${totalItems} of ${totalItems} (Feedback)`}
             draggable={false}
           >
@@ -194,15 +247,20 @@ export default function ToolBriefCarousel({
               }}
             />
           </div>
-        </div>
-      </div>
 
-      {/* Progress rail (now includes feedback slide in the calculation) */}
-      <div className="mx-auto my-8 h-1 w-full max-w-7xl rounded-full bg-secondary-db-5">
-        <div
-          className="h-2 rounded-full bg-primary-way-20 transition-all"
-          style={{ width: `${((index + 1) / totalItems) * 100}%` }}
-        />
+          {/* RIGHT spacer — so the last slide can center */}
+          <div ref={rightSpacerRef} className="shrink-0" aria-hidden />
+        </div>
+
+        {/* Overlay progress bar INSIDE the pinned section so it's visible while pinned */}
+        <div className="pointer-events-none absolute left-0 right-0 bottom-0 z-10">
+          <div className="mx-auto h-2 w-full max-w-7xl rounded-full bg-secondary-db-5/70">
+            <div
+              className="h-2 rounded-full bg-primary-way-20 transition-[width]"
+              style={{ width: `${Math.max(0, Math.min(1, progress)) * 100}%` }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   )
