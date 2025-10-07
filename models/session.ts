@@ -31,7 +31,6 @@ const SessionSchema = new Schema<ISession>(
   { versionKey: false }
 );
 
-SessionSchema.index({ sessionId: 1 }, { unique: true });
 
 const Session =
   (models.Session as SessionModel) || model<ISession, SessionModel>("Session", SessionSchema);

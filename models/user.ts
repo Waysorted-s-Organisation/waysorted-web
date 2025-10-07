@@ -61,7 +61,6 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods, IUserStatics>(
   }
 );
 
-UserSchema.index({ email: 1 }, { unique: true });
 
 // Methods for managing favorites
 UserSchema.methods.addFavorite = async function (slug: string) {
