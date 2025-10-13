@@ -86,7 +86,7 @@ export default function VisionSection() {
       </span>
 
       {/* Vision Statement */}
-      <p className="text-4xl font-medium text-secondary-db-100 leading-relaxed max-w-4xl mx-auto">
+      <p className="text-4xl font-medium pb-40 text-secondary-db-100 leading-relaxed max-w-4xl mx-auto">
         {VISION_STATEMENT.split(" ").map((word, index) => (
           <span
             key={`word-${index}`}

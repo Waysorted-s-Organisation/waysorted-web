@@ -1,10 +1,10 @@
 "use client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Tool } from "@/app/learning/types";
+import { ITool } from "@/models/tool";
 import { Badge } from "@/app/learning/components/Badge";
 
-export default function ToolCard({ tool }: { tool: Tool }) {
+export default function ToolCard({ tool }: { tool: ITool }) {
   const router = useRouter();
   const isDisabled = tool.disabled === true;
   const badge = tool.badge;
@@ -42,7 +42,7 @@ export default function ToolCard({ tool }: { tool: Tool }) {
       <div className="flex items-center justify-between mb-2 relative">
         <div className="w-12 h-12 rounded-xl bg-gray-200 relative overflow-hidden">
           <Image
-            src={tool.icon}
+            src={`${tool.iconData}`}
             alt={tool.name}
             width={60}
             height={60}
@@ -56,9 +56,9 @@ export default function ToolCard({ tool }: { tool: Tool }) {
 
       <h2 className="font-medium text-xl text-secondary-db-100">
         {tool.name}{" "}
-        {tool.nameLogo && (
+        {tool.isAI && (
           <Image
-            src={tool.nameLogo}
+            src={`${tool.AIIcon}`}
             alt={tool.name}
             width={20}
             height={20}
@@ -68,7 +68,7 @@ export default function ToolCard({ tool }: { tool: Tool }) {
       </h2>
 
       {/* Use a non-interactive element instead of <a> since the whole card is clickable */}
-      <span className="text-xs text-secondary-db-70 cursor-default select-none">
+      <span className="text-xs text-secondary-db-70 cursor-default select-none hover:text-primary-way-100 cursor-pointer">
         <Image
           src="/icons/open.svg"
           alt="Open in Figma"
@@ -80,7 +80,7 @@ export default function ToolCard({ tool }: { tool: Tool }) {
       </span>
 
       <p className="text-secondary-db-70 font-medium text-sm mt-3">
-        {tool.description}
+        {tool.shortDescription}
       </p>
 
       {/* Non-interactive "Learn more" since the whole card is clickable */}

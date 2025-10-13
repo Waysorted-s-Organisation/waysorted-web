@@ -9,7 +9,7 @@ const Hero = () => {
     >
       <div id="hero-content" className="text-center">
         {/* Badge */}
-        <button className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-5 py-2 text-sm text-secondary-db-100 mb-4 active:scale-95 transition-transform cursor-pointer">
+        <button className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-5 py-2 text-sm text-secondary-db-100 mb-4 cursor-pointer">
           <Image
             src="/icons/tools.svg"
             alt="Hero Badge"
@@ -18,7 +18,7 @@ const Hero = () => {
             className="mr-2"
           />
           Request a feature
-          <span className="text-primary-way-100 font-medium pl-1.5">
+          <span className="text-primary-way-100 font-medium pl-1.5 hover:underline">
             Learn More
           </span>
         </button>

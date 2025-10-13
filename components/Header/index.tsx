@@ -85,7 +85,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
       )}
 
       <nav className="mx-auto px-4 md:px-16 z-40">
-        <div className="flex justify-between items-center h-16 md:h-20">
+        <div className="flex justify-between items-center h-16 md:h-16">
           {/* Logo */}
           <Link href="/" className="block">
             <div className="relative w-24 h-8 sm:w-28 sm:h-9 md:w-32 md:h-10 lg:w-36 lg:h-11 translate-y-1">

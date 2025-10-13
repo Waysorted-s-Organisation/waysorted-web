@@ -144,7 +144,7 @@ export default function DocsShell({
                 </span>
               </span>
             </div>
-            <h1 className="text-6xl w-lg font-semibold text-secondary-db-100 leading-tight">
+            <h1 className="text-4xl w-lg font-semibold text-secondary-db-100 leading-tight">
               Document Hub
             </h1>
           </div>

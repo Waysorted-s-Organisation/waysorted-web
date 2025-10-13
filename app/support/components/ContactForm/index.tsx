@@ -134,7 +134,7 @@ export default function ContactForm() {
 
               {/* Terms */}
               <div className="flex flex-col md:flex-row md:items-center items-start gap-1 text-left text-xs sm:text-sm font-regular text-white">
-                <span className="mr-0 md:mr-2 w-4 h-4 rounded-sm bg-white text-primary-way-100 text-[10px] font-extrabold leading-4 text-center">
+                <span className="mr-0 md:mr-[1px] w-4 h-4 rounded-sm bg-white text-primary-way-100 text-[10px] font-extrabold leading-4 text-center">
                   i
                 </span>
                 <span>
@@ -157,7 +157,7 @@ export default function ContactForm() {
                 rerollOnHover
                 randomizeOnMount
               >
-                <span className="flex items-center justify-center gap-x-2 w-full">
+                <span className="flex items-center justify-center gap-x-2 rounded-lg w-full">
                   Submit
                   <Image
                     src="/icons/arrow-white.svg"

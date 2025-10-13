@@ -85,18 +85,18 @@ export default function SupportPage() {
             </span>
 
             {/* Heading */}
-            <h2 className="mt-4 mb-3 text-2xl sm:text-3xl md:text-4xl font-semibold text-secondary-db-100">
+            <h2 className="mt-4 mb-3 text-2xl sm:text-3xl md:text-4xl font-semibold text-secondary-db-100 pb-4">
               <span className="bg-tertiary-voilet-500/10 rounded-xl text-tertiary-voilet-500 px-3 sm:px-4">
                 Top
               </span>{" "}
               Frequently Asked Questions
             </h2>
-            <p className="text-secondary-db-70 max-w-4xl mx-auto text-base md:text-lg px-1 sm:px-0">
+            <p className="text-secondary-db-80 max-w-4xl mx-auto text-base md:text-lg px-1 sm:px-0">
               Get quick answers to the most frequently asked questions about our products,
               services and policies.
             </p>
 
-            <div className="mt-6 sm:mt-8">
+            <div className="">
               <FAQ />
             </div>
 

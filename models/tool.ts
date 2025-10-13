@@ -6,6 +6,9 @@ export interface IToolBadge {
 }
 
 export interface ISlide {
+  toolName: string;
+  order: number;
+  toolID: string;
   title: string;
   subtitle: string;
   bullets: string[];
@@ -20,6 +23,9 @@ export interface ITool {
   description: string;
   shortDescription: string;
   icon: string;
+  iconData?: string; // base64 data URL
+  isAI: boolean;
+  AIIcon?: string; // base64 data URL for AI tools
   badge?: IToolBadge;
   disabled: boolean;
   isActive: boolean;
@@ -50,6 +56,7 @@ export interface IToolMethods {
     description: string;
     shortDescription: string;
     icon: string;
+    iconData?: string; // base64 data URL
     badge?: IToolBadge;
     disabled: boolean;
     isActive: boolean;
@@ -85,6 +92,22 @@ const ToolBadgeSchema = new Schema<IToolBadge>(
 
 const SlideSchema = new Schema<ISlide>(
   {
+    toolName: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+    order: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+    toolID: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     title: {
       type: String,
       required: true,
@@ -154,6 +177,11 @@ const ToolSchema = new Schema<ITool, ToolModel, IToolMethods, {}, IToolStatics>(
       required: true,
       match: /\.(svg|png|jpg|jpeg)$/i,
     },
+    iconData: {
+      type: String,
+      required: false,
+      match: /^data:image\/(png|jpg|jpeg|svg\+xml);base64,[A-Za-z0-9+/=]+$/,
+    },
     badge: ToolBadgeSchema,
     disabled: {
       type: Boolean,
@@ -188,8 +216,10 @@ const ToolSchema = new Schema<ITool, ToolModel, IToolMethods, {}, IToolStatics>(
     versionKey: false,
     toJSON: {
       transform: (_doc, ret: any) => {
-        ret.id = ret._id.toString();
-        delete ret._id;
+        if (ret && ret._id) {
+          ret.id = ret._id.toString();
+          delete ret._id;
+        }
         return ret;
       },
     },
@@ -197,7 +227,6 @@ const ToolSchema = new Schema<ITool, ToolModel, IToolMethods, {}, IToolStatics>(
 );
 
 // Indexes
-ToolSchema.index({ slug: 1 }, { unique: true });
 ToolSchema.index({ category: 1 });
 ToolSchema.index({ isActive: 1 });
 ToolSchema.index({ disabled: 1 });

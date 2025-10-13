@@ -25,7 +25,7 @@ const HeroSection: React.FC = () => {
                 </span> Behind the Magic
               </h2>
               <p className="text-secondary-db-30 max-w-xl mx-auto mb-16 text-lg">
-                A small team with a big mission — turning chaotic workflows into seamless creativity.
+                A small team with a big mission - turning chaotic workflows into seamless creativity.
               </p>
       </div>
     </section>

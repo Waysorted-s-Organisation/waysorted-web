@@ -90,7 +90,7 @@ export default function Testimonials() {
 
             {/* Main Testimonial */}
             <div className="py-12">
-                <div className="bg-white py-16 px-6 max-w-4xl mx-auto flex flex-col items-center justify-center rounded-2xl outline outline-1 outline-black/10 shadow-md transition-all duration-500">
+                <div className="bg-white py-16 px-6 max-w-4xl mx-auto flex flex-col items-center justify-center rounded-2xl outline outline-1 outline-black/10 transition-all duration-500">
                     <p className="text-secondary-db-100 p-4 text-center text-xl font-medium leading-relaxed">
                         {activeTestimonial.content}
                     </p>
@@ -121,7 +121,7 @@ export default function Testimonials() {
                                 className="w-full h-full object-cover rounded-2xl"
                             />
                             {activeIndex === index && (
-                                <span className="absolute left-1/2  w-2 h-2 transform -translate-x-1/2 translate-y-2 bg-tertiary-voilet-dark rounded-full"></span>
+                                <span className="absolute left-1/2  w-2 h-2 transform -translate-x-1/2 translate-y-2 bg-tertiary-voilet-500 rounded-full"></span>
                             )}
                         </button>
                     ))}

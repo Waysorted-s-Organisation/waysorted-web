@@ -214,7 +214,7 @@ export default function ToolsGrid() {
         </div>
 
         {/* Headline overlay */}
-        <div className="absolute translate-x-0 translate-y-[-125%] flex flex-col items-center justify-center pointer-events-none">
+        <div className="absolute translate-x-[10%] translate-y-[-150%] flex flex-col items-center justify-center pointer-events-none">
           <div
             className="font-medium text-secondary-db-100 text-3xl mb-8"
             ref={transformRef}
@@ -227,7 +227,7 @@ export default function ToolsGrid() {
               workflow
             </span>
           </div>
-          <h2 className="text-center leading-snug font-semibold max-w-7xl px-4 text-5xl">
+          <h2 className="text-center leading-snug font-semibold max-w-5xl px-12 text-4xl">
             {HEADLINE.split(" ").map((word, index) => (
               <span
                 key={`word-${index}`}

@@ -40,7 +40,7 @@ export default function TopSection() {
         {/* Way Studio Button */}
         <button
           disabled
-          className="flex items-center gap-2 px-9 py-1.75 rounded-full cursor-not-allowed border bg-secondary-db-5 border-gray-200 text-secondary-db-50 opacity-60"
+          className="flex items-center gap-2 px-9 py-1.75 rounded-full cursor-not-allowed border bg-secondary-db-10 border-gray-200 text-secondary-db-100"
         >
           <Image
             src="/icons/waystudio-icon.svg"

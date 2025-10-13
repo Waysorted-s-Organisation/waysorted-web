@@ -249,33 +249,33 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen blue-bg-dots flex justify-center items-center p-4">
-      <div className="bg-white rounded-[22px] shadow-md max-w-lg w-full">
+      <div className="bg-white rounded-[22px] shadow-md max-w-lg w-full lg:w-115">
         {step === "choose" && (
-          <div className="flex flex-col gap-4 px-6 sm:px-8 pt-8 pb-3 items-center">
+          <div className="flex flex-col px-6 sm:px-8 pt-8 pb-3 items-center">
             <Image src="/icons/success.svg" alt="Create account" width={64} height={64} />
-            <h1 className="text-2xl font-semibold text-black text-center">Create an account</h1>
-            <p className="text-sm text-secondary-db-70 text-center">
+            <h1 className="text-xl font-medium text-secondary-db-100 text-center">Create an account</h1>
+            <p className="text-sm text-secondary-db-60 text-center pb-5">
               Get started in minutes. Stay sorted forever
             </p>
 
             <button
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="bg-primary-way-100 hover:bg-primary-way-90 cursor-pointer text-white w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60 flex itemscenter justify-center gap-2"
+              className="bg-primary-way-100 hover:bg-primary-way-90 cursor-pointer text-white w-full lg:w-sm py-3 rounded-lg transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2"
             >
               <Image src="/icons/google.svg" alt="Google" width={20} height={20} />
               {loading ? "Redirecting..." : "Continue with Google"}
             </button>
-
+            <div className="my-1" />
             <button
               onClick={() => setStep("email")}
               disabled={loading}
-              className="bg-secondary-db-5 text-secondary-db-100 cursor-pointer w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60"
+              className="bg-secondary-db-5 text-secondary-db-100 cursor-pointer w-full lg:w-sm py-3 rounded-lg transition-all duration-200 disabled:opacity-60"
             >
               Continue with Email
             </button>
 
-            <p className="text-xs text-secondary-db-70 text-center">
+            <p className="text-xs text-secondary-db-70 pt-4 pb-2 items-center text-center">
               Creating an account means you agree to our{" "}
               <span className="text-primary-way-100 underline cursor-pointer">Terms</span> and{" "}
               <span className="text-primary-way-100 underline cursor-pointer">Privacy Policy</span>.

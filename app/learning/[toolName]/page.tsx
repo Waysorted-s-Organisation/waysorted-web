@@ -1,40 +1,49 @@
 'use client'
 
-import React from 'react'
-import { use } from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import ToolsData from '@/app/learning/data/index'
 import { useBanner } from '@/context/BannerContext'
 import Header from '@/components/Header'
 import ToolBriefCarousel from './components/ToolBriefCarousel'
-import allSlides from "@/app/learning/[toolName]/data/index"
-import type { SlideData, SlideWithoutToolName } from "@/app/learning/types/index"
 import JoinCommunity from '@/components/GetStarted'
 import ExploreMore from './components/ExploreMore'
-import Footer from "@/components/Footer";
-import type { Tool } from '@/app/learning/types'
+import Footer from '@/components/Footer'
+import type { ITool, ISlide } from '@/models/tool'
 
-// NOTE: params is not a Promise in Next.js app router pages.
-export default function LearnMorePage({ params }: { params: Promise<{ toolName: string }> }) {
+export default function LearnMorePage({ params }: { params: { toolName: string } }) {
   const { showBanner, setShowBanner } = useBanner()
   const router = useRouter()
+  const { toolName } = params
 
-  const { toolName } = use(params);
-  const tool = ToolsData.find((t) => t.slug === toolName)
+  const [tool, setTool] = useState<ITool>()
+  const [slides, setSlides] = useState<ISlide[]>([])
+  const [allTools, setAllTools] = useState<ITool[]>([])
 
-  if (!tool) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-xl">
-        Tool not found
-      </div>
-    )
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const toolsRes = await fetch('/api/tools/active')
+        const toolsJson = await toolsRes.json()
+        setAllTools(toolsJson.data || [])
+
+        // Find the tool by slug (toolName)
+        const foundTool = (toolsJson.data || []).find((t: ITool) => t.slug === toolName)
+        setTool(foundTool || null)
+
+        const slidesRes = await fetch(`/api/tools/${toolName}/slides`);
+        const slidesJson = await slidesRes.json();
+        setSlides(slidesJson.slides || []);
+      } catch (err) {
+        setSlides([])
+      } finally {
+      }
+    }
+    fetchData()
+  }, [toolName])
+  if(!tool) {
+    console.log("Tool not found for slug:", toolName);
   }
-
-  const slides: SlideWithoutToolName[] = (allSlides as SlideData[])
-    .filter((s: SlideData) => s.toolName === toolName)
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
-    .map(({ toolName: _ignore, ...rest }: SlideData) => rest)  
 
   return (
     <div>
@@ -75,7 +84,7 @@ export default function LearnMorePage({ params }: { params: Promise<{ toolName: 
               className="inline-block mx-2"
             />
             <span className="text-primary-way-100 text-base font-medium cursor-pointer">
-              {tool.name}
+              {tool?.name}
             </span>
           </nav>
         </div>
@@ -87,15 +96,14 @@ export default function LearnMorePage({ params }: { params: Promise<{ toolName: 
               Explore Every <span className="text-primary-way-100">Shade</span> with Ease
             </h1>
             <div>
-              <button className="bg-secondary-db-100 text-white my-8 py-3 px-7 font-semibold text-base rounded-full cursor-pointer">
+              <button className="bg-secondary-db-100 text-white my-8 py-3 px-7 font-semibold text-base rounded-full cursor-pointer hover:bg-secondary-db-90">
                 Try now for free
               </button>
             </div>
           </div>
 
-          <p className="text-secondary-db-100 max-w-sm mt-16 text-xl font-medium">
-            Generate customizable color palettes from a base color, apply variations like brightening
-            or hue shifts, and evaluate accessibility compliance
+          <p className="text-secondary-db-100 max-w-lg mt-16 text-xl font-medium">
+            {tool?.description}
             <span className="text-secondary-db-70">—all in one tool.</span>
           </p>
         </div>
@@ -103,12 +111,13 @@ export default function LearnMorePage({ params }: { params: Promise<{ toolName: 
         {/* Carousel of ToolBriefs */}
         <div className="my-10">
           <div className="mx-auto max-w-7xl px-5">
-            <ToolBriefCarousel slides={slides} />
+            {slides.length > 0 && (
+              <ToolBriefCarousel slides={slides} />
+            )}
           </div>
         </div>
-        <ExploreMore tools={ToolsData as Tool[]} />
+        <ExploreMore tools={allTools} />
         <JoinCommunity />
-        
       </main>
       <Footer />
     </div>

@@ -49,7 +49,7 @@ export default function Sidebar() {
           <h2 className="mb-4 text-base font-medium text-secondary-db-100">
             Settings
           </h2>
-          <ul className="space-y-2 text-sm font-semibold text-secondary-db-90">
+          <ul className="space-y-2 text-sm font-semibold text-secondary-db-80">
             {items.map((item) => {
               const href = `/settings?tab=${item.key}`;
               const isActive = active === item.key;
@@ -60,7 +60,7 @@ export default function Sidebar() {
                     className={clsx(
                       "block rounded-lg px-3 py-2 transition",
                       isActive
-                        ? "bg-primary-way-10 text-primary-way-100"
+                        ? "bg-primary-way-10 text-secondary-db-90"
                         : "hover:bg-primary-way-5"
                     )}
                   >

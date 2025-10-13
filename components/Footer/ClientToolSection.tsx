@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ToolsPicker, { PublicTool } from "./ToolPicker";
+import ToolsPicker from "./ToolPicker";
+import {ITool} from "@/models/tool";
 
 export default function ClientToolsSection() {
-  const [tools, setTools] = useState<PublicTool[] | null>(null);
+  const [tools, setTools] = useState<ITool[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

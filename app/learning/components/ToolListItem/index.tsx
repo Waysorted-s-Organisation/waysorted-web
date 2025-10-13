@@ -1,11 +1,11 @@
 "use client";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Tool } from "@/app/learning/types";
+import { ITool } from "@/models/tool";
 import { Badge } from "@/app/learning/components/Badge";
 import React from "react";
 
-export default function ToolListItem({ tool }: { tool: Tool }) {
+export default function ToolListItem({ tool }: { tool: ITool }) {
   const router = useRouter();
   const isDisabled = tool.disabled === true;
   const badge = tool.badge;
@@ -43,7 +43,7 @@ export default function ToolListItem({ tool }: { tool: Tool }) {
       <div className="flex items-center gap-4">
         <div className="w-12 h-12 rounded-xl bg-gray-200 overflow-hidden">
           <Image
-            src={tool.icon}
+            src={`${tool.iconData}`}
             alt={tool.name}
             width={60}
             height={60}
@@ -53,9 +53,9 @@ export default function ToolListItem({ tool }: { tool: Tool }) {
         <div>
           <h2 className="font-medium w-xs text-xl text-secondary-db-100 flex items-center">
             {tool.name}
-            {tool.nameLogo && (
+            {tool.isAI && (
               <Image
-                src={tool.nameLogo}
+                src={`${tool.AIIcon}`}
                 alt={tool.name}
                 width={20}
                 height={20}
@@ -67,7 +67,7 @@ export default function ToolListItem({ tool }: { tool: Tool }) {
             )}
           </h2>
           {/* Non-interactive since the whole row is clickable */}
-          <span className="text-xs text-secondary-db-70 cursor-default select-none">
+          <span className="text-xs text-secondary-db-70 cursor-default select-none hover:text-primary-way-100 cursor-pointer">
             <Image
               src="/icons/open.svg"
               alt="Open in Figma"
@@ -81,7 +81,7 @@ export default function ToolListItem({ tool }: { tool: Tool }) {
       </div>
 
       <p className="text-secondary-db-70 w-xs font-medium text-left text-sm">
-        {tool.description}
+        {tool.shortDescription}
       </p>
 
       {/* Non-interactive "Learn more" since the whole row is clickable */}

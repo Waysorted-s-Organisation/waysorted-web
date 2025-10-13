@@ -196,7 +196,7 @@ export default function ToolBriefCarousel({
     }, sectionRef)
 
     return () => ctx.revert()
-  }, [scroller, debugMarkers])
+  }, [scroller, slides, debugMarkers])
 
   return (
     <div className={className}>

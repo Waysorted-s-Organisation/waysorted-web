@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import ToolsPicker, { PublicTool } from "./ToolPicker";
+import ToolsPicker from "./ToolPicker";
+import {ITool} from "@/models/tool";
 
 export default function Footer() {
-  const [tools, setTools] = useState<PublicTool[] | null>(null);
+  const [tools, setTools] = useState<ITool[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -78,7 +79,19 @@ export default function Footer() {
             ) : (
               // Empty state
               <div className="grid grid-cols-1 md:grid-cols-4 gap-5 md:gap-6">
-                <div className="order-1 md:order-none md:col-span-2">
+                <div className="order-1 md:order-none">
+                  <h3 className="font-semibold mb-3 sm:mb-4 text-white text-base sm:text-lg">Tools</h3>
+                  <ul className="space-y-2 text-secondary-db-40 font-regular text-sm">
+                    <li className="text-secondary-db-30">No tools available</li>
+                  </ul>
+                </div>
+                <div className="order-2 md:order-none">
+                  <h3 className="font-semibold mb-3 sm:mb-4 text-white text-base sm:text-lg">Category</h3>
+                  <ul className="space-y-2 text-secondary-db-40 font-regular text-sm">
+                    <li className="text-secondary-db-30">No categories available</li>
+                  </ul>
+                </div>
+                <div className="order-3 md:order-none md:col-span-2">
                   <h3 className="font-semibold mb-3 sm:mb-4 text-white text-base sm:text-lg">Tool brief</h3>
                   <div className="bg-transparent border border-gray-700 rounded-xl p-4 sm:p-6 min-h-[140px] outline outline-1 outline-white/10 button-shadow flex flex-col justify-between">
                     <p className="text-secondary-db-30 font-regular text-sm mb-4">
@@ -93,19 +106,9 @@ export default function Footer() {
                   </div>
                 </div>
 
-                <div className="order-2 md:order-none">
-                  <h3 className="font-semibold mb-3 sm:mb-4 text-white text-base sm:text-lg">Category</h3>
-                  <ul className="space-y-2 text-secondary-db-40 font-regular text-sm">
-                    <li className="text-secondary-db-30">No categories available</li>
-                  </ul>
-                </div>
+                
 
-                <div className="order-3 md:order-none">
-                  <h3 className="font-semibold mb-3 sm:mb-4 text-white text-base sm:text-lg">Tools</h3>
-                  <ul className="space-y-2 text-secondary-db-40 font-regular text-sm">
-                    <li className="text-secondary-db-30">No tools available</li>
-                  </ul>
-                </div>
+                
               </div>
             )}
           </div>
@@ -116,6 +119,7 @@ export default function Footer() {
 
         {/* Social + short text */}
         <div className="flex flex-col gap-3 sm:gap-4">
+          <p className="text-sm text-white">Follow Waysorted</p>
           <div className="flex items-center gap-2 sm:gap-3 text-gray-400">
             {[
               { src: "/icons/insta.svg", alt: "Instagram" },
@@ -135,8 +139,8 @@ export default function Footer() {
             ))}
           </div>
 
-          <p className="text-sm leading-relaxed font-medium text-secondary-db-40 max-w-prose">
-            Lorem ipsum dolor sit amet, consectetur a Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+          <p className="text-xl leading-relaxed font-medium text-secondary-db-40 max-w-prose">
+            Get exclusive updates!
           </p>
         </div>
 
@@ -168,31 +172,29 @@ export default function Footer() {
               <div>
                 <h5 className="font-semibold mb-2 sm:mb-3 text-white">Get Started</h5>
                 <ul className="space-y-2 text-secondary-db-40">
-                  <li><a href="#" className="hover:text-white">Pricing</a></li>
-                  <li><a href="#" className="hover:text-white">Enterprise</a></li>
-                  <li><a href="#" className="hover:text-white">FAQ</a></li>
-                  <li><a href="#" className="hover:text-white">Blog</a></li>
-                  <li><a href="#" className="hover:text-white">Help Centre</a></li>
+                  <li><Link href="/get-early-access" className="hover:text-white">Early Access</Link></li>
+                  <li><Link href="/learning" className="hover:text-white">Explore Tools</Link></li>
+                  <li><Link href="/login" className="hover:text-white">Sign in</Link></li>
                 </ul>
               </div>
 
               <div>
                 <h5 className="font-semibold mb-2 sm:mb-3 text-white">Company</h5>
                 <ul className="space-y-2 text-secondary-db-40">
-                  <li><a href="#" className="hover:text-white">About Us</a></li>
-                  <li><a href="#" className="hover:text-white">Learning</a></li>
-                  <li><a href="#" className="hover:text-white">Docs</a></li>
-                  <li><a href="#" className="hover:text-white">Careers</a></li>
-                  <li><a href="#" className="hover:text-white">Events</a></li>
+                  <li><Link href="/about-us" className="hover:text-white">About Us</Link></li>
+                  <li><Link href="/documents" className="hover:text-white">Docs</Link></li>
+                  <li><Link href="/support" className="hover:text-white">Contact Us</Link></li>
+                  <li><Link href="#" className="hover:text-white">Security</Link></li>
                 </ul>
               </div>
 
               <div>
                 <h5 className="font-semibold mb-2 sm:mb-3 text-white">Support</h5>
                 <ul className="space-y-2 text-secondary-db-40">
-                  <li><a href="#" className="hover:text-white">Contact Us</a></li>
-                  <li><a href="#" className="hover:text-white">Request a feature</a></li>
-                  <li><a href="#" className="hover:text-white">Security</a></li>
+                  <li><Link href="/request-feature" className="hover:text-white">Request a feature</Link></li>
+                  <li><Link href="/report-bug" className="hover:text-white">Report a Bug</Link></li>
+                  <li><Link href="/learning" className="hover:text-white">Learning</Link></li>
+                  <li><Link href="/support" className="hover:text-white">FAQs</Link></li>
                 </ul>
               </div>
             </div>

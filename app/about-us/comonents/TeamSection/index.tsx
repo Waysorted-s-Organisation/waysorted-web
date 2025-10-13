@@ -27,7 +27,7 @@ const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image }) => {
         />
       </div>
       <h3 className="text-xl font-semibold text-secondary-db-100">{name}</h3>
-      <p className="text-secondary-db-100/50 font-regular text-xl">{role}</p>
+      <p className="text-secondary-db-80 font-regular text-xl">{role}</p>
     </div>
   );
 };
@@ -65,8 +65,8 @@ export default function TeamSection() {
             />
           <p className="text-3xl font-semibold mb-2 text-left">Join our <br /> Team!</p>
           <div className="text-base text-secondary-db-5 mb-4 text-left font-medium">
-            <p className="mb-4">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
+            <p className="mb-4 text-lg">Build the Way with us.</p>
+            <p className="text-sm">Be part of a fast-moving startup, where your work makes a real impact from day one.</p>
           </div>
           <GlowStarButton
             onClick={() => window.open("https://discord.gg/", "_blank")}                              
