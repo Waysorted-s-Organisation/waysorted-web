@@ -33,14 +33,14 @@ export default function ToolCard({ tool }: { tool: ITool }) {
           ? `${tool.name} is coming soon`
           : `Learn more about ${tool.name}`
       }
-      className={`bg-white rounded-2xl border border-secondary-db-5 p-4 relative outline-none ${
+      className={`bg-white rounded-2xl border border-secondary-db-5 p-3 sm:p-4 relative outline-none ${
         isDisabled
           ? "opacity-70 cursor-not-allowed"
           : "hover:bg-primary-way-5 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary-way-100"
       }`}
     >
       <div className="flex items-center justify-between mb-2 relative">
-        <div className="w-12 h-12 rounded-xl bg-gray-200 relative overflow-hidden">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-200 relative overflow-hidden">
           <Image
             src={`${tool.iconData}`}
             alt={tool.name}
@@ -54,21 +54,21 @@ export default function ToolCard({ tool }: { tool: ITool }) {
         )}
       </div>
 
-      <h2 className="font-medium text-xl text-secondary-db-100">
+      <h2 className="font-medium text-lg sm:text-xl text-secondary-db-100">
         {tool.name}{" "}
-        {tool.isAI && (
+        {/* {tool.isAI && (
           <Image
             src={`${tool.AIIcon}`}
-            alt={tool.name}
+            alt={`${tool.name} AI`}
             width={20}
             height={20}
             className="inline-block ml-1"
           />
-        )}
+        )} */}
       </h2>
 
-      {/* Use a non-interactive element instead of <a> since the whole card is clickable */}
-      <span className="text-xs text-secondary-db-70 cursor-default select-none hover:text-primary-way-100 cursor-pointer">
+      {/* Hide on very small screens to keep the card compact */}
+      <span className="hidden sm:inline text-xs text-secondary-db-70 select-none">
         <Image
           src="/icons/open.svg"
           alt="Open in Figma"
@@ -79,16 +79,13 @@ export default function ToolCard({ tool }: { tool: ITool }) {
         Figma Plugin
       </span>
 
-      <p className="text-secondary-db-70 font-medium text-sm mt-3">
+      <p className="text-secondary-db-70 font-medium text-xs sm:text-sm mt-2 sm:mt-3">
         {tool.shortDescription}
       </p>
 
-      {/* Non-interactive "Learn more" since the whole card is clickable */}
       <div
-        className={`mt-4 text-sm font-medium flex items-center ${
-          isDisabled
-            ? "text-secondary-db-40"
-            : "text-primary-way-100"
+        className={`mt-3 sm:mt-4 text-sm font-medium flex items-center ${
+          isDisabled ? "text-secondary-db-40" : "text-primary-way-100"
         }`}
       >
         Learn more

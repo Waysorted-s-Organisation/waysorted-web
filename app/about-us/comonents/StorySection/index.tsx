@@ -2,29 +2,28 @@
 import Image from "next/image";
 export default function StorySection() {
   return (
-    <section className="bg-white text-secondary-db-100 px-85 mx-auto py-40">
-      {/* Label */}
-
-      <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md mb-6">
-        <Image
-          src="/icons/story.svg"
-          alt="Our Story"
-          width={30}
-          height={30}
-          className="block p-1"
-        />
-        <span className="pl-1 pr-2 py-1 text-secondary-db-100">Our Story</span>
-      </span>
-
-
+    <section className="bg-white text-secondary-db-100 px-4 sm:px-6 md:px-85 mx-auto py-16 md:py-40">
+      {/* Label: Centered only on mobile, left on md+ */}
+      <div className="w-full flex justify-center md:justify-start mb-6">
+        <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md px-3 py-1">
+          <Image
+            src="/icons/story.svg"
+            alt="Our Story"
+            width={30}
+            height={30}
+            className="block p-1"
+          />
+          <span className="pl-1 pr-2 py-1 text-secondary-db-100">Our Story</span>
+        </span>
+      </div>
 
       {/* Heading */}
-      <h2 className="text-3xl md:text-4xl font-bold mb-3">
+      <h2 className="text-3xl md:text-4xl font-bold mb-3 text-center md:text-left">
         This is what we believe.
       </h2>
 
       {/* Paragraphs */}
-      <div className="space-y-6 text-secondary-db-80 text-xl font-regular leading-relaxed max-w-4xl">
+      <div className="space-y-6 text-secondary-db-80 text-base md:text-xl font-regular leading-relaxed max-w-4xl mx-auto md:mx-0 text-center md:text-left">
         <p>
           At Waysorted, our journey began with a simple vision: to untangle the chaos of creative workflows. As designers ourselves, we have known the struggle and frustration born out of ineffective plugins or workflows, overwhelming project deadlines and scattered drives. When our vision of Waysorted was in its cocoon, we wanted to create something not just as a tool but rather, a creative companion&mdash;a space where every insight, idea, resource and project align seamlessly, so you can design without distractions.
         </p>

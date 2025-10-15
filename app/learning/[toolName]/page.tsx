@@ -55,7 +55,7 @@ export default function LearnMorePage({ params }: { params: { toolName: string }
         <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 
         {/* Breadcrumb */}
-        <div className="max-w-7xl mx-auto px-5 my-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-5 my-6 sm:my-16">
           <nav className="text-base font-medium text-secondary-db-100/50">
             <span
               className="cursor-pointer hover:text-secondary-db-100 hover:border-b-2 hover:border-b-primary-way-100"
@@ -90,26 +90,25 @@ export default function LearnMorePage({ params }: { params: { toolName: string }
         </div>
 
         {/* Heading */}
-        <div className="max-w-7xl mx-auto px-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6">
           <div>
-            <h1 className="text-6xl w-lg font-medium text-secondary-db-100 leading-tight">
+            <h1 className="text-3xl sm:text-6xl font-medium text-secondary-db-100 leading-tight w-full sm:w-lg">
               Explore Every <span className="text-primary-way-100">Shade</span> with Ease
             </h1>
             <div>
-              <button className="bg-secondary-db-100 text-white my-8 py-3 px-7 font-semibold text-base rounded-full cursor-pointer hover:bg-secondary-db-90">
+              <button className="bg-secondary-db-100 hidden md:block text-white my-6 sm:my-8 py-3 px-6 sm:px-7 font-semibold text-base rounded-full cursor-pointer hover:bg-secondary-db-90">
                 Try now for free
               </button>
             </div>
           </div>
-
-          <p className="text-secondary-db-100 max-w-lg mt-16 text-xl font-medium">
+          <p className="text-secondary-db-100 mt-4 sm:mt-16 text-base sm:text-xl font-medium max-w-full sm:max-w-lg">
             {tool?.description}
             <span className="text-secondary-db-70">—all in one tool.</span>
           </p>
         </div>
 
         {/* Carousel of ToolBriefs */}
-        <div className="my-10">
+        <div className="my-10 sm:my-10">
           <div className="mx-auto max-w-7xl px-5">
             {slides.length > 0 && (
               <ToolBriefCarousel slides={slides} />

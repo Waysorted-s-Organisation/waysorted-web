@@ -9,9 +9,9 @@ export default function SearchAndViewToggle({
   setIsGridView,
 }: SearchAndViewProps) {
   return (
-    <div className="max-w-7xl mx-auto px-5 my-12 flex items-center justify-between">
+    <div className="max-w-7xl mx-auto px-5 my-6 md:my-12 flex items-center justify-between gap-3 md:gap-0">
       {/* Search Bar */}
-      <div className="relative w-72">
+      <div className="relative flex-1 min-w-0 md:flex-none md:w-72">
         <input
           type="text"
           placeholder="Search"
@@ -34,7 +34,7 @@ export default function SearchAndViewToggle({
         <button
           onClick={() => setIsGridView(false)}
           title="List View"
-          className={`p-3 transition cursor-pointer h-9 w-9 ${
+          className={`p-2.5 md:p-3 transition cursor-pointer h-9 w-9 ${
             !isGridView ? "bg-primary-way-10" : "bg-white"
           }`}
         >
@@ -50,7 +50,7 @@ export default function SearchAndViewToggle({
         <button
           onClick={() => setIsGridView(true)}
           title="Grid View"
-          className={`p-3 transition cursor-pointer h-9 w-9 ${
+          className={`p-2.5 md:p-3 transition cursor-pointer h-9 w-9 ${
             isGridView ? "bg-primary-way-10" : "bg-white"
           }`}
         >

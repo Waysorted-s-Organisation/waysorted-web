@@ -34,14 +34,14 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
           ? `${tool.name} is coming soon`
           : `Learn more about ${tool.name}`
       }
-      className={`group bg-white border border-secondary-db-5 rounded-xl p-4 flex items-center justify-between outline-none ${
+      className={`group bg-white border border-secondary-db-5 rounded-xl p-3 sm:p-4 flex items-center justify-between gap-3 outline-none ${
         isDisabled
           ? "opacity-70 cursor-not-allowed"
           : "hover:bg-primary-way-5 cursor-pointer focus-visible:ring-2 focus-visible:ring-primary-way-100"
       }`}
     >
-      <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-gray-200 overflow-hidden">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-200 overflow-hidden shrink-0">
           <Image
             src={`${tool.iconData}`}
             alt={tool.name}
@@ -50,24 +50,26 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
             className="object-contain"
           />
         </div>
-        <div>
-          <h2 className="font-medium w-xs text-xl text-secondary-db-100 flex items-center">
-            {tool.name}
-            {tool.isAI && (
+        <div className="min-w-0">
+          <h2 className="font-medium text-base sm:text-xl text-secondary-db-100 flex items-center gap-2">
+            <span className="truncate">{tool.name}</span>
+            {/* {tool.isAI && (
               <Image
                 src={`${tool.AIIcon}`}
-                alt={tool.name}
+                alt={`${tool.name} AI`}
                 width={20}
                 height={20}
-                className="inline-block ml-1"
+                className="inline-block"
               />
-            )}
+            )} */}
             {badge && (
-              <Badge type={badge.type} label={badge.label} showDot={true} />
+              <span className="shrink-0">
+                <Badge type={badge.type} label={badge.label} showDot={true} />
+              </span>
             )}
           </h2>
-          {/* Non-interactive since the whole row is clickable */}
-          <span className="text-xs text-secondary-db-70 cursor-default select-none hover:text-primary-way-100 cursor-pointer">
+          {/* Hide helper label on small screens for compact list items */}
+          <span className="hidden sm:inline text-xs text-secondary-db-70 select-none">
             <Image
               src="/icons/open.svg"
               alt="Open in Figma"
@@ -80,19 +82,17 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
         </div>
       </div>
 
-      <p className="text-secondary-db-70 w-xs font-medium text-left text-sm">
+      <p className="text-secondary-db-70 font-medium text-xs sm:text-sm text-left w-auto sm:w-xs max-w-[55%] sm:max-w-none">
         {tool.shortDescription}
       </p>
 
-      {/* Non-interactive "Learn more" since the whole row is clickable */}
       <div
-        className={`text-sm font-medium flex items-center ${
-          isDisabled
-            ? "text-secondary-db-40"
-            : "text-primary-way-100"
+        className={`text-sm font-medium items-center flex shrink-0 ${
+          isDisabled ? "text-secondary-db-40" : "text-primary-way-100"
         }`}
       >
-        Learn more
+        {/* On small screens, show icon-only chevron to match reference; show label on >=sm */}
+        <span className="hidden sm:inline">Learn more</span>
         <span className="relative ml-1 w-3 h-2">
           <svg
             width="6"

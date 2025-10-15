@@ -8,7 +8,7 @@ interface CollageProps {
 
 const Collage: React.FC<CollageProps> = ({ images }) => {
   return (
-    <div className="relative w-full max-w-4xl mx-auto h-[500px] bg-white">
+    <div className="relative hidden md:block w-full max-w-4xl mx-auto h-[500px] bg-white">
         
       {/* Image 1 - Bottom Left */}
       <div className="absolute top-[40%] left-0 bg-[#E7E7E7] button-shadow border-white border-[5px] -translate-y-1/2  overflow-visible z-10">

@@ -53,10 +53,12 @@ export default async function ProfilePage({
       {/* Example: If you still have a TopBanner, import & render it here */}
       <TopBanner earlyAccess={user.earlyAccess} />
 
-      <div className="mx-auto flex max-w-full gap-0">
+      <div className="mx-auto flex flex-col lg:flex-row max-w-full gap-0">
         <Sidebar />
-        <main className="flex-1 px-4 pb-10 pt-6 sm:px-6">
-          <div className="mx-auto max-w-screen-2xl py-auto px-auto lg:py-20 lg:px-20">{renderTab()}</div>
+        <main className="flex-1 px-2 pt-4 pb-8 sm:px-4 sm:pt-6 sm:pb-10">
+          <div className="mx-auto w-full max-w-screen-md sm:max-w-screen-lg lg:max-w-screen-2xl px-0 sm:px-4 lg:px-20 lg:py-20">
+            {renderTab()}
+          </div>
         </main>
       </div>
     </div>

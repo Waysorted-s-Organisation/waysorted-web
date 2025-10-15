@@ -1,5 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 type TopBannerProps = {
     earlyAccess: boolean;
@@ -14,11 +15,17 @@ export default function TopBanner({ earlyAccess }: TopBannerProps) {
           <div className="flex items-center gap-3">
             <span
               aria-hidden="true"
-              className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-primary-way-100 bg-primary-way-10 text-xs font-medium text-primary-way-100 cursor-pointer"
+              className="inline-flex w-6 h-6 sm:w-4 sm:h-4 items-center justify-center cursor-pointer relative min-w-[20px] min-h-[20px]"
               title="Info"
-          >
-            !
-          </span>
+            >
+              <Image
+                src="/icons/info-icon.svg"
+                alt="Info"
+                fill
+                className="object-contain"
+                sizes="20px"
+              />
+            </span>
           <p className="text-sm text-primary-way-100">
             Secure your early access and enjoy a head start with extra features, priority support, and special rewards.
           </p>

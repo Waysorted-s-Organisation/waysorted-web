@@ -28,7 +28,6 @@ export default function LearnPage() {
         setTools(json.data || []);
       } catch (err) {
         setTools([]);
-        // Optionally show an error banner or toast
       } finally {
         setLoading(false);
       }
@@ -48,17 +47,19 @@ export default function LearnPage() {
         }`}
       >
         <Header showBanner={showBanner} setShowBanner={setShowBanner} />
-        <Breadcrumb />
-        <HeadingSection />
-        <SearchAndViewToggle
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          isGridView={isGridView}
-          setIsGridView={setIsGridView}
-        />
-        <div className="max-w-7xl mx-auto px-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <Breadcrumb />
+          <HeadingSection />
+          <SearchAndViewToggle
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            isGridView={isGridView}
+            setIsGridView={setIsGridView}
+          />
           {loading ? (
-            <div className="py-12 text-center text-secondary-db-70">Loading tools...</div>
+            <div className="py-12 text-center text-secondary-db-70">
+              Loading tools...
+            </div>
           ) : isGridView ? (
             <ToolsGrid tools={filteredTools} />
           ) : (
