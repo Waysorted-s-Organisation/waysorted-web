@@ -329,7 +329,7 @@ export default function PlaySecureCard() {
   return (
     <div
       ref={containerRef}
-      className="relative w-[346px] h-[290px] p-6 rounded-2xl shadow border border-gray-100 flex flex-col items-center text-center overflow-hidden white-bg-dots"
+      className="relative order-3 md:order-none w-[345px] h-[289px] mx-auto md:w-[346px] md:h-[290px] p-6 rounded-2xl shadow border border-gray-100 flex flex-col items-center text-center overflow-hidden white-bg-dots"
       onMouseMove={onMouseMove}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}

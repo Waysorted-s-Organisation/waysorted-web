@@ -5,7 +5,7 @@ export default function GlassModeCard() {
 
   return (
     <div
-      className={`w-[500px] h-[210px] p-6 rounded-2xl shadow border border-gray-100 flex flex-col justify-center items-center transition-all duration-300
+      className={`order-6 md:order-none w-[345px] h-[297px] mx-auto md:w-[500px] md:h-[210px] p-6 rounded-2xl shadow border border-gray-100 flex flex-col justify-center items-center transition-all duration-300
         ${isGlassMode ? "glass-bg wayspace-cursor" : "white-bg-dots wayspace-cursor"}
       `}
     >

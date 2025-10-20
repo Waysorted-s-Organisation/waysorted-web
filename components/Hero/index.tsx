@@ -9,7 +9,7 @@ const Hero = () => {
     >
       <div id="hero-content" className="text-center">
         {/* Badge */}
-        <button className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-5 py-2 text-sm text-secondary-db-100 mb-4 cursor-pointer">
+        <button className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-3 py-1 md:px-5 md:py-2 text-sm text-secondary-db-100 mb-4 cursor-pointer">
           <Image
             src="/icons/tools.svg"
             alt="Hero Badge"
@@ -24,14 +24,14 @@ const Hero = () => {
         </button>
 
         {/* Main heading */}
-        <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold text-secondary-db-100 leading-tight mb-4">
+        <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold text-secondary-db-100 leading-tight mb-4">
           A single toolkit to
           <br />
           accelerate every idea.
         </h1>
 
         {/* Subheading */}
-        <p className="text-base font-semibold max-w-2xl mx-auto mb-12 leading-relaxed">
+        <p className="text-sm md:text-base font-semibold max-w-2xl mx-auto mb-12 leading-relaxed">
           <span className="text-secondary-db-100">
             We provide a single hub to empower every creator.
           </span>
@@ -39,7 +39,18 @@ const Hero = () => {
 
         {/* CTA buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <GlowStarButton className="border bg-secondary-db-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer">
+          {/* Mobile-only: Get Early Access (matches the provided mock) */}
+          <GlowStarButton
+            aria-label="Get Early Access"
+            className="sm:hidden w-49 max-w-xs border bg-secondary-db-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer"
+          >
+            <span className="flex items-center justify-center gap-x-2">
+              <span>Get Early Access</span>
+            </span>
+          </GlowStarButton>
+
+          {/* Tablet/Desktop: keep existing CTA unchanged */}
+          <GlowStarButton className="hidden sm:inline-flex border bg-secondary-db-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer">
             <span className="flex items-center gap-x-2">
               <Image
                 src="/icons/figma.svg"
