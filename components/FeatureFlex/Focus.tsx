@@ -61,7 +61,7 @@ export default function Focus() {
     return (
 
 
-        <div className="w-[277px] h-[591px] rounded-2xl shadow border border-gray-100 text-center flex flex-col">
+        <div className="w-[345px] h-[496px] mx-auto md:w-[277px] md:h-[591px] rounded-2xl shadow border border-gray-100 text-center flex flex-col">
             {/* Scrollable card list */}
             <div
                 ref={containerRef}

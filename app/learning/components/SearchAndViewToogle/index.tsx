@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import {SearchAndViewProps} from "../../types";
+import { SearchAndViewProps } from "@/models/tool";
 
 export default function SearchAndViewToggle({
   searchTerm,

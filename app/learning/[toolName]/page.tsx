@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useBanner } from '@/context/BannerContext'
 import Header from '@/components/Header'
 import ToolBriefCarousel from './components/ToolBriefCarousel'
@@ -11,38 +11,74 @@ import ExploreMore from './components/ExploreMore'
 import Footer from '@/components/Footer'
 import type { ITool, ISlide } from '@/models/tool'
 
-export default function LearnMorePage({ params }: { params: { toolName: string } }) {
+export default function LearnMorePage() {
   const { showBanner, setShowBanner } = useBanner()
   const router = useRouter()
-  const { toolName } = params
+  const params = useParams()
 
-  const [tool, setTool] = useState<ITool>()
+  // normalize toolName (handle potential string[] from dynamic/catch-all routes)
+  const rawToolName = params?.toolName
+  const toolName = Array.isArray(rawToolName) ? rawToolName[0] ?? '' : rawToolName ?? ''
+
+  const [tool, setTool] = useState<ITool | null>(null)
   const [slides, setSlides] = useState<ISlide[]>([])
   const [allTools, setAllTools] = useState<ITool[]>([])
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let mounted = true
+
     async function fetchData() {
+      setLoading(true)
       try {
+        // fetch active tools
         const toolsRes = await fetch('/api/tools/active')
         const toolsJson = await toolsRes.json()
-        setAllTools(toolsJson.data || [])
+        const toolsData: ITool[] = toolsJson?.data ?? []
+        if (!mounted) return
+        setAllTools(toolsData)
 
         // Find the tool by slug (toolName)
-        const foundTool = (toolsJson.data || []).find((t: ITool) => t.slug === toolName)
-        setTool(foundTool || null)
+        const foundTool = toolsData.find((t: ITool) => t.slug === toolName)
+        if (!mounted) return
+        setTool(foundTool ?? null)
 
-        const slidesRes = await fetch(`/api/tools/${toolName}/slides`);
-        const slidesJson = await slidesRes.json();
-        setSlides(slidesJson.slides || []);
-      } catch (err) {
+        if (toolName) {
+          const slidesRes = await fetch(`/api/tools/${encodeURIComponent(toolName)}/slides`)
+          const slidesJson = await slidesRes.json()
+          if (!mounted) return
+          setSlides(slidesJson?.slides ?? [])
+        } else {
+          if (!mounted) return
+          setSlides([])
+        }
+      } catch (error) {
+        if (!mounted) return
+        console.error('Error fetching tool or slides data:', error)
         setSlides([])
+        setTool(null)
       } finally {
+        if (mounted) setLoading(false)
       }
     }
-    fetchData()
+
+    if (toolName) {
+      fetchData()
+    } else {
+      // reset state if no toolName
+      setTool(null)
+      setSlides([])
+      setAllTools([])
+      setLoading(false)
+    }
+
+    return () => {
+      mounted = false
+    }
   }, [toolName])
-  if(!tool) {
-    console.log("Tool not found for slug:", toolName);
+
+  if (!tool && !loading) {
+    return null
   }
 
   return (
@@ -66,8 +102,8 @@ export default function LearnMorePage({ params }: { params: { toolName: string }
             <Image
               src="/icons/chevron-right.svg"
               alt="Arrow Right"
-              width={4}
-              height={4}
+              width={12}
+              height={12}
               className="inline-block mx-2"
             />
             <span
@@ -79,12 +115,12 @@ export default function LearnMorePage({ params }: { params: { toolName: string }
             <Image
               src="/icons/chevron-right.svg"
               alt="Arrow Right"
-              width={4}
-              height={4}
+              width={12}
+              height={12}
               className="inline-block mx-2"
             />
             <span className="text-primary-way-100 text-base font-medium cursor-pointer">
-              {tool?.name}
+              {tool?.name ?? toolName}
             </span>
           </nav>
         </div>
@@ -102,7 +138,7 @@ export default function LearnMorePage({ params }: { params: { toolName: string }
             </div>
           </div>
           <p className="text-secondary-db-100 mt-4 sm:mt-16 text-base sm:text-xl font-medium max-w-full sm:max-w-lg">
-            {tool?.description}
+            {tool?.description ?? ''}
             <span className="text-secondary-db-70">—all in one tool.</span>
           </p>
         </div>
@@ -110,11 +146,11 @@ export default function LearnMorePage({ params }: { params: { toolName: string }
         {/* Carousel of ToolBriefs */}
         <div className="my-10 sm:my-10">
           <div className="mx-auto max-w-7xl px-5">
-            {slides.length > 0 && (
-              <ToolBriefCarousel slides={slides} />
-            )}
+            {slides.length > 0 && <ToolBriefCarousel slides={slides} />}
+            {loading && <p className="text-center">Loading slides…</p>}
           </div>
         </div>
+
         <ExploreMore tools={allTools} />
         <JoinCommunity />
       </main>

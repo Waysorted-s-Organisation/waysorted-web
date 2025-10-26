@@ -11,15 +11,15 @@ export default function FeatureFlex() {
 
   return (
     <section className="w-full flex justify-center py-10 ">
-      <div className="flex flex-col lg:flex-row gap-5">
+      <div className="flex flex-col lg:flex-row gap-5 md:flex-row md:gap-5">
         {/* LEFT + MIDDLE WRAPPER */}
         <div className="flex flex-col gap-5">
           {/* TOP ROW: Way AI + Wayspace */}
-          <div className="flex gap-5">
+          <div className="flex flex-col md:flex-row gap-5">
             {/* LEFT COLUMN */}
             <div className="flex flex-col gap-5">
               {/* Way AI */}
-              <div className="w-[346px] h-[163px] p-5 rounded-xl bg-white shadow glowing-border flex flex-col items-center justify-center text-center">
+              <div className="order-1 md:order-none w-[345px] h-[163px] mx-auto md:w-[346px] md:h-[163px] p-5 rounded-xl bg-white shadow glowing-border flex flex-col items-center justify-center text-center">
                 <Image
                   src="/icons/way-ai.svg"
                   alt="Way AI"
@@ -40,7 +40,7 @@ export default function FeatureFlex() {
             </div>
 
             {/* MIDDLE COLUMN */}
-            <div className="w-[346px] h-[467px] p-6 rounded-2xl white-bg-dots shadow border border-gray-100 flex flex-col items-center text-center wayspace-cursor">
+            <div className="order-2 md:order-none w-[345px] h-[466px] mx-auto md:w-[346px] md:h-[467px] p-6 rounded-2xl white-bg-dots shadow border border-gray-100 flex flex-col items-center text-center wayspace-cursor">
               <h3 className="text-xl font-semibold text-gray-900">
                 Get Wayspace
               </h3>
@@ -57,14 +57,19 @@ export default function FeatureFlex() {
           </div>
 
           {/* BOTTOM ROW: Secure Data + Glass Mode */}
-          <div className="flex gap-5">
+          <div className="flex flex-col md:flex-row gap-5">
             {/* Secure Data */}
-            <div className="w-[191px] h-[210px] p-5 rounded-2xl white-bg-dots shadow border border-gray-100 flex flex-col items-center justify-center text-center overflow-hidden">
-              <h3 className="text-lg font-semibold text-gray-900">Secure Data</h3>
-              <p className="text-gray-600 text-sm">
-                Lorem ipsum dolor sit amet consectetur.
-              </p>
-              <div className="mt-15">
+            <div className="order-5 md:order-none w-[345px] h-[113px] mx-auto md:w-[191px] md:h-[210px] p-5 rounded-2xl white-bg-dots shadow border border-gray-100
+              flex flex-row items-center justify-between text-left
+              md:flex-col md:items-center md:justify-center md:text-center overflow-hidden"
+            >
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Secure Data</h3>
+                <p className="text-gray-600 text-sm">
+                  Lorem ipsum dolor sit amet consectetur.
+                </p>
+              </div>
+              <div className="ml-4 md:ml-0 md:mt-15 flex-shrink-0 flex items-center justify-center">
                 <SecureDataGlow />
               </div>
             </div>
@@ -80,11 +85,11 @@ export default function FeatureFlex() {
           <Focus />
 
           {/* CTA */}
-          <GlowStarButton className="w-[277px] h-[85px] bg-black text-white shadow-glow flex items-center justify-center rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-semibold cursor-pointer">
+          <GlowStarButton className="order-7 md:order-none w-[180px] h-[60px] mx-auto md:w-[277px] md:h-[85px] bg-black text-white shadow-glow flex items-center justify-center rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-semibold cursor-pointer">
             <span className="flex items-center justify-center gap-4 w-full">
               Start Instantly!
               <span
-                className="bg-white h-14 w-14 flex items-center justify-center rounded-xl"
+                className="bg-white h-9 w-9 md:h-14 md:w-14 flex items-center justify-center rounded-xl"
                 aria-hidden="true"
               >
                 <Image
