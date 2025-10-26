@@ -378,35 +378,44 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                     <button
                       className="w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
                       onClick={() => {
-                        router.push('/resources');
+                        router.push('/learning');
                         setMobileOpen(false);
                       }}
                     >
-                      All resources
+                      Learning
                     </button>
                     <button
                       className="w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
                       onClick={() => {
-                        router.push('/about-us');
+                        router.push('/documents');
                         setMobileOpen(false);
                       }}
                     >
-                      About us
-                    </button>
-                    <button
-                      className="w-full text-left px-4 py-3 text-secondary-db-100"
-                      onClick={() => {
-                        router.push('/support');
-                        setMobileOpen(false);
-                      }}
-                    >
-                      Support
+                      Documentations
                     </button>
                   </div>
                 </div>
                 <div className="mt-3 px-3">
                   <div className="border-t border-primary-way-10" />
                 </div>
+              </div>
+              <div className="px-3">
+                <button
+                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
+                  onClick={() => {router.push('/about-us')}}
+                >
+                  <span className="font-medium">About Us</span>
+                </button>
+                <div className="border-t border-primary-way-10" />
+              </div>
+              <div className="px-3">
+                <button
+                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
+                  onClick={() => {router.push('/support')}}
+                >
+                  <span className="font-medium">Support</span>
+                </button>
+                <div className="border-t border-primary-way-10" />
               </div>
 
               {/* Language pill + dropdown */}
