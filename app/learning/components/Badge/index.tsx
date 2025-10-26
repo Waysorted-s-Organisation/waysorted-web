@@ -1,8 +1,8 @@
 "use client";
 import clsx from "clsx";
-import { ToolBadge } from "@/app/learning/types";
+import type { IToolBadge } from "@/models/tool";
 
-type BadgeType = ToolBadge["type"];
+type BadgeType = IToolBadge["type"];
 
 interface BadgeProps {
   type: BadgeType;
