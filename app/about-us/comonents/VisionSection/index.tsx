@@ -12,17 +12,15 @@ export default function VisionSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
 
   const VISION_STATEMENT =
-    "Our Vision is to create a world where designers can focus entirely on their ideas—without losing time, energy, or creativity to tool chaos";
+    "We’re on a mission to make every creator’s Tool faster, smarter, and frustration-free creating a global movement of creators shaping the next era of design productivity.";
 
   const COLOR_INDEX_MAP: Record<number, string> = {
-    0: "text-primary-way-100", // "Our"
-    1: "text-primary-way-100", // "Vision"
-    2: "text-primary-way-100", // "is"
-    3: "text-primary-way-100", // "to"
-    19: "text-primary-way-100", // "creativity"
-    20: "text-primary-way-100", // "to"
-    21: "text-primary-way-100", // "tool"
-    22: "text-primary-way-100", // "chaos."
+    8: "text-primary-way-100", // "Our"
+    9: "text-primary-way-100", // "Vision"
+    10: "text-primary-way-100", // "is"
+    11: "text-primary-way-100", // "to"
+    12: "text-primary-way-100", // "creativity"
+    13: "text-primary-way-100", // "to"
   };
 
   useEffect(() => {
