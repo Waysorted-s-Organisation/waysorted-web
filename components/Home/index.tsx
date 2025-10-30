@@ -54,12 +54,12 @@ export default function Home() {
             <InfoCards />
             <div className="my-40" />
              {/* Section 1: Secure Animation */}
-      <section className="h-[200vh]">
+      <section id="secure-animation" className="h-[200vh]">
         <SecureAnimation />
       </section>
 
       {/* Section 2: Secure Cards */}
-      <section
+      <section id="secure-cards"
         className={`transition-opacity duration-700 ${
           showSecureCards ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
