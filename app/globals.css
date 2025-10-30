@@ -140,8 +140,6 @@ body {
 }
 
 .join-shadow {
-  width: 743px;
-  height: 168px;
   box-shadow: inset 0px -24px 33px rgba(255, 255, 255, 0.25);
 }
 
@@ -238,6 +236,12 @@ html, body {
 .bg-tool-brief {
   background-color: #E8EFFC; 
   background-image: radial-gradient(#000000 0.25px, transparent 1px);
+  background-size: 25px 25px; 
+}
+
+.bg-mavens {
+  background-color: #FFFAF6; 
+  background-image: radial-gradient(#797B7F 0.25px, transparent 1px);
   background-size: 25px 25px; 
 }
 
