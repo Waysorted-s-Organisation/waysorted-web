@@ -83,7 +83,7 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
       </div>
 
       <p className="text-secondary-db-70 font-medium text-xs sm:text-sm text-left w-auto sm:w-xs max-w-[55%] sm:max-w-none">
-        {tool.shortDescription}
+        {tool.tagline}
       </p>
 
       <div
