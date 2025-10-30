@@ -174,6 +174,7 @@ export default function Footer() {
                 <ul className="space-y-2 text-secondary-db-40">
                   <li><Link href="/get-early-access" className="hover:text-white">Early Access</Link></li>
                   <li><Link href="/learning" className="hover:text-white">Explore Tools</Link></li>
+                  <li><Link href="/settings" className="hover:text-white">Free Credits</Link></li>
                   <li><Link href="/login" className="hover:text-white">Sign in</Link></li>
                 </ul>
               </div>
