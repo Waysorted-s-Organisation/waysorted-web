@@ -19,15 +19,15 @@ export default function Breadcrumb() {
         <Image
           src="/icons/chevron-right.svg"
           alt="Arrow Right"
-          width={8}
-          height={8}
+          width={5}
+          height={7}
           className="inline-block mx-2 align-middle md:hidden"
         />
         <Image
           src="/icons/chevron-right.svg"
           alt="Arrow Right"
-          width={1}
-          height={0.25}
+          width={5}
+          height={7}
           className="hidden md:inline-block mx-2 align-middle"
         />
 
