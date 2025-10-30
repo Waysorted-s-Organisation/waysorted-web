@@ -48,7 +48,7 @@ export default function Footer() {
   }
 
   return (
-    <footer className="relative bg-secondary-db-100 text-gray-300 px-4 sm:px-6 md:px-8 lg:px-16 pt-6 sm:pt-8 pb-5 rounded-t-3xl">
+    <footer id="site-footer" className="relative bg-secondary-db-100 text-gray-300 px-4 sm:px-6 md:px-8 lg:px-16 pt-6 sm:pt-8 pb-5 rounded-t-3xl">
       <div className="mx-auto w-full max-w-screen-2xl">
         {/* ROW 1: Logo (top) */}
         <div className="w-full">

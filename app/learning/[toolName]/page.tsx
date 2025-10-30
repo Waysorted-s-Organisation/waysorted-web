@@ -102,8 +102,8 @@ export default function LearnMorePage() {
             <Image
               src="/icons/chevron-right.svg"
               alt="Arrow Right"
-              width={12}
-              height={12}
+              width={5}
+              height={7}
               className="inline-block mx-2"
             />
             <span
@@ -115,8 +115,8 @@ export default function LearnMorePage() {
             <Image
               src="/icons/chevron-right.svg"
               alt="Arrow Right"
-              width={12}
-              height={12}
+              width={5}
+              height={7}
               className="inline-block mx-2"
             />
             <span className="text-primary-way-100 text-base font-medium cursor-pointer">
@@ -138,7 +138,7 @@ export default function LearnMorePage() {
             </div>
           </div>
           <p className="text-secondary-db-100 mt-4 sm:mt-16 text-base sm:text-xl font-medium max-w-full sm:max-w-lg">
-            {tool?.description ?? ''}
+            {tool?.shortDescription ?? ''}
             <span className="text-secondary-db-70">—all in one tool.</span>
           </p>
         </div>

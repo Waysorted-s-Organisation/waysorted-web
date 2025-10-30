@@ -175,7 +175,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
   // helper to choose text color based on secure section state
   const textColor = isSecureSection ? 'text-white' : 'text-secondary-db-100';
   const logoSrc = isSecureSection ? '/icons/logo-white.svg' : '/images/logo.svg';
-  const bgColor = isSecureSection ? 'bg-secondary-db-100' : 'bg-white';
+  const logoLanguage = isSecureSection ? '/icons/language-white.svg' : '/icons/world.svg';
 
   return (
     <header
@@ -282,12 +282,12 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
             <div className="relative hidden md:block">
               <button
                 onClick={() => setLanguageOpen((prev) => !prev)}
-                className="border border-secondary-db-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer bg-white"
+                className={`border border-secondary-db-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer ${isSecureSection ? 'border border-secondary-db-80' : ''}`}
                 title="Change Language"
                 aria-label="Change Language"
                 ref={languageBtnRef}
               >
-                <Image src="/icons/world.svg" alt="Globe Icon" width={20} height={20} />
+                <Image src={logoLanguage} alt="Globe Icon" width={20} height={20} />
               </button>
               <LanguageDropdown
                 isOpen={languageOpen}
@@ -298,7 +298,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
 
             {/* Primary CTA: hide on mobile per new design, keep on desktop */}
             <GlowingStarButton
-              className={`hidden md:flex bg-secondary-db-100 shadow-glow font-medium text-sm md:text-base text-white px-4 md:px-5 py-2 rounded-lg items-center active:scale-95 transition-colors duration-100 cursor-pointer ${isSecureSection ? 'border border-white' : ''}`}
+              className={`hidden md:flex bg-secondary-db-100 shadow-glow font-medium text-sm md:text-base text-white px-4 md:px-5 py-2 rounded-lg items-center active:scale-95 transition-colors duration-100 cursor-pointer ${isSecureSection ? 'border border-secondary-db-80' : ''}`}
               title="Get Early Access"
               aria-label="Get Early Access"
               onClick={() => router.push('/get-early-access')}

@@ -37,6 +37,7 @@ export interface ITool {
   disabled: boolean;
   isActive: boolean;
   category: string;
+  tagline: string;
   tags: string[];
   slides: ISlide[];
   version: string;
@@ -68,6 +69,7 @@ export interface IToolMethods {
     disabled: boolean;
     isActive: boolean;
     category: string;
+    tagline: string;
     tags: string[];
     slides: ISlide[];
     version: string;
@@ -204,6 +206,10 @@ const ToolSchema = new Schema<ITool, ToolModel, IToolMethods, IToolStatics>(
       trim: true,
       lowercase: true,
     },
+    tagline: {
+      type: String,
+      required: true, 
+    },
     tags: [
       {
         type: String,
@@ -320,6 +326,7 @@ ToolSchema.methods.toPublic = function () {
     disabled: this.disabled,
     isActive: this.isActive,
     category: this.category,
+    tagline: this.tagline,
     tags: this.tags,
     slides: this.slides,
     version: this.version,
