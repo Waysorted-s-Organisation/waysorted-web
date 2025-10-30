@@ -1,5 +1,4 @@
 "use client";
-import GlowStarButton from "@/components/GlowStarButton/index";
 import { useState } from "react";
 import Image from "next/image";
 
@@ -149,25 +148,19 @@ export default function ContactForm() {
               </div>
 
               {/* Submit Button */}
-              <GlowStarButton
-                className="w-full shadow-glow hover:bg-secondary-db-90 py-3 rounded-md transition flex items-center justify-center gap-2 cursor-pointer font-medium"
-                title="Submit"
-                type="submit"
-                aria-label="Submit"
-                rerollOnHover
-                randomizeOnMount
-              >
-                <span className="flex items-center justify-center gap-x-2 rounded-lg w-full">
-                  Submit
-                  <Image
-                    src="/icons/arrow-white.svg"
-                    alt="Arrow Right"
-                    width={16}
-                    height={16}
-                    className="ml-1 inline-block"
-                  />
-                </span>
-              </GlowStarButton>
+              <button
+                    type="submit"
+                    className="w-full bg-secondary-db-100 rounded-lg join-shadow-1 text-white py-3 transition flex items-center justify-center gap-2 cursor-pointer font-medium"
+                >
+                    Submit
+                    <Image
+                        src="/icons/arrow-white.svg"
+                        alt="Arrow Right"
+                        width={10}
+                        height={10}
+                        className="inline"
+                    />
+              </button>
             </form>
           </div>
         </div>
