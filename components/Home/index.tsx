@@ -10,7 +10,6 @@ import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
 import GetStarted from '@/components/GetStarted'
 import Testimonials from '@/components/Testimonials'
-import Coffee from '@/components/Coffee'
 import Comments from '@/components/Comments'
 import Footer from "@/components/Footer";
 import SecureAnimation from "@/components/SecureAnimation";
@@ -67,7 +66,6 @@ export default function Home() {
       >
         <SecureCards />
       </section>
-            <Coffee />
             <Comments />
             <Testimonials />
             <GetStarted />
