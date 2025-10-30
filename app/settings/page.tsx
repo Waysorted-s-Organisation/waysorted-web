@@ -7,6 +7,7 @@ import { NotificationsTab } from "./components/tabs/NotificationsTab";
 import { IntegrationsTab } from "./components/tabs/IntegrationsTab";
 import { BetaFeaturesTab } from "./components/tabs/BetaFeaturesTab";
 import TopBanner from "./components/TopBanner";
+import { redirect } from "next/navigation";
 
 type TabKey =
   | "general"
@@ -45,7 +46,7 @@ export default async function ProfilePage({
   }
 
   if (!user) {
-    return <div>User not found.</div>;
+    redirect("/login");
   }
 
   return (
