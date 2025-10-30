@@ -86,7 +86,7 @@ export default function SupportPage() {
 
             {/* Heading */}
             <h2 className="mt-4 mb-3 text-2xl sm:text-3xl md:text-4xl font-semibold text-secondary-db-100 pb-4">
-              <span className="bg-tertiary-voilet-500/10 rounded-xl text-tertiary-voilet-500 px-3 sm:px-4">
+              <span className="bg-tertiary-voilet-500/10 rounded-lg text-tertiary-voilet-500 px-3 sm:px-4 py-1">
                 Top
               </span>{" "}
               Frequently Asked Questions
