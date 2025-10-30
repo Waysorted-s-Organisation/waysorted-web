@@ -138,7 +138,7 @@ export default function LearnMorePage() {
             </div>
           </div>
           <p className="text-secondary-db-100 mt-4 sm:mt-16 text-base sm:text-xl font-medium max-w-full sm:max-w-lg">
-            {tool?.description ?? ''}
+            {tool?.shortDescription ?? ''}
             <span className="text-secondary-db-70">—all in one tool.</span>
           </p>
         </div>
