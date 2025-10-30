@@ -31,6 +31,12 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
   const mobileLanguageBtnRef = useRef<HTMLButtonElement | null>(null);
   const router = useRouter();
 
+  // header ref so we can measure its height to detect "touch"
+  const headerRef = useRef<HTMLElement | null>(null);
+
+  // New: header mode when secure sections touch the header
+  const [isSecureSection, setIsSecureSection] = useState(false);
+
   async function handleLogout() {
     try {
       await fetch('/api/auth/logout', {
@@ -104,8 +110,78 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
     },
   ];
 
+  // Check whether secure sections "touch" the header (top of the section reaches header bottom).
+  // This uses headerRef to calculate header height, and bounding rect checks on scroll/resize.
+  useEffect(() => {
+    const ids = ['secure-animation', 'secure-cards'];
+
+    const updateSecureState = () => {
+      const headerEl = headerRef.current;
+      const headerHeight = headerEl ? headerEl.getBoundingClientRect().height : 0;
+
+      const elms = ids
+        .map((id) => document.getElementById(id))
+        .filter(Boolean) as HTMLElement[];
+
+      if (elms.length === 0) {
+        setIsSecureSection(false);
+        return;
+      }
+
+      // "touch" logic: element's top <= headerHeight (i.e. the top of the section has reached the header bottom)
+      // and also the element is not completely scrolled past (rect.bottom > 0)
+      const anyTouching = elms.some((el) => {
+        const rect = el.getBoundingClientRect();
+        return rect.top <= headerHeight && rect.bottom > 0;
+      });
+
+      setIsSecureSection(anyTouching);
+    };
+
+    // initial check
+    updateSecureState();
+
+    const onScroll = () => updateSecureState();
+    const onResize = () => updateSecureState();
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onResize);
+
+    // Also set up an IntersectionObserver fallback for slightly better responsiveness
+    let observer: IntersectionObserver | null = null;
+    const elements = ids
+      .map((id) => document.getElementById(id))
+      .filter(Boolean) as HTMLElement[];
+
+    if (elements.length > 0 && 'IntersectionObserver' in window) {
+      // We observe with threshold 0 so we get notified as soon as any intersection happens,
+      // but we still rely on the "touch" bounding logic for exact header-touch behavior.
+      observer = new IntersectionObserver(
+        () => {
+          updateSecureState();
+        },
+        { threshold: 0 }
+      );
+      elements.forEach((el) => observer?.observe(el));
+    }
+
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onResize);
+      if (observer) observer.disconnect();
+    };
+  }, []);
+
+  // helper to choose text color based on secure section state
+  const textColor = isSecureSection ? 'text-white' : 'text-secondary-db-100';
+  const logoSrc = isSecureSection ? '/icons/logo-white.svg' : '/images/logo.svg';
+  const bgColor = isSecureSection ? 'bg-secondary-db-100' : 'bg-white';
+
   return (
-    <header className="w-full bg-white border-b border-gray-200 fixed top-0 z-40">
+    <header
+      ref={headerRef}
+      className={`w-full fixed top-0 z-40 ${isSecureSection ? 'bg-secondary-db-100' : 'bg-white border-b border-gray-200'}`}
+    >
       {showBanner && (
         <div className="w-full bg-primary-way-100 text-white text-center py-2 text-sm relative">
           Get early access to Waysorted Figma...{' '}
@@ -130,7 +206,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
           <Link href="/" className="block">
             <div className="relative w-24 h-8 sm:w-28 sm:h-9 md:w-32 md:h-10 lg:w-36 lg:h-11 translate-y-1">
               <Image
-                src="/images/logo.svg"
+                src={logoSrc}
                 alt="WaySorted Logo"
                 fill
                 className="object-contain"
@@ -142,7 +218,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
           {/* Desktop navigation */}
           <div className="hidden md:flex items-center space-x-5 pl-6 lg:pl-12">
             <div
-              className="relative flex items-center space-x-1 text-secondary-db-100 font-medium text-sm cursor-pointer"
+              className={`relative flex items-center space-x-1 font-medium text-sm cursor-pointer ${textColor}`}
               onMouseEnter={() => setProductsOpen(true)}
               onMouseLeave={() => setProductsOpen(false)}
             >
@@ -159,7 +235,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
             </div>
 
             <div
-              className="relative flex items-center space-x-1 text-secondary-db-100 font-medium text-sm cursor-pointer"
+              className={`relative flex items-center space-x-1 font-medium text-sm cursor-pointer ${textColor}`}
               onMouseEnter={() => setResourcesOpen(true)}
               onMouseLeave={() => setResourcesOpen(false)}
             >
@@ -178,14 +254,14 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
             </div>
 
             <button
-              className="flex items-center pr-3 text-secondary-db-100 font-medium text-sm cursor-pointer"
+              className={`flex items-center pr-3 font-medium text-sm cursor-pointer ${textColor}`}
               onClick={() => router.push('/about-us')}
             >
               About Us
             </button>
 
             <button
-              className="flex items-center pr-3 text-secondary-db-100 font-medium text-sm cursor-pointer"
+              className={`flex items-center pr-3 font-medium text-sm cursor-pointer ${textColor}`}
               onClick={() => router.push('/support')}
             >
               Support
@@ -206,7 +282,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
             <div className="relative hidden md:block">
               <button
                 onClick={() => setLanguageOpen((prev) => !prev)}
-                className="border border-secondary-db-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer"
+                className="border border-secondary-db-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer bg-white"
                 title="Change Language"
                 aria-label="Change Language"
                 ref={languageBtnRef}
@@ -222,7 +298,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
 
             {/* Primary CTA: hide on mobile per new design, keep on desktop */}
             <GlowingStarButton
-              className="hidden md:flex bg-secondary-db-100 shadow-glow font-medium text-sm md:text-base text-white px-4 md:px-5 py-2 rounded-lg items-center active:scale-95 transition-colors duration-100 cursor-pointer"
+              className={`hidden md:flex bg-secondary-db-100 shadow-glow font-medium text-sm md:text-base text-white px-4 md:px-5 py-2 rounded-lg items-center active:scale-95 transition-colors duration-100 cursor-pointer ${isSecureSection ? 'border border-white' : ''}`}
               title="Get Early Access"
               aria-label="Get Early Access"
               onClick={() => router.push('/get-early-access')}
@@ -234,7 +310,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
             {/* Auth buttons: desktop only */}
             {!loading && !user && (
               <button
-                className="hidden md:inline-flex text-secondary-db-100 font-medium text-base border border-secondary-db-20 rounded-lg px-5 py-2 cursor-pointer transition-colors active:scale-95"
+                className={`hidden md:inline-flex font-medium text-base border border-secondary-db-20 rounded-lg px-5 py-2 cursor-pointer transition-colors active:scale-95 ${isSecureSection ? 'text-white' : 'text-secondary-db-100'}`}
                 title="Sign Up"
                 onClick={() => router.push('/signup')}
                 aria-label="Sign Up"
@@ -294,7 +370,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               {/* Products row */}
               <div className="px-3">
                 <button
-                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
+                  className={`w-full flex items-center gap-2 px-3 py-4 ${textColor}`}
                   onClick={() => setMobileProductsOpen((v) => !v)}
                 >
                   <span className="font-medium">Products</span>
@@ -336,7 +412,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <div className="text-sm font-semibold text-secondary-db-100">{p.title}</div>
+                          <div className={`text-sm font-semibold ${textColor}`}>{p.title}</div>
                           <div className="text-xs text-secondary-db-60 line-clamp-2">{p.description}</div>
                         </div>
                       </button>
@@ -351,7 +427,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               {/* Resources row */}
               <div className="px-3">
                 <button
-                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
+                  className={`w-full flex items-center gap-2 px-3 py-4 ${textColor}`}
                   onClick={() => setMobileResourcesOpen((v) => !v)}
                 >
                   <span className="font-medium">Resources</span>
@@ -376,7 +452,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 <div className="px-3">
                   <div className="mt-2 rounded-xl border border-primary-way-10 bg-primary-way-5 overflow-hidden">
                     <button
-                      className="w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
+                      className={`w-full text-left px-4 py-3 ${textColor} border-b border-primary-way-10`}
                       onClick={() => {
                         router.push('/learning');
                         setMobileOpen(false);
@@ -385,7 +461,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                       Learning
                     </button>
                     <button
-                      className="w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
+                      className={`w-full text-left px-4 py-3 ${textColor} border-b border-primary-way-10`}
                       onClick={() => {
                         router.push('/documents');
                         setMobileOpen(false);
@@ -401,7 +477,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               </div>
               <div className="px-3">
                 <button
-                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
+                  className={`w-full flex items-center gap-2 px-3 py-4 ${textColor}`}
                   onClick={() => {router.push('/about-us')}}
                 >
                   <span className="font-medium">About Us</span>
@@ -410,7 +486,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               </div>
               <div className="px-3">
                 <button
-                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
+                  className={`w-full flex items-center gap-2 px-3 py-4 ${textColor}`}
                   onClick={() => {router.push('/support')}}
                 >
                   <span className="font-medium">Support</span>
@@ -423,13 +499,13 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 <button
                   ref={mobileLanguageBtnRef}
                   onClick={() => setLanguageOpen((prev) => !prev)}
-                  className="inline-flex items-center gap-2 rounded-full border border-secondary-db-20 px-3 py-1.5 text-secondary-db-100 active:scale-95"
+                  className="inline-flex items-center gap-2 rounded-full border border-secondary-db-20 px-3 py-1.5 active:scale-95"
                   title="Change Language"
                   aria-label="Change Language"
                   aria-controls="mobile-language"
                 >
                   <Image src="/icons/world.svg" alt="Language" width={16} height={16} />
-                  <span className="text-sm">En</span>
+                  <span className={`${textColor} text-sm`}>En</span>
                 </button>
                 <div id="mobile-language" className="relative mt-2">
                   <LanguageDropdown
