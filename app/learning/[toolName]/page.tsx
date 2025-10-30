@@ -102,8 +102,8 @@ export default function LearnMorePage() {
             <Image
               src="/icons/chevron-right.svg"
               alt="Arrow Right"
-              width={12}
-              height={12}
+              width={5}
+              height={7}
               className="inline-block mx-2"
             />
             <span
@@ -115,8 +115,8 @@ export default function LearnMorePage() {
             <Image
               src="/icons/chevron-right.svg"
               alt="Arrow Right"
-              width={12}
-              height={12}
+              width={5}
+              height={7}
               className="inline-block mx-2"
             />
             <span className="text-primary-way-100 text-base font-medium cursor-pointer">
