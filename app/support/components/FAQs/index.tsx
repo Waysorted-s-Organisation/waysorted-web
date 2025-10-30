@@ -21,8 +21,12 @@ export default function FAQ() {
             <button
               onClick={() => toggleFAQ(index)}
               aria-label="Toggle FAQ"
+              aria-expanded={openIndex === index}
+              aria-controls={`faq-panel-${index}`}
               className={`relative flex items-center justify-between w-full py-3 px-4 md:py-4 md:px-8 focus:outline-none cursor-pointer space-x-4 md:space-x-6 ${
-                openIndex !== index ? "hover:bg-tertiary-voilet-100 hover:outline-none hover:rounded-lg md:hover:rounded-xl" : ""
+                openIndex !== index
+                  ? "hover:bg-tertiary-voilet-100 hover:outline-none hover:rounded-lg md:hover:rounded-xl"
+                  : ""
               }`}
             >
               {/* Question */}
@@ -47,16 +51,22 @@ export default function FAQ() {
                 />
               </div>
             </button>
+
             {/* Answer */}
             <div
               id={`faq-panel-${index}`}
-              className={`overflow-hidden transition-all duration-300 ${
-                openIndex === index ? "max-h-60 md:max-h-40 px-4 md:px-8 pb-3 md:pb-4" : "max-h-0"
+              className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
+                openIndex === index
+                  ? "max-h-60 md:max-h-40 opacity-100"
+                  : "max-h-0 opacity-0"
               }`}
             >
-              <p className="text-secondary-db-100 text-sm md:text-base font-regular text-left leading-relaxed">
-                {faq.answer}
-              </p>
+              {/* Keep horizontal padding constant to avoid left-slide */}
+              <div className="px-4 md:px-8 pb-3 md:pb-4">
+                <p className="text-secondary-db-100 text-sm md:text-base font-regular text-left leading-relaxed">
+                  {faq.answer}
+                </p>
+              </div>
             </div>
           </div>
         ))}
