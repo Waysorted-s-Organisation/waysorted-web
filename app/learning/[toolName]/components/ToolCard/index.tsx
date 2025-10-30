@@ -80,7 +80,7 @@ export default function ToolCard({ tool }: { tool: ITool }) {
       </span>
 
       <p className="text-secondary-db-70 font-medium text-xs sm:text-sm mt-2 sm:mt-3">
-        {tool.shortDescription}
+        {tool.tagline}
       </p>
 
       <div
