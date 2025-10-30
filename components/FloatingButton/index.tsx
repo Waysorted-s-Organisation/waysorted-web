@@ -7,6 +7,7 @@ export default function FloatingButton() {
   const [scrolled, setScrolled] = useState(false)
   const [visible, setVisible] = useState(true) // pill visible
   const [previewOpen, setPreviewOpen] = useState(false) // expanded preview state
+  const [footerVisible, setFooterVisible] = useState(false) // whether footer is in viewport
 
   // Scroll handling: hide pill + preview on scroll past threshold
   useEffect(() => {
@@ -22,6 +23,38 @@ export default function FloatingButton() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
+  // Observe footer visibility to hide floating button when footer is visible
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const footerEl =
+      document.querySelector("#site-footer")
+
+    if (!footerEl) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // when footer is at least partially visible, hide the floating button
+          setFooterVisible(entry.isIntersecting)
+        })
+      },
+      {
+        root: null,
+        threshold: 0, // any intersection -> considered visible
+      }
+    )
+
+    observer.observe(footerEl)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  // If footer is visible, don't render the floating button
+  if (footerVisible) return null
+
   const baseWidthClass = 'w-80' // same width for pill & preview
 
   const handleFloatingClick = () => {
@@ -31,7 +64,7 @@ export default function FloatingButton() {
 
   return (
     <>
-      <div className="fixed bottom-8 right-8 z-50 flex items-end gap-3">
+      <div id="floating-button" className="fixed bottom-8 right-8 z-50 flex items-end gap-3">
         {/* When visible, render the independent close button (left) + wrapper (right) */}
         {visible && (
           <div
