@@ -17,9 +17,8 @@ export default function ExploreMore({ tools }: { tools: ITool[] }) {
               in One
             </span>
           </h2>
-          <p className="mt-2 sm:mt-3 text-secondary-db-70 max-w-2xl text-sm sm:text-base">
-            Lorem ipsum dolor sit amet, consectetur. Fusce rutrum cursus lorem, ac euismod
-            dolor volutpat sfelis.
+          <p className="mt-2 sm:mt-3 text-secondary-db-70 max-w-2xl text-sm sm:text-base font-medium">
+            Quick guides and smart tips to master every feature with ease.
           </p>
         </div>
         {/* Toggle: full width and left-aligned on mobile, default on desktop */}
