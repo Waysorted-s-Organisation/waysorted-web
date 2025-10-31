@@ -8,6 +8,10 @@ export interface IUser {
   favorites: string[];
   earlyAccess: boolean;
   creditsRemaining: number;
+  createdAt: Date;
+  updatedAt: Date;
+  hasAnyNotifications?: boolean;
+  notifications?: { id: string; title: string; body: string }[];
 }
 
 export interface IUserMethods {
@@ -23,6 +27,8 @@ export interface IUserMethods {
     earlyAccess: boolean;
     initials: string;
     creditsRemaining: number;
+    hasAnyNotifications: boolean;
+    notifications: { id: string; title: string; body: string }[];
   };
 }
 
@@ -37,7 +43,7 @@ export interface IUserStatics {
   ): Promise<HydratedDocument<IUser, IUserMethods> | null>;
 }
 
-export type UserModel = Model<IUser, {}, IUserMethods, IUserStatics>;
+export type UserModel = Model<IUser, IUserMethods, IUserStatics>;
 
 const UserSchema = new Schema<IUser, UserModel, IUserMethods, IUserStatics>(
   {
@@ -46,12 +52,14 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods, IUserStatics>(
     picture: { type: String },
     favorites: [{ type: String }],
     earlyAccess: { type: Boolean, default: false },
-    creditsRemaining: { type: Number, default: 5 }
+    creditsRemaining: { type: Number, default: 5 },
+    hasAnyNotifications: { type: Boolean, default: false },
   },
   {
     timestamps: true,
     versionKey: false,
     toJSON: {
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       transform: (_doc, ret: any) => {
         ret.id = ret._id.toString();
         delete ret._id;
@@ -105,24 +113,11 @@ UserSchema.methods.toPublic = function () {
     earlyAccess: this.earlyAccess,
     initials,
     creditsRemaining: this.creditsRemaining,
+    hasAnyNotifications: this.hasAnyNotifications || false,
+    notifications: this.notifications || [],
   };
 };
 
-
-// Static helpers
-UserSchema.statics.addFavoriteByEmail = async function (email: string, slug: string) {
-  const user = await this.findOne({ email });
-  if (!user) return null;
-  await user.addFavorite(slug);
-  return user;
-};
-
-UserSchema.statics.removeFavoriteByEmail = async function (email: string, slug: string) {
-  const user = await this.findOne({ email });
-  if (!user) return null;
-  await user.removeFavorite(slug);
-  return user;
-};
 
 // Pre-save hook to initialize credits correctly
 UserSchema.pre("save", function (next) {
