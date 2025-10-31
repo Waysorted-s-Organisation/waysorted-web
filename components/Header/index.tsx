@@ -113,7 +113,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
   // Check whether secure sections "touch" the header (top of the section reaches header bottom).
   // This uses headerRef to calculate header height, and bounding rect checks on scroll/resize.
   useEffect(() => {
-    const ids = ['secure-animation', 'secure-cards'];
+    const ids = ['secure-animation', 'secure-cards', 'site-footer'];
 
     const updateSecureState = () => {
       const headerEl = headerRef.current;
