@@ -6,11 +6,13 @@ import { SubscriptionTab } from "./components/tabs/SubscriptionTab";
 import { NotificationsTab } from "./components/tabs/NotificationsTab";
 import { IntegrationsTab } from "./components/tabs/IntegrationsTab";
 import { BetaFeaturesTab } from "./components/tabs/BetaFeaturesTab";
+import ReferAndEarnTab from "./components/tabs/ReferAndEarnTab";
 import TopBanner from "./components/TopBanner";
 import { redirect } from "next/navigation";
 
 type TabKey =
   | "general"
+  | "refer"
   | "credits"
   | "subscription"
   | "notifications"
@@ -34,6 +36,8 @@ export default async function ProfilePage({
     switch (tab) {
       case "general":
         return <GeneralTab />;
+      case "refer":
+        return <ReferAndEarnTab />;
       case "credits":
         return <CreditsUsageTab />;
       case "subscription":
