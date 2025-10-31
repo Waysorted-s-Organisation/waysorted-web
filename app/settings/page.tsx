@@ -23,8 +23,12 @@ export default async function ProfilePage({
   searchParams?: Promise<{ tab?: string }>;
 }) {
   const user = await getCurrentUser();
-  const params = await searchParams;
-  const tab = (params?.tab as TabKey) || "general";
+  if (!user) {
+    redirect("/login"); // Immediately ends the response server-side
+  }
+
+  const { tab: tabParam } = (await searchParams) ?? {};
+  const tab = (tabParam as TabKey) || "general";
 
   function renderTab() {
     switch (tab) {
@@ -45,15 +49,9 @@ export default async function ProfilePage({
     }
   }
 
-  if (!user) {
-    redirect("/login");
-  }
-
   return (
     <div className="min-h-screen w-full">
-      {/* Example: If you still have a TopBanner, import & render it here */}
       <TopBanner earlyAccess={user.earlyAccess} />
-
       <div className="mx-auto flex flex-col lg:flex-row max-w-full gap-0">
         <Sidebar />
         <main className="flex-1 px-2 pt-4 pb-8 sm:px-4 sm:pt-6 sm:pb-10">
