@@ -91,6 +91,9 @@ export default function CreditsUsageCard({ user }: Props) {
                   height={16}
                   className="object-contain"
                 />
+                <p className="text-sm text-primary-way-100">
+                  Your credits have been upgraded. You can now continue enjoying uninterrupted access to Way.
+                </p>
               </div>
             </div>
             <button
