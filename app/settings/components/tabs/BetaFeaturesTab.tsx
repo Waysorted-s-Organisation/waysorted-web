@@ -1,10 +1,11 @@
+import { redirect } from "next/navigation";
 import BetaFeaturesCard from "../BetaFeaturesCard";
 import { getCurrentUser } from "@/app/settings/lib/user";
 
 export async function BetaFeaturesTab() {
     const user = await getCurrentUser();
     if (!user) {
-        return <div>User not found.</div>;
+        redirect("/login");
     }
   return (
     <BetaFeaturesCard
