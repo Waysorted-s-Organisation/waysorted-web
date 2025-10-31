@@ -1,10 +1,11 @@
 import { getCurrentUser } from "@/app/settings/lib/user";
 import CreditsUsageCard from "@/app/settings/components/CreditsUsageCard";
+import { redirect } from "next/navigation";
 
 export async function CreditsUsageTab() {
   const user = await getCurrentUser();
   if (!user) {
-    return <div>User not found.</div>;
+    redirect("/login");
   }
 
   return (

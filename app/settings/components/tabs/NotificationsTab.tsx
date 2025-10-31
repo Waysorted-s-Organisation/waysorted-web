@@ -1,22 +1,15 @@
+import { redirect } from "next/navigation";
 import NotificationsCard from "../NotificationsCard";
+import { getCurrentUser } from "@/app/settings/lib/user";
 
-export function NotificationsTab() {
-  // Demo data (right side screenshot scenario)
+export async function NotificationsTab() {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/login");
+  }
   return (
     <NotificationsCard
-      hasAny={true}
-      categories={[
-        {
-          id: "1",
-            title: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus volutpat dui gravida ipsum.",
-        },
-        {
-          id: "2",
-          title: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-          body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus volutpat dui gravida ipsum.",
-        },
-      ]}
+      user={user}
     />
   );
 }

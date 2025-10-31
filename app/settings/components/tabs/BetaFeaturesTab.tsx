@@ -1,10 +1,11 @@
+import { redirect } from "next/navigation";
 import BetaFeaturesCard from "../BetaFeaturesCard";
 import { getCurrentUser } from "@/app/settings/lib/user";
 
 export async function BetaFeaturesTab() {
     const user = await getCurrentUser();
     if (!user) {
-        return <div>User not found.</div>;
+        redirect("/login");
     }
   return (
     <BetaFeaturesCard
@@ -18,15 +19,15 @@ export async function BetaFeaturesTab() {
         },
         {
           id: "f2",
-          title: "Feature Requests & Bug Reporting",
+          title: "500+ Free Credits",
           description:
-            "Help shape the platform by requesting new features and reporting bugs—your feedback drives the future of Waysorted.",
+            "Start strong with free credits to explore, test, and create without limits. Refer friends & earn even more credits!",
         },
         {
           id: "f3",
           title: "Exclusive Early Adopter Badge",
           description:
-            "Earn a unique badge that highlights your status on the upcoming leaderboard—stand out as a key contributor to Waysorted’s success.",
+            "Get recognized as a founding creator, your badge will shine on the leaderboard and mark you as one of the first to join the journey.",
         },
         {
           id: "f4",
