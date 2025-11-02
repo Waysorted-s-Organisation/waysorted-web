@@ -4,29 +4,32 @@ import type { IUser, IUserMethods } from "@/models/user";
 import { cookies } from "next/headers";
 import type { HydratedDocument } from "mongoose";
 
-// A session where user is populated
 type PopulatedSession = Omit<ISession, "user"> & {
   user: HydratedDocument<IUser, IUserMethods>;
 };
 
-// The public user shape we return
 export type PublicUser = ReturnType<IUserMethods["toPublic"]>;
 
 export async function getCurrentUser(): Promise<PublicUser | null> {
-  await dbConnect();
+  try {
+    // Inspect cookies seen by the server
+    const cookieStore = await cookies();
+    // Log all cookies (for production inspect your provider logs)
+    const all = cookieStore.getAll().map((c) => ({ name: c.name, value: c.value }));
 
-  // Get session cookie
-  const cookieStore = await cookies();
-  const sessionId = cookieStore.get("sessionId")?.value;
-  if (!sessionId) return null;
+    const sessionId = cookieStore.get("sessionId")?.value;
 
-  // Find session and populate user
-  const session = await Session.findOne({ sessionId })
-    .populate("user")
-    .exec() as (PopulatedSession | null);
+    if (!sessionId) return null;
 
-  if (!session?.user) return null;
+    await dbConnect();
+    const session = (await Session.findOne({ sessionId }).populate("user").exec()) as
+      | PopulatedSession
+      | null;
 
-  // Use the model's built-in method to build a safe DTO
-  return session.user.toPublic();
+    if (!session?.user) return null;
+    return session.user.toPublic();
+  } catch (err) {
+    console.error("getCurrentUser error:", err);
+    return null;
+  }
 }
