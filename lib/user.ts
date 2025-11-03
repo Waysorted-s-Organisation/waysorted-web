@@ -26,7 +26,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     const session = await Session.findOne({ sessionId }).populate("user");
 
     if (!session || !session.user) return null;
-
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
     const user: any = session.user;
 
     const initials =
