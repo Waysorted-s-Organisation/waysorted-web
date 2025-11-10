@@ -261,6 +261,12 @@ html, body {
   background-size: 25px 25px;
 }
 
+.bg-float-dots {
+  background-color: #ffffff;
+  background-image: radial-gradient(#aeb0b2 0.25px, transparent 1px);
+  background-size: 25px 25px;
+}
+
 .error-bg-dots {
   background-color: white; 
   background-image: radial-gradient(#507EDD 0.25px, transparent 1px);
@@ -789,3 +795,9 @@ html, body {
   }
 }
  
+.floating-card {
+  transition: transform 0.25s ease;
+}
+.floating-card:hover {
+  transform: translateY(-6px) rotate(2deg) scale(1.03);
+}

@@ -26,7 +26,7 @@ export default async function ProfilePage({
 }) {
   const user = await getCurrentUser();
   if (!user) {
-    redirect("/login"); // Immediately ends the response server-side
+    return null;
   }
 
   const { tab: tabParam } = (await searchParams) ?? {};

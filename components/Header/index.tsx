@@ -219,7 +219,11 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
           <div className="hidden md:flex items-center space-x-5 pl-6 lg:pl-12">
             <div
               className={`relative flex items-center space-x-1 font-medium text-sm cursor-pointer ${textColor}`}
-              onMouseEnter={() => setProductsOpen(true)}
+              onMouseEnter={() => {
+                // Ensure accordion-like behavior on desktop: opening Products closes Resources
+                setProductsOpen(true);
+                setResourcesOpen(false);
+              }}
               onMouseLeave={() => setProductsOpen(false)}
             >
               <span>Products</span>
@@ -236,7 +240,11 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
 
             <div
               className={`relative flex items-center space-x-1 font-medium text-sm cursor-pointer ${textColor}`}
-              onMouseEnter={() => setResourcesOpen(true)}
+              onMouseEnter={() => {
+                // Ensure accordion-like behavior on desktop: opening Resources closes Products
+                setResourcesOpen(true);
+                setProductsOpen(false);
+              }}
               onMouseLeave={() => setResourcesOpen(false)}
             >
               <span>Resources</span>
@@ -310,7 +318,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
             {/* Auth buttons: desktop only */}
             {!loading && !user && (
               <button
-                className={`hidden md:inline-flex font-medium text-base border border-secondary-db-20 rounded-lg px-5 py-2 cursor-pointer transition-colors active:scale-95 ${isSecureSection ? 'text-white' : 'text-secondary-db-100'}`}
+                className={`hidden md:inline-flex font-medium text-base border border-secondary-db-20 rounded-lg px-5 py-2 cursor-pointer transition-colors active:scale-95 ${isSecureSection ? 'text-white border-secondary-db-80' : 'text-secondary-db-100'}`}
                 title="Sign Up"
                 onClick={() => router.push('/signup')}
                 aria-label="Sign Up"
@@ -361,7 +369,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
         >
           {/* Card */}
           <div
-            className={`relative h-[calc(100%-96px)] w-full max-w-[420px] bg-white border border-secondary-db-20 rounded-2xl shadow-xl flex flex-col overflow-hidden transition-all duration-200 ${
+            className={`relative h-[calc(100%-84px)] w-full max-w-[420px] bg-white border border-secondary-db-20 rounded-2xl shadow-xl flex flex-col overflow-hidden transition-all duration-200 ${
               mobileOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-1 scale-95'
             }`}
           >
@@ -371,7 +379,14 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               <div className="px-3">
                 <button
                   className={`w-full flex items-center gap-2 px-3 py-4 ${textColor}`}
-                  onClick={() => setMobileProductsOpen((v) => !v)}
+                  onClick={() =>
+                    // Accordion behavior on mobile: opening Products closes Resources
+                    setMobileProductsOpen((prev) => {
+                      const next = !prev;
+                      if (next) setMobileResourcesOpen(false);
+                      return next;
+                    })
+                  }
                 >
                   <span className="font-medium">Products</span>
                   <Badge variant="tertiary-orange-500">New</Badge>
@@ -428,7 +443,14 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               <div className="px-3">
                 <button
                   className={`w-full flex items-center gap-2 px-3 py-4 ${textColor}`}
-                  onClick={() => setMobileResourcesOpen((v) => !v)}
+                  onClick={() =>
+                    // Accordion behavior on mobile: opening Resources closes Products
+                    setMobileResourcesOpen((prev) => {
+                      const next = !prev;
+                      if (next) setMobileProductsOpen(false);
+                      return next;
+                    })
+                  }
                 >
                   <span className="font-medium">Resources</span>
                   <Image
@@ -456,6 +478,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                       onClick={() => {
                         router.push('/learning');
                         setMobileOpen(false);
+                        setMobileResourcesOpen(false);
                       }}
                     >
                       Learning
@@ -465,6 +488,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                       onClick={() => {
                         router.push('/documents');
                         setMobileOpen(false);
+                        setMobileResourcesOpen(false);
                       }}
                     >
                       Documentations
