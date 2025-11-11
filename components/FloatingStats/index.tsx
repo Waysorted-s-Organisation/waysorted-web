@@ -122,7 +122,7 @@ const FloatingStatsSection = () => {
             <div className="floating-card absolute bottom-6 left-9/10 rotate-[5deg] w-[200px] h-[200px] opacity-0 scale-[0.75] z-20">
               <div className="card-inner pointer-events-auto bg-[#007BFF] text-white rounded-[14px] p-4 shadow-2xl h-full flex flex-col justify-between">
                 <p className="font-semibold leading-snug text-white text-lg">
-                  The <span className="bg-black text-white px-1 rounded-sm">high pricing</span> of tools isn't justified, my wallet needs therapy after every subscription.
+                  The <span className="bg-black text-white px-1 rounded-sm">high pricing</span> of tools isn&apos;t justified, my wallet needs therapy after every subscription.
                 </p>
                 <div>
                   <p className="mt-2 text-xs text-white/90">@brokeandbold</p>

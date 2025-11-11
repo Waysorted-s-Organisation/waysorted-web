@@ -25,9 +25,17 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
     const session = await Session.findOne({ sessionId }).populate("user");
 
-    if (!session || !session.user) return null;
+    if (!session?.user) return null;
 
-    const user: any = session.user;
+    const user = session.user as {
+      _id: { toString(): string };
+      name?: string;
+      email: string;
+      picture?: string;
+      favorites?: string[];
+      earlyAccess?: boolean;
+      creditsRemaining?: number;
+    };
 
     const initials =
       user.name

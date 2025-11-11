@@ -201,14 +201,14 @@ export default function Comments() {
     });
 
     return () => {
+      const currentCards = cardRefs.current;
       cancelAnimationFrame(animId);
       document.removeEventListener("mousemove", onPointerMove);
-      cardRefs.current.forEach((card) => {
+      currentCards.forEach((card) => {
         if (!card) return;
         card.replaceWith(card.cloneNode(true)); // removes listeners
       });
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
  
   return (
