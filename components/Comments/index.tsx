@@ -201,6 +201,7 @@ export default function Comments() {
     });
 
     return () => {
+      // Copy ref to local variable to avoid stale closure issues
       const currentCards = cardRefs.current;
       cancelAnimationFrame(animId);
       document.removeEventListener("mousemove", onPointerMove);
@@ -209,6 +210,7 @@ export default function Comments() {
         card.replaceWith(card.cloneNode(true)); // removes listeners
       });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
  
   return (

@@ -27,33 +27,39 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
     if (!session?.user) return null;
 
-    const user = session.user as {
-      _id: { toString(): string };
-      name?: string;
-      email: string;
-      picture?: string;
-      favorites?: string[];
-      earlyAccess?: boolean;
-      creditsRemaining?: number;
-    };
+    // Type guard to ensure user is populated
+    const user = session.user;
+    if (typeof user === 'object' && user !== null && '_id' in user && 'email' in user) {
+      const populatedUser = user as {
+        _id: { toString(): string };
+        name?: string;
+        email: string;
+        picture?: string;
+        favorites?: string[];
+        earlyAccess?: boolean;
+        creditsRemaining?: number;
+      };
 
-    const initials =
-      user.name
-        ?.split(/\s+/)
-        .map((s: string) => s[0]?.toUpperCase())
-        .slice(0, 2)
-        .join("") || user.email.slice(0, 2).toUpperCase();
+      const initials =
+        populatedUser.name
+          ?.split(/\s+/)
+          .map((s: string) => s[0]?.toUpperCase())
+          .slice(0, 2)
+          .join("") || populatedUser.email.slice(0, 2).toUpperCase();
 
-    return {
-      id: user._id.toString(),
-      name: user.name ?? null,
-      email: user.email,
-      picture: user.picture ?? null,
-      favorites: user.favorites ?? [],
-      earlyAccess: !!user.earlyAccess,
-      initials,
-      creditsRemaining: user.creditsRemaining ?? 0,
-    };
+      return {
+        id: populatedUser._id.toString(),
+        name: populatedUser.name ?? null,
+        email: populatedUser.email,
+        picture: populatedUser.picture ?? null,
+        favorites: populatedUser.favorites ?? [],
+        earlyAccess: !!populatedUser.earlyAccess,
+        initials,
+        creditsRemaining: populatedUser.creditsRemaining ?? 0,
+      };
+    }
+
+    return null;
   } catch (err) {
     console.error("getCurrentUser error:", err);
     return null;
