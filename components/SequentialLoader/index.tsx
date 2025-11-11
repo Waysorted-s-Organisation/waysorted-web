@@ -102,7 +102,6 @@ function IconTile({
         "rounded-2xl flex items-center justify-center",
         "transition-all duration-500 ease-out",
         bgClass ?? "bg-gray-100",
-        "shadow-[0_1px_0_0_rgba(0,0,0,0.02),0_2px_16px_-6px_rgba(0,0,0,0.12)]",
       ].join(" ")}
       style={{ width: tileSizePx, height: tileSizePx }}
     >

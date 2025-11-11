@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 export async function CreditsUsageTab() {
   const user = await getCurrentUser();
   if (!user) {
-    redirect("/login");
+    return null;
   }
 
   return (

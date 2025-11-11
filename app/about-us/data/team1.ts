@@ -10,6 +10,11 @@ export const team1 = [
     image: "/icons/ankit.svg",
 },
 {
+    name: "Ayush Singh",
+    role: "UX Researcher",
+    image: "/icons/ayush.svg",
+},
+{
     name: "Sohit ",
     role: "Full Stack Developer",
     image: "/icons/sohit.svg",
@@ -18,11 +23,6 @@ export const team1 = [
     name: "Vineet Singh Negi",
     role: "DevOps Engineer",
     image: "/icons/vineet.svg",
-},
-{
-    name: "Ayush Singh",
-    role: "UX Researcher",
-    image: "/icons/ayush.svg",
 },
 {
     name: "Vardan Vikram Singh",

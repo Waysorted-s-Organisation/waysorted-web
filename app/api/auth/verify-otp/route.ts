@@ -4,7 +4,6 @@ import User from "@/models/user";
 import Session from "@/models/session";
 import OtpRequest from "@/models/otpRequest";
 
-// Use server-side env for the provider verify URL
 const PROVIDER_VERIFY_URI =
   process.env.VERIFY_URI || process.env.NEXT_PUBLIC_VERIFY_URI;
 
@@ -25,7 +24,6 @@ export async function POST(req: Request) {
 
     await dbConnect();
 
-    // 1) Resolve the email (and name) we saved for this request_id
     const mapping = await OtpRequest.findOne({ requestId: request_id });
     if (!mapping) {
       return NextResponse.json(
@@ -40,12 +38,10 @@ export async function POST(req: Request) {
     const email = mapping.email;
     const name = mapping.name;
 
-    // 2) Verify with your provider
     const provRes = await fetch(PROVIDER_VERIFY_URI as string, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       cache: "no-store",
-      // If your provider requires email too, include it:
       body: JSON.stringify({ request_id, otp, email }),
     });
 
@@ -54,9 +50,8 @@ export async function POST(req: Request) {
     let provData: any = null;
     try {
       provData = provText ? JSON.parse(provText) : null;
-    } catch {
-      // non-JSON response
-    }
+    } catch {}
+
     if (!provRes.ok) {
       return NextResponse.json(
         { ok: false, message: provData?.message || provData?.error || provText || "Invalid OTP" },
@@ -64,7 +59,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // 3) Upsert the user with name and email
     const normalizedEmail = String(email).trim().toLowerCase();
 
     let user = await User.findOne({ email: normalizedEmail });
@@ -74,12 +68,10 @@ export async function POST(req: Request) {
         name: name ? String(name).trim() : undefined,
       });
     } else if (name && !user.name) {
-      // Only set name if it's currently empty; change this rule as desired
       user.name = String(name).trim();
       await user.save();
     }
 
-    // 4) Create a session and set the cookie your /api/me expects (sessionId)
     const sessionId = crypto.randomUUID();
     const maxAgeDays = 30;
     const expiresAt = new Date(Date.now() + maxAgeDays * 24 * 60 * 60 * 1000);
@@ -89,9 +81,6 @@ export async function POST(req: Request) {
       user: user._id,
       expiresAt,
     });
-
-    // Optionally, cleanup this request mapping now that it's used
-    // await OtpRequest.deleteOne({ requestId: request_id });
 
     const res = NextResponse.json({
       ok: true,
@@ -103,10 +92,14 @@ export async function POST(req: Request) {
       },
     });
 
+    const isProd = process.env.NODE_ENV === "production";
+
+    // IMPORTANT: do NOT set domain for vercel preview host; leave domain unset so cookie is host-only.
+    // Use SameSite=None + Secure in production if your login flow uses redirects/cross-site navigation.
     res.cookies.set("sessionId", sessionId, {
       httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV !== "development",
+      secure: isProd, // must be true in production (HTTPS)
+      sameSite: isProd ? "none" : "lax",
       path: "/",
       maxAge: maxAgeDays * 24 * 60 * 60,
     });
