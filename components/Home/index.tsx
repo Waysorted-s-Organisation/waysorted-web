@@ -10,10 +10,10 @@ import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
 import GetStarted from '@/components/GetStarted'
 import Testimonials from '@/components/Testimonials'
-import Comments from '@/components/Comments'
 import Footer from "@/components/Footer";
 import SecureAnimation from "@/components/SecureAnimation";
 import SecureCards from "@/components/SecureCards/index";
+import FloatingStatsSection from "../FloatingStats";
 
 export default function Home() {
     const { showBanner, setShowBanner } = useBanner();
@@ -66,7 +66,7 @@ export default function Home() {
       >
         <SecureCards />
       </section>
-            <Comments />
+            <FloatingStatsSection />
             <Testimonials />
             <GetStarted />
             <Footer />

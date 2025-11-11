@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/app/settings/lib/user";
 export async function BetaFeaturesTab() {
     const user = await getCurrentUser();
     if (!user) {
-        redirect("/login");
+        return null;
     }
   return (
     <BetaFeaturesCard
@@ -15,7 +15,7 @@ export async function BetaFeaturesTab() {
           id: "f1",
           title: "Free Access to Premium Tools",
           description:
-            "Unlock premium tools at no cost—boost your productivity and explore all that Waysorted has to offer, for free.",
+            "Unlock premium tools at no cost, boost your productivity and explore all that Waysorted has to offer, for free.",
         },
         {
           id: "f2",

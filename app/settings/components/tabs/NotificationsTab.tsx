@@ -5,7 +5,7 @@ import { getCurrentUser } from "@/app/settings/lib/user";
 export async function NotificationsTab() {
   const user = await getCurrentUser();
   if (!user) {
-    redirect("/login");
+    return null;
   }
   return (
     <NotificationsCard

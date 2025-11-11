@@ -63,9 +63,16 @@ export default function EarlyAccessForm() {
               </h2>
 
               <div className="flex justify-center items-center gap-4 my-9">
-                <Image src="/icons/waycon.svg" alt="Way Icon" width={60} height={60} />
-                <span className="text-2xl">—</span>
-                <Image src="/icons/figma.svg" alt="Figma" width={40} height={40} />
+                <video
+                  src="/animations/animation.mp4"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  preload="auto"
+                  className="w-40 h-40 object-contain"
+                  aria-hidden="true" // if decorative
+                />
               </div>
 
               <p className="mt-4 text-sm rounded-2xl bg-white/6 px-4 py-2 text-base font-medium text-primary-way-10">
