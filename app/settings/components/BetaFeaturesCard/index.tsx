@@ -81,12 +81,12 @@ export default function BetaFeaturesCard({ user, features }: BetaFeaturesCardPro
           {features.map((f, i) => (
             <li
               key={f.id}
-              className="rounded-md px-4 py-4"
+              className="rounded-md px-4 py-1"
             >
-              <p className="text-sm font-semibold text-secondary-db-100">
+              <p className="text-base font-semibold text-secondary-db-100">
                 {f.title}
               </p>
-              <p className="mt-1 text-xs font-regular leading-5 text-secondary-db-100">
+              <p className="mt-1 text-sm font-regular leading-5 text-secondary-db-100">
                 {f.description}
               </p>
             </li>

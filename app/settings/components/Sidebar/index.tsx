@@ -7,6 +7,7 @@ import clsx from "clsx";
 
 const items = [
   { key: "general", label: "General" },
+  { key: "refer", label: "Refer & Earn", logo:"/icons/refer.svg",  badge: "Earn Credits" },
   { key: "credits", label: "Credits Usage" },
   { key: "subscription", label: "Subscription" },
   { key: "notifications", label: "Notifications" },
@@ -67,6 +68,22 @@ export default function Sidebar() {
                       )}
                     >
                       {item.label}
+                      {item.badge && (
+                          <span className="ml-2 inline-block rounded-full bg-tertiary-vivid-blue-100 text-tertiary-vivid-blue-500 text-xs font-medium px-2 py-0.5">
+                            {item.logo && (
+                              <span className="">
+                                <Image
+                                  src={item.logo}
+                                  alt="Refer Icon"
+                                  width={7}
+                                  height={10}
+                                  className="inline-block mr-1"
+                                />
+                              </span>
+                            )}
+                            {item.badge}
+                          </span>
+                        )}
                     </Link>
                   </li>
                 );

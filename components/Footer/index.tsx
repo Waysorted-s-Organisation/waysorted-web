@@ -4,7 +4,8 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import ToolsPicker from "./ToolPicker";
-import {ITool} from "@/models/tool";
+import NewsletterInput from "./NewsLetterInput";
+import { ITool } from "@/models/tool";
 
 export default function Footer() {
   const [tools, setTools] = useState<ITool[] | null>(null);
@@ -28,8 +29,26 @@ export default function Footer() {
     };
   }, []);
 
+  // Example submit handler for the newsletter input.
+  // You can replace this with your real API call.
+  async function handleNewsletterSubmit(email: string) {
+    try {
+      // simple optimistic UX: log and fire-and-forget to your backend
+      console.log("Subscribe request:", email);
+      await fetch("/api/newsletter/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      // Add toast / success state here if desired
+    } catch (err) {
+      console.error("Newsletter submit failed:", err);
+      // Add error handling / toast here
+    }
+  }
+
   return (
-    <footer className="relative bg-secondary-db-100 text-gray-300 px-4 sm:px-6 md:px-8 lg:px-16 pt-6 sm:pt-8 pb-5 rounded-t-3xl">
+    <footer id="site-footer" className="relative bg-secondary-db-100 text-gray-300 px-4 sm:px-6 md:px-8 lg:px-16 pt-6 sm:pt-8 pb-5 rounded-t-3xl">
       <div className="mx-auto w-full max-w-screen-2xl">
         {/* ROW 1: Logo (top) */}
         <div className="w-full">
@@ -105,10 +124,6 @@ export default function Footer() {
                     </div>
                   </div>
                 </div>
-
-                
-
-                
               </div>
             )}
           </div>
@@ -148,19 +163,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 my-6 sm:my-8 items-start">
           <div className="col-span-1 lg:col-span-5">
             <h4 className="font-semibold text-secondary-db-40 mb-2 sm:mb-3">Get exclusive updates !</h4>
-            <div className="flex items-stretch bg-white rounded-xl overflow-hidden w-full max-w-md">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="w-full px-3 sm:px-4 py-2 text-secondary-db-60 focus:outline-none"
-              />
-              <button
-                className="flex items-center justify-center -ml-8 sm:-ml-10 rounded-lg cursor-pointer w-8 h-8 sm:w-9 sm:h-9 hover:bg-secondary-db-10 transition-colors"
-                title="Send"
-              >
-                <Image src="/icons/arrow-black.svg" alt="Send" width={16} height={16} className="object-contain" />
-              </button>
-            </div>
+
+            {/* Replaced the manual input/button markup with the reusable NewsletterInput component */}
+            <NewsletterInput
+              onSubmit={handleNewsletterSubmit}
+              // wrapperClassName is optional — default matches your original wrapper.
+            />
 
             <p className="text-xs text-secondary-db-60 mt-2 max-w-sm">
               Be the first to know about our updates. Unsubscribe anytime.
@@ -174,6 +182,7 @@ export default function Footer() {
                 <ul className="space-y-2 text-secondary-db-40">
                   <li><Link href="/get-early-access" className="hover:text-white">Early Access</Link></li>
                   <li><Link href="/learning" className="hover:text-white">Explore Tools</Link></li>
+                  <li><Link href="/settings" className="hover:text-white">Free Credits</Link></li>
                   <li><Link href="/login" className="hover:text-white">Sign in</Link></li>
                 </ul>
               </div>

@@ -6,10 +6,13 @@ import { SubscriptionTab } from "./components/tabs/SubscriptionTab";
 import { NotificationsTab } from "./components/tabs/NotificationsTab";
 import { IntegrationsTab } from "./components/tabs/IntegrationsTab";
 import { BetaFeaturesTab } from "./components/tabs/BetaFeaturesTab";
+import ReferAndEarnTab from "./components/tabs/ReferAndEarnTab";
 import TopBanner from "./components/TopBanner";
+import { redirect } from "next/navigation";
 
 type TabKey =
   | "general"
+  | "refer"
   | "credits"
   | "subscription"
   | "notifications"
@@ -22,13 +25,19 @@ export default async function ProfilePage({
   searchParams?: Promise<{ tab?: string }>;
 }) {
   const user = await getCurrentUser();
-  const params = await searchParams;
-  const tab = (params?.tab as TabKey) || "general";
+  if (!user) {
+    redirect("/login"); // Immediately ends the response server-side
+  }
+
+  const { tab: tabParam } = (await searchParams) ?? {};
+  const tab = (tabParam as TabKey) || "general";
 
   function renderTab() {
     switch (tab) {
       case "general":
         return <GeneralTab />;
+      case "refer":
+        return <ReferAndEarnTab />;
       case "credits":
         return <CreditsUsageTab />;
       case "subscription":
@@ -44,15 +53,9 @@ export default async function ProfilePage({
     }
   }
 
-  if (!user) {
-    return <div>User not found.</div>;
-  }
-
   return (
     <div className="min-h-screen w-full">
-      {/* Example: If you still have a TopBanner, import & render it here */}
       <TopBanner earlyAccess={user.earlyAccess} />
-
       <div className="mx-auto flex flex-col lg:flex-row max-w-full gap-0">
         <Sidebar />
         <main className="flex-1 px-2 pt-4 pb-8 sm:px-4 sm:pt-6 sm:pb-10">

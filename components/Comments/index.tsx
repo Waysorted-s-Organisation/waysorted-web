@@ -222,9 +222,7 @@ export default function Comments() {
           <section className="mx-auto max-w-5xl px-8 py-14 flex flex-col items-center">
             <p className="text-white font-normal text-3xl md:text-6xl leading-tight text-center">
               <span>Creators spend </span>
-              <span className="inline-block align-middle border-2 border-white/80 px-4 py-2 rounded-full animate-pulse whitespace-nowrap">
-                {typedText}
-              </span>
+              <div className="relative inline-block"> <span className="invisible px-4 py-2 rounded-full border-2 border-white/80">exploring</span> <span className="absolute inset-0 flex items-center justify-center px-4 py-2 rounded-full border-2 border-white/80"> {typedText} </span> </div>
               <span className="block mt-3">
                 100+ tools daily than creating.
               </span>

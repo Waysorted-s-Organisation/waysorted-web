@@ -33,7 +33,7 @@ export default function TopBanner({ earlyAccess }: TopBannerProps) {
         <div className="shrink-0">
           <button 
             onClick={()=> router.push("/get-early-access")}
-            className="bg-primary-way-10 border border-primary-way-100 rounded-lg text-sm font-medium text-primary-way-100 p-2 cursor-pointer">Get early access</button>
+            className="bg-primary-way-10 outline outline-1 outline-primary-way-100 rounded-lg text-sm font-medium text-primary-way-100 p-2 cursor-pointer hover:bg-primary-way-30 hover:outline hover:outline-1 hover:outline-primary-way-100">Get early access</button>
         </div>
       </div>
         )}

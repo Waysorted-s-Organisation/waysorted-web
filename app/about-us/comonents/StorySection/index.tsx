@@ -4,7 +4,7 @@ export default function StorySection() {
   return (
     <section className="bg-white text-secondary-db-100 px-4 sm:px-6 md:px-85 mx-auto py-16 md:py-40">
       {/* Label: Centered only on mobile, left on md+ */}
-      <div className="w-full flex justify-center md:justify-start mb-6">
+      <div className="w-full flex justify-center mb-6">
         <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md px-3 py-1">
           <Image
             src="/icons/story.svg"
@@ -18,14 +18,14 @@ export default function StorySection() {
       </div>
 
       {/* Heading */}
-      <h2 className="text-3xl md:text-4xl font-bold mb-3 text-center md:text-left">
+      <h2 className="text-3xl md:text-4xl font-bold mb-3 text-center">
         This is what we believe.
       </h2>
 
       {/* Paragraphs */}
-      <div className="space-y-6 text-secondary-db-80 text-base md:text-xl font-regular leading-relaxed max-w-4xl mx-auto md:mx-0 text-center md:text-left">
+      <div className="space-y-6 text-secondary-db-80 text-base md:text-xl font-regular leading-relaxed max-w-4xl mx-auto md:mx-0 text-center">
         <p>
-          At Waysorted, our journey began with a simple vision: to untangle the chaos of creative workflows. As designers ourselves, we have known the struggle and frustration born out of ineffective plugins or workflows, overwhelming project deadlines and scattered drives. When our vision of Waysorted was in its cocoon, we wanted to create something not just as a tool but rather, a creative companion&mdash;a space where every insight, idea, resource and project align seamlessly, so you can design without distractions.
+        At Waysorted, our journey began with a simple vision: to untangle the chaos of creative workflows. As designers ourselves, we have known the struggle and frustration born out of ineffective plugins or workflows, overwhelming project deadlines and scattered drives. When our vision of Waysorted was in it&apos;s cocoon, we wanted to create something not just as a tool but rather, a creative companion- a space where every insight, idea, resource and project align seamlessly, so you can design without distractions.  
         </p>
 
         <p>
@@ -40,7 +40,7 @@ export default function StorySection() {
           Because when the workflow gets out of your way, the imagination finally takes the lead.
         </p>
 
-        <p>
+        <p className="font-semibold">
           That&apos;s design at its zenith, that&apos;s Waysorted.
         </p>
       </div>

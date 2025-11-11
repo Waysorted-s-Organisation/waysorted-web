@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
+import type { PublicUser } from "@/app/settings/lib/user";
 
-export type NotificationsCardProps = {
-    hasAny: boolean;  // false -> show "No notification" red panel
-  categories?: { id: string; title: string; body: string }[]; // used when hasAny = true
+type Props = {
+  user: PublicUser;
 };
 
-export default function NotificationsCard({ hasAny, categories = [] }: NotificationsCardProps) {
+export default function NotificationsCard({ user }: Props) {
+  const { hasAnyNotifications, notifications } = user;
 
   return (
     <section className="max-w-3xl rounded-lg border border-secondary-db-5 bg-white">
@@ -19,13 +20,13 @@ export default function NotificationsCard({ hasAny, categories = [] }: Notificat
       </header>
 
       <div className="px-6 pb-8 pt-5">
-        {!hasAny ? (
-        <div className="relative mb-6 rounded-md bg-error-100 p-4 text-error-500">
+        {!hasAnyNotifications ? (
+        <div className="relative mb-6 rounded-md bg-primary-way-5 p-4 text-primary-way-100">
             <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-2">
                 <Image
-                    src="/icons/info-red.svg"
-                    alt="Error Icon"
+                    src="/icons/info-icon.svg"
+                    alt="Info Icon"
                     width={16}
                     height={16}
                     className="object-contain"
@@ -37,7 +38,7 @@ export default function NotificationsCard({ hasAny, categories = [] }: Notificat
                 <button
                 type="button"
                 onClick={() => alert("Open early access / subscription flow")}
-                className="rounded-md border border-error-500 bg-error-100 px-3 py-1.5 text-xs font-medium text-error-500 transition cursor-pointer"
+                className="rounded-md border border-primary-way-100 bg-primary-way-5 px-3 py-1.5 text-xs font-medium text-primary-way-100 transition cursor-pointer"
                 >
                 Subscribe Newsletter
                 </button>
@@ -47,18 +48,18 @@ export default function NotificationsCard({ hasAny, categories = [] }: Notificat
           <>
             <div className="space-y-3">
               {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
-              {categories.map((c, i) => (
+              {notifications.map((notification, i) => (
                 <button
-                  key={c.id}
+                  key={notification.id}
                   className="w-full text-left rounded-lg px-4 py-4 transition flex items-start justify-between gap-4 cursor-pointer bg-white hover:bg-primary-way-10"
-                  onClick={() => alert(`Open notification ${c.id}`)}
+                  onClick={() => alert(`Open notification ${notification.id}`)}
                 >
                   <div>
                     <p className="text-sm font-medium text-secondary-db-100">
-                      {c.title}
+                      {notification.title}
                     </p>
                     <p className="mt-1 text-xs leading-5 text-secondary-db-70">
-                      {c.body}
+                      {notification.body}
                     </p>
                   </div>
                   <Image

@@ -16,6 +16,13 @@ export interface ISlide {
   imageAlt: string;
 }
 
+export interface SearchAndViewProps {
+  searchTerm: string;
+  setSearchTerm: (value: string) => void;
+  isGridView: boolean;
+  setIsGridView: (value: boolean) => void;
+}
+
 export interface ITool {
   _id: string | { toString(): string };
   name: string;
@@ -30,6 +37,7 @@ export interface ITool {
   disabled: boolean;
   isActive: boolean;
   category: string;
+  tagline: string;
   tags: string[];
   slides: ISlide[];
   version: string;
@@ -61,6 +69,7 @@ export interface IToolMethods {
     disabled: boolean;
     isActive: boolean;
     category: string;
+    tagline: string;
     tags: string[];
     slides: ISlide[];
     version: string;
@@ -76,7 +85,7 @@ export interface IToolStatics {
 }
 
 // IMPORTANT: extend Model with instance methods, then merge statics
-export interface ToolModel extends Model<ITool, {}, IToolMethods>, IToolStatics {}
+export interface ToolModel extends Model<ITool, IToolMethods>, IToolStatics {}
 
 const ToolBadgeSchema = new Schema<IToolBadge>(
   {
@@ -144,7 +153,7 @@ const SlideSchema = new Schema<ISlide>(
 );
 
 // Note generics: <Doc, ModelType, InstanceMethods, QueryHelpers={}, Statics=...>
-const ToolSchema = new Schema<ITool, ToolModel, IToolMethods, {}, IToolStatics>(
+const ToolSchema = new Schema<ITool, ToolModel, IToolMethods, IToolStatics>(
   {
     name: {
       type: String,
@@ -197,6 +206,10 @@ const ToolSchema = new Schema<ITool, ToolModel, IToolMethods, {}, IToolStatics>(
       trim: true,
       lowercase: true,
     },
+    tagline: {
+      type: String,
+      required: true, 
+    },
     tags: [
       {
         type: String,
@@ -215,6 +228,7 @@ const ToolSchema = new Schema<ITool, ToolModel, IToolMethods, {}, IToolStatics>(
     timestamps: true,
     versionKey: false,
     toJSON: {
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       transform: (_doc, ret: any) => {
         if (ret && ret._id) {
           ret.id = ret._id.toString();
@@ -312,6 +326,7 @@ ToolSchema.methods.toPublic = function () {
     disabled: this.disabled,
     isActive: this.isActive,
     category: this.category,
+    tagline: this.tagline,
     tags: this.tags,
     slides: this.slides,
     version: this.version,

@@ -61,7 +61,7 @@ export default function Testimonials() {
     }, []);
 
     return (
-        <section className="purple-bg-dots px-6 md:px-20 lg:px-32 py-12">
+        <section className="bg-mavens px-6 md:px-20 lg:px-32 py-12 mx-auto">
             {/* Heading Section */}
             <section className="w-full flex flex-col items-center justify-center text-center pt-11">
                 <span className="inline-flex items-center text-center text-sm font-medium bg-white rounded-md">
@@ -79,23 +79,23 @@ export default function Testimonials() {
 
                 <h1 className="mt-4 mb-3 text-4xl font-semibold text-secondary-db-100">
                     Hear From Way{" "}
-                    <span className="bg-tertiary-voilet-500/10 rounded-xl text-tertiary-voilet-500 px-4">
+                    <span className="bg-tertiary-orange-500/12 rounded-lg text-tertiary-orange-500 px-4 py-1">
                         Mavens
                     </span>
                 </h1>
-                <p className="text-secondary-db-70 max-w-4xl mx-auto text-lg">
-                    Reviewed by figma users. Lorem ipsum dolor sit amet, cons.
+                <p className="text-secondary-db-80 max-w-4xl mx-auto font-medium text-lg">
+                    Reviewed by Figma users who&apos;ve experienced the Wayflow.
                 </p>
             </section>
 
             {/* Main Testimonial */}
             <div className="py-12">
-                <div className="bg-white py-16 px-6 max-w-4xl mx-auto flex flex-col items-center justify-center rounded-2xl outline outline-1 outline-black/10 transition-all duration-500">
+                <div className="bg-white py-11 px-6 max-w-3xl mx-auto flex flex-col items-center justify-center rounded-2xl outline outline-10 outline-tertiary-orange-500/6 transition-all duration-500">
                     <p className="text-secondary-db-100 p-4 text-center text-xl font-medium leading-relaxed">
                         {activeTestimonial.content}
                     </p>
-                    <p className="text-secondary-db-100 pt-6 text-center text-base font-semibold">
-                        - {activeTestimonial.author}
+                    <p className="text-secondary-db-100 mt-6 py-1 px-1.5 text-center text-sm font-medium bg-secondary-db-5 rounded-3xl">
+                        {activeTestimonial.position}
                     </p>
                 </div>
             </div>
@@ -109,26 +109,26 @@ export default function Testimonials() {
                             onClick={() => setActiveIndex(index)}
                             className={`relative w-16 h-16 rounded-2xl transition-all duration-500 cursor-pointer ${
                                 activeIndex === index
-                                    ? "scale-125 shadow-xl -mt-4 -translate-y-5"
+                                    ? "scale-100 shadow-xl -mt-4 -translate-y-5"
                                     : "scale-100 opacity-70"
                             }`}
                         >
                             <Image
                                 src={testimonial.image}
                                 alt={testimonial.author}
-                                width={64}
-                                height={64}
+                                width={50}
+                                height={50}
                                 className="w-full h-full object-cover rounded-2xl"
                             />
                             {activeIndex === index && (
-                                <span className="absolute left-1/2  w-2 h-2 transform -translate-x-1/2 translate-y-2 bg-tertiary-voilet-500 rounded-full"></span>
+                                <span className="absolute left-1/2  w-2 h-2 transform -translate-x-1/2 translate-y-2 bg-tertiary-orange-500 rounded-full"></span>
                             )}
                         </button>
                     ))}
                 </div>
                 {/* Position Below */}
-                <p className="text-sm text-secondary-db-100 mt-8 text-center font-medium">
-                    {activeTestimonial.position}
+                <p className="text-base text-secondary-db-100 mt-8 text-center font-semibold">
+                    - {activeTestimonial.author}
                 </p>
             </div>
         </section>
