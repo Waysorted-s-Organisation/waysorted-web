@@ -69,6 +69,7 @@ export default function Home() {
             <FloatingStatsSection />
             <Testimonials />
             <GetStarted />
+            
             <Footer />
         </main>
     )

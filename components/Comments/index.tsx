@@ -201,11 +201,9 @@ export default function Comments() {
     });
 
     return () => {
-      // Copy ref to local variable to avoid stale closure issues
-      const currentCards = cardRefs.current;
       cancelAnimationFrame(animId);
       document.removeEventListener("mousemove", onPointerMove);
-      currentCards.forEach((card) => {
+      cardRefs.current.forEach((card) => {
         if (!card) return;
         card.replaceWith(card.cloneNode(true)); // removes listeners
       });

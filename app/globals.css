@@ -497,79 +497,6 @@ html, body {
   outline: 1px dashed #6aa0ff;
 }
 
-@property --glow-deg {
-  syntax: "<angle>";
-  inherits: true;
-  initial-value: -90deg;
-}
-
-@property --clr-1 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: #84AAFC;
-}
-
-@property --clr-2 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: #FDEFA1;
-}
-
-@property --clr-3 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: white;
-}
-
-@property --clr-4 {
-  syntax: "<color>";
-  inherits: true;
-  initial-value: white;
-}
-
-
-.glowing-border {
-  --gradient-glow: var(--clr-1), var(--clr-1), var(--clr-2), var(--clr-3), var(--clr-4);
-
-  border: var(--border-width, 2px) solid transparent;
-  border-radius: 12px;
-  background: linear-gradient(var(--surface, white) 0 0) padding-box,
-    conic-gradient(from var(--glow-deg), var(--gradient-glow)) border-box;
-
-  position: relative;
-  isolation: isolate;
-
-  animation: glow 10s infinite linear;
-}
-
-@keyframes glow {
-  100% {
-    --glow-deg: 270deg;
-  }
-}
-
-.glowing-border::before,
-.glowing-border::after {
-  content: "";
-  position: absolute;
-  inset: 0; /* ✅ match parent size */
-  border-radius: inherit;
-}
-
-.glowing-border::before {
-  z-index: -1;
-  background: var(--surface, white);
-  filter: blur(var(--glow-size, 1rem));
-}
-
-.glowing-border::after {
-  z-index: -2;
-  background: conic-gradient(from var(--glow-deg), var(--gradient-glow));
-  filter: blur(var(--glow-size, 1rem));
-  opacity: var(--glow-intensity, 0.2);
-  border-radius: inherit;
-}
-
 .white-bg-dots {
   background-color: #ffffff;
   background-image: radial-gradient(#565A5E 0.25px, transparent 1px);
@@ -599,7 +526,7 @@ html, body {
 
 /* size and color presets */
 .glow--md { --glow-size: 64px; --glow-radius: 12px; }
-.glow--green { --glow-color: #01A04E; }
+.glow--green { --glow-color: #265BD1; }
 
 /* Rings behind the icon (explicit stacking) */
 .glow-icon .glow-ring {
@@ -607,7 +534,7 @@ html, body {
   inset: 0;
   z-index: 0;                         /* behind */
   border-radius: var(--glow-radius, 12px);
-  background: var(--glow-color, #01A04E);
+  background: var(--glow-color, #265BD1);
   opacity: var(--glow-opacity);
   transform-origin: center;
   filter: blur(var(--glow-blur));      /* set >0 only if you don't see artifacts */
@@ -624,7 +551,7 @@ html, body {
 /* SVG above the rings */
 .glow-icon .glow-svg {
   position: relative;
-  z-index: 1;                         /* above */
+  z-index: 2;                         /* above */
   width: 100%;
   height: 100%;
   transform: translateZ(0);           /* helps some GPU artifacts */
