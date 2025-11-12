@@ -73,12 +73,15 @@ export default function Comments() {
         h: CARD_HEIGHT,
       });
     }
+    // Copy refs to local array to avoid stale ref in cleanup and for stable iteration
+    const cards = Array.from(cardRefs.current);
     // Initial DOM positions
-    cardRefs.current.forEach((card, i) => {
+    for (let i = 0; i < cards.length; i++) {
+      const card = cards[i];
       if (card) {
         card.style.transform = `translate(${cardStates.current[i].x}px, ${cardStates.current[i].y}px)`;
       }
-    });
+    }
 
     let animId = 0;
     const update = () => {
@@ -160,13 +163,14 @@ export default function Comments() {
           }
         }
       }
-      // Update DOM
-      cardRefs.current.forEach((card, i) => {
+      // Update DOM using the local copy
+      for (let i = 0; i < cards.length; i++) {
+        const card = cards[i];
         if (card) {
           const st = cardStates.current[i];
           card.style.transform = `translate(${st.x}px, ${st.y}px)`;
         }
-      });
+      }
       animId = requestAnimationFrame(update);
     };
     animId = requestAnimationFrame(update);
@@ -178,9 +182,10 @@ export default function Comments() {
     };
     document.addEventListener("mousemove", onPointerMove);
 
-    // For each card, handle mouseenter to "kick"
-    cardRefs.current.forEach((card, i) => {
-      if (!card) return;
+    // For each card, handle mouseenter to "kick" (use local cards array)
+    for (let i = 0; i < cards.length; i++) {
+      const card = cards[i];
+      if (!card) continue;
       const onEnter = () => {
         // Assign a velocity based on pointer direction
         const st = cardStates.current[i];
@@ -198,17 +203,16 @@ export default function Comments() {
       };
       card.addEventListener("mouseenter", onEnter);
       card.addEventListener("mouseleave", onLeave);
-    });
+    }
 
     return () => {
       cancelAnimationFrame(animId);
       document.removeEventListener("mousemove", onPointerMove);
-      cardRefs.current.forEach((card) => {
-        if (!card) return;
+      for (const card of cards) {
+        if (!card) continue;
         card.replaceWith(card.cloneNode(true)); // removes listeners
-      });
+      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
  
   return (
@@ -245,7 +249,7 @@ export default function Comments() {
         >
           {Array.from({ length: 12 }).map((_, idx) => (
             <div
-              key={idx}
+              key={`comment-card-${idx + 1}`}
               ref={(el) => {
                 if (el) cardRefs.current[idx] = el;
               }}
