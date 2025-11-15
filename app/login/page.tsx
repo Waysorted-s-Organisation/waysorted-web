@@ -290,7 +290,7 @@ export default function Login() {
                 onClick={() => setStep("email")}
                 className="text-secondary-db-70 hover:text-secondary-db-100 text-sm flex items-center gap-2"
               >
-                <span className="text-xl leading-none">←</span> Back
+                <span className="cursor-pointer"><Image src="/icons/back.svg" alt="Back" width={13} height={11} /></span>
               </button>
             </div>
 

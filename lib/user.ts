@@ -27,26 +27,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
     if (!session || !session.user) return null;
 
-    // session.user may be either an ObjectId (not populated) or a populated user object.
-    const maybeUser = session.user;
-
-    // Narrow to a populated user object at runtime to avoid using `any`.
-    type PopulatedUser = {
-      _id: { toString(): string } | string;
-      name?: string | null;
-      email: string;
-      picture?: string | null;
-      favorites?: string[];
-      earlyAccess?: boolean;
-      creditsRemaining?: number;
-    };
-
-    if (!maybeUser || typeof maybeUser !== "object" || !("email" in maybeUser)) {
-      return null;
-    }
-
-  // Force through unknown to satisfy TypeScript when mongoose ObjectId types overlap.
-  const user = (maybeUser as unknown) as PopulatedUser;
+    const user: any = session.user;
 
     const initials =
       user.name
