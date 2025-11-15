@@ -8,7 +8,6 @@ import { IntegrationsTab } from "./components/tabs/IntegrationsTab";
 import { BetaFeaturesTab } from "./components/tabs/BetaFeaturesTab";
 import ReferAndEarnTab from "./components/tabs/ReferAndEarnTab";
 import TopBanner from "./components/TopBanner";
-import { redirect } from "next/navigation";
 
 type TabKey =
   | "general"
