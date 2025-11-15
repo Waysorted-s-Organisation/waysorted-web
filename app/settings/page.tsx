@@ -8,7 +8,6 @@ import { IntegrationsTab } from "./components/tabs/IntegrationsTab";
 import { BetaFeaturesTab } from "./components/tabs/BetaFeaturesTab";
 import ReferAndEarnTab from "./components/tabs/ReferAndEarnTab";
 import TopBanner from "./components/TopBanner";
-import { redirect } from "next/navigation";
 
 type TabKey =
   | "general"
@@ -26,7 +25,7 @@ export default async function ProfilePage({
 }) {
   const user = await getCurrentUser();
   if (!user) {
-    return null;
+    return <div>Please log in to access settings.</div>;
   }
 
   const { tab: tabParam } = (await searchParams) ?? {};
