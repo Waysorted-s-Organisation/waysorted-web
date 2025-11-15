@@ -18,7 +18,6 @@ const CARD_WIDTH = 240;
 const CARD_HEIGHT = 160;
 const PADDING = 12;
 const BOUNCE = 0.9; // Elasticity for wall/collision
-const CARD_IDS = Array.from({ length: CARD_COUNT }, (_, i) => `card-${i}`);
 
 
  
@@ -36,9 +35,6 @@ export default function Comments() {
   useEffect(() => {
     const bounds = cardsContainerRef.current;
     if (!bounds) return;
-
-    // Copy refs to a local variable to avoid stale-ref issues in cleanup
-    const cards = cardRefs.current;
 
     const boundaryPadding = 20; // or whatever
     const bw = bounds.clientWidth + boundaryPadding;
@@ -207,12 +203,12 @@ export default function Comments() {
     return () => {
       cancelAnimationFrame(animId);
       document.removeEventListener("mousemove", onPointerMove);
-      // Use the local cards array captured at effect initialization to avoid stale ref
-      for (const card of cards) {
-        if (!card) continue;
+      cardRefs.current.forEach((card) => {
+        if (!card) return;
         card.replaceWith(card.cloneNode(true)); // removes listeners
-      }
+      });
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
  
   return (
@@ -247,9 +243,9 @@ export default function Comments() {
           className="absolute -inset-40 z-10 pointer-events-none"
           aria-hidden="true"
         >
-          {CARD_IDS.map((cardId, idx) => (
+          {Array.from({ length: 12 }).map((_, idx) => (
             <div
-              key={cardId}
+              key={idx}
               ref={(el) => {
                 if (el) cardRefs.current[idx] = el;
               }}

@@ -25,7 +25,7 @@ export default async function ProfilePage({
 }) {
   const user = await getCurrentUser();
   if (!user) {
-    return null;
+    return <div>Please log in to access settings.</div>;
   }
 
   const { tab: tabParam } = (await searchParams) ?? {};

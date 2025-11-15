@@ -15,7 +15,7 @@ export async function getCurrentUser(): Promise<PublicUser | null> {
     // Inspect cookies seen by the server
     const cookieStore = await cookies();
     // Log all cookies (for production inspect your provider logs)
-    // cookieStore.getAll().map((c) => ({ name: c.name, value: c.value }));
+    const all = cookieStore.getAll().map((c) => ({ name: c.name, value: c.value }));
 
     const sessionId = cookieStore.get("sessionId")?.value;
 
