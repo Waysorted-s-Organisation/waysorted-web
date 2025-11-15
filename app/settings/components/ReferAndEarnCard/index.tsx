@@ -126,21 +126,36 @@ export default function ReferAndEarnCard({
           <ul className="flex list-none flex-col gap-3">
             <li className="flex items-start gap-2 text-sm text-secondary-db-90">
               <span className="mt-[2px] inline-flex h-5 w-5 items-center justify-center rounded-full border border-secondary-db-5 bg-white">
-                <ShareIcon />
+                <Image
+                  src="/icons/light-black.svg"
+                  alt="Share Icon"
+                  width={14}
+                  height={14}
+                />
               </span>
-              <span>Share invite link or invite via email</span>
+              <span className="font-regular">Share invite link or invite via email</span>
             </li>
             <li className="flex items-start gap-2 text-sm text-secondary-db-90">
               <span className="mt-[2px] inline-flex h-5 w-5 items-center justify-center rounded-full border border-secondary-db-5 bg-white">
-                <GiftIcon />
+                  <Image
+                    src="/icons/bomb.svg"
+                    alt="Gift Icon"
+                    width={14}
+                    height={14}
+                  />
               </span>
-              <span>Your friends get {friendReward} credits when they subscribe</span>
+              <span className="font-regular">Your friends get <span className="text-secondary-db-100 font-semibold">{friendReward} credits</span> when they subscribe</span>
             </li>
             <li className="flex items-start gap-2 text-sm text-secondary-db-90">
               <span className="mt-[2px] inline-flex h-5 w-5 items-center justify-center rounded-full border border-secondary-db-5 bg-white">
-                <CoinsIcon />
+                  <Image
+                    src="/icons/gifts.svg"
+                    alt="Coins Icon"
+                    width={14}
+                    height={14}
+                  />
               </span>
-              <span>You receive {youGet} credits for each referral</span>
+              <span className="font-regular">You receive <span className="text-secondary-db-100 font-semibold">{youGet} credits</span> for each referral</span>
             </li>
           </ul>
         </div>

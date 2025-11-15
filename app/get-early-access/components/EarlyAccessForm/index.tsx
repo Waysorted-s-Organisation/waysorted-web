@@ -27,7 +27,7 @@ export default function EarlyAccessForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Tell us your name"
-            className="w-sm rounded-lg bg-primary-way-5 px-4 py-3 text-slate-900 placeholder:text-secondary-db-50 focus:placeholder:text-secondary-db-100 focus:outline-none focus:ring-2 focus:ring-primary-way-100 focus:border-primary transition"
+            className="w-full rounded-lg bg-primary-way-5 px-4 py-3 text-slate-900 placeholder:text-secondary-db-50 focus:placeholder:text-secondary-db-100 focus:outline-none focus:ring-2 focus:ring-primary-way-100 focus:border-primary transition"
           />
         </label>
 
@@ -39,13 +39,13 @@ export default function EarlyAccessForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email address…"
-            className="w-sm rounded-lg bg-primary-way-5 px-4 py-3 text-slate-900 placeholder:text-secondary-db-50 focus:placeholder:text-secondary-db-100 focus:outline-none focus:ring-2 focus:ring-primary-way-100 focus:border-primary transition"
+            className="w-full rounded-lg bg-primary-way-5 px-4 py-3 text-slate-900 placeholder:text-secondary-db-50 focus:placeholder:text-secondary-db-100 focus:outline-none focus:ring-2 focus:ring-primary-way-100 focus:border-primary transition"
           />
         </label>
 
         <GlowStarButton
           type="submit"
-          className="group relative w-sm rounded-xl bg-secondary-db-100 px-4 py-3.5 text-white font-medium shadow-card cursor-pointer"
+          className="group relative w-full md:w-auto rounded-xl bg-secondary-db-100 px-4 py-3.5 text-white font-medium shadow-card cursor-pointer"
         >
           <span className="absolute inset-0 rounded-xl opacity-20 group-hover:opacity-30 transition-opacity" />
           <span className="relative">Continue</span>
@@ -55,44 +55,44 @@ export default function EarlyAccessForm() {
       {/* Popup Modal */}
       <AnimatePresence>
         {showPopup && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50">
-            <div className="bg-white rounded-xl shadow-xl max-w-lg w-full py-4 px-3  text-center">
+          <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 px-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-lg w-full py-4 px-3 text-center max-h-[90vh] overflow-auto">
               <div className="flex flex-col items-center gray-bg-dots pb-5 rounded-xl">
-              <h2 className="text-xl font-semibold text-white pt-10">
-                Congratulations, You’re in!
-              </h2>
+                <h2 className="text-xl font-semibold text-white pt-6 sm:pt-10">
+                  Congratulations, You’re in!
+                </h2>
 
-              <div className="flex justify-center items-center gap-4 my-9">
-                <video
-                  src="/animations/animation.mp4"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  preload="auto"
-                  className="w-40 h-40 object-contain"
-                  aria-hidden="true" // if decorative
-                />
-              </div>
+                <div className="flex justify-center items-center gap-4 my-6 sm:my-9">
+                  <video
+                    src="/animations/animation.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="auto"
+                    className="w-32 h-32 sm:w-40 sm:h-40 object-contain"
+                    aria-hidden="true"
+                  />
+                </div>
 
-              <p className="mt-4 text-sm rounded-2xl bg-white/6 px-4 py-2 text-base font-medium text-primary-way-10">
-                Your Early Access key has been sent on the mail! 
-                <Image
-                  src="/icons/rocket-1.svg"
-                  alt="Rocket Icon"
-                  width={24}
-                  height={24}
-                  className="inline-block ml-2"
-                />
-              </p>
+                <p className="mt-4 text-sm rounded-2xl bg-white/6 px-4 py-2 text-base font-medium text-primary-way-10">
+                  Your Early Access key has been sent on the mail! 
+                  <Image
+                    src="/icons/rocket-1.svg"
+                    alt="Rocket Icon"
+                    width={24}
+                    height={24}
+                    className="inline-block ml-2"
+                  />
+                </p>
               </div>
-              <p className="mt-7 text-base font-regular text-secondary-db-50">
+              <p className="mt-4 text-base font-regular text-secondary-db-50">
                 Exclusive sneak peeks, early access, and insider news—just for you.
               </p>
 
               <GlowStarButton
                 onClick={() => setShowPopup(false)}
-                className="mt-5 rounded-lg bg-black text-white px-20 py-2 hover:bg-gray-900 transition cursor-pointer"
+                className="mt-5 rounded-lg bg-black text-white px-6 py-2 hover:bg-gray-900 transition cursor-pointer"
               >
                 Subscribe to our Newsletter!
               </GlowStarButton>
