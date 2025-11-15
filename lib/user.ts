@@ -27,7 +27,16 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
     if (!session || !session.user) return null;
 
-    const user: any = session.user;
+    // Type assertion for Mongoose populated user from session.user
+    const user = session.user as unknown as {
+      _id: { toString(): string };
+      name?: string | null;
+      email: string;
+      picture?: string | null;
+      favorites?: string[];
+      earlyAccess?: boolean;
+      creditsRemaining?: number;
+    };
 
     const initials =
       user.name
