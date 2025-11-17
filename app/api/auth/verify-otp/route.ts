@@ -92,17 +92,14 @@ export async function POST(req: Request) {
       },
     });
 
-    const isProd = process.env.NODE_ENV === "production";
-
-    // IMPORTANT: do NOT set domain for vercel preview host; leave domain unset so cookie is host-only.
-    // Use SameSite=None + Secure in production if your login flow uses redirects/cross-site navigation.
     res.cookies.set("sessionId", sessionId, {
       httpOnly: true,
-      secure: isProd, // must be true in production (HTTPS)
-      sameSite: isProd ? "none" : "lax",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
       path: "/",
       maxAge: maxAgeDays * 24 * 60 * 60,
     });
+
 
     return res;
   } catch (err) {
