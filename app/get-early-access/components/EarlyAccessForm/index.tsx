@@ -45,7 +45,7 @@ export default function EarlyAccessForm() {
 
         <GlowStarButton
           type="submit"
-          className="group relative w-full md:w-auto rounded-xl bg-secondary-db-100 px-4 py-3.5 text-white font-medium shadow-card cursor-pointer"
+          className="group relative w-full md:w-w-full rounded-xl bg-secondary-db-100 px-4 py-3.5 text-white font-medium shadow-card cursor-pointer"
         >
           <span className="absolute inset-0 rounded-xl opacity-20 group-hover:opacity-30 transition-opacity" />
           <span className="relative">Continue</span>
