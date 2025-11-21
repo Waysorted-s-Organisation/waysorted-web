@@ -728,3 +728,74 @@ html, body {
 .floating-card:hover {
   transform: translateY(-6px) rotate(2deg) scale(1.03);
 }
+
+/* Basic ripple container */
+.ripple-animated {
+  position: relative;
+  overflow: hidden; /* keep circles inside rounded card */
+  isolation: isolate; /* ensures blending stays inside */
+}
+
+/* Wrapper for centered ripples (optional helper) */
+.ripple-animated .ripples {
+  position: absolute;
+  inset: 0;
+  top : 70%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Individual expanding ring */
+.ripple-animated .ripple-ring {
+  position: absolute;
+  width: 16rem;          /* adjust size */
+  height: 16rem;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.10); /* blue-50ish */
+  animation: rippleExpand 5.5s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Stagger each ring with inline style or nth-child */
+.ripple-animated .ripple-ring:nth-child(2) {
+  animation-delay: 1.8s;
+}
+.ripple-animated .ripple-ring:nth-child(3) {
+  animation-delay: 3.6s;
+}
+
+@keyframes rippleExpand {
+  0% {
+    transform: scale(0.65);
+    opacity: 0.55;
+  }
+  55% {
+    opacity: 0.18;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+/* Optional soft radial fade overlay to blend edges */
+.ripple-animated .ripple-soft-gradient {
+  position: absolute;
+  width: 34rem;
+  height: 34rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(59,130,246,0.10) 0%, rgba(59,130,246,0) 70%);
+  pointer-events: none;
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .ripple-animated .ripple-ring {
+    animation: none;
+    opacity: 0.25;
+    transform: scale(1);
+  }
+}
