@@ -142,10 +142,10 @@ export default function Focus({ className }: { className?: string }) {
                 >
                   <Image
                     src={tool.iconData || "/icons/tool-fallback.svg"}
-                    width={36}
-                    height={36}
+                    width={40}
+                    height={40}
                     alt={`${tool.name} icon`}
-                    className="w-7 h-7 object-contain"
+                    className="object-contain"
                   />
                 </div>
                 <div className="flex-1 min-w-0">
