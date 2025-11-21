@@ -1,6 +1,6 @@
 "use client";
 import clsx from "clsx";
-import React, { useState } from "react";
+import React from "react";
 
 export default function GlassModeCard({ className }: { className?: string }) {
 
