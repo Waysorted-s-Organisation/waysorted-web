@@ -1,5 +1,5 @@
 import Sidebar from "./components/Sidebar";
-import { getCurrentUser } from "./lib/user";
+import { getCurrentUser } from "@/lib/user";
 import { GeneralTab } from "./components/tabs/GeneralTab";
 import { CreditsUsageTab } from "./components/tabs/CreditsUsageTab";
 import { SubscriptionTab } from "./components/tabs/SubscriptionTab";
