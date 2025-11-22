@@ -1,10 +1,9 @@
 "use client";
 import Image from "next/image";
-
-import type { User } from "@/hooks/useUser";
+import type { IUser } from "@/models/user";
 
 export interface BetaFeaturesCardProps {
-  user: User;
+  user: IUser;
   features: {
     id: string;
     title: string;

@@ -1,8 +1,13 @@
 import NotificationsCard from "../NotificationsCard";
-import { getCurrentUser } from "@/app/settings/lib/user";
+import {useUser} from "@/hooks/useUser";
+import Loading from "@/app/loading";
 
-export async function NotificationsTab() {
-  const user = await getCurrentUser();
+export function NotificationsTab() {
+  const { user, loading } = useUser();
+
+  if (loading) {
+    return <Loading />;
+  }
   if (!user) {
     return <div>Please log in to access notifications.</div>;
   }

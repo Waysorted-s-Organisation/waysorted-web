@@ -1,10 +1,15 @@
 import BetaFeaturesCard from "../BetaFeaturesCard";
-import { getCurrentUser } from "@/app/settings/lib/user";
+import {useUser} from "@/hooks/useUser";
+import Loading from "@/app/loading";
 
-export async function BetaFeaturesTab() {
-    const user = await getCurrentUser();
-    if (!user) {
-        return <div>Please log in to access beta features.</div>;
+export function BetaFeaturesTab() {
+  const { user, loading } = useUser();
+
+  if (loading) {
+    return <Loading />;
+  }
+  if (!user) {
+    return <div>Please log in to access beta features.</div>;
     }
   return (
     <BetaFeaturesCard

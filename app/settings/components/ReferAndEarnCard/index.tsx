@@ -2,10 +2,10 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
-import type { User } from "@/hooks/useUser";
+import type { IUser } from "@/models/user";
 
 type Props = {
-  user: User;
+  user: IUser;
 
   // Referral config (override via props if needed)
   creditPerReferral?: number; // how much you earn per referral
