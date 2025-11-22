@@ -16,6 +16,7 @@ export function useUser(auto: boolean = true) {
       const res = await fetch("/api/me", { credentials: "include" });
       const data = await res.json();
       setUser(data.user || null);
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error("useUser fetch error:", err);
       setError("Failed to fetch user");
