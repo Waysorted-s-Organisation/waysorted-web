@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { User } from "@/hooks/useUser";
+import type { IUser } from "@/models/user";
 
-export default function ProfileCard({ user }: { user: User }) {
+export default function ProfileCard({ user }: { user: IUser }) {
   const [editing, setEditing] = useState<{ name: boolean }>({ name: false });
   const [form, setForm] = useState({ name: user.name });
 

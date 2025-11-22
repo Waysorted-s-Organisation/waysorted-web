@@ -1,10 +1,10 @@
 "use client";
 
 import ReferAndEarnCard from "../ReferAndEarnCard";
-import type { User } from "@/hooks/useUser";
+import type { IUser } from "@/models/user";
 
 // Replace this with your actual user source/hook.
-const mockUser: User = {
+const mockUser: IUser = {
   // Include the fields your app expects. Only the ones used here are needed.
   // earlyAccess and creditsRemaining are not required for this card but kept to match your User type.
   earlyAccess: true,

@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import type { PublicUser } from "@/app/settings/lib/user";
+import type { IUser } from "@/models/user";
 
 type Props = {
-  user: PublicUser;
+  user: IUser;
 };
 
 export default function NotificationsCard({ user }: Props) {
@@ -48,7 +48,7 @@ export default function NotificationsCard({ user }: Props) {
           <>
             <div className="space-y-3">
               {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
-              {notifications.map((notification, i) => (
+              {notifications?.map((notification, i) => (
                 <button
                   key={notification.id}
                   className="w-full text-left rounded-lg px-4 py-4 transition flex items-start justify-between gap-4 cursor-pointer bg-white hover:bg-primary-way-10"

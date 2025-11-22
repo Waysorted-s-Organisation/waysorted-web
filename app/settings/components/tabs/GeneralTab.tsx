@@ -1,8 +1,14 @@
 import ProfileCard from "../ProfileCard";
-import { getCurrentUser } from "@/app/settings/lib/user";
+import {useUser} from "@/hooks/useUser";
+import Loading from "@/app/loading";
 
-export async function GeneralTab() {
-  const user = await getCurrentUser();
+export function GeneralTab() {
+  const { user, loading } = useUser();
+
+  if (loading) {
+    return <Loading />;
+  }
+
   if (!user) {
     return <div>Please log in to access general settings.</div>;
   }

@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import type { User } from "@/hooks/useUser";
+import type { IUser } from "@/models/user";
 
 type Props = {
-  user: User;
+  user: IUser;
 };
 
 export default function CreditsUsageCard({ user }: Props) {
