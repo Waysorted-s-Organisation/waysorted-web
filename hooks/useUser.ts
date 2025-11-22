@@ -1,21 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-
-export interface User {
-  id: string;
-  name?: string;
-  email: string;
-  picture?: string;
-  favorites?: string[];
-  earlyAccess: boolean;
-  initials: string;
-  creditsRemaining: number;
-}
+import type { IUser } from "@/models/user";
 
 
 export function useUser(auto: boolean = true) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<IUser | null>(null);
   const [loading, setLoading] = useState(auto);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,8 +16,9 @@ export function useUser(auto: boolean = true) {
       const res = await fetch("/api/me", { credentials: "include" });
       const data = await res.json();
       setUser(data.user || null);
-    } catch (e: any) {
-      setError(e?.message || "Failed to load user");
+    } catch (err) {
+      console.error("useUser fetch error:", err);
+      setError("Failed to fetch user");
     } finally {
       setLoading(false);
     }
