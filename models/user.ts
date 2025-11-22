@@ -7,6 +7,7 @@ export interface IUser {
   picture?: string;
   favorites: string[];
   earlyAccess: boolean;
+  initials: string;
   creditsRemaining: number;
   createdAt: Date;
   updatedAt: Date;
