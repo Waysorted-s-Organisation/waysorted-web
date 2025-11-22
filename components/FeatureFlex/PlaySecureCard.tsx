@@ -9,8 +9,8 @@ type Ball = { x: number; y: number; r: number; vy: number; spin: number; rot: nu
 function clamp(n: number, min: number, max: number) { return Math.max(min, Math.min(max, n)); }
 
 const EDGE_PAD = 1;
-const BUTTON_WIDTH = 168;
-const BUTTON_HEIGHT = 40;
+const BUTTON_WIDTH = 100;
+const BUTTON_HEIGHT = 24;
 const BALL_RADIUS = 20;
 
 const BALL_SVG = `<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -242,19 +242,6 @@ export default function PlaySecureCard({ className }: { className?: string }) {
     const { w, h } = sizeRef.current;
     ctx.clearRect(0, 0, w, h);
 
-    ctx.save();
-    ctx.strokeStyle = "rgba(17,24,39,0.08)";
-    ctx.lineWidth = 1;
-    const step = 18;
-    for (let y = step / 2; y < h; y += step) {
-      for (let x = step / 2; x < w; x += step) {
-        ctx.beginPath();
-        ctx.arc(x, y, 0.6, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-    }
-    ctx.restore();
-
     for (const b of ballsRef.current) drawBall(ctx, b);
   };
 
@@ -262,7 +249,7 @@ export default function PlaySecureCard({ className }: { className?: string }) {
     <div
       ref={containerRef}
       className={clsx(
-        "relative p-6 rounded-2xl shadow border border-gray-100 flex flex-col items-center text-center overflow-hidden",
+        "relative p-6 rounded-2xl shadow border border-gray-100 flex flex-col justify-center items-center text-center overflow-hidden bg-white",
         "w-full", // mobile
         className // md fixed sizes come from parent
       )}
@@ -276,21 +263,20 @@ export default function PlaySecureCard({ className }: { className?: string }) {
         <div className="h-12 w-12 rounded-xl bg-primary-way-90 flex items-center justify-center">
           <Image src="/icons/basketball_ball.svg" alt="Play Secure" width={36} height={36} />
         </div>
-        <h3 className="mt-3 text-lg font-semibold text-gray-900">Play Easy, Play Secure</h3>
-        <p className="text-gray-600 text-sm mt-1">
+        <p className="text-secondary-db-80 text-sm mt-1">
           Take a breather and test your reflexes in a minimalist arcade game!
         </p>
       </div>
 
       <div
         ref={trackRef}
-        className="absolute left-4 right-4 bottom-4 h-10 rounded-lg bg-primary-way-10 backdrop-blur-[1px] pointer-events-none z-10"
+        className="absolute left-4 right-4 bottom-4 h-4 rounded-lg bg-primary-way-10 backdrop-blur-[1px] pointer-events-none z-10"
         role="presentation"
         aria-hidden="true"
       />
       <button
         type="button"
-        className="absolute -translate-x-1/2 z-10 h-10 w-40 inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-secondary-db-100 text-white text-sm font-medium shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40"
+        className="absolute -translate-x-1/2 z-10 h-6 w-25 inline-flex items-center justify-center whitespace-nowrap rounded-lg bg-secondary-db-100 text-white text-xs font-regular shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-black/40"
         style={{ left: btnX, top: btnY }}
       >
         Play Challenge

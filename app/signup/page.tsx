@@ -9,6 +9,14 @@ type Step = "choose" | "email" | "otp" ;
 
 // Strictly use env-configured URLs; no fallback.
 const OTP_URI = process.env.NEXT_PUBLIC_OTP_URI as string | undefined;
+const VERIFY_URI = process.env.NEXT_PUBLIC_VERIFY_URI as string | undefined;
+
+type SendOtpResponse = {
+  message?: string;
+  request_id?: string;
+  expires_in?: number;
+  error?: string;
+};
 
 export default function Signup() {
   const router = useRouter();
@@ -53,6 +61,19 @@ export default function Signup() {
     setResendAt(Date.now() + seconds * 1000);
   };
 
+  const sameOrigin = (url: string) =>
+    new URL(url, window.location.href).origin === window.location.origin;
+
+  // Keep headers minimal to satisfy CORS: only Content-Type: application/json
+  const postJSON = (url: string, body: unknown) =>
+    fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: sameOrigin(url) ? "include" : "omit",
+      cache: "no-store",
+      body: JSON.stringify(body),
+    });
+
   // Google
   const handleGoogleSignIn = async () => {
     setError(null);
@@ -60,7 +81,7 @@ export default function Signup() {
     try {
       const res = await fetch("/api/auth/start", { credentials: "include" });
       const data = await res.json();
-      if (data?.authUrl) globalThis.location.href = data.authUrl;
+      if (data?.authUrl) window.location.href = data.authUrl;
       else setError("Unable to start Google sign-in. Please try again.");
     } catch {
       setError("Something went wrong. Please try again.");
@@ -362,13 +383,9 @@ export default function Signup() {
           {(step === "choose" || step === "email") && (
             <p className="text-sm text-secondary-db-70">
               Already have an account?{" "}
-              <button
-                type="button"
-                className="text-primary-way-100 underline cursor-pointer bg-none border-none p-0"
-                onClick={() => router.push("/login")}
-              >
+              <span className="text-primary-way-100 underline cursor-pointer" onClick={() => router.push("/login")}>
                 Log in
-              </button>
+              </span>
             </p>
           )}
         </div>

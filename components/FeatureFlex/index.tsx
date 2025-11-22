@@ -25,7 +25,7 @@ export default function FeatureFlex() {
                        flex flex-col overflow-hidden"
             aria-label="Security and encryption information"
           >
-            <h3 className="text-base font-medium text-secondary-db-90">
+            <h3 className="text-base font-medium text-secondary-db-80">
               Protected with top-tier encryption
             </h3>
 

@@ -2,8 +2,11 @@
 
 import { useMemo, useState } from "react";
 import Image from "next/image";
+import type { User } from "@/hooks/useUser";
 
 type Props = {
+  user: User;
+
   // Referral config (override via props if needed)
   creditPerReferral?: number; // how much you earn per referral
   maxReferrals?: number; // cap on counted referrals
@@ -13,12 +16,13 @@ type Props = {
 };
 
 export default function ReferAndEarnCard({
+  user,
   creditPerReferral = 200,
   maxReferrals = 10,
   friendReward = 50,
   yourReward,
   explicitReferralLink,
-}: Readonly<Props>) {
+}: Props) {
   const [copied, setCopied] = useState(false);
 
   // Prefer provided link; otherwise synthesize from code or id
@@ -27,8 +31,8 @@ export default function ReferAndEarnCard({
 
     const code ="your-code";
 
-    if (globalThis.window !== undefined) {
-      return `${globalThis.location.origin}/invite/${code}`;
+    if (typeof window !== "undefined") {
+      return `${window.location.origin}/invite/${code}`;
     }
     return `https://your.app/invite/${code}`;
   }, [explicitReferralLink]);
@@ -42,8 +46,15 @@ export default function ReferAndEarnCard({
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      // Fallback for older browsers using clipboard API
-      setCopied(false);
+      // Fallback for older browsers
+      const textarea = document.createElement("textarea");
+      textarea.value = referralLink;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      textarea.remove();
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
     }
   };
 
@@ -154,7 +165,7 @@ export default function ReferAndEarnCard({
 }
 
 /* Inline icons to avoid asset dependencies */
-function CopyIcon(props: Readonly<React.SVGProps<SVGSVGElement>>) {
+function CopyIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       width="16"
@@ -169,7 +180,7 @@ function CopyIcon(props: Readonly<React.SVGProps<SVGSVGElement>>) {
     </svg>
   );
 }
-function ShareIcon(props: Readonly<React.SVGProps<SVGSVGElement>>) {
+function ShareIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" {...props}>
       <path d="M16 6l4 0 0 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -178,7 +189,7 @@ function ShareIcon(props: Readonly<React.SVGProps<SVGSVGElement>>) {
     </svg>
   );
 }
-function GiftIcon(props: Readonly<React.SVGProps<SVGSVGElement>>) {
+function GiftIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" {...props}>
       <path d="M3 8h18v5a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z" stroke="currentColor" strokeWidth="1.5"/>
@@ -187,7 +198,7 @@ function GiftIcon(props: Readonly<React.SVGProps<SVGSVGElement>>) {
     </svg>
   );
 }
-function CoinsIcon(props: Readonly<React.SVGProps<SVGSVGElement>>) {
+function CoinsIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" {...props}>
       <ellipse cx="12" cy="6" rx="7" ry="3" stroke="currentColor" strokeWidth="1.5"/>
