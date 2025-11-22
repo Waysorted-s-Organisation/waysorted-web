@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
+import { IUser } from "@/models/user";
 
 export interface CurrentUser {
   id: string;
@@ -27,7 +28,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
 
     if (!session || !session.user) return null;
 
-    const user: any = session.user;
+    const user = session.user as unknown as IUser;
 
     const initials =
       user.name
