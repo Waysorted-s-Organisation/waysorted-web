@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { IUser } from "@/models/user";
+import { User } from "@/hooks/useUser";
 
 interface UserMenuProps {
-  user: IUser;
+  user: User;
   handleLogout: () => Promise<void> | void;
 }
 
