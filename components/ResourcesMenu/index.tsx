@@ -25,7 +25,7 @@ export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps)
         ].map((item, idx) => (
           <button
             key={idx}
-            className="flex items-center space-x-3 rounded-lg hover:bg-primary-way-10 cursor-pointer p-2 w-full text-left focus:outline-primary-way-10"
+            className="flex items-center space-x-3 rounded-lg hover:bg-[#87A5E5] cursor-pointer p-2 w-full text-left focus:outline-primary-way-10"
             onClick={handleClick(item.link)}
           >
             <div className="flex-shrink-0 rounded-md">
