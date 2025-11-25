@@ -1,7 +1,10 @@
 import Image from "next/image";
 import GlowStarButton from "@/components/GlowStarButton";
+import { useRouter } from 'next/navigation';
 
 const Hero = () => {
+  const router = useRouter();
+
   return (
     <section
       id="hero"
@@ -9,7 +12,10 @@ const Hero = () => {
     >
       <div id="hero-content" className="text-center">
         {/* Badge */}
-        <button className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-3 py-1 md:px-5 md:py-2 text-sm text-secondary-db-100 mb-4 cursor-pointer">
+        <button className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-3 py-1 md:px-5 md:py-2 text-sm text-secondary-db-100 mb-4 cursor-pointer"
+        onClick={() => {
+                  router.push('/request-a-feature');
+                }}>
           <Image
             src="/icons/tools.svg"
             alt="Hero Badge"

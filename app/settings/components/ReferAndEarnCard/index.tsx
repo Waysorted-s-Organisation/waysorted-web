@@ -16,7 +16,6 @@ type Props = {
 };
 
 export default function ReferAndEarnCard({
-  user,
   creditPerReferral = 200,
   maxReferrals = 10,
   friendReward = 50,
@@ -177,33 +176,6 @@ function CopyIcon(props: React.SVGProps<SVGSVGElement>) {
     >
       <path d="M9 9.5A2.5 2.5 0 0 1 11.5 7H18a2 2 0 0 1 2 2v6.5A2.5 2.5 0 0 1 17.5 18H11a2 2 0 0 1-2-2V9.5Z" stroke="currentColor" strokeWidth="1.5"/>
       <path d="M7 16.5A2.5 2.5 0 0 1 4.5 14V7a2 2 0 0 1 2-2H13.5A2.5 2.5 0 0 1 16 7.5" stroke="currentColor" strokeWidth="1.5"/>
-    </svg>
-  );
-}
-function ShareIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" {...props}>
-      <path d="M16 6l4 0 0 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M20 6l-8 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <path d="M14 4H7a3 3 0 0 0-3 3v7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-    </svg>
-  );
-}
-function GiftIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" {...props}>
-      <path d="M3 8h18v5a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8Z" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M12 4v13" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M3 8h18" stroke="currentColor" strokeWidth="1.5"/>
-    </svg>
-  );
-}
-function CoinsIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" {...props}>
-      <ellipse cx="12" cy="6" rx="7" ry="3" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M5 10c0 1.66 3.134 3 7 3s7-1.34 7-3" stroke="currentColor" strokeWidth="1.5"/>
-      <path d="M5 14c0 1.66 3.134 3 7 3s7-1.34 7-3" stroke="currentColor" strokeWidth="1.5"/>
     </svg>
   );
 }

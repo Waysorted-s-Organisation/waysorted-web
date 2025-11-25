@@ -52,7 +52,7 @@ export default function Home() {
             <ImpactTop />
             
             <InfoCards />
-            <div className="my-40" />
+            <div className="my-60" />
              {/* Section 1: Secure Animation */}
       <section id="secure-animation" className="h-[200vh]">
         <SecureAnimation />

@@ -9,7 +9,8 @@ import LanguageDropdown from '../LanguageDropdown';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/hooks/useUser';
 import UserMenu from '@/components/UserMenu';
-import GlowingStarButton from '@/components/GlowStarButton';
+import products from "@/data/products.json"
+// import GlowingStarButton from '@/components/GlowStarButton';
 
 interface HeaderProps {
   showBanner: boolean;
@@ -77,38 +78,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, []);
-
-  // Simple mobile products data (aligns with the image)
-  const productItems = [
-    {
-      title: 'Palettable',
-      description:
-        'Create color palettes with variations and accessibility checks.',
-      href: '/products#palettable',
-      icon: '/icons/palettable.svg',
-    },
-    {
-      title: 'Frames to PDF',
-      description:
-        'Turn your designs into share-ready PDFs in seconds.',
-      href: '/products#frames-to-pdf',
-      icon: '/icons/frames-to-pdf.svg',
-    },
-    {
-      title: 'Unit Convertor',
-      description:
-        'Effortlessly convert design dimensions between units.',
-      href: '/products#unit-convertor',
-      icon: '/icons/unit-converter.svg',
-    },
-    {
-      title: 'File Importer',
-      description:
-        'Import files with smart font handling and more.',
-      href: '/products#file-importer',
-      icon: '/icons/file-importer.svg',
-    },
-  ];
 
   // Check whether secure sections "touch" the header (top of the section reaches header bottom).
   // This uses headerRef to calculate header height, and bounding rect checks on scroll/resize.
@@ -203,7 +172,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
       <nav className="mx-auto px-4 md:px-16 z-40">
         <div className="flex justify-between items-center h-16 md:h-16">
           {/* Logo */}
-          <Link href="/" className="block">
+          <Link href="/" className="block flex items-center space-x-2" aria-label="Waysorted Home">
             <div className="relative w-24 h-8 sm:w-28 sm:h-9 md:w-32 md:h-10 lg:w-36 lg:h-11 translate-y-1">
               <Image
                 src={logoSrc}
@@ -213,6 +182,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 priority
               />
             </div>
+            <div className='text-xs font-medium text-primary-way-100 border border-primary-way-100 rounded-3xl inline block py-1 px-2 translate-y-[-4px]'>BETA</div>
           </Link>
 
           {/* Desktop navigation */}
@@ -235,7 +205,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 height={4}
                 className={`transition-transform duration-300 ${productsOpen ? 'rotate-180' : ''}`}
               />
-              <ProductsMenu isOpen={productsOpen} className="absolute translate-y-4" />
+              <ProductsMenu isOpen={productsOpen} className="absolute translate-x-[-20%] translate-y-4" />
             </div>
 
             <div
@@ -304,8 +274,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               />
             </div>
 
-            {/* Primary CTA: hide on mobile per new design, keep on desktop */}
-            <GlowingStarButton
+            {/* <GlowingStarButton
               className={`hidden md:flex bg-secondary-db-100 shadow-glow font-medium text-sm md:text-base text-white px-4 md:px-5 py-2 rounded-lg items-center active:scale-95 transition-colors duration-100 cursor-pointer ${isSecureSection ? 'border border-secondary-db-80' : ''}`}
               title="Get Early Access"
               aria-label="Get Early Access"
@@ -313,7 +282,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               disabled={!!user?.earlyAccess}
             >
               <span>Get Early Access</span>
-            </GlowingStarButton>
+            </GlowingStarButton> */}
 
             {/* Auth buttons: desktop only */}
             {!loading && !user && (
@@ -409,8 +378,8 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 }`}
               >
                 <ul className="mt-2 px-3 space-y-2">
-                  {productItems.map((p) => (
-                    <li key={p.title}>
+                  {products.map((p) => (
+                    <li key={p.name}>
                       <button
                         onClick={() => {
                           router.push(p.href);
@@ -427,7 +396,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <div className={`text-sm font-semibold ${textColor}`}>{p.title}</div>
+                          <div className={`text-sm font-semibold ${textColor}`}>{p.name}</div>
                           <div className="text-xs text-secondary-db-60 line-clamp-2">{p.description}</div>
                         </div>
                       </button>
