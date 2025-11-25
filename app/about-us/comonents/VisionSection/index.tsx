@@ -12,15 +12,14 @@ export default function VisionSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
 
   const VISION_STATEMENT =
-    "We’re on a mission to make every creator’s Tool faster, smarter, and frustration-free creating a global movement of creators shaping the next era of design productivity.";
+    "We’re on a mission to make every creator’s Tool Accelerated, smarter, and effortless creating a global movement of creators shaping the next era of design productivity.";
 
   const COLOR_INDEX_MAP: Record<number, string> = {
-    8: "text-primary-way-100", // "Our"
-    9: "text-primary-way-100", // "Vision"
-    10: "text-primary-way-100", // "is"
-    11: "text-primary-way-100", // "to"
-    12: "text-primary-way-100", // "creativity"
-    13: "text-primary-way-100", // "to"
+    8: "text-primary-way-100", // "Tool"
+    9: "text-primary-way-100", // Accelerated
+    10: "text-primary-way-100", // "smarter,"
+    11: "text-primary-way-100", // "and"
+    12: "text-primary-way-100", // "effortless"
   };
 
   useEffect(() => {
@@ -48,8 +47,8 @@ export default function VisionSection() {
     // ScrollTrigger animation
     ScrollTrigger.create({
       trigger: sectionRef.current,
-      start: "top 50%",
-      end: "bottom 60%",
+      start: "top 30%",
+      end: "bottom 100%",
       animation: masterTimeline,
       scrub: 3,
       pin: false,
@@ -67,7 +66,7 @@ export default function VisionSection() {
   return (
     <section
       ref={sectionRef}
-      className="bg-white text-center px-6 md:px-20 lg:px-32 py-35"
+      className="bg-white text-center px-6 md:px-20 lg:px-32 py-50"
     >
       {/* Label */}
       <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md mb-6">

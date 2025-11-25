@@ -21,10 +21,10 @@ export default function LighterCard({ className }: { className?: string }) {
 
       <div className="flex-1 relative z-10">
         <div className="flex items-center justify-between text-xs text-blue-600 gap-2">
-          <span className="px-2 py-0.5 bg-white rounded-md flex items-center gap-1">
+          <span className="px-2 py-0.5 bg-gradient-to-r from-[#E8EFFC] to-white rounded-md flex items-center gap-1 font-regular text-secondary-db-70 ring-1 ring-white/38">
             <Image src="/icons/lightning-blue.svg" alt="Zero Latency" width={8} height={12} /> Zero Latency
           </span>
-          <span className="px-2 py-0.5 bg-white rounded-md flex items-center gap-1 translate-y-10">
+          <span className="px-2 py-0.5 bg-gradient-to-r from-[#E8EFFC] to-white rounded-md flex items-center gap-1 translate-y-10 text-secondary-db-70 font-regular ring-1 ring-white/38">
             <Image src="/icons/lightning-blue.svg" alt="Zero Latency" width={8} height={12} /> Super Fast
           </span>
         </div>

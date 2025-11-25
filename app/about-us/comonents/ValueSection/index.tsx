@@ -105,7 +105,7 @@ function AnimatedCard({
           </div>
           <div className="flex-1 space-y-2 md:space-y-3">
             <h3 className="text-lg md:text-2xl font-semibold leading-tight">{title}</h3>
-            <p className="text-white text-base md:text-xl font-medium leading-relaxed">{description}</p>
+            <p className="text-white text-xs md:text-sm font-semibold leading-relaxed">{description}</p>
           </div>
         </div>
       </motion.div>
@@ -117,7 +117,7 @@ export default function ValuesSection() {
   const values = [
     {
       number: "01",
-      title: "Crafting a Morally Friendly Workspace",
+      title: "Building an ethical and inclusive workplace",
       description:
         "We’re building a workspace where every worker isn’t just an asset but a vital contributor to our shared vision. At Waysorted, we foster an environment that values collaboration and supports the common goal of turning digital chaos into creative clarity.",
       translate: 120
@@ -139,7 +139,7 @@ export default function ValuesSection() {
       number: "04",
       title: "Diversity of Thoughts",
       description:
-        "We thrive on a vibrant, eclectic brainspace that celebrates variety. At Waysorted, we embrace diverse ideas, perspectives, and approaches, crafting designs and tools that serve not just one, but many—unlocking innovation for every creator in our community.",
+        "At Waysorted, we foster a diverse and inclusive creative environment that embraces multiple ideas, perspectives, and design approaches. Our innovative design tools and solutions empower creators, designers, and teams across the community to unlock their full potential.",
     },
   ];
 
@@ -149,7 +149,7 @@ export default function ValuesSection() {
         Our Values
       </h2>
 
-      <div className="max-w-full md:max-w-xl mx-auto">
+      <div className="max-w-full md:max-w-2xl mx-auto">
         {values.map((value, index) => (
           <AnimatedCard
             key={index}
