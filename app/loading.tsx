@@ -15,7 +15,7 @@ export default function Loading() {
   ];
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center">
+    <div className="min-h-screen w-full flex items-center justify-center select-none">
       <SequentialLogoLoader
         icons={icons}
         estimatedMs={4000}

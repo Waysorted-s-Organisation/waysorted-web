@@ -287,7 +287,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
             {/* Auth buttons: desktop only */}
             {!loading && !user && (
               <button
-                className={`hidden md:inline-flex font-medium text-base border border-secondary-db-20 rounded-lg px-5 py-2 cursor-pointer transition-colors active:scale-95 ${isSecureSection ? 'text-white border-secondary-db-80' : 'text-secondary-db-100'}`}
+                className={`md:inline-flex md:font-medium text-sm md:text-base border border-secondary-db-20 rounded-lg px-3 py-1.25 md:px-5 md:py-2 cursor-pointer transition-colors active:scale-95 ${isSecureSection ? 'text-white border-secondary-db-80' : 'text-secondary-db-100'}`}
                 title="Sign Up"
                 onClick={() => router.push('/signup')}
                 aria-label="Sign Up"

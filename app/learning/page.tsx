@@ -42,7 +42,7 @@ export default function LearnPage() {
   return (
     <div className="min-h-screen">
       <main
-        className={`min-h-screen bg-white transition-all duration-300 pb-45 ${
+        className={`min-h-screen bg-white transition-all duration-300 pb-45 select-none ${
           showBanner ? "pt-24" : "pt-16"
         }`}
       >

@@ -217,7 +217,7 @@ export default function Login() {
   }, [email]);
 
   return (
-    <div className="min-h-screen blue-bg-dots flex justify-center items-center p-4">
+    <div className="min-h-screen blue-bg-dots flex justify-center items-center p-4 select-none">
       <div className="bg-white rounded-[22px] shadow-md max-w-lg w-full">
         {step === "choose" && (
           <div className="flex flex-col gap-4 px-6 sm:px-8 pt-8 pb-3 items-center">

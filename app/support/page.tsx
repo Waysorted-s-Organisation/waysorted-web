@@ -13,7 +13,7 @@ export default function SupportPage() {
   return (
     <>
       <main
-        className={`min-h-screen bg-white transition-all duration-300 ${
+        className={`min-h-screen bg-white transition-all duration-300 select-none ${
           showBanner ? "pt-24" : "pt-16"
         } `}
       >

@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 export default function NotFound() {
   return (
-    <main className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 error-bg-dots overflow-hidden">
+    <main className="relative min-h-screen flex flex-col items-center justify-center text-center px-4 error-bg-dots overflow-hidden select-none">
       {/* Top broken wires (you will insert images) */}
       <div className="absolute top-0 left-0">
         <Image src="/icons/wire-top.svg" alt="Wire Left" width={218} height={271} />

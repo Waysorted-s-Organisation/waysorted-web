@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${hanken.className} no-scrollbar`}>
+      <body className={`${hanken.className} no-scrollbar select-none`}>
         <SplashGate minMs={4000} initialOnly>
         <BannerProvider>
           {children}
