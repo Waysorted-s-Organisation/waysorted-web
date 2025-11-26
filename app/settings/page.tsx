@@ -56,7 +56,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen w-full">
+    <div className="min-h-screen w-full select-none">
       <TopBanner earlyAccess={user.earlyAccess} />
 
       <div className="mx-auto flex flex-col lg:flex-row max-w-full gap-0">

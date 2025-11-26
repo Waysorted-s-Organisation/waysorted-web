@@ -7,7 +7,7 @@ export default function SuccessPage() {
   return (
     <div>
       <main
-            className={`min-h-screen bg-white transition-all duration-300 ${showBanner ? "pt-24" : "pt-16"
+            className={`min-h-screen bg-white transition-all duration-300 select-none ${showBanner ? "pt-24" : "pt-16"
                 }`}
         >
             <Header showBanner={showBanner} setShowBanner={setShowBanner} />

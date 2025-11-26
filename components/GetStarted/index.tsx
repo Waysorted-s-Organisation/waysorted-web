@@ -62,10 +62,10 @@ const GetStarted = () => {
     <section className="bg-white flex flex-col items-center justify-center text-center px-4 py-16 sm:py-24 md:py-40 overflow-hidden">
       {/* Heading and Subtext (z-index ensures they sit above floating elements if they overlap) */}
       <div className="relative z-10">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-secondary-db-100 text-center leading-tight">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-secondary-db-100 text-center leading-tight select-none">
           One tool. Infinite possibilities.
         </h1>
-        <p className="mt-3 sm:mt-4 text-secondary-db-80 font-medium text-base sm:text-lg md:text-xl text-center max-w-xl sm:max-w-2xl md:max-w-6xl mx-auto">
+        <p className="mt-3 sm:mt-4 text-secondary-db-80 font-medium text-base sm:text-lg md:text-xl text-center max-w-xl sm:max-w-2xl md:max-w-6xl mx-auto select-none">
           Waysorted transforms your workflow,<span className="text-primary-way-100"> Instantly.</span>
         </p>
       </div>
@@ -112,11 +112,11 @@ const GetStarted = () => {
 
         {/* MAIN BUTTON */}
         <motion.div
-          className="relative z-20 rounded-4xl text-white font-medium
+          className="relative join-shadow z-20 rounded-4xl text-white font-medium
                      text-lg sm:text-2xl md:text-7xl
                      px-18 py-6 sm:px-20 sm:py-8 md:px-25 md:py-10
                      bg-secondary-db-100 shadow-2xl cursor-pointer
-                     w-full max-w-xs sm:max-w-sm md:max-w-none md:w-auto text-center"
+                     w-full max-w-xs sm:max-w-sm md:max-w-none md:w-auto text-center select-none"
           aria-label="Get Started Button"
           variants={{
             initial: { scale: 1 },

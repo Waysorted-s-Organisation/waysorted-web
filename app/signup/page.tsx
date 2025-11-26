@@ -248,7 +248,7 @@ export default function Signup() {
   }, [email]);
 
   return (
-    <div className="min-h-screen blue-bg-dots flex justify-center items-center p-4">
+    <div className="min-h-screen blue-bg-dots flex justify-center items-center p-4 select-none">
       <div className="bg-white rounded-[22px] shadow-md max-w-lg w-full lg:w-115">
         {step === "choose" && (
           <div className="flex flex-col px-6 sm:px-8 pt-8 pb-3 items-center">
