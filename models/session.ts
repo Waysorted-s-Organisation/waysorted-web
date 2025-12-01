@@ -1,5 +1,4 @@
 import { Schema, model, models, Types, Model } from "mongoose";
-// Import User model to ensure it's registered
 import "./user";
 
 export interface ISession {
