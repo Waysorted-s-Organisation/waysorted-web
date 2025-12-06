@@ -22,7 +22,7 @@ const JoinCommunity = () => {
       {/* Animated Button */}
       {/* Switched from div to motion.div */}
       <motion.div
-        className="mt-8 sm:mt-10 md:mt-12 rounded-3xl text-white font-medium
+        className="mt-8 sm:mt-10 md:mt-12 md:rounded-3xl rounded-lg text-white font-medium
                    text-lg sm:text-2xl md:text-7xl
                    px-6 py-3 sm:px-8 sm:py-4 md:px-30 md:py-8
                    bg-secondary-db-100 join-shadow cursor-pointer

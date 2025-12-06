@@ -96,63 +96,97 @@ export default function DocsShell({
   }, [pathname]);
 
   return (
-    <div className="min-h-screen bg-white">
-      <main
-        className={`min-h-screen bg-white transition-all duration-300 pb-45${
-          showBanner ? "pt-24" : "pt-16"
-        }`}
-      >
-        <Header showBanner={showBanner} setShowBanner={setShowBanner} />
-
-        <div className="max-w-7xl bg-white mx-auto px-5 py-24">
-          <nav className="text-base font-medium text-secondary-db-100/50">
-            <span
-              className="cursor-pointer hover:text-secondary-db-100 hover:border-b-2 hover:border-b-primary-way-100"
-              onClick={() => router.push("/")}
-            >
-              Home
-            </span>
+    <>
+      <div className="lg:hidden fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-center blue-bg-dots">
+        <div className="relative z-10 flex flex-col items-center max-w-md mx-auto">
+          <div className="mb-8 p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg">
             <Image
-              src="/icons/chevron-right.svg"
-              alt="Arrow Right"
-              width={4}
-              height={4}
-              className="inline-block mx-2"
+              src="/icons/desktop.svg"
+              alt="Desktop Experience"
+              width={62}
+              height={62}
+              className="w-16 h-16"
             />
-            <span
-              className="text-primary-way-100 text-base font-medium cursor-pointer"
-              onClick={() => router.push("/documents")}
-            >
-              Documents
-            </span>
-          </nav>
-        </div>
-
-        <div className="max-w-7xl bg-white mx-auto px-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-2 my-4">
-              <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md">
-                <Image
-                  src="/icons/waydocs.svg"
-                  alt="WayDocs"
-                  width={30}
-                  height={30}
-                  className="block p-1"
-                />
-                <span className="pl-1 pr-2 py-1 text-secondary-db-100">
-                  WayDocs
-                </span>
-              </span>
-            </div>
-            <h1 className="text-4xl w-lg font-semibold text-secondary-db-100 leading-tight">
-              Document Hub
-            </h1>
           </div>
-        </div>
+          
+          <h1 className="text-2xl font-medium text-white mb-10 leading-snug">
+            Way&apos;s UI delivers its best experience on desktop.
+          </h1>
 
-        {/* Three-column layout: Sidebar / Content / TOC */}
-        <div className="max-w-7xl mx-auto px-5 py-12 flex gap-8 items-stretch">
-          {/* Sidebar */}
+          <button
+            onClick={() => router.push("/")}
+            className="flex items-center justify-center gap-2 bg-secondary-db-100 text-white px-6 py-3.5 rounded-lg font-semibold text-sm"
+          >
+            <Image
+              src="/icons/white-back-icon.svg"
+              alt="Arrow Right"
+              width={16}
+              height={16}
+              className="inline-block"
+            />
+            <span>Go back to home page</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop View (Hidden on screens smaller than lg) */}
+      <div className="hidden lg:block min-h-screen bg-white">
+        <main
+          className={`min-h-screen bg-white transition-all duration-300 pb-45${
+            showBanner ? "pt-24" : "pt-16"
+          }`}
+        >
+          <Header showBanner={showBanner} setShowBanner={setShowBanner} />
+
+          <div className="max-w-7xl bg-white mx-auto px-5 py-24">
+            <nav className="text-base font-medium text-secondary-db-100/50">
+              <span
+                className="cursor-pointer hover:text-secondary-db-100 hover:border-b-2 hover:border-b-primary-way-100"
+                onClick={() => router.push("/")}
+              >
+                Home
+              </span>
+              <Image
+                src="/icons/chevron-right.svg"
+                alt="Arrow Right"
+                width={4}
+                height={4}
+                className="inline-block mx-2"
+              />
+              <span
+                className="text-primary-way-100 text-base font-medium cursor-pointer"
+                onClick={() => router.push("/documents")}
+              >
+                Documents
+              </span>
+            </nav>
+          </div>
+
+          <div className="max-w-7xl bg-white mx-auto px-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 my-4">
+                <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md">
+                  <Image
+                    src="/icons/waydocs.svg"
+                    alt="WayDocs"
+                    width={30}
+                    height={30}
+                    className="block p-1"
+                  />
+                  <span className="pl-1 pr-2 py-1 text-secondary-db-100">
+                    WayDocs
+                  </span>
+                </span>
+              </div>
+              <h1 className="text-4xl w-lg font-semibold text-secondary-db-100 leading-tight">
+                Document Hub
+              </h1>
+            </div>
+          </div>
+
+          {/* Three-column layout: Sidebar / Content / TOC */}
+          <div className="max-w-7xl mx-auto px-5 py-12 flex gap-8 items-stretch">
+            {/* Sidebar */}
             <aside className="w-72 p-4 flex flex-col shrink-0">
               <div className="relative w-72 mb-6">
                 <input
@@ -251,35 +285,36 @@ export default function DocsShell({
               </nav>
             </aside>
 
-          {/* Content */}
-          <main className="flex-1 pl-4">
-            {/* data-doc-content used by TOC */}
-            <div
-              data-doc-content
-              className="prose max-w-3xl space-y-6 [&_h2]:scroll-mt-32 [&_h3]:scroll-mt-32"
-            >
-              {children}
-            </div>
-          </main>
-          
-          <TableOfContents topOffsetPx={112} />
-        </div>
-      </main>
+            {/* Content */}
+            <main className="flex-1 pl-4">
+              {/* data-doc-content used by TOC */}
+              <div
+                data-doc-content
+                className="prose max-w-3xl space-y-6 [&_h2]:scroll-mt-32 [&_h3]:scroll-mt-32"
+              >
+                {children}
+              </div>
+            </main>
+            
+            <TableOfContents topOffsetPx={112} />
+          </div>
+        </main>
 
-      <div id="footer-sentinel" className="dashed-line mt-16" />
-      <div className="pt-16 pb-30">
-        <FeedbackRating
-          title="Help us improve WayDocs!"
-          onSubmit={async (rating, comment) => {
-            try {
-              await onFeedbackSubmit?.(rating, comment);
-            } catch (e) {
-              console.error("Error submitting feedback:", e);
-            }
-          }}
-        />
+        <div id="footer-sentinel" className="dashed-line mt-16" />
+        <div className="pt-16 pb-30">
+          <FeedbackRating
+            title="Help us improve WayDocs!"
+            onSubmit={async (rating, comment) => {
+              try {
+                await onFeedbackSubmit?.(rating, comment);
+              } catch (e) {
+                console.error("Error submitting feedback:", e);
+              }
+            }}
+          />
+        </div>
+        <Footer />
       </div>
-      <Footer />
-    </div>
+    </>
   );
 }
