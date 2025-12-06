@@ -7,7 +7,7 @@ import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FeedbackRating from "@/components/Feedback";
-import TableOfContents from "@/app/documentations/component/TableOfContents";
+import TableOfContents from "@/app/docs/component/TableOfContents";
 
 type DocsShellInnerProps = {
   onFeedbackSubmit?: (rating: number, comment: string) => Promise<void> | void;
@@ -145,7 +145,7 @@ export default function DocsShell({
               />
               <span
                 className="text-primary-way-100 text-base font-medium cursor-pointer"
-                onClick={() => router.push("/documentations")}
+                onClick={() => router.push("/docs")}
               >
                 Documents
               </span>
@@ -254,7 +254,7 @@ export default function DocsShell({
                                   key={link}
                                   onClick={() => {
                                     setActiveLink(link);
-                                    router.push(`/documentations/${slug}`);
+                                    router.push(`/docs/${slug}`);
                                   }}
                                   className={`text-sm ml-2 font-regular cursor-pointer transition-colors duration-200 py-1 ${
                                     activeLink === link
