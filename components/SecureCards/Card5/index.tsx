@@ -31,11 +31,7 @@ const Card5 = () => {
 
   return (
     <div
-      className="bg-gradient-to-b from-[#2A2E34] to-[#525252]  absolute rounded-xl overflow-hidden  "
-      style={{
-        width: "312.71px",
-        height: "455.11px",
-      }}
+      className="relative bg-gradient-to-b from-[#2A2E34] to-[#525252] rounded-xl overflow-hidden w-full lg:w-[312.71px] h-[455.11px]"
     >
       {/* Animated Background */}
       <div
