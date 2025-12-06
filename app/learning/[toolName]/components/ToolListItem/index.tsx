@@ -25,7 +25,9 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
         isDisabled ? "opacity-70 cursor-not-allowed" : "hover:bg-primary-way-5"
       }`}
     >
-      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+      {/* Container: Flex-1 on mobile allows wrapping, sm:flex-none keeps desktop rigid */}
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1 sm:flex-none">
+        {/* Icon */}
         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-200 overflow-hidden shrink-0">
           <Image
             src={`${tool.iconData}`}
@@ -35,32 +37,56 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
             className="object-contain"
           />
         </div>
-        <div className="min-w-0">
+
+        {/* Text Column */}
+        <div className="min-w-0 flex flex-col justify-center">
+          {/* Title Row */}
           <h2 className="font-medium text-base sm:text-xl text-secondary-db-100 flex items-center gap-2">
             <span className="truncate">{tool.name}</span>
+            
             {tool.isAI && (
               <Image
                 src={"/icons/ai-logo.svg"}
                 alt={`${tool.name} AI`}
                 width={20}
                 height={20}
-                className="inline-block"
+                className="inline-block shrink-0"
               />
             )}
+
             {badge && (
-              <span className="shrink-0">
-                <Badge type={badge.type} label={badge.label} showDot={true} />
+              <span className="shrink-0 flex items-center gap-1.5">
+                {/* The Badge Component:
+                    - It likely renders [Dot] on mobile and [Dot + Label] on desktop.
+                    - We reset fonts on desktop (sm:...) to ensure it looks right there.
+                */}
+                <span className="sm:text-xl sm:font-medium sm:text-secondary-db-100">
+                  <Badge type={badge.type} label={badge.label} showDot={true} />
+                </span>
+
+                {/* MANUAL LABEL FIX FOR MOBILE:
+                    - Since the component hides the text on mobile, we explicitly add it here.
+                    - 'sm:hidden' ensures this duplicate text disappears on desktop.
+                */}
+                <span className="text-sm font-normal text-secondary-db-80 sm:hidden">
+                  {badge.label}
+                </span>
               </span>
             )}
           </h2>
 
-          {/* Open in Figma link (keeps placement/size; uses provided open.svg; hover color + icon via currentColor) */}
+          {/* Mobile Description: Wraps to new lines, hidden on desktop */}
+          <p className="text-secondary-db-70 font-medium text-xs mt-0.5 sm:hidden leading-tight">
+            {tool.tagline}
+          </p>
+
+          {/* Figma Link (Hidden on mobile) */}
           <a
             href="https://figma.com/community/plugin/1532842109377504268/waysorted"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Open in Figma"
-            className={`hidden sm:inline text-xs select-none ${
+            className={`hidden sm:inline text-xs select-none mt-1 ${
               isDisabled
                 ? "pointer-events-none opacity-70 text-secondary-db-80"
                 : "text-secondary-db-80 hover:text-primary-way-100"
@@ -89,11 +115,12 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
         </div>
       </div>
 
-      <p className="text-secondary-db-70 font-medium text-xs sm:text-sm text-left w-auto sm:w-xs max-w-[55%] sm:max-w-none">
+      {/* Desktop Description: Hidden on mobile */}
+      <p className="hidden sm:block text-secondary-db-70 font-medium text-xs sm:text-sm text-left w-auto sm:w-xs max-w-[55%] sm:max-w-none">
         {tool.tagline}
       </p>
 
-      {/* Learn more link (hover color change; arrow uses currentColor) */}
+      {/* Learn More / Arrow Link */}
       <a
         href={isDisabled ? undefined : `/learning/${tool.slug}`}
         onClick={onLearnMore}
