@@ -20,26 +20,16 @@ export interface SidebarItem {
 }
 
 const sidebarData: SidebarItem[] = [
-  { title: "General", links: ["Getting Started", "FAQ"] },
-  {
-    title: "Account and Workspace",
-    links: [
-      "Profile and Settings",
-      "Subscriptions",
-      "Team Collaboration",
-      "Security Features",
-      "Dashboard Navigation",
-    ],
-  },
-  { title: "Plugins and Marketplace", links: ["Plugin Overview", "Marketplace"] },
-  { title: "Tools Reference", links: ["Tool 1", "Tool 2"] },
-  { title: "Credit System", links: ["Credit Overview", "Usage Limits"] },
-  { title: "Integrations and Cloud", links: ["Cloud Integration", "Third-Party Services"] },
-  { title: "API Documentation", links: ["API Overview", "Authentication", "Rate Limits"] },
-  { title: "Design Standards", links: ["Brand Guidelines", "UI Components"] },
-  { title: "Updates and Roadmap", links: ["What's New", "Future Plans"] },
-  { title: "Troubleshooting & Support", links: ["FAQ", "Contact Support"] },
-  { title: "Legal", links: ["Privacy Policy", "Terms of Service"] },
+  { title: "General", links: ["Getting Started", "Account Creation and Setup", "Quick Integration with Figma", "FAQs"] },
+  { title: "Account and Workspace", links: ["Profile and Settings"],},
+  { title: "Plugins and Marketplace", links: ["Searching and Browsing Plugins", "Creator Guidelines", "Ratings and Reviews"] },
+  { title: "Tools Reference", links: ["Palettable", "Unit Converter", "Import Tool", "Upcoming Tools"] },
+  { title: "Design Standards", links: ["Waysorted Principles", "Accessibility(WCAG)", "UI/UX Best Practices", "Handoff Standards"] },
+  { title: "Troubleshooting & Support", links: ["Common Errors", "Diagnostics", "Contact Support", "Bug Reporting", "Request a Feature"] },
+  { title: "Legal", links: ["Privacy Policy", "Terms of Service", "Data Processing", "Cookie Policy", "Intellectual Property Rights"] },
+  { title: "Integrations and Cloud", links: ["Figma Sync", "Backup and Recovery", "Third-Party Integrations"] },
+  { title: "Credits and Usage", links: ["Overview", "Earning Credits", "Using Credits", "Managing Credits"] },
+  {title: "Waysorted API Documentation", links: ["Developer Focused Guide", "Overview and Authentication", "Examples", "Rate Limits", "Webhooks"] },
 ];
 
 const slugify = (s: string) =>
