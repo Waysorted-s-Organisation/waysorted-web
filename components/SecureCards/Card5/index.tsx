@@ -31,7 +31,7 @@ const Card5 = () => {
 
   return (
     <div
-      className="relative bg-gradient-to-b from-[#2A2E34] to-[#525252] rounded-xl overflow-hidden w-full lg:w-[312.71px] h-[455.11px]"
+      className="relative bg-gradient-to-b from-[#2A2E34] to-[#525252] rounded-xl overflow-hidden w-full w-[345px] lg:w-[312.71px] h-[455.11px]"
     >
       {/* Animated Background */}
       <div
@@ -68,7 +68,7 @@ const Card5 = () => {
       <Base1
         title={"Data Encryption"}
         content={
-          "Fusce vehicula rutrum lectus, ut posuere libero sodales at. Praesent erat quam,"
+          "All your data travels through a secure, encrypted tunnel."
         }
         libero="pr-5"
       />

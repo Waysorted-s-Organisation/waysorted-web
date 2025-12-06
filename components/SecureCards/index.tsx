@@ -43,7 +43,7 @@ export default function SecureCards() {
           </div>
         </div>
 
-        <div className="w-full max-w-[312.71px] lg:w-[312.71px] h-[455.11px]">
+        <div className="w-full max-w-none lg:w-[312.71px] w-[345px] h-[455.11px]">
           <Card5 />
         </div>
       </div>

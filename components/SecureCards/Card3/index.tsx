@@ -97,7 +97,7 @@ const Card3 = () => {
       <Base1
         title={"Secure API Access"}
         content={
-          "Fusce vehicula rutrum lectus, ut posuere libero sodales at. Praesent erat quam,"
+          "Your data is protected by a private, digital lockbox."
         }
         libero="pr-14"
       />
