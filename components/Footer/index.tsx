@@ -191,7 +191,7 @@ export default function Footer() {
                 <h5 className="font-semibold mb-2 sm:mb-3 text-white">Company</h5>
                 <ul className="space-y-2 text-secondary-db-40">
                   <li><Link href="/about-us" className="hover:text-white">About Us</Link></li>
-                  <li><Link href="/documents" className="hover:text-white">Docs</Link></li>
+                  <li><Link href="/docs" className="hover:text-white">Docs</Link></li>
                   <li><Link href="/support" className="hover:text-white">Contact Us</Link></li>
                   <li><Link href="#" className="hover:text-white">Security</Link></li>
                 </ul>
