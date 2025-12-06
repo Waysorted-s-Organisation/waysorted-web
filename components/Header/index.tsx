@@ -460,7 +460,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                     <button
                       className={`w-full text-left px-4 py-3 ${textColor} border-b border-primary-way-10`}
                       onClick={() => {
-                        router.push('/documents');
+                        router.push('/documentations');
                         setMobileOpen(false);
                         setMobileResourcesOpen(false);
                       }}
