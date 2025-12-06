@@ -6,9 +6,9 @@ import Link from "next/link";
 export default function ConnectedPage() {
 
   return (
-    <div className="error-bg-dots min-h-screen">
-      <main>
-        <nav className="mx-auto px-4 py-3">
+    <div className="error-bg-dots min-h-screen flex flex-col">
+      <main className="flex-grow flex flex-col">
+        <nav className="mx-auto px-4 py-3 w-full">
           <Link href="/" className="block flex items-center space-x-2" aria-label="Waysorted Home">
             <div className="relative w-24 h-8 sm:w-28 sm:h-9 md:w-32 md:h-10 lg:w-36 lg:h-11 translate-y-1">
               <Image src="/images/logo.svg" alt="WaySorted Logo" fill className="object-contain" priority />
@@ -19,7 +19,7 @@ export default function ConnectedPage() {
           </Link>
         </nav>
 
-        <section className="flex items-center justify-center px-4 py-20">
+        <section className="flex-grow flex items-center justify-center px-4 py-20">
           <div className="max-w-2xl w-full text-center">
             <div className="mx-auto w-28 h-28 rounded-full bg-[#EAF2FF] flex items-center justify-center">
               <Image src="/icons/confeti.svg" alt="celebration" width={157} height={157} className="object-contain" />
