@@ -112,7 +112,7 @@ const GetStarted = () => {
 
         {/* MAIN BUTTON */}
         <motion.div
-          className="relative join-shadow z-20 rounded-4xl text-white font-medium
+          className="relative join-shadow z-20 md:rounded-3xl rounded-lg text-white font-medium
                      text-lg sm:text-2xl md:text-7xl
                      px-18 py-6 sm:px-20 sm:py-8 md:px-25 md:py-10
                      bg-secondary-db-100 shadow-2xl cursor-pointer

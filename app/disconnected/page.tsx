@@ -8,9 +8,9 @@ export default function DisconnectedPage() {
 
 
   return (
-    <div className="error-bg-dots min-h-screen">
-      <main>
-        <nav className="mx-auto px-4 py-3">
+    <div className="error-bg-dots min-h-screen flex flex-col">
+      <main className="flex-1 flex flex-col">
+        <nav className="mx-auto px-4 py-3 w-full">
           <Link href="/" className="block flex items-center space-x-2" aria-label="Waysorted Home">
             <div className="relative w-24 h-8 sm:w-28 sm:h-9 md:w-32 md:h-10 lg:w-36 lg:h-11 translate-y-1">
               <Image src="/images/logo.svg" alt="WaySorted Logo" fill className="object-contain" priority />
@@ -21,7 +21,7 @@ export default function DisconnectedPage() {
           </Link>
         </nav>
 
-        <section className="flex items-center justify-center px-4 py-20">
+        <section className="flex-1 flex items-center justify-center px-4 py-20">
           <div className="w-full max-w-lg">
             <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-8">
               <div className="flex flex-col items-center">

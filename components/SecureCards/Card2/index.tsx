@@ -155,11 +155,7 @@ const Card2 = () => {
 
   return (
     <div
-      className="relative overflow-hidden bg-gradient-to-t from-[#525252] to-[#2A2E34]  rounded-lg shadow-md"
-      style={{
-        width: "402.06px",
-        height: "199.17px",
-      }}
+      className="relative overflow-hidden bg-gradient-to-t from-[#525252] to-[#2A2E34] rounded-lg shadow-md w-full lg:w-[402.06px] h-[199.17px]"
     >
       <div ref={keyDrop} className="relative w-full h-full overflow-hidden">
         {/* Left falling key */}
