@@ -326,6 +326,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
           className={`absolute inset-0 bg-black/40 transition-opacity duration-200 ${
             mobileOpen ? 'opacity-100' : 'opacity-0'
           }`}
+          // Also close on overlay click (though aside might cover it)
           onClick={() => setMobileOpen(false)}
         />
 
@@ -335,10 +336,14 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
           role="dialog"
           aria-modal="true"
           aria-labelledby="mobile-drawer-title"
+          // Close when clicking outside the card content
+          onClick={() => setMobileOpen(false)}
         >
           {/* Card */}
           <div
-            className={`relative h-[calc(100%-84px)] w-full max-w-[420px] bg-white border border-secondary-db-20 rounded-2xl shadow-xl flex flex-col overflow-hidden transition-all duration-200 ${
+            // Stop propagation so clicks inside the card don't close the drawer
+            onClick={(e) => e.stopPropagation()}
+            className={`relative h-[calc(100%-64px)] w-full max-w-[420px] bg-white border border-secondary-db-20 rounded-2xl shadow-xl flex flex-col overflow-hidden transition-all duration-200 ${
               mobileOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-1 scale-95'
             }`}
           >
@@ -526,15 +531,16 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 <Image src="/icons/arrow-right-white.svg" alt="" width={18} height={18} />
               </button>
             </div>
-
-            {/* Floating close button at bottom center */}
             
           </div>
           {mobileOpen && (
             <button
               aria-label="Close menu"
-              onClick={() => setMobileOpen(false)}
-              className="absolute left-1/2 bottom-10 -translate-x-1/2 translate-y-1/2 z-[60] h-12 w-12 rounded-full flex items-center justify-center bg-neutral-800/70 text-white border border-white/40 ring-1 ring-white/30 shadow-2xl backdrop-blur p-0 leading-none"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMobileOpen(false);
+              }}
+              className="absolute left-1/2 top-4 -translate-x-1/2 z-[60] h-12 w-12 rounded-full flex items-center justify-center bg-neutral-800/70 text-white border border-white/40 ring-1 ring-white/30 shadow-2xl backdrop-blur p-0 leading-none"
             >
               <Image src="/icons/close.svg" alt="" width={18} height={18} />
             </button>
