@@ -16,10 +16,10 @@ type Props = {
 };
 
 export default function ReferAndEarnCard({
-  creditPerReferral = 200,
-  maxReferrals = 10,
-  friendReward = 50,
-  yourReward,
+  // creditPerReferral = 200,
+  // maxReferrals = 10,
+  // friendReward = 50,
+  // yourReward,
   explicitReferralLink,
 }: Props) {
   const [copied, setCopied] = useState(false);
@@ -36,8 +36,8 @@ export default function ReferAndEarnCard({
     return `https://your.app/invite/${code}`;
   }, [explicitReferralLink]);
 
-  const totalPotential = creditPerReferral * maxReferrals;
-  const youGet = yourReward ?? creditPerReferral;
+  // const totalPotential = creditPerReferral * maxReferrals;
+  // const youGet = yourReward ?? creditPerReferral;
 
   const onCopy = async () => {
     try {
@@ -63,14 +63,14 @@ export default function ReferAndEarnCard({
       <header className="px-5 py-3 border-b border-secondary-db-5">
         <h1 className="text-base font-medium text-secondary-db-100">Refer &amp; Earn</h1>
         <p className="text-sm text-secondary-db-80 font-medium">
-          Earn a total {creditPerReferral} Credits per refer, up to {maxReferrals} refers
+          Earn Credits per refer
         </p>
       </header>
 
       <div className="px-6 pb-6 pt-5">
         {/* Hero / Banner */}
-        <div className="rounded-md border border-secondary-db-5 bg-secondary-db-5/30 p-4 md:p-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="rounded-md border border-secondary-db-5">
+          {/* <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex-1">
               <span className="inline-flex w-fit items-center rounded-full border border-primary-way-20 bg-primary-way-10 px-3 py-1 text-xs font-medium text-primary-way-100">
                 Earn {Intl.NumberFormat("en", { notation: "compact" }).format(totalPotential)}+ credits
@@ -82,12 +82,17 @@ export default function ReferAndEarnCard({
                 Share your invite link and start earning credits when your friends subscribe.
               </p>
             </div>
-
-            {/* Graphic placeholder */}
             <div className="mt-2 hidden h-28 w-full items-center justify-center rounded-md border border-secondary-db-5 text-secondary-db-70 md:mt-0 md:flex md:w-64">
               graphic image
-            </div>
-          </div>
+            </div> 
+          </div> */}
+          <Image
+              src="/icons/refer-coming.png"
+              alt="Refer and Earn Illustration"
+              height={186}
+              width={728}
+              className="object-contain rounded-lg"
+            />
         </div>
 
         {/* Share your link */}
@@ -108,8 +113,9 @@ export default function ReferAndEarnCard({
             />
             <button
               type="button"
+              disabled
               onClick={onCopy}
-              className="flex items-center gap-2 border-l border-secondary-db-5 bg-secondary-db-0 px-3 py-2 text-sm font-medium text-primary-way-100 hover:bg-primary-way-10"
+              className="flex items-center gap-2 border-l border-secondary-db-5 bg-secondary-db-0 px-3 py-2 text-sm font-medium text-primary-way-100 hover:bg-primary-way-10 cursor-pointer disabled:cursor-not-allowed disabled:text-secondary-db-50 disabled:bg-secondary-db-5"
               aria-label="Copy referral link"
               title="Copy referral link"
             >
@@ -143,7 +149,7 @@ export default function ReferAndEarnCard({
                     height={14}
                   />
               </span>
-              <span className="font-regular">Your friends get <span className="text-secondary-db-100 font-semibold">{friendReward} credits</span> when they subscribe</span>
+              <span className="font-regular">Your friends get <span className="text-secondary-db-100 font-semibold">x credits</span> when they subscribe</span>
             </li>
             <li className="flex items-start gap-2 text-sm text-secondary-db-90">
               <span className="mt-[2px] inline-flex h-5 w-5 items-center justify-center rounded-full border border-secondary-db-5 bg-white">
@@ -154,7 +160,7 @@ export default function ReferAndEarnCard({
                     height={14}
                   />
               </span>
-              <span className="font-regular">You receive <span className="text-secondary-db-100 font-semibold">{youGet} credits</span> for each referral</span>
+              <span className="font-regular">You receive <span className="text-secondary-db-100 font-semibold">x credits</span> for each referral</span>
             </li>
           </ul>
         </div>

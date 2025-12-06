@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { User } from "@/hooks/useUser";
+import type { IUser as User } from "@/models/user";
 
 interface UserMenuProps {
   user: User;
