@@ -144,7 +144,7 @@ export default function LearnMorePage() {
         </div>
 
         {/* Carousel of ToolBriefs */}
-        <div className="my-10 sm:my-10">
+        <div className="my-0 sm:my-10">
           <div className="mx-auto max-w-7xl px-5">
             {slides.length > 0 && <ToolBriefCarousel slides={slides} />}
             {loading && <p className="text-center">Loading slides…</p>}
