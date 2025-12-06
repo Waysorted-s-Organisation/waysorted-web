@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export type Integration = {
   id: string;
@@ -15,6 +16,7 @@ export type IntegrationsCardProps = {
 };
 
 export default function IntegrationsCard({ integrations, anyConnected }: IntegrationsCardProps) {
+  const router = useRouter();
   return (
     <section className="max-w-3xl rounded-lg border border-secondary-db-5 bg-white">
       <header className="px-5 py-3 border-b border-secondary-db-5">
@@ -92,7 +94,7 @@ export default function IntegrationsCard({ integrations, anyConnected }: Integra
                 ) : (
                   <button
                     disabled={comingSoon}
-                    onClick={() => alert(`Connect ${intg.name}`)}
+                    onClick={() => router.push(`/disconnected`)}
                     className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
                       comingSoon
                         ? "cursor-not-allowed bg-secondary-db-5 text-secondary-db-50"
