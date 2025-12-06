@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { IUser } from "@/models/user";
 
+export type User = IUser; 
 
 export function useUser(auto: boolean = true) {
   const [user, setUser] = useState<IUser | null>(null);
