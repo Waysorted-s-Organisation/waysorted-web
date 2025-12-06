@@ -23,8 +23,8 @@ export default function ToolBrief({
     <section
       className={clsx(
         // Responsive container
-        'w-full max-w-[95vw] sm:max-w-[690px] h-[220px] sm:h-[350px] lg:h-[382px]',
-        'rounded-3xl sm:rounded-4xl overflow-hidden',
+        'w-full w-[475px] sm:w-[690px] h-[263px] sm:h-[350px] lg:h-[382px]',
+        'rounded-3xl sm:rounded-4xl',
         'ring-1 ring-black/5 bg-black/5',
         className
       )}

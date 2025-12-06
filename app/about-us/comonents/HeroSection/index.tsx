@@ -24,7 +24,7 @@ const HeroSection: React.FC = () => {
                   Minds
                 </span> Behind the Magic
               </h2>
-              <p className="text-secondary-db-30 max-w-xl mx-auto mb-16 text-lg">
+              <p className="text-secondary-db-30 max-w-xl mx-auto md:mb-16 mb-1 md:text-lg text-base">
                 A small team with a big mission - turning chaotic workflows into seamless creativity.
               </p>
       </div>

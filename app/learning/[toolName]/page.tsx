@@ -6,7 +6,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useBanner } from '@/context/BannerContext'
 import Header from '@/components/Header'
 import ToolBriefCarousel from './components/ToolBriefCarousel'
-import JoinCommunity from '@/components/GetStarted'
+import JoinCommunity from '@/components/JoinCommunity'
 import ExploreMore from './components/ExploreMore'
 import Footer from '@/components/Footer'
 import type { ITool, ISlide } from '@/models/tool'
@@ -144,7 +144,7 @@ export default function LearnMorePage() {
         </div>
 
         {/* Carousel of ToolBriefs */}
-        <div className="my-10 sm:my-10">
+        <div className="my-0 sm:my-10">
           <div className="mx-auto max-w-7xl px-5">
             {slides.length > 0 && <ToolBriefCarousel slides={slides} />}
             {loading && <p className="text-center">Loading slides…</p>}

@@ -25,8 +25,8 @@ export const team1 = [
     image: "/icons/vineet.svg",
 },
 {
-    name: "Vardan Vikram Singh",
-    role: "Marketing Operations",
-    image: "/icons/vardan.svg",
+    name: "Anshika",
+    role: "Full Stack Developer",
+    image: "/icons/anshika.svg",
 },
 ]

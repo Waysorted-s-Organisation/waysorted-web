@@ -38,7 +38,7 @@ const JoinUsMobile = () => (
       alt="Bow"
       width={48}
       height={48}
-      className="absolute -top-4 right-4 z-10"
+      className="absolute -top-5 -right-5 z-10"
     />
     <p className="text-white text-2xl font-semibold mb-1 text-left w-full">Join our Team !</p>
     <p className="text-white text-lg font-medium mb-1 text-left w-full">Build the Way with us.</p>
@@ -69,7 +69,7 @@ const JoinUsDesktop = () => (
       alt="Bow"
       width={72}
       height={72}
-      className="absolute -top-7 -right-4 z-10"
+      className="absolute -top-8 -right-8 z-10"
     />
     <p className="text-3xl font-semibold mb-2 text-left">Join our <br /> Team!</p>
     <div className="text-base text-secondary-db-5 mb-4 text-left font-medium">
