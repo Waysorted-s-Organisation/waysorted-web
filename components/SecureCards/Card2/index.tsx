@@ -211,7 +211,7 @@ const Card2 = () => {
         {/* Base content */}
         <Base1
           title="Trusted Keys"
-          content="Fusce vehicula rutrum lectus, ut posuere libero  sodales at. Praesent erat quam,"
+          content="Log in securely without ever sharing your password."
           libero="pr-30"
         />
       </div>

@@ -140,7 +140,7 @@ const Card1 = () => {
       <Base1
         title={"Permission Control"}
         content={
-          "Fusce vehicula rutrum lectus, ut posuere libero sodales at. Praesent erat quam,"
+          "Ensure only the right people have the right access."
         }
       />
     </div>

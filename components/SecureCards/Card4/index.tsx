@@ -109,7 +109,7 @@ const Card4 = () => {
       {/* Base Text Component */}
       <Base1
         title="Data Encryption"
-        content="Fusce vehicula rutrum lectus, ut posuere libero sodales at. Praesent erat quam,"
+        content="Your stored data is unreadable, even if compromised."
         libero="pr-15"
       />
     </div>
