@@ -54,7 +54,7 @@ export default function Home() {
             <InfoCards />
             <div className="my-60" />
              {/* Section 1: Secure Animation */}
-      <section id="secure-animation" className="h-[200vh]">
+      <section id="secure-animation" className="h-[200vh] hidden md:block">
         <SecureAnimation />
       </section>
 
