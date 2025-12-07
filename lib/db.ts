@@ -1,6 +1,13 @@
 import mongoose, { Mongoose } from "mongoose";
 
-const MONGODB_URI = process.env.NEXT_PUBLIC_MONGODB_URI;
+// For feedback and tools, prefer MONGODB_URI_TOOLS (waysorted database)
+// Falls back to general MONGODB_URI for other uses
+const MONGODB_URI =
+  process.env.MONGODB_URI_TOOLS ||
+  process.env.NEXT_PUBLIC_MONGODB_URI_TOOLS ||
+  process.env.MONGODB_URI ||
+  process.env.NEXT_PUBLIC_MONGODB_URI;
+
 if (!MONGODB_URI) {
   throw new Error("MONGODB_URI not set");
 }
@@ -9,19 +16,17 @@ declare global {
   var _mongooseConn: { conn: Mongoose | null; promise: Promise<Mongoose> | null } | undefined;
 }
 
-const globalCache = global._mongooseConn || { conn: null, promise: null };
-global._mongooseConn = globalCache;
+const globalCache = globalThis._mongooseConn ?? { conn: null, promise: null };
+globalThis._mongooseConn = globalCache;
 
 export async function dbConnect(): Promise<Mongoose> {
   if (globalCache.conn) return globalCache.conn;
 
-  if (!globalCache.promise) {
-    globalCache.promise = mongoose
-      .connect(MONGODB_URI as string, {
-        bufferCommands: false,
-      })
-      .then((m) => m);
-  }
+  globalCache.promise ??= mongoose
+    .connect(MONGODB_URI as string, {
+      bufferCommands: false,
+    })
+    .then((m) => m);
 
   try {
     globalCache.conn = await globalCache.promise;

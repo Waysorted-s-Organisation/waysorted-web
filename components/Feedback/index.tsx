@@ -6,7 +6,7 @@ import Image from 'next/image'
 
 type FeedbackRatingProps = {
   className?: string
-  onSubmit?: (rating: number, comment: string) => void
+  onSubmit?: (rating: number, comment: string) => Promise<void> | void
   title?: string
 }
 
@@ -22,11 +22,27 @@ export default function Feedback({
   className, 
   onSubmit,
   title = "Rate the way this slides helped you."
-}: FeedbackRatingProps) {
+}: Readonly<FeedbackRatingProps>) {
   const [selectedRating, setSelectedRating] = React.useState<number | null>(null)
   const [comment, setComment] = React.useState('')
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [isSubmitted, setIsSubmitted] = React.useState(false)
+
+  const fallbackSubmit = React.useCallback(async (rating: number, message: string) => {
+    const path = typeof globalThis !== 'undefined' && globalThis.window
+      ? globalThis.window.location.pathname
+      : undefined
+    const res = await fetch('/api/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating, comment: message, path }),
+    })
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      throw new Error(data?.error || 'Failed to submit feedback')
+    }
+  }, [])
 
   const handleSubmit = async () => {
     if (selectedRating === null) return
@@ -34,7 +50,8 @@ export default function Feedback({
     setIsSubmitting(true)
     
     try {
-      await onSubmit?.(selectedRating, comment)
+      const submit = onSubmit ?? fallbackSubmit
+      await Promise.resolve(submit(selectedRating, comment))
       setIsSubmitted(true)
     } catch (error) {
       console.error('Failed to submit feedback:', error)
@@ -83,7 +100,7 @@ export default function Feedback({
       <div className="flex justify-center gap-4 mb-8">
         {RATING_EMOJIS.map((item, index) => (
           <button
-            key={index}
+            key={item.label}
             onClick={() => setSelectedRating(index)}
             className={clsx(
               'w-12 h-12 rounded-xl flex items-center justify-center text-2xl transition-all',
