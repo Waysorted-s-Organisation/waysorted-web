@@ -294,7 +294,13 @@ export default function DocsShell({
         <div className="pt-16 pb-30">
           <FeedbackRating
             title="Help us improve WayDocs!"
-            onSubmit={onFeedbackSubmit}
+            onSubmit={async (rating, comment) => {
+              try {
+                await onFeedbackSubmit?.(rating, comment);
+              } catch (e) {
+                console.error("Error submitting feedback:", e);
+              }
+            }}
           />
         </div>
         <Footer />
