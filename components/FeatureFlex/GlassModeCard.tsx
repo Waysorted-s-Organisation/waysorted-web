@@ -1,7 +1,6 @@
 "use client";
 import clsx from "clsx";
 import React from "react";
-import LiquidGlass from 'liquid-glass-react'
 import Image from "next/image";
 
 export default function GlassModeCard({ className }: { className?: string }) {
