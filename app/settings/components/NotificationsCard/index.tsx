@@ -37,7 +37,6 @@ export default function NotificationsCard({ user }: Props) {
                 </div>
                 <button
                 type="button"
-                onClick={() => alert("Open early access / subscription flow")}
                 className="rounded-md border border-primary-way-100 bg-primary-way-5 px-3 py-1.5 text-xs font-medium text-primary-way-100 transition cursor-pointer"
                 >
                 Subscribe Newsletter
@@ -47,12 +46,10 @@ export default function NotificationsCard({ user }: Props) {
         ) : (
           <>
             <div className="space-y-3">
-              {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
-              {notifications?.map((notification, i) => (
+              {notifications?.map((notification) => (
                 <button
                   key={notification.id}
                   className="w-full text-left rounded-lg px-4 py-4 transition flex items-start justify-between gap-4 cursor-pointer bg-white hover:bg-primary-way-10"
-                  onClick={() => alert(`Open notification ${notification.id}`)}
                 >
                   <div>
                     <p className="text-sm font-medium text-secondary-db-100">

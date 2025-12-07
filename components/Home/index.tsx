@@ -1,6 +1,6 @@
 "use client"
 import { useEffect, useState } from "react";
-import FloatingButton from '@/components/FloatingButton'
+// import FloatingButton from '@/components/FloatingButton'
 import Hero from '@/components/Hero/index'
 import ImpactTop from '@/components/ImpactTop'
 import { InfoCards } from '@/components/InfoCards'
@@ -48,7 +48,7 @@ export default function Home() {
             <Hero />
             <ToolsGrid />
             <TopSection />
-            <FloatingButton />
+            {/* <FloatingButton /> */}
             <ImpactTop />
             
             <InfoCards />

@@ -6,34 +6,34 @@ const testimonialsData = [
     {
         id: 0,
         content:
-            "WaySorted has transformed the way I organize my design files. The intuitive interface and powerful features have saved me countless hours.",
+            "“Waysorted brings all my go-to plugins together in one smooth experience, making my design process quicker and far more organized.”",
         author: "Prashansa Pimpalkar",
         image: "/images/prashansa.svg",
-        position: "Product Designer, HCL Healthcare",
+        position: "UI/UX Designer, HCL Healthcare",
     },
     {
         id: 1,
         content:
-            "I can't imagine going back to my old workflow. WaySorted has made collaboration so much easier.",
-        author: "John Doe",
-        image: "/images/prashansa.svg",
-        position: "UX Researcher, Google",
+            "“Waysorted makes essential plugins easy to access with a clean, simple workflow, helping designers work faster and more efficiently.”",
+        author: "Oindrila Sarkar",
+        image: "/images/oindrila.svg",
+        position: "Senior UI/UX Designer, Idea Studio World",
     },
     {
         id: 2,
         content:
-            "The ability to find and reuse components has streamlined my design process significantly.",
-        author: "Jane Smith",
-        image: "/images/prashansa.svg",
-        position: "UI Designer, Figma",
+            "“Waysorted offers genuinely useful tools that solve real design challenges and make the workflow smoother.”",
+        author: "Dev Bansal",
+        image: "/images/dev.svg",
+        position: "Product Designer, Vijayi",
     },
     {
         id: 3,
         content:
             "WaySorted is a game changer for design systems. It's a must-have tool for any design team.",
-        author: "Alice Johnson",
+        author: "Pranjul Singh",
         image: "/images/prashansa.svg",
-        position: "Design Lead, Adobe",
+        position: "Product Designer, StoryStack Inc.",
     },
     {
         id: 4,

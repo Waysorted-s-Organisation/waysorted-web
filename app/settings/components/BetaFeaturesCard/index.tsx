@@ -41,7 +41,6 @@ export default function BetaFeaturesCard({ user, features }: BetaFeaturesCardPro
                 </div>
                 <button
                     type="button"
-                    onClick={() => alert("Open early access / subscription flow")}
                     className="rounded-md border border-tertiary-vivid-blue-500 bg-tertiary-vivid-blue-100 px-3 py-1.5 text-xs font-medium text-tertiary-vivid-blue-500 transition cursor-pointer"
                 >
                     Get Early Access
@@ -65,7 +64,6 @@ export default function BetaFeaturesCard({ user, features }: BetaFeaturesCardPro
                 </div>
                 <button
                     type="button"
-                    onClick={() => alert("Open feedback modal")}
                     className="rounded-md border border-tertiary-vivid-blue-500 bg-tertiary-vivid-blue-100 px-3 py-1.5 text-xs font-medium text-tertiary-vivid-blue-500 transition cursor-pointer"
                 >
                     Get Early Access

@@ -42,17 +42,19 @@ export default function CreditsUsageCard({ user }: Props) {
               />
             </span>
             <span className="text-secondary-db-90 text-xl font-semibold">
-              {remaining}
+              {/* {remaining} */}
+              ∞
             </span>
             <span className="text-secondary-db-90 text-sm">
-              / {total} credits left
+              / <span className="text-xl">∞ </span>
+              {/* {total} */} 
+               credits left
             </span>
           </div>
 
           {!earlyAccess && (
             <button
               type="button"
-              onClick={() => alert("TODO: Redirect to upgrade flow")}
               className="inline-flex items-center rounded-md bg-primary-way-10 px-4 py-1.5 text-sm font-medium text-primary-way-100 border border-primary-way-10 hover:bg-primary-way-20 cursor-pointer transition"
             >
               Upgrade now

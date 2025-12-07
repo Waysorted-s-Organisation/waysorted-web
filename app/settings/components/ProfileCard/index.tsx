@@ -4,24 +4,8 @@ import { useState } from "react";
 import type { IUser } from "@/models/user";
 
 export default function ProfileCard({ user }: { user: IUser }) {
-  const [editing, setEditing] = useState<{ name: boolean }>({ name: false });
   const [form, setForm] = useState({ name: user.name });
 
-  // Server save function
-  async function saveName() {
-    try {
-      const res = await fetch("/api/user/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: form.name }),
-      });
-      if (!res.ok) throw new Error("Failed to update name");
-      setEditing({ name: false });
-    } catch (err) {
-      console.error(err);
-      alert("Error saving name");
-    }
-  }
 
   return (
     <section className="max-w-4xl rounded-lg border border-secondary-db-5 bg-white">
@@ -68,15 +52,15 @@ export default function ProfileCard({ user }: { user: IUser }) {
                   <input
                     className="bg-primary-way-5 border border-primary-way-20 w-full sm:w-md rounded-lg px-4 py-3 text-sm text-secondary-db-100 focus:outline-none focus:ring-2 focus:ring-primary-way-100 transition"
                     placeholder="Your name"
-                    disabled={!editing.name}
+                    disabled
                     value={form.name}
                     onChange={(e) => setForm({ name: e.target.value })}
                   />
                   <button
-                    className="bg-primary-way-5 border border-primary-way-10 text-primary-way-100 rounded-lg px-6 sm:px-8 py-2 ml-2 sm:ml-4 cursor-pointer transition"
-                    onClick={() => (editing.name ? saveName() : setEditing({ name: true }))}
+                    className="bg-primary-way-5 border border-primary-way-10 text-primary-way-100 rounded-lg px-6 sm:px-8 py-2 ml-2 sm:ml-4 cursor-not-allowed opacity-70"
+                    disabled
                   >
-                    {editing.name ? "Save" : "Edit"}
+                    Edit
                   </button>
                 </div>
               </label>
