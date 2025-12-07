@@ -215,13 +215,7 @@ export default function ToolBriefCarousel({
           >
             <FeedbackRating
               title={feedbackTitle}
-              onSubmit={async (rating, comment) => {
-                try {
-                  await onFeedbackSubmit?.(rating, comment)
-                } catch (e) {
-                  console.error('Error submitting feedback:', e)
-                }
-              }}
+              onSubmit={onFeedbackSubmit}
             />
           </div>
 
