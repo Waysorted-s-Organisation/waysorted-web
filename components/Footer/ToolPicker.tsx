@@ -159,7 +159,7 @@ export default function ToolsPicker({ tools, onVisitPlugin }: Props) {
                   </button>
                 ) : (
                   <Link
-                    href={`/tools/${selectedTool.slug}`}
+                    href={`/learning/${selectedTool.slug}`}
                     className="inline-flex items-center gap-3 bg-secondary-db-100 outline outline-1 outline-secondary-db-90 px-4 sm:px-5 py-3 sm:py-4 rounded-full hover:bg-secondary-db-90 transition cursor-pointer"
                   >
                     <span className="text-sm sm:text-[0.95rem] font-medium text-white">Visit Plugin</span>

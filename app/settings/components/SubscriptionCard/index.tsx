@@ -12,6 +12,7 @@ export default function SubscriptionCard({ user }: Props) {
   // Define credits logic
   const creditsTotal = earlyAccess ? 200 : 5;
   const creditsUsed = Math.max(0, creditsTotal - (creditsRemaining ?? 0));
+  //eslint-disable-next-line @typescript-eslint/no-unused-vars
   const remaining = Math.max(0, creditsRemaining ?? 0);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const exhausted = creditsUsed >= creditsTotal;
@@ -60,7 +61,6 @@ export default function SubscriptionCard({ user }: Props) {
               </div>
               <button
                 type="button"
-                onClick={() => alert("Open early access / subscription flow")}
                 className="rounded-md border border-error-500 bg-error-100 px-3 py-1.5 text-xs font-medium text-error-500 transition cursor-pointer"
               >
                 Get Early Access
@@ -122,7 +122,12 @@ export default function SubscriptionCard({ user }: Props) {
               className="object-contain"
             />
             <span className="text-secondary-db-100">
-              <span className="font-semibold">{remaining}</span> / {creditsTotal} credits left
+              <span className="font-semibold">
+                {/* {remaining} */}
+                ∞
+                </span> / 
+                {/* {creditsTotal} */}
+                ∞ credits left
             </span>
           </div>
 
@@ -130,7 +135,6 @@ export default function SubscriptionCard({ user }: Props) {
             <button
               type="button"
               className="inline-flex items-center rounded-md bg-primary-way-10 px-4 py-1.5 text-xs font-medium text-primary-way-100 border border-primary-way-20 hover:bg-primary-way-20 transition cursor-pointer"
-              onClick={() => alert("Upgrade flow")}
             >
               Upgrade now
             </button>

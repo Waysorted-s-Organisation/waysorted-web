@@ -163,14 +163,14 @@ const Collage: React.FC<CollageProps> = ({ images }) => {
 
 export default function TeamCollage() {
   const images = [
-    "/images/team/img1.jpg",
-    "/images/team/img2.jpg",
-    "/images/team/img3.jpg",
-    "/images/team/img4.jpg",
+    "/icons/team-image-2.svg",
+    "/icons/team-image-4.svg",
+    "/icons/team-image-1.svg",
+    "/icons/team-image-3.svg",
   ];
 
   return (
-    <section className="py-48 bg-white">
+    <section className="md:py-48 py-0 bg-white">
       <Collage
         images={images}
       />

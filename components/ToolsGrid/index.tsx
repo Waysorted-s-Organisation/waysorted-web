@@ -109,8 +109,8 @@ export default function ToolsGrid() {
       
       if (isMobile) {
         scatterPositions = [
-          { x: -45, y: -180 }, // top-left
-          { x: 45, y: -180 },  // bottom-left
+          { x: -45, y: -190 }, // top-left
+          { x: 45, y: -200 },  // bottom-left
           { x: -45, y: 65 },  // top-right
           { x: 45, y: 65 },   // bottom-right
         ];
@@ -129,7 +129,7 @@ export default function ToolsGrid() {
       {
         x: (i) => scatterPositions[i % 4].x,
         y: (i) => scatterPositions[i % 4].y,
-        scale: 0.6,
+        scale: isMobile ? 0.4: 0.6,
         rotation: (i) => (i % 2 === 0 ? -15 : 15),
         duration: 3,
         ease: "power2.inOut",
@@ -227,7 +227,7 @@ export default function ToolsGrid() {
         </div>
 
         {/* Headline overlay */}
-        <div className="absolute md:translate-x-[10%] md:translate-y-[-150%] translate-y-[-150%] flex flex-col items-center justify-center pointer-events-none">
+        <div className="absolute md:translate-x-[10%] md:translate-y-[-150%] translate-y-[-140%] flex flex-col items-center justify-center pointer-events-none">
           <div
             className="font-medium text-secondary-db-100 md:text-3xl text-xl mb-8"
             ref={transformRef}

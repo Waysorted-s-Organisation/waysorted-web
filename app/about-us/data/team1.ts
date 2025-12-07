@@ -25,7 +25,7 @@ export const team1 = [
     image: "/icons/vineet.svg",
 },
 {
-    name: "Anshika Gupta",
+    name: "Anshika Mishra",
     role: "Full Stack Developer",
     image: "/icons/anshika.svg",
 },

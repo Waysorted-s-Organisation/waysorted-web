@@ -6,6 +6,7 @@ import Link from "next/link";
 import ToolsPicker from "./ToolPicker";
 import NewsletterInput from "./NewsLetterInput";
 import { ITool } from "@/models/tool";
+// import ReleaseNotesCarousel from "./ReleaseNotesCarousel";
 
 export default function Footer() {
   const [tools, setTools] = useState<ITool[] | null>(null);
@@ -63,21 +64,7 @@ export default function Footer() {
         <div className="mt-4 sm:mt-5 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
           {/* Right column (Release Notes) should come first on mobile */}
           <div className="order-1 lg:order-2 col-span-1 lg:col-span-4 self-start">
-            <div className="bg-secondary-db-90 rounded-xl p-3 sm:p-4 md:p-5 min-h-[220px] flex flex-col justify-between">
-              <div>
-                <div className="bg-secondary-db-80 w-full h-36 sm:h-40 md:h-48 rounded-md mb-3 sm:mb-4" />
-                <h4 className="text-white font-medium text-lg sm:text-xl">Release Notes !</h4>
-                <p className="text-gray-400 text-xs sm:text-sm text-regular mb-2 sm:mb-3">
-                  Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                </p>
-              </div>
-
-              <div className="flex gap-2 justify-center items-center">
-                <span className="w-8 h-1 bg-gray-200/70 rounded-full" />
-                <span className="w-6 h-1 bg-white/30 rounded-full" />
-                <span className="w-6 h-1 bg-white/30 rounded-full" />
-              </div>
-            </div>
+            {/* <ReleaseNotesCarousel /> */}
           </div>
 
           {/* Left column (Tools) appears second on mobile, first on desktop */}
@@ -135,22 +122,23 @@ export default function Footer() {
         {/* Social + short text */}
         <div className="flex flex-col gap-3 sm:gap-4">
           <p className="text-sm text-white">Follow Waysorted</p>
-          <div className="flex items-center gap-2 sm:gap-3 text-gray-400">
+            <div className="flex items-center gap-2 sm:gap-3 text-gray-400">
             {[
-              { src: "/icons/insta.svg", alt: "Instagram" },
-              { src: "/icons/linkedin.svg", alt: "LinkedIn" },
-              { src: "/icons/discord.svg", alt: "Discord" },
-              { src: "/icons/x.svg", alt: "X" },
+              { src: "/icons/insta.svg", alt: "Instagram", link:"https://www.instagram.com/waysorted/" },
+              { src: "/icons/linkedin.svg", alt: "LinkedIn", link:"https://www.linkedin.com/company/waysortedhq"},
+              { src: "/icons/discord.svg", alt: "Discord", link:"https://discord.gg/U2XF76WxNv" },
+              { src: "/icons/x.svg", alt: "X", link:"https://x.com/Waysorted" },
             ].map((s) => (
-              <div
+              <button
                 key={s.alt}
                 className="w-8 h-8 rounded-md outline outline-1 outline-secondary-db-80 flex items-center justify-center cursor-pointer hover:bg-white/5 transition"
                 role="button"
                 tabIndex={0}
+                onClick={() => window.open(s.link, "_blank", "noopener,noreferrer")}
                 aria-label={s.alt}
               >
                 <Image src={s.src} alt={s.alt} width={16} height={16} />
-              </div>
+              </button>
             ))}
           </div>
 
@@ -182,7 +170,7 @@ export default function Footer() {
                 <ul className="space-y-2 text-secondary-db-40">
                   <li><Link href="/get-early-access" className="hover:text-white">Early Access</Link></li>
                   <li><Link href="/learning" className="hover:text-white">Explore Tools</Link></li>
-                  <li><Link href="/settings" className="hover:text-white">Free Credits</Link></li>
+                  {/* <li><Link href="/settings" className="hover:text-white">Free Credits</Link></li> */}
                   <li><Link href="/login" className="hover:text-white">Sign in</Link></li>
                 </ul>
               </div>
@@ -193,7 +181,7 @@ export default function Footer() {
                   <li><Link href="/about-us" className="hover:text-white">About Us</Link></li>
                   <li><Link href="/docs" className="hover:text-white">Docs</Link></li>
                   <li><Link href="/support" className="hover:text-white">Contact Us</Link></li>
-                  <li><Link href="#" className="hover:text-white">Security</Link></li>
+                  <li><Link href="/docs/account-creation-and-setup" className="hover:text-white">Security</Link></li>
                 </ul>
               </div>
 
@@ -214,8 +202,8 @@ export default function Footer() {
         <div className="border-t border-white/10 pt-3 flex flex-col md:flex-row justify-between items-start md:items-center text-secondary-db-50 text-xs sm:text-sm gap-3">
           <span>© 2025 Waysorted</span>
           <div className="flex gap-4 sm:gap-6">
-            <a href="#" className="hover:text-white">Privacy Policy</a>
-            <a href="#" className="hover:text-white">Terms of Service</a>
+            <Link href="/docs/privacy-policy" className="hover:text-white">Privacy Policy</Link>
+            <Link href="/docs/terms-of-service" className="hover:text-white">Terms of Service</Link>
           </div>
         </div>
       </div>

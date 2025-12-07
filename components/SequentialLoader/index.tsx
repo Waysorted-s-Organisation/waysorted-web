@@ -97,8 +97,6 @@ export default function SequentialLogoLoader({
           );
         })}
       </div>
-      
-      {/* Progress Bar removed */}
     </div>
   );
 }
@@ -120,7 +118,7 @@ function IconTile({
         "rounded-2xl flex items-center justify-center",
         "transition-all duration-500 ease-out",
         bgClass ?? "bg-gray-100",
-        // Use the CSS variables for width/height
+        isActive? activeClass : "grayscale opacity-50",
         "w-[var(--mob-tile-size)] h-[var(--mob-tile-size)] md:w-[var(--tile-size)] md:h-[var(--tile-size)]",
       ].join(" ")}
     >
@@ -128,14 +126,8 @@ function IconTile({
         className={[
           "transition-colors duration-500 ease-out",
           isActive ? activeClass : "text-gray-400 grayscale opacity-70",
+          "w-[var(--mob-icon-size)] h-var(--mob-icon-size)] md:w-[var(--icon-size)] md:h-[var(--icon-size)]"
         ].join(" ")}
-        // Use CSS variables for icon height
-        style={{
-          height: "var(--mob-icon-size)", 
-          width: "auto"
-        }}
-        // Override for desktop via a style block or class is tricky with inline styles,
-        // so we use a style tag inside the component or simple media query in style prop:
       />
     </div>
   );
