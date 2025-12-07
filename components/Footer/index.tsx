@@ -135,22 +135,23 @@ export default function Footer() {
         {/* Social + short text */}
         <div className="flex flex-col gap-3 sm:gap-4">
           <p className="text-sm text-white">Follow Waysorted</p>
-          <div className="flex items-center gap-2 sm:gap-3 text-gray-400">
+            <div className="flex items-center gap-2 sm:gap-3 text-gray-400">
             {[
-              { src: "/icons/insta.svg", alt: "Instagram" },
-              { src: "/icons/linkedin.svg", alt: "LinkedIn" },
-              { src: "/icons/discord.svg", alt: "Discord" },
-              { src: "/icons/x.svg", alt: "X" },
+              { src: "/icons/insta.svg", alt: "Instagram", link:"https://www.instagram.com/waysorted/" },
+              { src: "/icons/linkedin.svg", alt: "LinkedIn", link:"https://www.linkedin.com/company/waysortedhq"},
+              { src: "/icons/discord.svg", alt: "Discord", link:"https://discord.gg/U2XF76WxNv" },
+              { src: "/icons/x.svg", alt: "X", link:"https://x.com/Waysorted" },
             ].map((s) => (
-              <div
+              <button
                 key={s.alt}
                 className="w-8 h-8 rounded-md outline outline-1 outline-secondary-db-80 flex items-center justify-center cursor-pointer hover:bg-white/5 transition"
                 role="button"
                 tabIndex={0}
+                onClick={() => window.open(s.link, "_blank", "noopener,noreferrer")}
                 aria-label={s.alt}
               >
                 <Image src={s.src} alt={s.alt} width={16} height={16} />
-              </div>
+              </button>
             ))}
           </div>
 

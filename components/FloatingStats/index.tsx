@@ -23,9 +23,9 @@ const FloatingStatsSection = () => {
       const cards = gsap.utils.toArray<HTMLElement>(".floating-card");
       if (!cards.length) return;
 
-      const initialRotations = cards.map(
-        (card) => Number(gsap.getProperty(card, "rotation")) || 0
-      );
+      // const initialRotations = cards.map(
+      //   (card) => Number(gsap.getProperty(card, "rotation")) || 0
+      // );
 
       mm.add(
         {
@@ -37,12 +37,12 @@ const FloatingStatsSection = () => {
 
           const resetMobileState = () => {
             if (!isMobile) return;
-            cards.forEach((card, i) => {
+            cards.forEach((card) => {
               gsap.set(card, {
                 opacity: 0,
                 scale: 0.95,
                 y: 70,
-                rotation: initialRotations[i],
+                // rotation: initialRotations[i],
               });
             });
           };
@@ -54,7 +54,7 @@ const FloatingStatsSection = () => {
               opacity: 0,
               scale: isMobile ? 0.95 : 0.75,
               y: isMobile ? 70 : 40,
-              rotation: isMobile ? initialRotations[i] : i % 2 ? 10 : -10,
+              rotation: i % 2 ? 10 : -10,
               transformOrigin: "50% 50%",
             });
           });
@@ -62,10 +62,10 @@ const FloatingStatsSection = () => {
           if (isMobile) {
             const mobileSize = 151;
             const mobilePositions = [
-              { top: "-50%", left: "6%", rotation: -6 },
-              { top: "28%", left: "52%", rotation: 6 },
-              { top: "45%", left: "10%", rotation: -8 },
-              { top: "110%", left: "46%", rotation: 5 },
+              { top: "-50%", left: "6%", rotation: -13 },
+              { top: "-18%", left: "45%", rotation: 6 },
+              { top: "40%", left: "10%", rotation: 1 },
+              { top: "70%", left: "46%", rotation: 6 },
             ];
             cards.forEach((card, i) => {
               const pos = mobilePositions[i] ?? {};
@@ -105,8 +105,8 @@ const FloatingStatsSection = () => {
             opacity: 1,
             scale: 1,
             y: 0,
-            rotation: (i) =>
-              isMobile ? initialRotations[i] * 0.95 : initialRotations[i] * 0.85,
+            // rotation: (i) =>
+            //   isMobile? initialRotations[i] * 0.5 : initialRotations[i] * 0.85,
             ease: "power2.out",
             stagger: isMobile ? 0.35 : 0.5,
             duration: isMobile ? 0.9 : 1.2,
@@ -145,7 +145,7 @@ const FloatingStatsSection = () => {
             </span>
           </p>
 
-          <p className="text-secondary-db-60 text-lg md:text-2xl font-medium mt-6 md:w-[500px] w-[340px] max-w-none">
+          <p className="text-secondary-db-60 text-lg md:text-2xl font-medium mt-6 md:w-[500px] w-[340px] max-w-none translate-y-50 md:translate-y-0">
             <span className="text-secondary-db-90">That&apos;s why we&apos;re building Way,</span> Because productivity
             deserves faster execution than endless searching.
           </p>
@@ -154,9 +154,9 @@ const FloatingStatsSection = () => {
         {/* Floating cards */}
         <div className="absolute inset-0 pointer-events-none z-20" aria-hidden>
           <div className="relative w-full h-full">
-            <div className="floating-card absolute top-20 -left-16 rotate-[-6deg] w-[200px] h-[200px] opacity-0 scale-[0.75] z-20">
+            <div className="floating-card absolute top-20 -left-16 rotate-[16deg] w-[200px] h-[200px] opacity-0 scale-[0.75] z-20">
               <div className="card-inner pointer-events-auto bg-[#FFAA00] text-white rounded-[10px] p-4 h-full flex flex-col justify-between">
-                <p className="font-semibold leading-snug text-white md:text-lg text-sm">
+                <p className="font-semibold leading-snug text-white md:text-lg text-xs">
                   The UI feels <span className="bg-secondary-db-100 text-white px-1 rounded-sm">clunky</span>, breaks my workflow every time I switch between tools.
                 </p>
                 <div className="text-start">
@@ -168,7 +168,7 @@ const FloatingStatsSection = () => {
 
             <div className="floating-card absolute top-1 right-3/5 -translate-x-1/2 rotate-[3deg] w-[200px] h-[200px] opacity-0 scale-[0.75] z-20">
               <div className="card-inner pointer-events-auto bg-tertiary-cyan-500 text-white rounded-[10px] p-4 h-full flex flex-col justify-between">
-                <p className="font-semibold leading-snug text-white md:text-lg text-sm">
+                <p className="font-semibold leading-snug text-white md:text-lg text-xs">
                   The plugin <span className="bg-secondary-db-100 text-white px-1 rounded-sm">slows down</span> my Figma, and my client thinks I’m the bug.
                 </p>
                 <div className="text-start">
@@ -180,7 +180,7 @@ const FloatingStatsSection = () => {
 
             <div className="floating-card absolute top-20 right-40 rotate-[-4deg] w-[200px] h-[200px] opacity-0 scale-[0.75] z-20">
               <div className="card-inner pointer-events-auto bg-[#9000FF] text-white rounded-[10px] p-4 h-full flex flex-col justify-between">
-                <p className="font-semibold leading-snug text-white md:text-lg text-sm">
+                <p className="font-semibold leading-snug text-white md:text-lg text-xs">
                   I <span className="bg-secondary-db-100 text-white px-1 rounded-sm">keep switching</span> between tools trying to find the one.
                 </p>
                 <div className="text-start">
@@ -192,7 +192,7 @@ const FloatingStatsSection = () => {
 
             <div className="floating-card absolute bottom-6 left-9/10 rotate-[5deg] w-[200px] h-[200px] opacity-0 scale-[0.75] z-20">
               <div className="card-inner pointer-events-auto bg-tertiary-blue-500 text-white rounded-[10px] p-4 h-full flex flex-col justify-between">
-                <p className="font-semibold leading-snug text-white md:text-lg text-sm">
+                <p className="font-semibold leading-snug text-white md:text-lg text-xs">
                   The <span className="bg-secondary-db-100 text-white px-1 rounded-sm">high pricing</span> of tools isn&apos;t justified, my wallet needs therapy after every subscription.
                 </p>
                 <div className="text-start">

@@ -14,7 +14,7 @@ const Hero = () => {
       router.push('/mobile-redirect'); 
     } else {
       // Desktop behavior
-      window.open("https://www.figma.com/@waysorted", "_blank");
+      window.open("https://www.figma.com/community/plugin/1532842109377504268/waysorted", "_blank");
     }
   };
 

@@ -28,7 +28,7 @@ const JoinCommunity = () => {
                    bg-secondary-db-100 join-shadow cursor-pointer
                    w-full max-w-xs sm:max-w-sm md:max-w-none md:w-3xl text-center select-none"
         aria-label="Join our community"
-        
+        onClick={() => window.open("https://discord.gg/U2XF76WxNv", "_blank")}
         // --- Animation Props ---
         // Scale down slightly on hover
         whileHover={{ scale: 0.9 }}

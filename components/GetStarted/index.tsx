@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 // Configuration for your 8 SVG assets
 // Adjust the 'x' and 'y' values if specific icons (like the text bubbles) 
@@ -58,6 +59,17 @@ const FLOATING_ITEMS = [
 ];
 
 const GetStarted = () => {
+  const router = useRouter();
+  const handleFigmaClick = () => {
+    // Check for mobile (matches Tailwind's lg breakpoint of 1024px)
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+      // Redirect to your new dedicated mobile page
+      router.push('/mobile-redirect'); 
+    } else {
+      // Desktop behavior
+      window.open("https://www.figma.com/community/plugin/1532842109377504268/waysorted", "_blank");
+    }
+  };
   return (
     <section className="bg-white flex flex-col items-center justify-center text-center px-4 py-16 sm:py-24 md:py-40 overflow-hidden">
       {/* Heading and Subtext (z-index ensures they sit above floating elements if they overlap) */}
@@ -112,12 +124,13 @@ const GetStarted = () => {
 
         {/* MAIN BUTTON */}
         <motion.div
-          className="relative join-shadow z-20 md:rounded-3xl rounded-2xl text-white font-medium
+          className="relative join-shadow z-20 md:rounded-3xl rounded-lg text-white font-medium
                      text-lg sm:text-2xl md:text-7xl
-                     px-20 py-6 sm:px-20 sm:py-8 md:px-25 md:py-10
+                     px-20 py-3 sm:px-20 sm:py-8 md:px-25 md:py-10
                      bg-secondary-db-100 shadow-2xl cursor-pointer
                      w-full max-w-xs sm:max-w-sm md:max-w-none md:w-auto text-center select-none"
           aria-label="Get Started Button"
+          onClick={handleFigmaClick}
           variants={{
             initial: { scale: 1 },
             hover: { scale: 0.8 }
