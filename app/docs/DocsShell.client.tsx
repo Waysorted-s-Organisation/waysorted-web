@@ -89,7 +89,7 @@ export default function DocsShell({
     <>
       <div className="lg:hidden fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-center blue-bg-dots">
         <div className="relative z-10 flex flex-col items-center max-w-md mx-auto">
-          <div className="mb-8 p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg">
+          <div className="mb-8 rounded-2xl bg-primary-way-100 backdrop-blur-sm border border-white/20 shadow-lg">
             <Image
               src="/icons/desktop.svg"
               alt="Desktop Experience"
