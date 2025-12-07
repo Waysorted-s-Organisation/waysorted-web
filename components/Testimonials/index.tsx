@@ -27,22 +27,6 @@ const testimonialsData = [
         image: "/images/dev.svg",
         position: "Product Designer, Vijayi",
     },
-    {
-        id: 3,
-        content:
-            "WaySorted is a game changer for design systems. It's a must-have tool for any design team.",
-        author: "Pranjul Singh",
-        image: "/images/prashansa.svg",
-        position: "Product Designer, StoryStack Inc.",
-    },
-    {
-        id: 4,
-        content:
-            "I love how easy it is to keep my design files organized and accessible. WaySorted is fantastic!",
-        author: "Bob Brown",
-        image: "/images/prashansa.svg",
-        position: "Visual Designer, Microsoft",
-    },
 ];
 
 export default function Testimonials() {
