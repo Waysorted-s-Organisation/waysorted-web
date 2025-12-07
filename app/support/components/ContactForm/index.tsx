@@ -221,7 +221,7 @@ export default function ContactForm() {
               Thank you for reaching out to Waysorted!
             </h2>
             <p className="text-white text-xs sm:text-sm font-medium max-w-md mb-6">
-              We've received your message and our team will get back to you shortly.
+              We&apos;ve received your message and our team will get back to you shortly.
             </p>
             <button
               onClick={() => {
