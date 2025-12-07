@@ -1,8 +1,8 @@
 import mongoose, { Mongoose } from "mongoose";
 
-const MONGODB_URI = process.env.NEXT_PUBLIC_MONGODB_URI_TOOLS;
+const MONGODB_URI = process.env.MONGODB_URI_TOOLS || process.env.NEXT_PUBLIC_MONGODB_URI_TOOLS;
 if (!MONGODB_URI) {
-  throw new Error("MONGODB_URI not set");
+  throw new Error("MONGODB_URI_TOOLS not set");
 }
 
 declare global {
