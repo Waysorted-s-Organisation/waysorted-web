@@ -9,26 +9,45 @@ export async function GET(request: Request) {
   const code = urlObj.searchParams.get("code");
   const state = urlObj.searchParams.get("state");
   const nextParam = urlObj.searchParams.get("next");
-  const redirectPath = nextParam && nextParam.startsWith("/") ? nextParam : "/";
 
   if (!code || !state) {
     return NextResponse.redirect(
-      new URL(`/signup?error=${encodeURIComponent("missing_code_or_state")}`, request.url)
+      new URL(
+        `/signup?error=${encodeURIComponent("missing_code_or_state")}`,
+        request.url
+      )
     );
   }
 
   try {
-    if (!process.env.GOOGLE_CLIENT_ID) throw new Error("Missing GOOGLE_CLIENT_ID");
-    if (!process.env.GOOGLE_CLIENT_SECRET) throw new Error("Missing GOOGLE_CLIENT_SECRET");
-    if (!process.env.OAUTH_REDIRECT_URI) throw new Error("Missing OAUTH_REDIRECT_URI");
+    if (!process.env.GOOGLE_CLIENT_ID)
+      throw new Error("Missing GOOGLE_CLIENT_ID");
+    if (!process.env.GOOGLE_CLIENT_SECRET)
+      throw new Error("Missing GOOGLE_CLIENT_SECRET");
+    if (!process.env.OAUTH_REDIRECT_URI)
+      throw new Error("Missing OAUTH_REDIRECT_URI");
 
     await dbConnect();
 
     const existingSession = await Session.findOne({ sessionId: state });
     if (!existingSession) {
       return NextResponse.redirect(
-        new URL(`/signup?error=${encodeURIComponent("invalid_state")}`, request.url)
+        new URL(
+          `/signup?error=${encodeURIComponent("invalid_state")}`,
+          request.url
+        )
       );
+    }
+
+    // Determine redirect path based on session source (set during /api/auth/start)
+    // If source is "figma" or "plugin", redirect to /connected page after successful auth
+    // Otherwise, use the next parameter or default to "/"
+    let redirectPath = "/";
+    const sessionSource = existingSession.source;
+    if (sessionSource === "figma" || sessionSource === "plugin") {
+      redirectPath = "/connected";
+    } else if (nextParam && nextParam.startsWith("/")) {
+      redirectPath = nextParam;
     }
 
     const tokenRes = await axios.post(
@@ -43,12 +62,7 @@ export async function GET(request: Request) {
       { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
     );
 
-    const {
-      access_token,
-      refresh_token,
-      expires_in,
-      id_token,
-    } = tokenRes.data;
+    const { access_token, refresh_token, expires_in, id_token } = tokenRes.data;
 
     const accessTokenExpiresAt = Date.now() + expires_in * 1000;
 
@@ -72,7 +86,7 @@ export async function GET(request: Request) {
       {
         $set: {
           accessToken: access_token,
-            // refresh_token may be missing on subsequent consents; only store if provided
+          // refresh_token may be missing on subsequent consents; only store if provided
           refreshToken: refresh_token || existingSession.refreshToken,
           accessTokenExpiresAt,
           idToken: id_token,
@@ -95,14 +109,17 @@ export async function GET(request: Request) {
     });
 
     return response;
-    } catch (err: unknown) {
+  } catch (err: unknown) {
     if (axios.isAxiosError(err) && err.response) {
       console.error("OAuth callback error:", err.response.data);
     } else {
       console.error("OAuth callback error:", err);
     }
     return NextResponse.redirect(
-      new URL(`/signup?error=${encodeURIComponent("oauth_failed")}`, request.url)
+      new URL(
+        `/signup?error=${encodeURIComponent("oauth_failed")}`,
+        request.url
+      )
     );
   }
 }
