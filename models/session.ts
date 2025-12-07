@@ -11,6 +11,7 @@ export interface ISession {
   completed?: boolean;
   completedAt?: Date;
   createdAt?: Date;
+  source?: string; // Track where the auth request came from (e.g., "figma", "plugin", "web")
 }
 
 export type SessionModel = Model<ISession>;
@@ -26,12 +27,13 @@ const SessionSchema = new Schema<ISession>(
     completed: { type: Boolean, default: false },
     completedAt: Date,
     createdAt: { type: Date, default: Date.now },
+    source: String,
   },
   { versionKey: false }
 );
 
-
 const Session =
-  (models.Session as SessionModel) || model<ISession, SessionModel>("Session", SessionSchema);
+  (models.Session as SessionModel) ||
+  model<ISession, SessionModel>("Session", SessionSchema);
 
 export default Session;

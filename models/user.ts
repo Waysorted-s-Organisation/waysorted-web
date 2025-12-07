@@ -70,7 +70,6 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods, IUserStatics>(
   }
 );
 
-
 // Methods for managing favorites
 UserSchema.methods.addFavorite = async function (slug: string) {
   if (!this.favorites.includes(slug)) {
@@ -119,7 +118,6 @@ UserSchema.methods.toPublic = function () {
   };
 };
 
-
 // Pre-save hook to initialize credits correctly
 UserSchema.pre("save", function (next) {
   if (this.isNew) {
@@ -132,5 +130,6 @@ UserSchema.pre("save", function (next) {
   next();
 });
 
-const User = (models.User as UserModel) || model<IUser, UserModel>("User", UserSchema);
+const User =
+  (models.User as UserModel) || model<IUser, UserModel>("User", UserSchema);
 export default User;
