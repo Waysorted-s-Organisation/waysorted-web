@@ -12,7 +12,7 @@ export default function MobileRedirectPage() {
       <div className="relative z-10 flex flex-col items-center max-w-md mx-auto">
         
         {/* Icon container */}
-        <div className="mb-8 p-4 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg">
+        <div className="mb-8 rounded-2xl bg-primary-way-100 backdrop-blur-sm border border-white/20 shadow-lg">
           <Image
             src="/icons/figma-redirect.svg" // Make sure this icon exists
             alt="Figma Redirect"
