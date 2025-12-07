@@ -77,7 +77,7 @@ export default function Testimonials() {
                     </span>
                 </span>
 
-                <h1 className="mt-4 mb-3 text-3xl md:text-4xl font-semibold text-secondary-db-100">
+                <h1 className="mt-4 mb-3 text-2xl md:text-4xl font-semibold text-secondary-db-100">
                     Hear From Way{" "}
                     <span className="bg-tertiary-orange-500/12 rounded-lg text-tertiary-orange-500 px-4 py-1">
                         Mavens

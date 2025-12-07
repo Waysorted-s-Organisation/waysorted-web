@@ -26,7 +26,7 @@ export default function LearnPage() {
         if (!res.ok) throw new Error("Failed to fetch tools");
         const json = await res.json();
         setTools(json.data || []);
-      } catch (err) {
+      } catch {
         setTools([]);
       } finally {
         setLoading(false);

@@ -15,7 +15,7 @@ export const team1 = [
     image: "/icons/ayush.svg",
 },
 {
-    name: "Sohit ",
+    name: "Sohit Punia",
     role: "Full Stack Developer",
     image: "/icons/sohit.svg",
 },
@@ -25,7 +25,7 @@ export const team1 = [
     image: "/icons/vineet.svg",
 },
 {
-    name: "Anshika",
+    name: "Anshika Gupta",
     role: "Full Stack Developer",
     image: "/icons/anshika.svg",
 },

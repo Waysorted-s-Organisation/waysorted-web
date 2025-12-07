@@ -1,9 +1,22 @@
+'use client';
+
 import Image from "next/image";
 import GlowStarButton from "@/components/GlowStarButton";
 import { useRouter } from 'next/navigation';
 
 const Hero = () => {
   const router = useRouter();
+
+  const handleFigmaClick = () => {
+    // Check for mobile (matches Tailwind's lg breakpoint of 1024px)
+    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+      // Redirect to your new dedicated mobile page
+      router.push('/mobile-redirect'); 
+    } else {
+      // Desktop behavior
+      window.open("https://www.figma.com/@waysorted", "_blank");
+    }
+  };
 
   return (
     <section
@@ -12,10 +25,12 @@ const Hero = () => {
     >
       <div id="hero-content" className="text-center">
         {/* Badge */}
-        <button className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-3 py-1 md:px-5 md:py-2 text-sm text-secondary-db-100 mb-4 cursor-pointer"
-        onClick={() => {
-                  router.push('/request-a-feature');
-                }}>
+        <button 
+          className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-3 py-1 md:px-5 md:py-2 text-sm text-secondary-db-100 mb-4 cursor-pointer"
+          onClick={() => {
+            router.push('/request-a-feature');
+          }}
+        >
           <Image
             src="/icons/tools.svg"
             alt="Hero Badge"
@@ -45,18 +60,10 @@ const Hero = () => {
 
         {/* CTA buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          {/* Mobile-only: Get Early Access (matches the provided mock) */}
-          <GlowStarButton
-            aria-label="Get Early Access"
-            className="sm:hidden w-49 max-w-xs border bg-secondary-db-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer"
+          <GlowStarButton 
+            onClick={handleFigmaClick}
+            className="inline-flex border bg-secondary-db-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer"
           >
-            <span className="flex items-center justify-center gap-x-2">
-              <span>Get Early Access</span>
-            </span>
-          </GlowStarButton>
-
-          {/* Tablet/Desktop: keep existing CTA unchanged */}
-          <GlowStarButton className="hidden sm:inline-flex border bg-secondary-db-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer">
             <span className="flex items-center gap-x-2">
               <Image
                 src="/icons/figma.svg"
@@ -64,7 +71,7 @@ const Hero = () => {
                 width={16}
                 height={16}
               />
-              <span>Waysorted for figma</span>
+              <span>Waysorted for Figma</span>
               <Image
                 src="/icons/arrow-white.svg"
                 alt="Arrow Right"
