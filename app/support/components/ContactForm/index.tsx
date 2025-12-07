@@ -12,35 +12,58 @@ export default function ContactForm() {
   });
 
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   // Handle input changes
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (error) setError(null);
   };
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Optional: send to API here
+    setIsSubmitting(true);
+    setError(null);
+    setSuccess(null);
 
-    // Flip to thank-you side
-    setSubmitted(true);
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-    // Reset fields (optional)
-    setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
-      subject: "",
-      message: "",
-    });
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to send message");
+      }
+
+      setSuccess(result.message);
+      setSubmitted(true);
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+
+    } catch (err) {
+      setError((err as Error).message || "Something went wrong. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    // Keep flex-1 so it respects surrounding layout
     <div className="flex-1 relative w-full [perspective:1000px]">
       <div
         className={`relative w-full min-h-[570px] md:min-h-[560px] h-full transition-transform duration-700 [transform-style:preserve-3d] ${
@@ -50,6 +73,18 @@ export default function ContactForm() {
         {/* Front side - Form */}
         <div className="absolute inset-0 [backface-visibility:hidden]">
           <div className="bg-white/25 rounded-xl shadow-lg p-4 sm:p-6 md:p-8 text-gray-800 h-full">
+            {error && (
+              <div className="mb-4 p-3 bg-red-100/90 border border-red-300 text-red-700 rounded-md text-sm">
+                {error}
+              </div>
+            )}
+            
+            {success && !submitted && (
+              <div className="mb-4 p-3 bg-green-100/90 border border-green-300 text-green-700 rounded-md text-sm">
+                {success}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
               {/* Name Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -149,17 +184,24 @@ export default function ContactForm() {
 
               {/* Submit Button */}
               <button
-                    type="submit"
-                    className="w-full bg-secondary-db-100 rounded-lg join-shadow-1 text-white py-3 transition flex items-center justify-center gap-2 cursor-pointer font-medium"
-                >
-                    Submit
-                    <Image
-                        src="/icons/arrow-white.svg"
-                        alt="Arrow Right"
-                        width={10}
-                        height={10}
-                        className="inline"
-                    />
+                type="submit"
+                disabled={isSubmitting}
+                className={`w-full bg-secondary-db-100 rounded-lg join-shadow-1 text-white py-3 transition flex items-center justify-center gap-2 cursor-pointer font-medium ${
+                  isSubmitting ? "opacity-75 cursor-not-allowed" : ""
+                }`}
+              >
+                {isSubmitting ? "Sending..." : "Submit"}
+                {isSubmitting ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <Image
+                    src="/icons/arrow-white.svg"
+                    alt="Arrow Right"
+                    width={10}
+                    height={10}
+                    className="inline"
+                  />
+                )}
               </button>
             </form>
           </div>
@@ -178,9 +220,19 @@ export default function ContactForm() {
             <h2 className="text-lg sm:text-xl font-medium text-white mb-2">
               Thank you for reaching out to Waysorted!
             </h2>
-            <p className="text-white text-xs sm:text-sm font-medium max-w-md">
-              We’ve received your message and our team will get back to you shortly.
+            <p className="text-white text-xs sm:text-sm font-medium max-w-md mb-6">
+              We've received your message and our team will get back to you shortly.
             </p>
+            <button
+              onClick={() => {
+                setSubmitted(false);
+                setSuccess(null);
+                setError(null);
+              }}
+              className="px-6 py-2 bg-white/20 hover:bg-white/30 text-white rounded-md transition-colors duration-200 text-sm font-medium"
+            >
+              Send Another Message
+            </button>
           </div>
         </div>
       </div>
