@@ -61,11 +61,7 @@ const Card4 = () => {
 
   return (
     <div
-      className="bg-gradient-to-b relative from-[#2A2E34] to-[#525252] rounded-xl  overflow-hidden"
-      style={{
-        width: "346.22px",
-        height: "241.05px",
-      }}
+      className="bg-gradient-to-b relative from-[#2A2E34] to-[#525252] rounded-xl overflow-hidden w-full lg:w-[346.22px] h-[241.05px]"
     >
       {/* Animated Background */}
       <div
@@ -113,7 +109,7 @@ const Card4 = () => {
       {/* Base Text Component */}
       <Base1
         title="Data Encryption"
-        content="Fusce vehicula rutrum lectus, ut posuere libero sodales at. Praesent erat quam,"
+        content="Your stored data is unreadable, even if compromised."
         libero="pr-15"
       />
     </div>

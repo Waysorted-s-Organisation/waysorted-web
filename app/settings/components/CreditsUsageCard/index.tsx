@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import type { User } from "@/hooks/useUser";
+import type { IUser } from "@/models/user";
 
 type Props = {
-  user: User;
+  user: IUser;
 };
 
 export default function CreditsUsageCard({ user }: Props) {
@@ -73,11 +73,7 @@ export default function CreditsUsageCard({ user }: Props) {
                   className="object-contain"
                 />
                 <p className="text-sm text-error-500">
-                  Your credits have been exhausted. To continue, grab early access and add more credits. If you’ve already done this, please reach out to the Way team via{" "}
-                  <a href="/support" className="font-medium underline">
-                    Contact us
-                  </a>{" "}
-                  for additional credits.
+                  Your credits have been exhausted. To continue, grab <a href="/get-early-access" className="font-medium underline">early access</a>{" "} and add more credits.
                 </p>
               </div>
             </div>
@@ -95,6 +91,9 @@ export default function CreditsUsageCard({ user }: Props) {
                   height={16}
                   className="object-contain"
                 />
+                <p className="text-sm text-primary-way-100">
+                  Your credits have been upgraded. You can now continue enjoying uninterrupted access to Way.
+                </p>
               </div>
             </div>
             <button

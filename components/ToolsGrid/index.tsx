@@ -52,6 +52,8 @@ export default function ToolsGrid() {
 
     ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
 
+    const isMobile = window.innerWidth < 768;
+
     // Master timeline with longer duration
     const masterTimeline = gsap.timeline({ paused: true });
 
@@ -103,13 +105,24 @@ export default function ToolsGrid() {
     masterTimeline.add(moveUpPhase);
 
     // Phase 2: scatter icons to fixed positions (40% of timeline)
-    // Using fixed relative positions instead of dynamic calculations
-    const scatterPositions = [
-      { x: -300, y: -200 }, // top-left
-      { x: -500, y: 200 }, // bottom-left
-      { x: 500, y: -200 }, // top-right
-      { x: 300, y: 200 }, // bottom-right
-    ];
+    let scatterPositions;
+      
+      if (isMobile) {
+        scatterPositions = [
+          { x: -45, y: -180 }, // top-left
+          { x: 45, y: -180 },  // bottom-left
+          { x: -45, y: 65 },  // top-right
+          { x: 45, y: 65 },   // bottom-right
+        ];
+      } else {
+        // Wide scatter for desktop
+        scatterPositions = [
+          { x: -300, y: -200 }, // top-left
+          { x: -500, y: 200 },  // bottom-left
+          { x: 500, y: -200 },  // top-right
+          { x: 300, y: 200 },   // bottom-right
+        ];
+      }
 
     masterTimeline.to(
       iconsEls,
@@ -191,7 +204,7 @@ export default function ToolsGrid() {
         {/* Icons row */}
         <div
           ref={iconsContainerRef}
-          className="flex items-center justify-center gap-8 relative"
+          className="grid grid-cols-2 md:flex items-center justify-center gap-4 md:gap-8 relative"
         >
           {icons.map((icon, index) => (
             <div
@@ -214,9 +227,9 @@ export default function ToolsGrid() {
         </div>
 
         {/* Headline overlay */}
-        <div className="absolute translate-x-0 translate-y-[-125%] flex flex-col items-center justify-center pointer-events-none">
+        <div className="absolute md:translate-x-[10%] md:translate-y-[-150%] translate-y-[-150%] flex flex-col items-center justify-center pointer-events-none">
           <div
-            className="font-medium text-secondary-db-100 text-3xl mb-8"
+            className="font-medium text-secondary-db-100 md:text-3xl text-xl mb-8"
             ref={transformRef}
           >
             <span>Transform your</span>
@@ -227,7 +240,7 @@ export default function ToolsGrid() {
               workflow
             </span>
           </div>
-          <h2 className="text-center leading-snug font-semibold max-w-7xl px-4 text-5xl">
+          <h2 className="text-center leading-snug font-semibold max-w-5xl px-12 md:text-4xl text-2xl">
             {HEADLINE.split(" ").map((word, index) => (
               <span
                 key={`word-${index}`}

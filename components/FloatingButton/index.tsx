@@ -7,6 +7,7 @@ export default function FloatingButton() {
   const [scrolled, setScrolled] = useState(false)
   const [visible, setVisible] = useState(true) // pill visible
   const [previewOpen, setPreviewOpen] = useState(false) // expanded preview state
+  const [footerVisible, setFooterVisible] = useState(false) // whether footer is in viewport
 
   // Scroll handling: hide pill + preview on scroll past threshold
   useEffect(() => {
@@ -22,7 +23,41 @@ export default function FloatingButton() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  const baseWidthClass = 'w-80' // same width for pill & preview
+  // Observe footer visibility to hide floating button when footer is visible
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const footerEl =
+      document.querySelector("#site-footer")
+
+    if (!footerEl) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // when footer is at least partially visible, hide the floating button
+          setFooterVisible(entry.isIntersecting)
+        })
+      },
+      {
+        root: null,
+        threshold: 0, // any intersection -> considered visible
+      }
+    )
+
+    observer.observe(footerEl)
+
+    return () => {
+      observer.disconnect()
+    }
+  }, [])
+
+  // If footer is visible, don't render the floating button
+  if (footerVisible) return null
+
+  // UPDATED: Calculate width dynamically for mobile to fit screen minus button/padding,
+  // but keep fixed w-80 for desktop (md:w-80)
+  const baseWidthClass = 'w-[calc(100vw-8rem)] md:w-80'
 
   const handleFloatingClick = () => {
     setVisible(true)
@@ -31,7 +66,8 @@ export default function FloatingButton() {
 
   return (
     <>
-      <div className="fixed bottom-8 right-8 z-50 flex items-end gap-3">
+      {/* UPDATED: Adjusted positioning for mobile (bottom-4 right-4) vs desktop (bottom-8 right-8) */}
+      <div id="floating-button" className="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-50 flex items-end gap-3">
         {/* When visible, render the independent close button (left) + wrapper (right) */}
         {visible && (
           <div
@@ -48,7 +84,7 @@ export default function FloatingButton() {
                   setPreviewOpen(false)
                 }}
                 title="Hide pill"
-                className="w-6 h-6 rounded-full flex items-center justify-center border border-[#ADADAD] hover:bg-gray-100 cursor-pointer"
+                className="w-6 h-6 rounded-full flex items-center justify-center border border-[#ADADAD] hover:bg-gray-100 cursor-pointer flex-shrink-0"
                 aria-label="Hide pill"
               >
                 <Image src="/icons/close-1.svg" alt="Close" width={7} height={7} />
@@ -63,6 +99,8 @@ export default function FloatingButton() {
               onMouseLeave={() => setPreviewOpen(false)}
               onFocus={() => setPreviewOpen(true)}
               onBlur={() => setPreviewOpen(false)}
+              // UPDATED: Added onClick to allow "tap to open" on mobile devices where hover doesn't exist
+              onClick={() => setPreviewOpen(true)}
               className="relative"
             >
               {/* Morphing box: same width always, height and rounding animate */}
@@ -75,7 +113,7 @@ export default function FloatingButton() {
                   className={`absolute inset-0 flex items-center gap-2 transition-all duration-200 transform
                     ${previewOpen ? 'opacity-0 -translate-y-1 pointer-events-none' : 'opacity-100 translate-y-0 pointer-events-auto'}`}
                 >
-                  <p className="text-sm text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis max-w-[220px] cursor-default">
+                  <p className="text-sm text-gray-700 whitespace-nowrap overflow-hidden text-ellipsis max-w-full cursor-default">
                     Export your Figma designs directly to PDFs.
                   </p>
                 </div>
@@ -90,8 +128,14 @@ export default function FloatingButton() {
                     <h4 className="text-sm font-semibold text-gray-900">Release Notes !</h4>
 
                     {/* Close inside preview (closes preview only) */}
+                    {/* Note: onClick propagation needs to be stopped if we don't want the wrapper onClick to immediately reopen it, 
+                        but since setPreviewOpen(false) is called here, it usually wins or React event bubbling order handles it. 
+                        Adding e.stopPropagation() is safer for the close button. */}
                     <button
-                      onClick={() => setPreviewOpen(false)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewOpen(false);
+                      }}
                       aria-label="Close preview"
                       className="w-6 h-6 rounded-full hover:bg-gray-100 flex items-center justify-center border border-[#ADADAD] cursor-pointer"
                     >
@@ -116,7 +160,7 @@ export default function FloatingButton() {
         <button
           onClick={handleFloatingClick}
           title="Floating action"
-          className="w-12 h-12 rounded-full bg-primary-way-100 flex items-center justify-center shadow-lg cursor-pointer"
+          className="w-12 h-12 rounded-full bg-primary-way-100 flex items-center justify-center shadow-lg cursor-pointer flex-shrink-0"
           aria-label="Open pill"
         >
           <Image src="/icons/floating-button.svg" alt="Open" width={22} height={22} />

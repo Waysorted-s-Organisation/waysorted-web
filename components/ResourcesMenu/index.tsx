@@ -21,7 +21,7 @@ export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps)
       <div className="flex flex-col p-2 rounded-md bg-white m-2">
         {[
           { title: 'Learning', link:'learning', desc: 'Quick tips and tutorials to get you started fast.', icon: '/icons/learning.svg' },
-          { title: 'Documentation', link:'documents', desc: 'Everything you need, explained in detail.', icon: '/icons/documentation.svg' },
+          { title: 'Documentation', link:'docs', desc: 'Everything you need, explained in detail.', icon: '/icons/documentation.svg' },
         ].map((item, idx) => (
           <button
             key={idx}

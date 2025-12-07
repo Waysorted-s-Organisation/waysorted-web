@@ -15,12 +15,14 @@ export default function Loading() {
   ];
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center">
+    <div className="min-h-screen w-full flex items-center justify-center select-none">
       <SequentialLogoLoader
         icons={icons}
         estimatedMs={4000}
         tileSizePx={188}  // tile is exactly 188x188 px
         iconPx={96}       // tweak to taste (about ~50% of tile)
+        mobileTileSizePx={140} // Smaller tiles for mobile
+        mobileIconPx={60}  
       />
     </div>
   );

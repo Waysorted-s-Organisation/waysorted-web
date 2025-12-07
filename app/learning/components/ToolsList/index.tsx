@@ -1,11 +1,11 @@
 import ToolListItem from "../ToolListItem/index";
-import { Tool } from "../../types";
+import { ITool } from "@/models/tool";
 
-export default function ToolsList({ tools }: { tools: Tool[] }) {
+export default function ToolsList({ tools }: { tools: ITool[] }) {
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-2 sm:gap-3">
       {tools.map((tool) => (
-        <ToolListItem key={tool.id} tool={tool} />
+        <ToolListItem key={tool.slug} tool={tool} />
       ))}
     </div>
   );

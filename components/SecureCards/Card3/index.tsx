@@ -44,8 +44,7 @@ const Card3 = () => {
 
   return (
     <div
-      className=" bg-gradient-to-b from-[#2A2E34] to-[#525252]  relative rounded-xl overflow-hidden "
-      style={{ width: "345.29px", height: "241.05px" }}
+      className="bg-gradient-to-b from-[#2A2E34] to-[#525252] relative rounded-xl overflow-hidden w-full lg:w-[345.29px] h-[241.05px]"
     >
       <Image
         src="/icons/left-cloud.svg"
@@ -98,7 +97,7 @@ const Card3 = () => {
       <Base1
         title={"Secure API Access"}
         content={
-          "Fusce vehicula rutrum lectus, ut posuere libero sodales at. Praesent erat quam,"
+          "Your data is protected by a private, digital lockbox."
         }
         libero="pr-14"
       />

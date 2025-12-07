@@ -1,15 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import type { PublicUser } from "@/app/settings/lib/user";
+import type { IUser } from "@/models/user";
 
 type Props = {
-  user: PublicUser;
+  user: IUser;
 };
 
 export default function SubscriptionCard({ user }: Props) {
   const { earlyAccess, creditsRemaining } = user;
-
   // Define credits logic
   const creditsTotal = earlyAccess ? 200 : 5;
   const creditsUsed = Math.max(0, creditsTotal - (creditsRemaining ?? 0));
@@ -81,7 +80,7 @@ export default function SubscriptionCard({ user }: Props) {
                     className="object-contain"
                   />
                   <p className="text-sm text-primary-way-100">
-                    You&apost;re on an Early Access subscription! Enjoy exclusive Waysorted benefits before anyone else — you have unlocked Early bird badge.
+                    You&apos;re on an Early Access subscription! Enjoy exclusive Waysorted benefits before anyone else - you have unlocked Early bird badge.
                   </p>
                 </div>
               </div>

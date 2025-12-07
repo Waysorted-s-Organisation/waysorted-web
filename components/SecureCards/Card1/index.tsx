@@ -73,8 +73,7 @@ const Card1 = () => {
   return (
     <div
       ref={cardsLR}
-      className="relative overflow-hidden bg-gradient-to-t from-[#8f8f8f] to-[#292929]   rounded-lg shadow-md"
-      style={{ width: "289.45px", height: "199.17px" }}
+      className="relative overflow-hidden bg-gradient-to-t from-[#8f8f8f] to-[#292929] rounded-lg shadow-md w-full lg:w-[289.45px] h-[199.17px]"
     >
       {/* Moving background */}
       <div className="scroll-bg flex top-0 relative h-[125px] ">
@@ -141,7 +140,7 @@ const Card1 = () => {
       <Base1
         title={"Permission Control"}
         content={
-          "Fusce vehicula rutrum lectus, ut posuere libero sodales at. Praesent erat quam,"
+          "Ensure only the right people have the right access."
         }
       />
     </div>

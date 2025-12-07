@@ -15,16 +15,16 @@ export default function AboutUs() {
   return (
     <>
     <main
-        className={`min-h-screen bg-white transition-all duration-300 ${
+        className={`min-h-screen bg-white transition-all duration-300 select-none ${
           showBanner ? "pt-24" : "pt-16"
         }`}
         >
     <Header showBanner={showBanner} setShowBanner={setShowBanner} />
       <HeroSection />
-      <StorySection />
-      <ValuesSection />
       <TeamSection />
       <VisionSection />
+      <ValuesSection />
+      <StorySection />
       <TeamCollage />
       <JoinCommunity />
       <Footer />

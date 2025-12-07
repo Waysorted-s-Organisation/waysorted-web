@@ -11,7 +11,7 @@ export default function FeatureCard({ title, description, tilt }: Props) {
   return (
     <div
       className={cn(
-        "relative rounded-2xl bg-white text-black shadow-card px-5 sm:px-6 py-4 sm:py-5",
+        "relative rounded-2xl bg-white text-black px-5 sm:px-6 py-4 sm:py-5",
         "ring-1 ring-slate-200",
         tilt
       )}

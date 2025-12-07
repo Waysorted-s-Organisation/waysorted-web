@@ -8,12 +8,12 @@ export default function EarlyAccessPage() {
   const router = useRouter();
 
   return (
-    <main className="bg-white min-h-screen">
-      <div className="mx-auto max-w-full">
-        <div className="grid grid-cols-1 md:grid-cols-2 items-stretch">
+    <main className="bg-white h-screen">
+      <div className="mx-auto max-w-full h-full">
+        <div className="grid grid-cols-1 md:grid-cols-2 items-stretch h-full">
           
           {/* Left: Form */}
-          <section className="max-w-xl flex flex-col justify-between">
+          <section className="max-w-2xl flex flex-col justify-between h-full">
             <div>
               <div className="my-6 ml-15">
                 <Image
@@ -66,15 +66,15 @@ export default function EarlyAccessPage() {
           </section>
 
           {/* Right: Feature panel */}
-          <section className="relative overflow-hidden rounded-3xl rounded-none bg-primary-way-10 ">
-            <div className="bg-primary-way-10 p-5 border-l border-primary-way-20 rounded-none">
-              <div className="rounded-3xl blue-bg-dots p-10">
+          <section className="relative overflow-hidden rounded-3xl rounded-none bg-primary-way-10 h-full">
+            <div className="bg-primary-way-10 p-4 border-l border-primary-way-20 rounded-none h-full">
+              <div className="rounded-3xl blue-bg-dots p-8">
                 <div className="relative rounded-2xl">
                   <div className="flex items-start justify-between">
                     <h2 className="text-white text-2xl font-regular w-1/2">
                       Discover everything Way has to offer…
                     </h2>
-                    <div className="relative -mt-6 -mr-2">
+                    <div className="relative -mt-3 -mr-2">
                       <Image
                         src="/icons/Fastest.svg"
                         alt="Fastest"
@@ -92,23 +92,23 @@ export default function EarlyAccessPage() {
                       tilt="rotate-[-2deg]"
                     />
                     <FeatureCard
-                      title="Community Access"
-                      description="Join an exclusive space where fellow designers connect, share insights, and get direct access to the latest updates."
+                      title="500+ Free Credits"
+                      description="Start strong with free credits to explore, test, and create without limits. Refer friends & earn even more credits!"
                       tilt="rotate-[2deg]"
                     />
                     <FeatureCard
                       title="Exclusive Early Adopter Badge"
-                      description="Earn a unique badge that highlights your status on the upcoming leaderboard—stand out as a key contributor to Waysorted’s success."
+                      description="Get recognized as a founding creator, your badge will shine on the leaderboard and mark you as one of the first to join the journey."
                       tilt="rotate-[-1.5deg]"
                     />
                     <FeatureCard
-                      title="Feature Requests & Bug Reporting"
-                      description="Help shape the platform by requesting new features and reporting bugs—your feedback drives the future of Waysorted."
+                      title="Community Access"
+                      description="Join an exclusive space where fellow designers connect, share insights, and get direct access to the latest updates."
                       tilt="rotate-[1.5deg]"
                     />
                   </div>
 
-                  <div className="relative -ml-10">
+                  <div className="relative -ml-8">
                     <Image
                       src="/icons/early-bird.svg"
                       alt="Early bird"

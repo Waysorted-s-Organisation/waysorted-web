@@ -2,7 +2,7 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Hanken_Grotesk } from "next/font/google";
 import { BannerProvider } from "@/context/BannerContext";
-import EarlyAccessPopup from "@/components/EarlyAccessPopup";
+// import EarlyAccessPopup from "@/components/EarlyAccessPopup";
 import SplashGate from "@/components/SplashGate";
 
 const hanken = Hanken_Grotesk({ subsets: ["latin"] });
@@ -20,11 +20,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${hanken.className} no-scrollbar`}>
+      <body className={`${hanken.className} no-scrollbar select-none`}>
         <SplashGate minMs={4000} initialOnly>
         <BannerProvider>
           {children}
-          <EarlyAccessPopup />
+          {/* <EarlyAccessPopup /> */}
         </BannerProvider>
         </SplashGate>
       </body>

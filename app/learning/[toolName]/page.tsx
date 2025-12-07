@@ -1,40 +1,85 @@
 'use client'
 
-import React from 'react'
-import { use } from 'react'
+import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import ToolsData from '@/app/learning/data/index'
+import { useParams, useRouter } from 'next/navigation'
 import { useBanner } from '@/context/BannerContext'
 import Header from '@/components/Header'
 import ToolBriefCarousel from './components/ToolBriefCarousel'
-import allSlides from "@/app/learning/[toolName]/data/index"
-import type { SlideData, SlideWithoutToolName } from "@/app/learning/types/index"
-import JoinCommunity from '@/components/GetStarted'
+import JoinCommunity from '@/components/JoinCommunity'
 import ExploreMore from './components/ExploreMore'
-import Footer from "@/components/Footer";
-import type { Tool } from '@/app/learning/types'
+import Footer from '@/components/Footer'
+import type { ITool, ISlide } from '@/models/tool'
 
-// NOTE: params is not a Promise in Next.js app router pages.
-export default function LearnMorePage({ params }: { params: Promise<{ toolName: string }> }) {
+export default function LearnMorePage() {
   const { showBanner, setShowBanner } = useBanner()
   const router = useRouter()
+  const params = useParams()
 
-  const { toolName } = use(params);
-  const tool = ToolsData.find((t) => t.slug === toolName)
+  // normalize toolName (handle potential string[] from dynamic/catch-all routes)
+  const rawToolName = params?.toolName
+  const toolName = Array.isArray(rawToolName) ? rawToolName[0] ?? '' : rawToolName ?? ''
 
-  if (!tool) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-xl">
-        Tool not found
-      </div>
-    )
+  const [tool, setTool] = useState<ITool | null>(null)
+  const [slides, setSlides] = useState<ISlide[]>([])
+  const [allTools, setAllTools] = useState<ITool[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let mounted = true
+
+    async function fetchData() {
+      setLoading(true)
+      try {
+        // fetch active tools
+        const toolsRes = await fetch('/api/tools/active')
+        const toolsJson = await toolsRes.json()
+        const toolsData: ITool[] = toolsJson?.data ?? []
+        if (!mounted) return
+        setAllTools(toolsData)
+
+        // Find the tool by slug (toolName)
+        const foundTool = toolsData.find((t: ITool) => t.slug === toolName)
+        if (!mounted) return
+        setTool(foundTool ?? null)
+
+        if (toolName) {
+          const slidesRes = await fetch(`/api/tools/${encodeURIComponent(toolName)}/slides`)
+          const slidesJson = await slidesRes.json()
+          if (!mounted) return
+          setSlides(slidesJson?.slides ?? [])
+        } else {
+          if (!mounted) return
+          setSlides([])
+        }
+      } catch (error) {
+        if (!mounted) return
+        console.error('Error fetching tool or slides data:', error)
+        setSlides([])
+        setTool(null)
+      } finally {
+        if (mounted) setLoading(false)
+      }
+    }
+
+    if (toolName) {
+      fetchData()
+    } else {
+      // reset state if no toolName
+      setTool(null)
+      setSlides([])
+      setAllTools([])
+      setLoading(false)
+    }
+
+    return () => {
+      mounted = false
+    }
+  }, [toolName])
+
+  if (!tool && !loading) {
+    return null
   }
-
-  const slides: SlideWithoutToolName[] = (allSlides as SlideData[])
-    .filter((s: SlideData) => s.toolName === toolName)
-    //eslint-disable-next-line @typescript-eslint/no-unused-vars
-    .map(({ toolName: _ignore, ...rest }: SlideData) => rest)  
 
   return (
     <div>
@@ -46,7 +91,7 @@ export default function LearnMorePage({ params }: { params: Promise<{ toolName: 
         <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 
         {/* Breadcrumb */}
-        <div className="max-w-7xl mx-auto px-5 my-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-5 my-6 sm:my-16">
           <nav className="text-base font-medium text-secondary-db-100/50">
             <span
               className="cursor-pointer hover:text-secondary-db-100 hover:border-b-2 hover:border-b-primary-way-100"
@@ -57,8 +102,8 @@ export default function LearnMorePage({ params }: { params: Promise<{ toolName: 
             <Image
               src="/icons/chevron-right.svg"
               alt="Arrow Right"
-              width={4}
-              height={4}
+              width={5}
+              height={7}
               className="inline-block mx-2"
             />
             <span
@@ -70,45 +115,44 @@ export default function LearnMorePage({ params }: { params: Promise<{ toolName: 
             <Image
               src="/icons/chevron-right.svg"
               alt="Arrow Right"
-              width={4}
-              height={4}
+              width={5}
+              height={7}
               className="inline-block mx-2"
             />
             <span className="text-primary-way-100 text-base font-medium cursor-pointer">
-              {tool.name}
+              {tool?.name ?? toolName}
             </span>
           </nav>
         </div>
 
         {/* Heading */}
-        <div className="max-w-7xl mx-auto px-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6">
           <div>
-            <h1 className="text-6xl w-lg font-medium text-secondary-db-100 leading-tight">
+            <h1 className="text-3xl sm:text-6xl font-medium text-secondary-db-100 leading-tight w-full sm:w-lg">
               Explore Every <span className="text-primary-way-100">Shade</span> with Ease
             </h1>
             <div>
-              <button className="bg-secondary-db-100 text-white my-8 py-3 px-7 font-semibold text-base rounded-full cursor-pointer">
+              <button className="bg-secondary-db-100 hidden md:block text-white my-6 sm:my-8 py-3 px-6 sm:px-7 font-semibold text-base rounded-full cursor-pointer hover:bg-secondary-db-90">
                 Try now for free
               </button>
             </div>
           </div>
-
-          <p className="text-secondary-db-100 max-w-sm mt-16 text-xl font-medium">
-            Generate customizable color palettes from a base color, apply variations like brightening
-            or hue shifts, and evaluate accessibility compliance
+          <p className="text-secondary-db-100 mt-4 sm:mt-16 text-base sm:text-xl font-medium max-w-full sm:max-w-lg">
+            {tool?.shortDescription ?? ''}
             <span className="text-secondary-db-70">—all in one tool.</span>
           </p>
         </div>
 
         {/* Carousel of ToolBriefs */}
-        <div className="my-10">
+        <div className="my-0 sm:my-10">
           <div className="mx-auto max-w-7xl px-5">
-            <ToolBriefCarousel slides={slides} />
+            {slides.length > 0 && <ToolBriefCarousel slides={slides} />}
+            {loading && <p className="text-center">Loading slides…</p>}
           </div>
         </div>
-        <ExploreMore tools={ToolsData as Tool[]} />
+
+        <ExploreMore tools={allTools} />
         <JoinCommunity />
-        
       </main>
       <Footer />
     </div>

@@ -1,22 +1,19 @@
 import NotificationsCard from "../NotificationsCard";
+import {useUser} from "@/hooks/useUser";
+import Loading from "@/app/loading";
 
 export function NotificationsTab() {
-  // Demo data (right side screenshot scenario)
+  const { user, loading } = useUser();
+
+  if (loading) {
+    return <Loading />;
+  }
+  if (!user) {
+    return <div>Please log in to access notifications.</div>;
+  }
   return (
     <NotificationsCard
-      hasAny={true}
-      categories={[
-        {
-          id: "1",
-            title: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-            body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus volutpat dui gravida ipsum.",
-        },
-        {
-          id: "2",
-          title: "Lorem ipsum dolor sit amet, consectetur adipiscing elit.",
-          body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus volutpat dui gravida ipsum.",
-        },
-      ]}
+      user={user}
     />
   );
 }

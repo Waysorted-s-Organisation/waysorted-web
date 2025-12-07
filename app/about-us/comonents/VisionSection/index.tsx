@@ -12,17 +12,14 @@ export default function VisionSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
 
   const VISION_STATEMENT =
-    "Our Vision is to create a world where designers can focus entirely on their ideas—without losing time, energy, or creativity to tool chaos";
+    "We’re on a mission to make every creator’s Tool Accelerated, smarter, and effortless creating a global movement of creators shaping the next era of design productivity.";
 
   const COLOR_INDEX_MAP: Record<number, string> = {
-    0: "text-primary-way-100", // "Our"
-    1: "text-primary-way-100", // "Vision"
-    2: "text-primary-way-100", // "is"
-    3: "text-primary-way-100", // "to"
-    19: "text-primary-way-100", // "creativity"
-    20: "text-primary-way-100", // "to"
-    21: "text-primary-way-100", // "tool"
-    22: "text-primary-way-100", // "chaos."
+    8: "text-primary-way-100", // "Tool"
+    9: "text-primary-way-100", // Accelerated
+    10: "text-primary-way-100", // "smarter,"
+    11: "text-primary-way-100", // "and"
+    12: "text-primary-way-100", // "effortless"
   };
 
   useEffect(() => {
@@ -50,8 +47,8 @@ export default function VisionSection() {
     // ScrollTrigger animation
     ScrollTrigger.create({
       trigger: sectionRef.current,
-      start: "top 50%",
-      end: "bottom 60%",
+      start: "top 30%",
+      end: "bottom 100%",
       animation: masterTimeline,
       scrub: 3,
       pin: false,
@@ -69,7 +66,7 @@ export default function VisionSection() {
   return (
     <section
       ref={sectionRef}
-      className="bg-white text-center px-6 md:px-20 lg:px-32 py-35"
+      className="bg-white text-center px-6 md:px-20 lg:px-32 py-50"
     >
       {/* Label */}
       <span className="inline-flex items-center text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md mb-6">
@@ -86,7 +83,7 @@ export default function VisionSection() {
       </span>
 
       {/* Vision Statement */}
-      <p className="text-4xl font-medium text-secondary-db-100 leading-relaxed max-w-4xl mx-auto">
+      <p className="text-4xl font-medium pb-40 text-secondary-db-100 leading-relaxed max-w-4xl mx-auto">
         {VISION_STATEMENT.split(" ").map((word, index) => (
           <span
             key={`word-${index}`}

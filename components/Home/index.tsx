@@ -10,11 +10,10 @@ import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
 import GetStarted from '@/components/GetStarted'
 import Testimonials from '@/components/Testimonials'
-import Coffee from '@/components/Coffee'
-import Comments from '@/components/Comments'
 import Footer from "@/components/Footer";
 import SecureAnimation from "@/components/SecureAnimation";
 import SecureCards from "@/components/SecureCards/index";
+import FloatingStatsSection from "../FloatingStats";
 
 export default function Home() {
     const { showBanner, setShowBanner } = useBanner();
@@ -51,24 +50,26 @@ export default function Home() {
             <TopSection />
             <FloatingButton />
             <ImpactTop />
+            
             <InfoCards />
+            <div className="my-60" />
              {/* Section 1: Secure Animation */}
-      <section className="h-[200vh]">
+      <section id="secure-animation" className="h-[200vh] hidden md:block">
         <SecureAnimation />
       </section>
 
       {/* Section 2: Secure Cards */}
-      <section
+      <section id="secure-cards"
         className={`transition-opacity duration-700 ${
           showSecureCards ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
       >
         <SecureCards />
       </section>
-            <Coffee />
-            <Comments />
+            <FloatingStatsSection />
             <Testimonials />
             <GetStarted />
+            
             <Footer />
         </main>
     )

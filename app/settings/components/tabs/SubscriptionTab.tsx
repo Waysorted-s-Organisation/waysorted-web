@@ -1,14 +1,15 @@
-import { getCurrentUser } from "@/app/settings/lib/user";
+import {useUser} from "@/hooks/useUser";
+import Loading from "@/app/loading";
 import SubscriptionCard from "../SubscriptionCard";
 
-export async function SubscriptionTab() {
-  const user = await getCurrentUser();
-  if (!user) {
-    return <div>User not found.</div>;
+export function SubscriptionTab() {
+  const { user, loading } = useUser();
+  if (loading) {
+    return <Loading />;
   }
   return (
     <SubscriptionCard
-      user={user}
+      user={user!}
     />
   );
 }
