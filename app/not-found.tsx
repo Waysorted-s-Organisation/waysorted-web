@@ -50,8 +50,12 @@ export default function NotFound() {
           </h1>
 
           <p className="text-gray-500 text-sm sm:text-base leading-relaxed mb-8 px-2">
-            We&apos;re currently undergoing maintenance to make our platform
-            even better. We&apos;ll be back up shortly!
+            We couldn&apos;t find the page you were looking for. No worries, you
+            can head back to our{" "}
+            <Link href="/" className="text-primary-way-100 underline">
+              homepage
+            </Link>{" "}
+            to find your way!
           </p>
           <div className="w-full max-w-[280px]">
             <Image
