@@ -2,41 +2,48 @@
 
 import * as React from "react";
 
-
 export type IconDef = {
   id: string;
   Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-  activeClass: string; // e.g., "text-[#24B7FD]"
-  bgClass?: string; 
-  iconPx?: number;     // e.g., 84
+  activeClass: string;
+  bgClass?: string;
+  iconPx?: number;
 };
 
 type Props = {
   icons: IconDef[];
-  estimatedMs?: number; // total time to reach 100% progress
+  estimatedMs?: number;
   className?: string;
   onDone?: () => void;
 
-  // New: control sizes
-  tileSizePx?: number;  // square tile size in pixels (width=height)
-  iconPx?: number;      // icon size in pixels (we’ll set height and keep width auto for aspect ratio)
+  // Desktop sizes
+  tileSizePx?: number;
+  iconPx?: number;
+
+  mobileTileSizePx?: number;
+  mobileIconPx?: number;
 };
 
 export default function SequentialLogoLoader({
   icons,
-  estimatedMs = 3000,
+  estimatedMs = 2000,
   className,
   onDone,
   tileSizePx = 64,
   iconPx,
+  mobileTileSizePx,
+  mobileIconPx,
 }: Props) {
   const [progress, setProgress] = React.useState(0);
 
-  // Reasonable default: icon ~50% of tile if not provided
+  // Defaults
   const resolvedIconPx = iconPx ?? Math.round(tileSizePx * 0.5);
+  // Default mobile to 100px tile if not set, or smaller relative to desktop
+  const resolvedMobileTilePx = mobileTileSizePx ?? 100; 
+  const resolvedMobileIconPx = mobileIconPx ?? Math.round(resolvedMobileTilePx * 0.5);
 
   React.useEffect(() => {
-    const stepMs = Math.max(10, Math.floor(estimatedMs / 100)); // tick from 0..100
+    const stepMs = Math.max(10, Math.floor(estimatedMs / 100));
     const id = window.setInterval(() => {
       setProgress((p) => {
         if (p >= 100) {
@@ -47,7 +54,6 @@ export default function SequentialLogoLoader({
         return p + 1;
       });
     }, stepMs);
-
     return () => window.clearInterval(id);
   }, [estimatedMs, onDone]);
 
@@ -58,8 +64,26 @@ export default function SequentialLogoLoader({
   }, [progress, icons.length]);
 
   return (
-    <div className={["flex flex-col items-center gap-8", className].filter(Boolean).join(" ")}>
-      <div className="flex items-center gap-6">
+    <div
+      className={["flex flex-col items-center gap-8", className]
+        .filter(Boolean)
+        .join(" ")}
+      // We pass CSS variables for the sizes so we can switch them with media queries
+      style={
+        {
+          "--tile-size": `${tileSizePx}px`,
+          "--icon-size": `${resolvedIconPx}px`,
+          "--mob-tile-size": `${resolvedMobileTilePx}px`,
+          "--mob-icon-size": `${resolvedMobileIconPx}px`,
+        } as React.CSSProperties
+      }
+    >
+      {/* 
+        Layout: 
+        - Mobile: grid-cols-2 (2x2 matrix)
+        - Desktop (md): flex-row
+      */}
+      <div className="grid grid-cols-2 gap-4 md:flex md:items-center md:gap-6">
         {icons.map((cfg, idx) => {
           const isActive = idx < activeCount;
           return (
@@ -69,14 +93,12 @@ export default function SequentialLogoLoader({
               isActive={isActive}
               activeClass={cfg.activeClass}
               bgClass={cfg.bgClass}
-              tileSizePx={tileSizePx}
-              iconPx={resolvedIconPx}
             />
           );
         })}
       </div>
-
-      <ProgressBar value={progress} />
+      
+      {/* Progress Bar removed */}
     </div>
   );
 }
@@ -86,15 +108,11 @@ function IconTile({
   isActive,
   activeClass,
   bgClass,
-  tileSizePx,
-  iconPx,
 }: {
   Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
   isActive: boolean;
   activeClass: string;
   bgClass?: string;
-  tileSizePx: number;
-  iconPx: number;
 }) {
   return (
     <div
@@ -102,33 +120,23 @@ function IconTile({
         "rounded-2xl flex items-center justify-center",
         "transition-all duration-500 ease-out",
         bgClass ?? "bg-gray-100",
+        // Use the CSS variables for width/height
+        "w-[var(--mob-tile-size)] h-[var(--mob-tile-size)] md:w-[var(--tile-size)] md:h-[var(--tile-size)]",
       ].join(" ")}
-      style={{ width: tileSizePx, height: tileSizePx }}
     >
       <Icon
         className={[
           "transition-colors duration-500 ease-out",
           isActive ? activeClass : "text-gray-400 grayscale opacity-70",
         ].join(" ")}
-        style={{ height: iconPx, width: "auto" }}
-        aria-hidden="true"
+        // Use CSS variables for icon height
+        style={{
+          height: "var(--mob-icon-size)", 
+          width: "auto"
+        }}
+        // Override for desktop via a style block or class is tricky with inline styles,
+        // so we use a style tag inside the component or simple media query in style prop:
       />
-    </div>
-  );
-}
-
-function ProgressBar({ value }: { value: number }) {
-  return (
-    <div className="w-lg">
-      <div className="h-1 rounded-full bg-gray-200 overflow-hidden">
-        <div
-          className="h-full bg-sky-500 transition-[width] duration-150 ease-out"
-          style={{ width: `${value}%` }}
-        />
-      </div>
-      <div className="sr-only" aria-live="polite" aria-atomic="true">
-        Loading {Math.round(value)} percent
-      </div>
     </div>
   );
 }

@@ -109,8 +109,8 @@ export default function ToolsGrid() {
       
       if (isMobile) {
         scatterPositions = [
-          { x: -45, y: -160 }, // top-left
-          { x: 45, y: -160 },  // bottom-left
+          { x: -45, y: -180 }, // top-left
+          { x: 45, y: -180 },  // bottom-left
           { x: -45, y: 65 },  // top-right
           { x: 45, y: 65 },   // bottom-right
         ];
