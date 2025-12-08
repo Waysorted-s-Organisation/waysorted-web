@@ -352,7 +352,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               {/* Products row */}
               <div className="px-3">
                 <button
-                  className={`w-full flex items-center gap-2 px-3 py-4 ${textColor}`}
+                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
                   onClick={() =>
                     // Accordion behavior on mobile: opening Products closes Resources
                     setMobileProductsOpen((prev) => {
@@ -401,7 +401,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <div className={`text-sm font-semibold ${textColor}`}>{p.name}</div>
+                          <div className="text-sm font-semibold text-secondary-db-100">{p.name}</div>
                           <div className="text-xs text-secondary-db-60 line-clamp-2">{p.description}</div>
                         </div>
                       </button>
@@ -416,7 +416,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               {/* Resources row */}
               <div className="px-3">
                 <button
-                  className={`w-full flex items-center gap-2 px-3 py-4 ${textColor}`}
+                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
                   onClick={() =>
                     // Accordion behavior on mobile: opening Resources closes Products
                     setMobileResourcesOpen((prev) => {
@@ -448,7 +448,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 <div className="px-3">
                   <div className="mt-2 rounded-xl border border-primary-way-10 bg-primary-way-5 overflow-hidden">
                     <button
-                      className={`w-full text-left px-4 py-3 ${textColor} border-b border-primary-way-10`}
+                      className="w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
                       onClick={() => {
                         router.push('/learning');
                         setMobileOpen(false);
@@ -458,7 +458,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                       Learning
                     </button>
                     <button
-                      className={`w-full text-left px-4 py-3 ${textColor} border-b border-primary-way-10`}
+                      className="w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
                       onClick={() => {
                         router.push('/docs');
                         setMobileOpen(false);
@@ -475,7 +475,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               </div>
               <div className="px-3">
                 <button
-                  className={`w-full flex items-center gap-2 px-3 py-4 ${textColor}`}
+                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
                   onClick={() => {router.push('/about-us')}}
                 >
                   <span className="font-medium">About Us</span>
@@ -484,7 +484,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               </div>
               <div className="px-3">
                 <button
-                  className={`w-full flex items-center gap-2 px-3 py-4 ${textColor}`}
+                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
                   onClick={() => {router.push('/support')}}
                 >
                   <span className="font-medium">Support</span>
@@ -502,8 +502,8 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                   aria-label="Change Language"
                   aria-controls="mobile-language"
                 >
-                  <Image src="/icons/world.svg" alt="Language" width={16} height={16} />
-                  <span className={`${textColor} text-sm`}>En</span>
+                  <Image src={logoLanguage} alt="Language" width={16} height={16} />
+                  <span className="text-secondary-db-100 text-sm">En</span>
                 </button>
                 <div id="mobile-language" className="relative mt-2">
                   <LanguageDropdown
