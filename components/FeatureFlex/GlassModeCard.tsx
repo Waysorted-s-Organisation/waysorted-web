@@ -21,7 +21,7 @@ export default function GlassModeCard({ className }: { className?: string }) {
         alt="Glass mode"
         width={480}
         height={128}
-        className="md:translate-y-[40px] translate-y-[30px]"
+        className="md:translate-y-[40px] translate-y-[32px]"
         />
     </div>
   );
