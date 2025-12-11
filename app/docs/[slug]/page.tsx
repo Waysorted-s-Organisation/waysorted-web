@@ -7,7 +7,6 @@ import BackupAndRecovery from "./content/backup-and-recovery";
 import BugReporting from "./content/bug-reporting";
 import CommonErrors from "./content/common-errors";
 import ContactSupport from "./content/contact-support";
-import CreatorGuidelines from "./content/creator-guidelines";
 import CookiePolicy from "./content/cookie-policy";
 import DataProcessing from "./content/data-processing";
 import DeveloperFocusedGuide from "./content/developer-focused-guide";
