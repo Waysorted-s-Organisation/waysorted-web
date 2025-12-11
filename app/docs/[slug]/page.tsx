@@ -46,7 +46,6 @@ const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
   "bug-reporting": BugReporting,
   "common-errors": CommonErrors,
   "contact-support": ContactSupport,
-  "creator-guidelines": CreatorGuidelines,
   "cookie-policy": CookiePolicy,
   "data-processing": DataProcessing,
   "developer-focused-guide": DeveloperFocusedGuide,

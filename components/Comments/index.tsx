@@ -40,6 +40,9 @@ export default function Comments() {
     const bw = bounds.clientWidth + boundaryPadding;
     const bh = bounds.clientHeight + boundaryPadding;
 
+    // Capture current refs for cleanup
+    const currentCards = cardRefs.current;
+
     // Initialize card positions and velocities
     cardStates.current = [];
     for (let i = 0; i < CARD_COUNT; i++) {
@@ -203,12 +206,11 @@ export default function Comments() {
     return () => {
       cancelAnimationFrame(animId);
       document.removeEventListener("mousemove", onPointerMove);
-      cardRefs.current.forEach((card) => {
+      currentCards.forEach((card) => {
         if (!card) return;
         card.replaceWith(card.cloneNode(true)); // removes listeners
       });
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
  
   return (
