@@ -92,7 +92,7 @@ export default function EarlyAccessForm() {
 
               <GlowStarButton
                 onClick={() => setShowPopup(false)}
-                className="mt-5 rounded-lg bg-black text-white px-6 py-2 hover:bg-gray-900 transition cursor-pointer"
+                className="mt-5 rounded-lg bg-secondary-db-100 text-white px-6 py-2 hover:bg-gray-900 transition cursor-pointer"
               >
                 Subscribe to our Newsletter!
               </GlowStarButton>

@@ -1,5 +1,6 @@
 "use client";
 
+import GlowStarButton from "@/components/GlowStarButton";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -37,21 +38,21 @@ export default function DisconnectedPage() {
                   To use this plugin, please allow it to connect with your account.
                 </p>
 
-                <button
-                  className="mt-6 w-full inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-blue-500 font-medium text-base text-white px-5 py-3 cursor-pointer"
+                <GlowStarButton
+                  className="mt-6 w-full inline-flex items-center justify-center rounded-lg bg-primary-way-100 font-medium text-base text-white px-5 py-3 cursor-pointer"
                   aria-label="Allow access"
                 >
                   Allow access
-                </button>
+                </GlowStarButton>
 
 
                 <p className="mt-4 text-xs text-secondary-db-70 font-medium text-center">
                   By continuing, you agree to let Way use your information according to our{" "}
-                  <Link href="/terms" className="underline text-primary-way-100">
+                  <Link href="/docs/terms-of-service" className="underline text-primary-way-100">
                     Terms
                   </Link>{" "}
                   and{" "}
-                  <Link href="/privacy" className="underline text-primary-way-100">
+                  <Link href="/docs/privacy-policy" className="underline text-primary-way-100">
                     Privacy Policy
                   </Link>
                   .
