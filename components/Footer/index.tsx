@@ -168,7 +168,7 @@ export default function Footer() {
               <div>
                 <h5 className="font-semibold mb-2 sm:mb-3 text-white">Get Started</h5>
                 <ul className="space-y-2 text-secondary-db-40">
-                  <li><Link href="/get-early-access" className="hover:text-white">Early Access</Link></li>
+                  {/* <li><Link href="/get-early-access" className="hover:text-white">Early Access</Link></li> */}
                   <li><Link href="/learning" className="hover:text-white">Explore Tools</Link></li>
                   {/* <li><Link href="/settings" className="hover:text-white">Free Credits</Link></li> */}
                   <li><Link href="/login" className="hover:text-white">Sign in</Link></li>
