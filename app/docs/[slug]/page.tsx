@@ -26,6 +26,7 @@ import PrivacyPolicy from "./content/privacy-policy";
 import ProfileAndSettings from "./content/profile-and-settings";
 import QuickIntegrationWithFigma from "./content/quick-integration-with-figma";
 import RateLimits from "./content/rate-limits";
+import RatingsAndReviews from "./content/ratings-and-reviews";
 import RequestAFeature from "./content/request-a-feature";
 import SearchingAndBrowsingPlugins from "./content/searching-and-browsing-plugins";
 import TermsOfService from "./content/terms-of-service";
@@ -65,6 +66,7 @@ const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
   "profile-and-settings": ProfileAndSettings,
   "quick-integration-with-figma": QuickIntegrationWithFigma,
   "rate-limits": RateLimits,
+  "ratings-and-reviews": RatingsAndReviews,
   "request-a-feature": RequestAFeature,
   "searching-and-browsing-plugins": SearchingAndBrowsingPlugins,
   "terms-of-service": TermsOfService,
