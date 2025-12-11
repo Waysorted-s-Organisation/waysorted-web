@@ -21,15 +21,15 @@ export interface SidebarItem {
 
 const sidebarData: SidebarItem[] = [
   { title: "General", links: ["Getting Started", "Account Creation and Setup", "Quick Integration with Figma", "FAQs"] },
-  { title: "Account and Workspace", links: ["Profile and Settings"],},
-  { title: "Plugins and Marketplace", links: ["Searching and Browsing Plugins", "Creator Guidelines", "Ratings and Reviews"] },
+  { title: "Account and Workspace", links: ["Profile and Settings"], },
+  { title: "Plugins and Marketplace", links: ["Searching and Browsing Plugins", "Ratings and Reviews"] },
   { title: "Tools Reference", links: ["Palettable", "Unit Converter", "Import Tool", "Upcoming Tools"] },
   { title: "Design Standards", links: ["Waysorted Principles", "Accessibility(WCAG)", "UI/UX Best Practices", "Handoff Standards"] },
   { title: "Troubleshooting & Support", links: ["Common Errors", "Diagnostics", "Contact Support", "Bug Reporting", "Request a Feature"] },
   { title: "Legal", links: ["Privacy Policy", "Terms of Service", "Data Processing", "Cookie Policy", "Intellectual Property Rights"] },
   { title: "Integrations and Cloud", links: ["Figma Sync", "Backup and Recovery", "Third-Party Integrations"] },
   { title: "Credits and Usage", links: ["Overview", "Earning Credits", "Using Credits", "Managing Credits"] },
-  {title: "Waysorted API Documentation", links: ["Developer Focused Guide", "Overview and Authentication", "Examples", "Rate Limits", "Webhooks"] },
+  { title: "Waysorted API Documentation", links: ["Developer Focused Guide", "Overview and Authentication", "Examples", "Rate Limits", "Webhooks"] },
 ];
 
 const slugify = (s: string) =>
@@ -98,7 +98,7 @@ export default function DocsShell({
               className="w-16 h-16"
             />
           </div>
-          
+
           <h1 className="text-2xl font-medium text-white mb-10 leading-snug">
             Way&apos;s UI delivers its best experience on desktop.
           </h1>
@@ -122,9 +122,8 @@ export default function DocsShell({
       {/* Desktop View (Hidden on screens smaller than lg) */}
       <div className="hidden lg:block min-h-screen bg-white">
         <main
-          className={`min-h-screen bg-white transition-all duration-300 pb-45${
-            showBanner ? "pt-24" : "pt-16"
-          }`}
+          className={`min-h-screen bg-white transition-all duration-300 pb-45${showBanner ? "pt-24" : "pt-16"
+            }`}
         >
           <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 
@@ -201,19 +200,17 @@ export default function DocsShell({
                   return (
                     <div
                       key={item.title}
-                      className={`w-72 rounded-xl ${
-                        item.links && isOpen
+                      className={`w-72 rounded-xl ${item.links && isOpen
                           ? "bg-primary-way-10 outline outline-2 outline-primary-way-10"
                           : ""
-                      }`}
+                        }`}
                     >
                       <button
                         onClick={() => item.links && toggleSection(item.title)}
-                        className={`flex items-center justify-between w-72 px-2 py-2 text-left text-secondary-db-80 font-medium hover:bg-primary-way-10 cursor-pointer ${
-                          item.links && isOpen
+                        className={`flex items-center justify-between w-72 px-2 py-2 text-left text-secondary-db-80 font-medium hover:bg-primary-way-10 cursor-pointer ${item.links && isOpen
                             ? "bg-primary-way-100 text-white hover:bg-primary-way-100 rounded-t-xl"
                             : ""
-                        }`}
+                          }`}
                       >
                         {item.title}
                         {item.links && (
@@ -241,9 +238,8 @@ export default function DocsShell({
 
                       {item.links && (
                         <div
-                          className={`ml-3 py-2 relative overflow-hidden transition-[max-height] duration-900 ease-in-out ${
-                            isOpen ? "max-h-96" : "max-h-0"
-                          }`}
+                          className={`ml-3 py-2 relative overflow-hidden transition-[max-height] duration-900 ease-in-out ${isOpen ? "max-h-96" : "max-h-0"
+                            }`}
                         >
                           <div className="absolute left-0 top-[1.2em] bottom-[1em] w-[1.5px] bg-primary-way-100" />
                           <div className="pt-1">
@@ -256,11 +252,10 @@ export default function DocsShell({
                                     setActiveLink(link);
                                     router.push(`/docs/${slug}`);
                                   }}
-                                  className={`text-sm ml-2 font-regular cursor-pointer transition-colors duration-200 py-1 ${
-                                    activeLink === link
+                                  className={`text-sm ml-2 font-regular cursor-pointer transition-colors duration-200 py-1 ${activeLink === link
                                       ? "text-primary-way-100"
                                       : "text-secondary-db-100 hover:text-primary-way-100"
-                                  }`}
+                                    }`}
                                 >
                                   {link}
                                 </div>
@@ -285,7 +280,7 @@ export default function DocsShell({
                 {children}
               </div>
             </main>
-            
+
             <TableOfContents topOffsetPx={112} />
           </div>
         </main>
