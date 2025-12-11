@@ -18,7 +18,7 @@ export default function Coffee() {
             className="inline-block mx-2 cursor-pointer align-middle h-8 w-8 sm:h-[60px] sm:w-[60px]"
           />
         </span>
-        Coffee’s Ready!
+        Coffee&apos;s Ready!
       </h1>
 
       {/* Button */}
@@ -28,7 +28,7 @@ export default function Coffee() {
           title="Try Now"
         >
           <span className="flex items-center text-xs md:text-xl font-semibold justify-center gap-3 sm:gap-4">
-            It’s Free - Try now!
+            It&apos;s Free - Try now!
             <span
               className="bg-white h-10 w-10 sm:h-14 sm:w-14 flex items-center justify-center rounded-xl"
               aria-hidden="true"

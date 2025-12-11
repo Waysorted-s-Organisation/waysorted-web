@@ -41,13 +41,13 @@ const JoinUsMobile = () => (
       className="absolute -top-5 -right-5 z-10"
     />
     <p className="text-white text-2xl font-semibold mb-1 text-left w-full">Join our Team !</p>
-    <p className="text-white text-lg font-medium mb-1 text-left w-full">Build the Way with us.</p>
+    <p className="text-white text-lg font-medium mb-1 text-left w-full">Build the Wayyy with us.</p>
     <p className="text-white text-sm mb-4 text-left w-full">
       Be part of a fast-moving startup, where your work makes a real impact from day one.
     </p>
     <GlowStarButton
       onClick={() => window.open("https://discord.gg/U2XF76WxNv", "_blank")}
-      className="bg-[#181C1F] text-white px-6 py-3 rounded-xl font-semibold text-base flex items-center justify-center w-full"
+      className="bg-secondary-db-100 text-white px-6 py-3 rounded-xl font-semibold text-base flex items-center justify-center w-full"
       style={{ minHeight: "48px" }}
     >
       Join Our Discord
@@ -73,7 +73,7 @@ const JoinUsDesktop = () => (
     />
     <p className="text-3xl font-semibold mb-2 text-left">Join our <br /> Team!</p>
     <div className="text-base text-secondary-db-5 mb-4 text-left font-medium">
-      <p className="mb-4 text-lg">Build the Way with us.</p>
+      <p className="mb-4 text-lg">Build the Wayyy with us.</p>
       <p className="text-sm">Be part of a fast-moving startup, where your work makes a real impact from day one.</p>
     </div>
     <GlowStarButton

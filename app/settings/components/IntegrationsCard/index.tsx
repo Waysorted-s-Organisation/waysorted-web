@@ -94,7 +94,7 @@ export default function IntegrationsCard({ integrations, anyConnected }: Integra
                 ) : (
                   <button
                     disabled={comingSoon}
-                    onClick={() => router.push(`/disconnected`)}
+                    onClick={() => router.push(`/allow-access`)}
                     className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
                       comingSoon
                         ? "cursor-not-allowed bg-secondary-db-5 text-secondary-db-50"

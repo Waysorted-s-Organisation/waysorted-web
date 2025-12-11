@@ -174,7 +174,7 @@ export default function ContactForm() {
                 <span>
                   By submitting this email you agree to our{" "}
                   <a
-                    href="/terms"
+                    href="docs/terms-of-service"
                     className="ml-0 md:ml-1 text-white underline hover:text-primary-way-100"
                   >
                     Terms

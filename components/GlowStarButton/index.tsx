@@ -122,7 +122,7 @@ export default function GlowStarButton({
   return (
     <button
       type="submit"
-      className={`btn-glow bg-secondary-db-100 text-white ${className}`}
+      className={`btn-glow text-white ${className}`}
       onMouseEnter={rerollOnHover ? () => setHoverKey(k => k + 1) : undefined}
       onTouchStart={rerollOnHover ? () => setHoverKey(k => k + 1) : undefined}
       title={title}

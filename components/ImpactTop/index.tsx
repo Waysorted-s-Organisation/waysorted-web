@@ -27,7 +27,7 @@ export default function ImpactTop() {
 
       {/* Description */}
       <p className="text-secondary-db-70 leading-relaxed max-w-2xl sm:max-w-4xl md:max-w-6xl text-sm sm:text-base md:text-lg">
-        Reviewed by figma usersLorem ipsum dolor sit amet, cons.
+        Reviewed and recommended by users like you.
       </p>
     </section>
   );
