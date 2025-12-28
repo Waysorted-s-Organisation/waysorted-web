@@ -263,7 +263,7 @@ export default function PlaySecureCard({ className }: { className?: string }) {
         <div className="h-12 w-12 rounded-xl bg-primary-way-90 flex items-center mb-4 justify-center">
           <Image src="/icons/ball_1.svg" alt="Play Secure" width={36} height={36} />
         </div>
-        <p className="text-secondary-db-80 text-sm mt-1">
+        <p className="text-secondary-db-80 text-base font-medium mt-1">
           Take a breather and test your reflexes in a minimalist arcade game!
         </p>
       </div>

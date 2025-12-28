@@ -18,8 +18,8 @@ export default function ImpactTop() {
       </span>
 
       {/* Heading */}
-      <h1 className="font-semibold text-secondary-db-100 leading-tight mb-3 sm:mb-4 text-[clamp(1.75rem,6.5vw,2.5rem)] sm:text-4xl md:text-5xl">
-        A platform you can{" "}
+      <h1 className="font-semibold text-secondary-db-100 leading-tight mb-3 sm:mb-4 text-[clamp(1.75rem,6.5vw,2.5rem)] sm:text-4xl md:text-4xl">
+        A Platform you can{" "}
         <span className="bg-section-bg text-[#1A5EF1] px-1.5 sm:px-2 rounded">
           Trust!
         </span>
