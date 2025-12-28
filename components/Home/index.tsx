@@ -49,7 +49,7 @@ export default function Home() {
             <ToolsGrid />
             <TopSection />
             {/* <FloatingButton /> */}
-            <ImpactTop />
+            
             
             <InfoCards />
             <div className="my-60" />

@@ -1,143 +1,75 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
-import { motion, useAnimation, useMotionValue, animate } from "framer-motion";
+import { motion, useAnimation, useMotionValue, animate, useScroll, useTransform, MotionValue } from "framer-motion";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import ImpactTop from "../ImpactTop";
 
-// --- Component 1: Segmented Progress Bar (Automatic Loop) ---
-export function SegmentedProgressBar() {
-  const controls = useAnimation();
-  const [progress, setProgress] = useState<number>(0);
+// --- Component 1: Segmented Progress Bar (Scroll Linked) ---
+export function SegmentedProgressBar({ progressValue }: { progressValue: MotionValue<number> }) {
+  const [displayProgress, setDisplayProgress] = useState<number>(0);
 
   const totalBars = 15;
   const targetPercent = 72;
   const activeBars = Math.round((targetPercent / 100) * totalBars);
 
+  // Sync display counter with scroll progress
   useEffect(() => {
-    let isMounted = true;
-
-    const runAnimation = async () => {
-      if (!isMounted) return;
-
-      // 1. Reset State
-      setProgress(0);
-      await controls.start({ 
-        opacity: 0.2, 
-        transition: { duration: 0.5 } // Fade out smoothly before resetting
-      });
-
-      // 2. Animate Counter
-      let count = 0;
-      // We use a small promise-based delay loop for the counter to sync loosely with bars
-      const countDuration = 1000; // 1 second to count up
-      const stepTime = countDuration / targetPercent;
-      
-      const counterInterval = setInterval(() => {
-        if (!isMounted) return;
-        count += 1;
-        setProgress((prev) => (prev < targetPercent ? count : targetPercent));
-        if (count >= targetPercent) clearInterval(counterInterval);
-      }, stepTime);
-
-      // 3. Animate Bars Filling
-      await controls.start((i: number) => ({
-        opacity: i < activeBars ? 1 : 0.2,
-        transition: {
-          duration: 0.3,
-          delay: i * 0.05, // Stagger effect
-          ease: "linear",
-        },
-      }));
-
-      // 4. Hold the finished state, then restart
-      if (isMounted) {
-        setTimeout(() => {
-          runAnimation();
-        }, 3000); // Hold for 3 seconds before looping
-      }
-    };
-
-    runAnimation();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [controls, activeBars, targetPercent]);
+    return progressValue.on("change", (v) => {
+      setDisplayProgress(Math.round(v * targetPercent));
+    });
+  }, [progressValue]);
 
   return (
     <div className="flex items-center gap-4">
       {/* Percentage Display */}
-      <span className="w-14 text-3xl font-bold text-black">{progress}%</span>
+      <span className="w-14 text-3xl font-bold text-black">{displayProgress}%</span>
 
       {/* Segmented Bar Container */}
       <div className="flex items-center gap-1">
-        {Array.from({ length: totalBars }).map((_, idx) => (
-          <motion.div
-            key={idx}
-            custom={idx}
-            initial={{ opacity: 0.2 }}
-            animate={controls}
-            className="w-[8.51px] h-[38.31px] rounded-md bg-[#ff7920]"
-          />
-        ))}
+        {Array.from({ length: totalBars }).map((_, idx) => {
+          // Calculate when this specific bar should light up
+          const threshold = (idx / totalBars) * 1.0; 
+          // We use scroll progress (0-1) to determine opacity
+          const opacity = useTransform(progressValue, [threshold, threshold + 0.1], [0.2, idx < activeBars ? 1 : 0.2]);
+
+          return (
+            <motion.div
+              key={idx}
+              style={{ opacity }}
+              className="w-[8.51px] h-[38.31px] rounded-md bg-[#ff7920]"
+            />
+          );
+        })}
       </div>
     </div>
   );
 }
 
-// --- Component 2: Arc Bars (Automatic Loop) ---
+// --- Component 2: Arc Bars (Scroll Linked) ---
 interface ArcBarsProps {
-  percentage: number;
   targetNumber: number;
+  progressValue: MotionValue<number>;
 }
 
-const ArcBars: React.FC<ArcBarsProps> = ({ percentage, targetNumber }) => {
+const ArcBars: React.FC<ArcBarsProps> = ({ targetNumber, progressValue }) => {
   const totalBars = 19;
-  const barsLit = Math.round((percentage / 100) * totalBars);
   const centerX = 150;
   const centerY = 150;
   const innerRadius = 100;
 
-  // Replaced hover state with an automatic "active" toggle
-  const [isActive, setIsActive] = useState(false);
-
-  // Motion value for animating the center number
-  const count = useMotionValue(0);
   const [displayCount, setDisplayCount] = useState(0);
 
-  // Cycle the "active" state automatically
   useEffect(() => {
-    // Start active immediately
-    setIsActive(true);
-
-    const interval = setInterval(() => {
-      setIsActive((prev) => !prev);
-    }, 3000); // Toggle every 3 seconds (3s ON, 3s OFF)
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Update number display
-  useEffect(() => {
-    const unsubscribe = count.on("change", (latest) => {
-      setDisplayCount(Math.round(latest));
+    return progressValue.on("change", (v) => {
+      setDisplayCount(Math.round(v * targetNumber));
     });
-    return () => unsubscribe();
-  }, [count]);
-
-  // Animate count based on active state
-  useEffect(() => {
-    const controls = animate(count, isActive ? targetNumber : 0, {
-      duration: 1, // Slower duration for smoother auto-play
-      ease: "easeInOut",
-    });
-    return controls.stop;
-  }, [isActive, targetNumber, count]);
+  }, [progressValue, targetNumber]);
 
   return (
     <div className="absolute -top-[25%] left-1/2 transform -translate-x-1/2">
       <motion.svg className="w-72 h-72" viewBox="0 0 300 300">
-        {/* Center number */}
         <motion.text
           x={centerX}
           y={centerY}
@@ -150,31 +82,20 @@ const ArcBars: React.FC<ArcBarsProps> = ({ percentage, targetNumber }) => {
           {displayCount}x
         </motion.text>
 
-        {/* Bars around the top half-circle */}
         {Array.from({ length: totalBars }).map((_, i) => {
           const angleOnCircle = (180 * (totalBars - 1 - i)) / (totalBars - 1);
           const groupRotation = 90 - angleOnCircle;
 
-          // Stagger delay based on active state
-          const delay = isActive
-            ? i * 0.04
-            : i < barsLit
-            ? (barsLit - 1 - i) * 0.04
-            : 0;
-
           return (
             <g
               key={i}
-              transform={`translate(${centerX} ${centerY}) rotate(${groupRotation}) translate(0 ${-innerRadius})`}
+              transform={`translate(${centerX} ${centerY}) rotate(${groupRotation}) translate(0 ${-innerRadius}) translate(-6.25 0)`}
             >
-              <motion.path
+              <path
+                className={`arc-bar-${i}`}
                 d="M0.104279 1.66846C0.0477705 0.764328 0.765818 0 1.67171 0H10.8922C11.7981 0 12.5162 0.764327 12.4597 1.66846L11.0855 23.6553C11.0337 24.483 10.3474 25.1279 9.51804 25.1279H3.04589C2.21657 25.1279 1.53019 24.483 1.47846 23.6553L0.104279 1.66846Z"
-                rx={1.57}
-                ry={1.57}
                 fill="#47c784"
-                initial={{ opacity: 0.2 }}
-                animate={{ opacity: isActive && i < barsLit ? 1 : 0.2 }}
-                transition={{ duration: 0.5, delay }}
+                style={{ opacity: 0.2 }}
               />
             </g>
           );
@@ -189,113 +110,208 @@ interface CardProps {
   title: string;
   description: string;
   idx: number;
+  scrollYProgress: MotionValue<number>;
 }
 
-const InfoCard: React.FC<CardProps> = ({ title, description, idx }) => {
-  // GSAP Animation for the Network Graph (Index 1)
-  // This was already automatic, keeping logic intact
+const InfoCard: React.FC<CardProps> = ({ title, description, idx, scrollYProgress }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Staggering ranges based on card index (0 -> 1) within the normalized range
+  // Increased gaps between card starts and traveling 100px up
+  const ranges = [
+    { start: 0.0, end: 0.3 },
+    { start: 0.25, end: 0.65 },
+    { start: 0.6, end: 1.0 }
+  ];
+  const rStart = ranges[idx].start;
+  const rEnd = ranges[idx].end;
+
+  const opacity = useTransform(scrollYProgress, [rStart, rEnd], [0, 1]);
+  const y = useTransform(scrollYProgress, [rStart, rEnd], [30, 0]);
+
+  // Motion value for internal animations (progress within its own range)
+  const internalProgress = useTransform(scrollYProgress, [rStart, rEnd], [0, 1]);
+
   useGSAP(() => {
-    if (idx !== 1) return; // Only run GSAP for the second card
+    if (idx === 1) {
+    // 🔴 FORCE INITIAL STATES
+    gsap.set(
+      [
+        ".node_outer1", ".node1",
+        ".node_outer2", ".node2",
+        ".node_outer3", ".node3",
+        ".node_outer4", ".node4",
+        ".node_outer5", ".node5",
+      ],
+    { scale: 0.2, opacity: 0 }
 
-    gsap.registerPlugin();
-    const tl = gsap.timeline({ repeat: -1, ease: "linear" });
-
-    tl.fromTo(
-      ".vertical-line",
-      { scaleY: 0, transformOrigin: "top" },
-      { scaleY: 0.8, opacity: 1, duration: 3 }
     );
 
-    tl.fromTo(
-      ".node3",
-      { scale: 1, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.1 },
-      ">"
-    );
-    tl.fromTo(
-      ".node_outer3",
-      { scale: 0, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 1.5 },
-      ">"
+    gsap.set(".vertical-line", {
+      scaleY: 0,
+      opacity: 0,
+      transformOrigin: "top",
+    });
+
+    gsap.set(
+      [".left-horizontal-line", ".right-horizontal-line"],
+      {
+        scaleX: 0,
+        opacity: 0,
+      }
     );
 
-    tl.fromTo(
-      ".left-horizontal-line",
-      { scaleX: 0, transformOrigin: "left" },
+
+    gsap.set(
+  [".left-line-near", ".left-line-far"],
+  {
+    scaleX: 0,
+    opacity: 0,
+    transformOrigin: "right", // Grow from right to left
+  }
+);
+
+gsap.set(
+  [".right-line-near", ".right-line-far"],
+  {
+    scaleX: 0,
+    opacity: 0,
+    transformOrigin: "left", // Grow from left to right
+  }
+);
+
+gsap.set(".t-node", {
+  scale: 0.2,
+  opacity: 0,
+});
+
+
+  }
+
+  const tl = gsap.timeline({ paused: true });
+
+    if (idx === 1) {
+  tl
+    // 1️⃣ Center dot grows
+    .to([".node_outer3", ".node3"], {
+      scale: 1,
+      opacity: 1,
+      duration: 0.15,
+      ease: "power3.out",
+    })
+
+    // 2️⃣ Vertical line grows
+    .to(".vertical-line", {
+      scaleY: 1,
+      opacity: 1,
+      duration: 0.2,
+      ease: "power2.out",
+    })
+
+    // 3️⃣ Horizontal NEAR lines grow
+    // 3️⃣ T-junction dot grows
+.to(".t-node", {
+  scale: 1,
+  opacity: 1,
+  duration: 0.12,
+  ease: "power3.out",
+})
+
+// 4️⃣ Horizontal NEAR lines grow AFTER T-dot
+.to(
+  [".left-line-near", ".right-line-near"],
+  {
+    scaleX: 1,
+    opacity: 1,
+    duration: 0.18,
+    ease: "power2.out",
+  }
+)
+
+
+    // 4️⃣ Near dots grow ONLY after near line
+    .to(
+      [".node_outer2", ".node2", ".node_outer4", ".node4"],
+      {
+        scale: 1,
+        opacity: 1,
+        duration: 0.14,
+        ease: "power3.out",
+      },
+      "<+=0.12"
+
+    )
+
+    // 5️⃣ Horizontal FAR lines grow
+    .to(
+      [".left-line-far", ".right-line-far"],
       {
         scaleX: 1,
         opacity: 1,
-        duration: 4,
-        ease: "linear",
-        keyframes: [
-          { scaleX: 0.6, duration: 1 },
-          { scaleX: 0.6, duration: 1 },
-          { scaleX: 1, duration: 1 },
-        ],
-      },
-      ">"
-    );
-    tl.fromTo(
-      ".right-horizontal-line",
-      { scaleX: 0, opacity: 0, transformOrigin: "right" },
+        duration: 0.18,
+        ease: "power2.out",
+      }
+    )
+
+    // 6️⃣ Far dots grow after far line
+    .to(
+      [".node_outer1", ".node1", ".node_outer5", ".node5"],
       {
-        scaleX: 1,
+        scale: 1,
         opacity: 1,
-        duration: 4,
-        ease: "linear",
-        keyframes: [
-          { scaleX: 0.6, duration: 1 },
-          { scaleX: 0.6, duration: 1 },
-          { scaleX: 1, duration: 1},
-        ],
+        duration: 0.14,
+        ease: "power3.out",
       },
-      "<"
-    );
+      "<+=0.12"
 
-    // Node 2 & 4
-    tl.fromTo(
-      [".node2", ".node4"],
-      { scale: 1, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.1 },
-      6.6
     );
-    tl.fromTo(
-      [".node_outer2", ".node_outer4"],
-      { scale: 0, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 1.5 },
-      6.6
-    );
+}
 
-    // Node 1 & 5
-    tl.fromTo(
-      [".node1", ".node5"],
-      { scale: 1, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.1 },
-      8.6
-    );
-    tl.fromTo(
-      [".node_outer1", ".node_outer5"],
-      { scale: 0, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 1.5 },
-      8.6
-    );
-  }, [idx]);
+
+
+ else if (idx === 2) {
+      const totalBars = 19;
+      const barsLit = Math.round((70 / 100) * totalBars);
+      for (let i = 0; i < totalBars; i++) {
+        const isEligible = i < barsLit;
+        tl.to(`.arc-bar-${i}`, {
+          opacity: isEligible ? 1 : 0.2,
+          duration: 0.1,
+        }, i / totalBars);
+      }
+    }
+
+    tl.progress(0);
+
+    const unsubscribe = internalProgress.on("change", (v) => {
+      tl.progress(v);
+    });
+
+    return () => {
+      unsubscribe();
+      tl.kill();
+    };
+  }, [idx, internalProgress]);
 
   return (
-    <div className="w-[306px] h-[255px] border border-secondary-db-5 rounded-xl flex flex-col bg-white p-2">
+    <motion.div 
+      ref={containerRef}
+      style={{ opacity, y }}
+      className="w-[306px] h-[255px] border border-secondary-db-5 rounded-xl flex flex-col bg-white p-2"
+    >
       {/* Visual Section */}
       {idx === 0 && (
         <div className="h-[140.32px] rounded-t-xl flex items-center justify-center bg-[#FF7920]/5">
-          <SegmentedProgressBar />
+          <SegmentedProgressBar progressValue={internalProgress} />
         </div>
       )}
-      
+
       {idx === 1 && (
         <div className="h-[140.32px] relative rounded-t-xl flex items-center justify-center bg-[#F8F5FF]">
           <div className="flex flex-col gap-4 items-center">
             {/* Tree Graph DOM Structure */}
-            <div className="node_outer relative flex items-center justify-center w-[36.77px] h-[36.77px] bg-[#7531F930] rounded-[50%]">
-              <div className="node w-[23.7px] h-[23.7px] bg-[#7531F9] rounded-[50%]">
+            <div className="node_outer3 relative flex items-center justify-center w-[36.77px] h-[36.77px] bg-[#7531F930] rounded-[50%]">
+              <div className="node3 w-[23.7px] h-[23.7px] bg-[#7531F9] rounded-[50%]">
                 <div className="vertical-line absolute left-1/2 transform -translate-x-1/2 w-[2px] h-[70px] bg-[#7531F9] opacity-0"></div>
               </div>
             </div>
@@ -306,10 +322,19 @@ const InfoCard: React.FC<CardProps> = ({ title, description, idx }) => {
               <div className="node_outer2 relative flex items-center justify-center w-[36.77px] h-[36.77px] bg-[#7531F930] rounded-[50%]">
                 <div className="node2 w-[23.7px] h-[23.7px] bg-[#7531F9] rounded-[50%]"></div>
               </div>
-              <div className="node_outer3 relative flex items-center justify-center w-[36.77px] h-[36.77px] bg-[#7531F930] rounded-[50%]">
-                <div className="relative3 node w-[23.7px] h-[23.7px] bg-[#7531F9] rounded-[50%]">
-                  <div className="left-horizontal-line absolute top-1/2 left-[9px] w-[90px] h-[2px] bg-[#7531F9]"></div>
-                  <div className="right-horizontal-line absolute top-1/2 right-[9px] w-[90px] h-[2px] bg-[#7531F9]"></div>
+              <div className="node_outer relative flex items-center justify-center w-[36.77px] h-[36.77px] bg-[#7531F930] rounded-[50%]">
+
+                {/* Center node spacer */}
+                <div className="relative node t-node w-[23.7px] h-[23.7px] bg-[#7531F9] rounded-[50%]">
+
+                  {/* LEFT */}
+<div className="left-line-near absolute top-1/2 right-full w-[45px] h-[2px] bg-[#7531F9]"></div>
+<div className="left-line-far absolute top-1/2 right-[calc(100%+45px)] w-[45px] h-[2px] bg-[#7531F9]"></div>
+
+{/* RIGHT */}
+<div className="right-line-near absolute top-1/2 left-full w-[45px] h-[2px] bg-[#7531F9]"></div>
+<div className="right-line-far absolute top-1/2 left-[calc(100%+45px)] w-[45px] h-[2px] bg-[#7531F9]"></div>
+
                 </div>
               </div>
               <div className="node_outer4 relative flex items-center justify-center w-[36.77px] h-[36.77px] bg-[#7531F930] rounded-[50%]">
@@ -325,7 +350,7 @@ const InfoCard: React.FC<CardProps> = ({ title, description, idx }) => {
 
       {idx === 2 && (
         <div className="h-[140.32px] rounded-t-xl flex items-center justify-center bg-[#47C784]/5 relative">
-          <ArcBars targetNumber={10} percentage={70} />
+          <ArcBars targetNumber={10} progressValue={internalProgress} />
         </div>
       )}
 
@@ -338,12 +363,32 @@ const InfoCard: React.FC<CardProps> = ({ title, description, idx }) => {
           {description}
         </p>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
 // --- Main App Component ---
 export const InfoCards = () => {
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollYProgress = useMotionValue(0);
+
+  useGSAP(() => {
+    gsap.registerPlugin(ScrollTrigger);
+    
+    ScrollTrigger.create({
+      trigger: triggerRef.current,
+      start: "top top",
+      end: "+=1200",
+      pin: containerRef.current,
+      scrub: true,
+      anticipatePin: 1,
+      onUpdate: (self) => {
+        scrollYProgress.set(self.progress);
+      }
+    });
+  }, []);
+
   const cardData = [
     {
       title: "Increase in Productivity",
@@ -366,16 +411,26 @@ export const InfoCards = () => {
   ];
 
   return (
-    <div className="bg-white flex items-center justify-center p-8">
-      <div className="flex flex-wrap justify-center items-center gap-12">
-        {cardData.map((card, index) => (
-          <InfoCard
-            key={index}
-            title={card.title}
-            description={card.description}
-            idx={index}
-          />
-        ))}
+    <div ref={triggerRef} className="w-full">
+      <div 
+        ref={containerRef}
+        className="bg-white w-full h-screen flex flex-col items-center justify-center overflow-hidden"
+      >
+        <div className="w-full">
+          <ImpactTop />
+        </div>
+        
+        <div className="flex flex-wrap justify-center items-center gap-12 max-w-7xl mx-auto mt-12">
+          {cardData.map((card, index) => (
+            <InfoCard
+              key={index}
+              title={card.title}
+              description={card.description}
+              idx={index}
+              scrollYProgress={scrollYProgress}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
