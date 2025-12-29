@@ -8,10 +8,6 @@ const MONGODB_URI =
   process.env.MONGODB_URI ||
   process.env.NEXT_PUBLIC_MONGODB_URI;
 
-if (!MONGODB_URI) {
-  throw new Error("MONGODB_URI not set");
-}
-
 declare global {
   var _mongooseConn: { conn: Mongoose | null; promise: Promise<Mongoose> | null } | undefined;
 }
@@ -20,11 +16,19 @@ const globalCache = globalThis._mongooseConn ?? { conn: null, promise: null };
 globalThis._mongooseConn = globalCache;
 
 export async function dbConnect(): Promise<Mongoose> {
+  // Only throw error when actually trying to connect, not during build
+  if (!MONGODB_URI) {
+    throw new Error("MONGODB_URI not set");
+  }
+
   if (globalCache.conn) return globalCache.conn;
 
   globalCache.promise ??= mongoose
     .connect(MONGODB_URI as string, {
       bufferCommands: false,
+      maxPoolSize: 10,
+      minPoolSize: 5,
+      serverSelectionTimeoutMS: 5000,
     })
     .then((m) => m);
 

@@ -34,39 +34,39 @@ export default function SecureDataGlow() {
       </g>
       <circle cx="0.655426" cy="0.655426" r="0.655426" transform="matrix(0.262683 -0.964882 -0.964882 -0.262683 9.57275 31.4619)" fill="white"/>
       <defs>
-      <filter id="filter0_f_2614_50" x="43.9219" y="46.6477" width="4.80664" height="4.80615" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <filter id="filter0_f_2614_50" x="43.9219" y="46.6477" width="4.80664" height="4.80615" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+      <feFlood floodOpacity="0" result="BackgroundImageFix"/>
       <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
       <feGaussianBlur stdDeviation="0.873901" result="effect1_foregroundBlur_2614_50"/>
       </filter>
-      <filter id="filter1_f_2614_50" x="40.9024" y="9.23267" width="4.80664" height="4.80615" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <filter id="filter1_f_2614_50" x="40.9024" y="9.23267" width="4.80664" height="4.80615" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+      <feFlood floodOpacity="0" result="BackgroundImageFix"/>
       <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
       <feGaussianBlur stdDeviation="0.873901" result="effect1_foregroundBlur_2614_50"/>
       </filter>
-      <filter id="filter2_f_2614_50" x="48.909" y="28.7913" width="4.80664" height="4.80615" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <filter id="filter2_f_2614_50" x="48.909" y="28.7913" width="4.80664" height="4.80615" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+      <feFlood floodOpacity="0" result="BackgroundImageFix"/>
       <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
       <feGaussianBlur stdDeviation="0.873901" result="effect1_foregroundBlur_2614_50"/>
       </filter>
-      <filter id="filter3_f_2614_50" x="7.73987" y="8.24634" width="4.80682" height="4.80615" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <filter id="filter3_f_2614_50" x="7.73987" y="8.24634" width="4.80682" height="4.80615" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+      <feFlood floodOpacity="0" result="BackgroundImageFix"/>
       <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
       <feGaussianBlur stdDeviation="0.873901" result="effect1_foregroundBlur_2614_50"/>
       </filter>
-      <filter id="filter4_f_2614_50" x="5.68689" y="45.7278" width="4.80682" height="4.80615" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <filter id="filter4_f_2614_50" x="5.68689" y="45.7278" width="4.80682" height="4.80615" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+      <feFlood floodOpacity="0" result="BackgroundImageFix"/>
       <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
       <feGaussianBlur stdDeviation="0.873901" result="effect1_foregroundBlur_2614_50"/>
       </filter>
-      <filter id="filter5_f_2614_50" x="6.70911" y="28.2542" width="4.80682" height="4.80615" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-      <feFlood flood-opacity="0" result="BackgroundImageFix"/>
+      <filter id="filter5_f_2614_50" x="6.70911" y="28.2542" width="4.80682" height="4.80615" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+      <feFlood floodOpacity="0" result="BackgroundImageFix"/>
       <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
       <feGaussianBlur stdDeviation="0.873901" result="effect1_foregroundBlur_2614_50"/>
       </filter>
       <linearGradient id="paint0_linear_2614_50" x1="27.3984" y1="9.06578" x2="27.6008" y2="43.9889" gradientUnits="userSpaceOnUse">
-      <stop stop-color="white"/>
-      <stop offset="1" stop-color="white" stop-opacity="0.3"/>
+      <stop stopColor="white"/>
+      <stop offset="1" stopColor="white" stopOpacity="0.3"/>
       </linearGradient>
       </defs>
       </svg>

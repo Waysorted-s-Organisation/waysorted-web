@@ -8,10 +8,7 @@ import { useUser } from "@/hooks/useUser";
 type Step = "choose" | "email" | "otp";
 
 const OTP_URI = process.env.NEXT_PUBLIC_OTP_URI;
-if (!OTP_URI) throw new Error("OTP_URI not set");
-
 const VERIFY_URI = process.env.NEXT_PUBLIC_VERIFY_URI;
-if (!VERIFY_URI) throw new Error("VERIFY_URI not set");
 
 export default function Login() {
   const router = useRouter();

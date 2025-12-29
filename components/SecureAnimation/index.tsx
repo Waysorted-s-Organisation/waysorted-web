@@ -341,8 +341,8 @@ const SecureAnimation: React.FC = () => {
                   x2="100%"
                   y2="0%"
                 >
-                  <stop id="outerStop1" offset="0%" stop-color="#fff" />
-                  <stop id="outerStop2" offset="100%" stop-color="#fff" />
+                  <stop id="outerStop1" offset="0%" stopColor="#fff" />
+                  <stop id="outerStop2" offset="100%" stopColor="#fff" />
                 </linearGradient>
 
                 {/* Inner circle gradient */}
@@ -353,8 +353,8 @@ const SecureAnimation: React.FC = () => {
                   x2="100%"
                   y2="0%"
                 >
-                  <stop id="innerStop1" offset="0%" stop-color="#fff" />
-                  <stop id="innerStop2" offset="100%" stop-color="#fff" />
+                  <stop id="innerStop1" offset="0%" stopColor="#fff" />
+                  <stop id="innerStop2" offset="100%" stopColor="#fff" />
                 </linearGradient>
               </defs>
 

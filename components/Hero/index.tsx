@@ -37,6 +37,7 @@ const Hero = () => {
             width={16}
             height={16}
             className="mr-2"
+            priority
           />
           Request a feature
           <span className="text-primary-way-100 font-medium pl-1.5 hover:underline">
@@ -70,6 +71,7 @@ const Hero = () => {
                 alt="Waysorted for Figma"
                 width={16}
                 height={16}
+                priority
               />
               <span>Waysorted for Figma</span>
               <Image
@@ -77,6 +79,7 @@ const Hero = () => {
                 alt="Arrow Right"
                 width={12}
                 height={12}
+                priority
               />
             </span>
           </GlowStarButton>

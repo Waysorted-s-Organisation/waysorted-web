@@ -14,7 +14,7 @@ type Props = {
 };
 
 export default function SplashGate({
-  minMs = 2000,
+  minMs = 1500,
   initialOnly = true,
   children,
 }: Props) {

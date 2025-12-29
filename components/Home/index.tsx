@@ -1,41 +1,73 @@
 "use client"
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
+import dynamic from 'next/dynamic';
 // import FloatingButton from '@/components/FloatingButton'
 import Hero from '@/components/Hero/index'
 import ImpactTop from '@/components/ImpactTop'
-import { InfoCards } from '@/components/InfoCards'
-import ToolsGrid from '@/components/ToolsGrid/index'
 import TopSection from '@/components/TopSection/index'
 import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
-import GetStarted from '@/components/GetStarted'
-import Testimonials from '@/components/Testimonials'
 import Footer from "@/components/Footer";
-import SecureAnimation from "@/components/SecureAnimation";
-import SecureCards from "@/components/SecureCards/index";
-import FloatingStatsSection from "../FloatingStats";
+
+// Dynamically import heavy animation components
+const ToolsGrid = dynamic(() => import('@/components/ToolsGrid/index'), {
+  loading: () => <div className="h-screen" />,
+  ssr: false
+});
+
+const InfoCards = dynamic(() => import('@/components/InfoCards').then(mod => ({ default: mod.InfoCards })), {
+  loading: () => <div className="h-screen" />,
+  ssr: false
+});
+
+const SecureAnimation = dynamic(() => import("@/components/SecureAnimation"), {
+  loading: () => <div className="h-[200vh]" />,
+  ssr: false
+});
+
+const SecureCards = dynamic(() => import("@/components/SecureCards/index"), {
+  loading: () => <div className="h-screen" />,
+  ssr: false
+});
+
+const FloatingStatsSection = dynamic(() => import("../FloatingStats"), {
+  loading: () => <div className="h-screen" />,
+  ssr: false
+});
+
+const Testimonials = dynamic(() => import('@/components/Testimonials'), {
+  loading: () => <div className="h-96" />
+});
+
+const GetStarted = dynamic(() => import('@/components/GetStarted'), {
+  loading: () => <div className="h-96" />
+});
 
 export default function Home() {
     const { showBanner, setShowBanner } = useBanner();
-     const [showSecureCards, setShowSecureCards] = useState(false);
+    const [showSecureCards, setShowSecureCards] = useState(false);
+    const secureCardsRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollY = window.scrollY;
-      const vh = window.innerHeight;
+    // Use Intersection Observer instead of scroll listener for better performance
+    if (!secureCardsRef.current) return;
 
-      // When the user scrolls past 1 full viewport height
-      if (scrollY >= vh) {
-        setShowSecureCards(true);
-      } else {
-        setShowSecureCards(false);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          setShowSecureCards(entry.isIntersecting);
+        });
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '100px'
       }
-    };
+    );
 
-    window.addEventListener("scroll", handleScroll);
+    observer.observe(secureCardsRef.current);
 
     return () => {
-      window.removeEventListener("scroll", handleScroll);
+      observer.disconnect();
     };
   }, []);
 
@@ -59,7 +91,9 @@ export default function Home() {
       </section>
 
       {/* Section 2: Secure Cards */}
-      <section id="secure-cards"
+      <section 
+        id="secure-cards"
+        ref={secureCardsRef}
         className={`transition-opacity duration-700 ${
           showSecureCards ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
