@@ -44,10 +44,8 @@ export const faqData: FAQItem[] = [
     question: "Who creates these tools packs?",
     answer: (
       <>
-        Waysorted currently includes four core tools for color management, PDF export,
-        file importing, and unit conversion. More tools are planned,
-        including Way AI and additional utilities designed to further
-        simplify and streamline creative workflows.
+        The core packs are created by a team of highly skilled designers &
+        developers.
       </>
     ),
   },
