@@ -3,7 +3,7 @@ export default function GettingStarted() {
     <>
       <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Getting Started</h2>
       <p className="text-secondary-db-70 font-regular text-sm italic leading-relaxed mb-6">
-        A note on start: This is a living document. It will continue to evolve as Waysorted grows, with updates reflecting new features, improvements, and user feedback.
+        This is a living document. It will continue to evolve as Waysorted grows, with updates reflecting new features, improvements, and user feedback.
       </p>
 
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
