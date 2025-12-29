@@ -31,6 +31,10 @@ export default function TableOfContents({
   const [stuckToBottom, setStuckToBottom] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
+  // Track recent clicks so the scroll handler doesn't immediately override a click
+  const recentClickRef = useRef<string | null>(null);
+  const recentClickTimerRef = useRef<number | null>(null);
+
   const collectHeadings = useCallback(() => {
     const root = document.querySelector(rootSelector);
     if (!root) { setHeadings([]); return; }
@@ -66,6 +70,12 @@ export default function TableOfContents({
         if (rect.top <= topOffsetPx + 150) {
           current = h.id; // last heading that crossed the threshold
         }
+      }
+
+      // If a heading was recently clicked, prefer that id for a short time
+      if (recentClickRef.current) {
+        setActiveId(recentClickRef.current);
+        return;
       }
 
       if (current) setActiveId(current);
@@ -139,6 +149,18 @@ export default function TableOfContents({
                     href={`#${h.id}`}
                     onClick={(e) => {
                       e.preventDefault();
+
+                      // Mark this heading as recently clicked so the scroll listener
+                      // won't immediately override the highlight with the previous item.
+                      recentClickRef.current = h.id;
+                      if (recentClickTimerRef.current) window.clearTimeout(recentClickTimerRef.current as unknown as number);
+                      recentClickTimerRef.current = window.setTimeout(() => {
+                        recentClickRef.current = null;
+                        recentClickTimerRef.current = null;
+                      }, 700);
+
+                      setActiveId(h.id); // Instantly highlight clicked item
+
                       const el = document.getElementById(h.id);
                       if (el) {
                         window.history.replaceState(null, "", `#${h.id}`);
