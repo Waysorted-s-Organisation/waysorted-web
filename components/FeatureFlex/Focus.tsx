@@ -1,8 +1,7 @@
 "use client";
 import clsx from "clsx";
-import { useRef, useLayoutEffect, useState, useEffect } from "react";
+import { useRef, useLayoutEffect, useState, useEffect, useMemo } from "react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ITool } from "@/models/tool";
 import Image from "next/image";
 
@@ -12,6 +11,10 @@ export default function Focus({ className }: { className?: string }) {
   const [loading, setLoading] = useState<boolean>(true);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const cardsRef = useRef<(HTMLLIElement | null)[]>([]);
+  const displayTools = useMemo(() => {
+    return tools.length > 0 ? [...tools, ...tools, ...tools] : [];
+  }, [tools]);
 
   useEffect(() => {
     let cancelled = false;
@@ -35,54 +38,64 @@ export default function Focus({ className }: { className?: string }) {
     };
   }, []);
 
-  // GSAP logic preserved exactly (unchanged)
   useLayoutEffect(() => {
-    if (!containerRef.current) return;
-    gsap.registerPlugin(ScrollTrigger);
+    const container = containerRef.current;
+    if (!container || loading || displayTools.length === 0) return;
 
-    const ctx = gsap.context(() => {
-      const cards = gsap.utils.toArray<HTMLElement>(".scroll-card");
-      gsap.set(cards, { scale: 0.9, opacity: 0.7 });
+    const resetScroll = () => {
+      container.scrollTop = container.scrollHeight / 3;
+    };
 
-      ScrollTrigger.batch(cards, {
-        scroller: containerRef.current!,
-        start: "center 60%",
-        end: "center 40%",
-        onEnter: (batch) =>
-          gsap.to(batch, {
-            scale: 1,
-            opacity: 1,
-            duration: 0.3,
-            stagger: 0.05,
-            overwrite: "auto",
-          }),
-        onLeave: (batch) =>
-          gsap.to(batch, {
-            scale: 0.9,
-            opacity: 0.7,
-            duration: 0.3,
-            overwrite: "auto",
-          }),
-        onEnterBack: (batch) =>
-          gsap.to(batch, {
-            scale: 1,
-            opacity: 1,
-            duration: 0.3,
-            stagger: 0.05,
-            overwrite: "auto",
-          }),
-        onLeaveBack: (batch) =>
-          gsap.to(batch, {
-            scale: 0.9,
-            opacity: 0.7,
-            duration: 0.3,
-            overwrite: "auto",
-          }),
+    resetScroll();
+
+    const handleScroll = () => {
+      const scrollTop = container.scrollTop;
+      const scrollHeight = container.scrollHeight;
+      const sectionHeight = scrollHeight / 3;
+      const buffer = 50; 
+
+      if (scrollTop < buffer) {
+        container.scrollTop = scrollTop + sectionHeight;
+      }
+      else if (scrollTop >= sectionHeight * 2 - buffer) {
+        container.scrollTop = scrollTop - sectionHeight;
+      }
+    };
+
+    container.addEventListener("scroll", handleScroll);
+
+    const updateAnimations = () => {
+      if (!container) return;
+      
+      const containerCenter = container.getBoundingClientRect().top + container.clientHeight / 2;
+      const activationRange = 120; 
+
+      cardsRef.current.forEach((card) => {
+        if (!card) return;
+
+        const cardRect = card.getBoundingClientRect();
+        const cardCenter = cardRect.top + cardRect.height / 2;
+        const distance = Math.abs(containerCenter - cardCenter);
+
+        let progress = distance / activationRange;
+        if (progress > 1) progress = 1;
+
+        const scaleFactor = 1 - progress;
+        
+        gsap.set(card, { 
+            scale: 0.9 + (0.1 * scaleFactor), 
+            opacity: 0.7 + (0.3 * scaleFactor) 
+        });
       });
-    }, containerRef);
+    };
 
-    return () => ctx.revert();
-  }, [loading, tools]);
+    gsap.ticker.add(updateAnimations);
+
+    return () => {
+      container.removeEventListener("scroll", handleScroll);
+      gsap.ticker.remove(updateAnimations);
+    };
+  }, [loading, displayTools]); // Now stable thanks to useMemo
 
   const skeletonCount = 5;
 
@@ -94,12 +107,10 @@ export default function Focus({ className }: { className?: string }) {
         className
       )}
     >
-      {/* Scrollable list */}
       <div
         ref={containerRef}
-        className="relative h-[370px] p-4 overflow-y-scroll snap-y snap-mandatory no-scrollbar"
+        className="relative h-[370px] p-4 overflow-y-scroll no-scrollbar"
       >
-        {/* Top gradient overlay */}
         <div className="pointer-events-none absolute top-0 left-0 w-full h-8 bg-gradient-to-b from-white via-white/60 to-transparent z-10" />
 
         <ul className="space-y-3 py-2">
@@ -107,7 +118,7 @@ export default function Focus({ className }: { className?: string }) {
             Array.from({ length: skeletonCount }).map((_, i) => (
               <li
                 key={`skeleton-${i}`}
-                className="scroll-card snap-center rounded-lg border border-gray-200 bg-white px-4 py-3 flex items-center gap-3 shadow-sm animate-pulse"
+                className="scroll-card rounded-lg border border-gray-200 bg-white px-4 py-3 flex items-center gap-3 shadow-sm animate-pulse"
               >
                 <div className="w-12 h-12 rounded-md bg-indigo-50 ring-1 ring-indigo-100" />
                 <div className="flex-1 space-y-2">
@@ -129,42 +140,42 @@ export default function Focus({ className }: { className?: string }) {
 
           {!loading &&
             !error &&
-            tools.map((tool, i) => (
-              <li
-                key={tool.name + i}
-                className={clsx(
-                  "scroll-card snap-center group flex items-center gap-3",
-                  "rounded-lg border border-gray-200 bg-white px-4 py-3"
-                )}
-              >
-                <div
-                  className="w-12 h-12 flex items-center justify-center rounded-md bg-primary-way-10"
-                >
-                  <Image
-                    src={tool.iconData || "/icons/tool-fallback.svg"}
-                    width={40}
-                    height={40}
-                    alt={`${tool.name} icon`}
-                    className="object-contain"
-                  />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h4
-                    className="font-medium text-secondary-db-100 text-sm text-start truncate"
-                  >
-                    {tool.name}
-                  </h4>
-                  {tool.shortDescription && (
-                    <p className="text-xs text-secondary-db-70 text-start line-clamp-2">
-                      {tool.shortDescription}
-                    </p>
+            displayTools.map((tool, i) => {
+              const uniqueKey = `${tool.name}-${i}`;
+              return (
+                <li
+                  key={uniqueKey}
+                  ref={(el) => {
+                    cardsRef.current[i] = el;
+                  }}
+                  className={clsx(
+                    "scroll-card group flex items-center gap-3",
+                    "rounded-lg border border-gray-200 bg-white px-4 py-3"
                   )}
-                </div>
-              </li>
-            ))}
+                >
+                  <div className="w-12 h-12 flex items-center justify-center rounded-md bg-primary-way-10">
+                    <Image
+                      src={tool.iconData || "/icons/tool-fallback.svg"}
+                      width={40}
+                      height={40}
+                      alt={`${tool.name} icon`}
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-medium text-secondary-db-100 text-sm text-start truncate">
+                      {tool.name}
+                    </h4>
+                    {tool.shortDescription && (
+                      <p className="text-xs text-secondary-db-70 text-start line-clamp-2">
+                        {tool.shortDescription}
+                      </p>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
         </ul>
-
-        {/* Bottom gradient overlay */}
       </div>
 
       <div className="bg-white mt-3 flex flex-col rounded-xl">

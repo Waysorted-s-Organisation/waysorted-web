@@ -8,7 +8,7 @@ interface Base1Props {
 
 const Base1: React.FC<Base1Props> = ({ title, content, libero }) => {
   return (
-    <div className="absolute bg-gradient-to-t from-[#2A2E34] to-[#28282800] bottom-0 h-55">
+    <div className="absolute bg-gradient-to-t from-[#2A2E34] to-[#28282800] w-full bottom-0 h-55">
       <div className="flex flex-col text-start mt-35 ml-4">
         <div className="flex items-center gap-2 ">
           <svg

@@ -13,7 +13,7 @@ export default function GlassModeCard({ className }: { className?: string }) {
       )}
     >
       <h3 className="text-lg font-semibold text-gray-900 mt-3">Liquid Glass</h3>
-      <p className="text-gray-600 text-sm">
+      <p className="text-secondary-db-80 text-base font-medium">
         A dynamic, Liquid glass mode that keeps you more focused.
       </p>
         <Image
@@ -21,7 +21,7 @@ export default function GlassModeCard({ className }: { className?: string }) {
         alt="Glass mode"
         width={480}
         height={128}
-        className="md:translate-y-[40px] translate-y-[32px]"
+        className="md:translate-y-[26px] translate-y-[28px]"
         />
     </div>
   );

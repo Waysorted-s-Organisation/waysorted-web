@@ -148,9 +148,8 @@ const FloatingStatsSection = () => {
           </p>
 
           <p className="text-secondary-db-60 text-lg md:text-xl font-medium mt-6 md:w-[550px] w-[340px] max-w-none translate-y-50 md:translate-y-40">
-            <span className="text-secondary-db-90">That&apos;s why we&apos;re building Way,</span> Because productivity
+            <span className="text-secondary-db-90">That&apos;s why we&apos;re building Waysorted,</span> Because productivity
             deserves faster execution than endless searching.
-            <span className="inline-block w-[2px] h-[1em] translate-y-[2px] bg-secondary-db-90 ml-1 animate-pulse" />
           </p>
         </div>
 

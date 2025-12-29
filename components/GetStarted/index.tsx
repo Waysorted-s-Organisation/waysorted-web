@@ -71,7 +71,7 @@ const GetStarted = () => {
     }
   };
   return (
-    <section className="bg-white flex flex-col items-center justify-center text-center px-4 py-16 sm:py-24 md:py-40 overflow-hidden">
+    <section className="bg-white flex flex-col items-center justify-center text-center px-4 py-16 sm:py-24 md:py-40 overflow-hidden md:mb-90">
       {/* Heading and Subtext (z-index ensures they sit above floating elements if they overlap) */}
       <div className="relative z-10">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-secondary-db-100 text-center leading-tight select-none">
