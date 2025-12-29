@@ -11,10 +11,10 @@ export const faqData: FAQItem[] = [
     question: "What is Waysorted?",
     answer: (
       <>
-        Waysorted is a platform designed to speed up your workflow by making work
-        tools easier to access. Instead of hunting and juggling multiple tools,
-        creators get curated, integrated solution packs right inside their software,
-        saving both time and effort.
+        Waysorted unifies essential design tools into one place, so you spend less
+        time switching between plugins and tabs. By reducing tool juggling, it helps
+        teams work faster, stay focused, and avoid unnecessary costs from managing
+        multiple tools.
       </>
     ),
   },
@@ -22,10 +22,10 @@ export const faqData: FAQItem[] = [
     question: "How is Waysorted different from the other apps or plugins sources?",
     answer: (
       <>
-        Unlike competitors that provide individual plugins, Waysorted offers bundled
-        packs, a credit system, and an all-in-one marketplace, addressing
-        compatibility issues, scattered support, performance strain, and multiple
-        subscription costs.
+        Unlike individual plugins or scattered tool sources, Waysorted brings
+        essential tools together in one unified suite. This reduces compatibility
+        issues, performance strain, scattered support, and the cost of managing
+        multiple subscriptions, so teams work more smoothly and efficiently.
       </>
     ),
   },
@@ -33,9 +33,10 @@ export const faqData: FAQItem[] = [
     question: "What kind of tools are included?",
     answer: (
       <>
-        Waysorted includes 4 initial plugins, some AI-powered, for simplifying
-        complex design tasks, streamlining handoffs, integrating all in one, and
-        delivering seamless UI experiences, with expansions planned.
+        Waysorted currently includes four core tools for color management, PDF
+        export, file importing, and unit conversion. More tools are planned,
+        including Way AI and additional utilities designed to further simplify and
+        streamline creative workflows.
       </>
     ),
   },
@@ -99,13 +100,10 @@ export const faqData: FAQItem[] = [
     question: "How do I get started?",
     answer: (
       <>
-        Open our figma plugin and activate your bonus credits to start using our
-        plugin and all the tools we provide. Some tools will consume credits, you
-        can refill them by referring our plugin to your friends or by{" "}
-        <Link href="#" className="text-primary-way-100 hover:underline">
-          purchasing custom credits
-        </Link>
-        .
+        Open the Waysorted Figma plugin to start using the tools available during
+        the beta. All current features are accessible for testing and feedback. A
+        credit-based system for premium features will be introduced in a future
+        release.
       </>
     ),
   },
