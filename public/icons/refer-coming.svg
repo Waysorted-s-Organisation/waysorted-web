@@ -40,8 +40,8 @@
 </g>
 </g>
 <defs>
-<filter id="filter0_n_2949_86" x="411.117" y="64.7119" width="300.783" height="242.447" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter0_n_2949_86" x="411.117" y="64.7119" width="300.783" height="242.447" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
 <feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves="3" result="noise" seed="1560" />
 <feComponentTransfer in="noise" result="coloredNoise1">
@@ -59,8 +59,8 @@
 <feMergeNode in="color1" />
 </feMerge>
 </filter>
-<filter id="filter1_n_2949_86" x="488.246" y="77.2139" width="85.584" height="85.585" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter1_n_2949_86" x="488.246" y="77.2139" width="85.584" height="85.585" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
 <feTurbulence type="fractalNoise" baseFrequency="2.5 2.5" stitchTiles="stitch" numOctaves="3" result="noise" seed="316" />
 <feComponentTransfer in="noise" result="coloredNoise1">
@@ -78,8 +78,8 @@
 <feMergeNode in="color1" />
 </feMerge>
 </filter>
-<filter id="filter2_d_2949_86" x="480.246" y="75.2139" width="93.584" height="89.585" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter2_d_2949_86" x="480.246" y="75.2139" width="93.584" height="89.585" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feMorphology radius="2" operator="dilate" in="SourceAlpha" result="effect1_dropShadow_2949_86"/>
 <feOffset dx="-6"/>
@@ -88,8 +88,8 @@
 <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2949_86"/>
 <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2949_86" result="shape"/>
 </filter>
-<filter id="filter3_d_2949_86" x="505.641" y="97.6299" width="49.7891" height="48.1846" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter3_d_2949_86" x="505.641" y="97.6299" width="49.7891" height="48.1846" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset dx="-1.5"/>
 <feComposite in2="hardAlpha" operator="out"/>
@@ -97,8 +97,8 @@
 <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_2949_86"/>
 <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_2949_86" result="shape"/>
 </filter>
-<filter id="filter4_n_2949_86" x="425.264" y="108.351" width="287.258" height="200.817" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter4_n_2949_86" x="425.264" y="108.351" width="287.258" height="200.817" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
 <feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves="3" result="noise" seed="5592" />
 <feComponentTransfer in="noise" result="coloredNoise1">
@@ -116,8 +116,8 @@
 <feMergeNode in="color1" />
 </feMerge>
 </filter>
-<filter id="filter5_n_2949_86" x="573.451" y="26.0049" width="76.5312" height="58.9111" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter5_n_2949_86" x="573.451" y="26.0049" width="76.5312" height="58.9111" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
 <feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves="3" result="noise" seed="2375" />
 <feComponentTransfer in="noise" result="coloredNoise1">
@@ -135,8 +135,8 @@
 <feMergeNode in="color1" />
 </feMerge>
 </filter>
-<filter id="filter6_n_2949_86" x="442.789" y="113.242" width="29.0391" height="29.04" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter6_n_2949_86" x="442.789" y="113.242" width="29.0391" height="29.04" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
 <feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves="3" result="noise" seed="1427" />
 <feComponentTransfer in="noise" result="coloredNoise1">
@@ -154,8 +154,8 @@
 <feMergeNode in="color1" />
 </feMerge>
 </filter>
-<filter id="filter7_n_2949_86" x="473.094" y="63.1719" width="19.4863" height="19.4854" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter7_n_2949_86" x="473.094" y="63.1719" width="19.4863" height="19.4854" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
 <feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves="3" result="noise" seed="832" />
 <feComponentTransfer in="noise" result="coloredNoise1">
@@ -173,8 +173,8 @@
 <feMergeNode in="color1" />
 </feMerge>
 </filter>
-<filter id="filter8_n_2949_86" x="584.443" y="94.7402" width="13.9668" height="13.9658" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter8_n_2949_86" x="584.443" y="94.7402" width="13.9668" height="13.9658" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
 <feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves="3" result="noise" seed="2178" />
 <feComponentTransfer in="noise" result="coloredNoise1">
@@ -192,8 +192,8 @@
 <feMergeNode in="color1" />
 </feMerge>
 </filter>
-<filter id="filter9_n_2949_86" x="539.389" y="124.771" width="141.621" height="48.7168" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<filter id="filter9_n_2949_86" x="539.389" y="124.771" width="141.621" height="48.7168" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+<feFlood floodOpacity="0" result="BackgroundImageFix"/>
 <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
 <feTurbulence type="fractalNoise" baseFrequency="2 2" stitchTiles="stitch" numOctaves="3" result="noise" seed="9452" />
 <feComponentTransfer in="noise" result="coloredNoise1">
@@ -212,54 +212,54 @@
 </feMerge>
 </filter>
 <linearGradient id="paint0_linear_2949_86" x1="364" y1="-13" x2="364" y2="199.5" gradientUnits="userSpaceOnUse">
-<stop stop-color="#0D3666"/>
-<stop offset="1" stop-color="#0024D5"/>
+<stop stopColor="#0D3666"/>
+<stop offset="1" stopColor="#0024D5"/>
 </linearGradient>
 <linearGradient id="paint1_linear_2949_86" x1="540.486" y1="144.937" x2="546.867" y2="223.905" gradientUnits="userSpaceOnUse">
-<stop stop-color="#4CA8FF"/>
-<stop offset="1" stop-color="#22FFD3"/>
+<stop stopColor="#4CA8FF"/>
+<stop offset="1" stopColor="#22FFD3"/>
 </linearGradient>
 <linearGradient id="paint2_linear_2949_86" x1="531.038" y1="77.2191" x2="575.611" y2="155.38" gradientUnits="userSpaceOnUse">
-<stop stop-color="#FFDA47"/>
-<stop offset="0.495192" stop-color="#FFF6DF"/>
-<stop offset="0.908654" stop-color="#FFC342"/>
+<stop stopColor="#FFDA47"/>
+<stop offset="0.495192" stopColor="#FFF6DF"/>
+<stop offset="0.908654" stopColor="#FFC342"/>
 </linearGradient>
 <linearGradient id="paint3_linear_2949_86" x1="688.08" y1="289.557" x2="439.631" y2="328.401" gradientUnits="userSpaceOnUse">
-<stop stop-color="#0055F3"/>
-<stop offset="0.543269" stop-color="#4AADFF"/>
-<stop offset="1" stop-color="#0741FF"/>
+<stop stopColor="#0055F3"/>
+<stop offset="0.543269" stopColor="#4AADFF"/>
+<stop offset="1" stopColor="#0741FF"/>
 </linearGradient>
 <linearGradient id="paint4_linear_2949_86" x1="651.381" y1="54.2875" x2="571.2" y2="35.7323" gradientUnits="userSpaceOnUse">
-<stop stop-color="#168EFF"/>
-<stop offset="1" stop-color="#0AFCFC"/>
+<stop stopColor="#168EFF"/>
+<stop offset="1" stopColor="#0AFCFC"/>
 </linearGradient>
 <linearGradient id="paint5_linear_2949_86" x1="634.882" y1="81.3581" x2="609.558" y2="71.3305" gradientUnits="userSpaceOnUse">
-<stop stop-color="#0AFCFC"/>
-<stop offset="1" stop-color="#168EFF"/>
+<stop stopColor="#0AFCFC"/>
+<stop offset="1" stopColor="#168EFF"/>
 </linearGradient>
 <linearGradient id="paint6_linear_2949_86" x1="633.318" y1="63.889" x2="568.023" y2="47.0322" gradientUnits="userSpaceOnUse">
-<stop stop-color="#0AFCFC"/>
-<stop offset="1" stop-color="#168EFF"/>
+<stop stopColor="#0AFCFC"/>
+<stop offset="1" stopColor="#168EFF"/>
 </linearGradient>
 <linearGradient id="paint7_linear_2949_86" x1="621.947" y1="64.4949" x2="567.166" y2="50.3523" gradientUnits="userSpaceOnUse">
-<stop stop-color="#168EFF"/>
-<stop offset="1" stop-color="#0AFCFC"/>
+<stop stopColor="#168EFF"/>
+<stop offset="1" stopColor="#0AFCFC"/>
 </linearGradient>
 <linearGradient id="paint8_linear_2949_86" x1="482.837" y1="60.7256" x2="482.837" y2="85.1028" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6AFFCB"/>
-<stop offset="1" stop-color="#11DBFF"/>
+<stop stopColor="#6AFFCB"/>
+<stop offset="1" stopColor="#11DBFF"/>
 </linearGradient>
 <linearGradient id="paint9_linear_2949_86" x1="591.427" y1="92.8584" x2="591.427" y2="110.587" gradientUnits="userSpaceOnUse">
-<stop stop-color="#FFF5DD"/>
-<stop offset="1" stop-color="#7DFFE5"/>
+<stop stopColor="#FFF5DD"/>
+<stop offset="1" stopColor="#7DFFE5"/>
 </linearGradient>
 <linearGradient id="paint10_linear_2949_86" x1="591.427" y1="92.8584" x2="591.427" y2="110.587" gradientUnits="userSpaceOnUse">
-<stop stop-color="#6AFFCB"/>
-<stop offset="1" stop-color="#11DBFF"/>
+<stop stopColor="#6AFFCB"/>
+<stop offset="1" stopColor="#11DBFF"/>
 </linearGradient>
 <linearGradient id="paint11_linear_2949_86" x1="540.26" y1="174.483" x2="681.684" y2="128.532" gradientUnits="userSpaceOnUse">
-<stop stop-color="#50F3FF"/>
-<stop offset="1" stop-color="#0105E7"/>
+<stop stopColor="#50F3FF"/>
+<stop offset="1" stopColor="#0105E7"/>
 </linearGradient>
 <clipPath id="clip0_2949_86">
 <rect width="728" height="186" fill="white"/>

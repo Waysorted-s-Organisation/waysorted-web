@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import { motion, useScroll, useTransform, useSpring, useReducedMotion } from "framer-motion";
 
 // Simple stable hash from a string -> 32-bit int
@@ -51,6 +51,12 @@ function AnimatedCard({
 }: AnimatedCardProps) {
   const ref = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Only enable animations after client mount to prevent hydration mismatch
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Per-card stable randomness based on content
   const rng = useMemo(() => mulberry32(hashString(String(number) + "|" + title)), [number, title]);
@@ -77,8 +83,9 @@ function AnimatedCard({
   const smoothY = useSpring(translateY, { stiffness: 120, damping: 20, mass: 0.25 });
   const smoothRotate = useSpring(rotate, { stiffness: 120, damping: 20, mass: 0.25 });
 
-  const motionStyle = reduceMotion
-    ? { rotate: baseTilt, y: 0 }
+  // Use static values during SSR to prevent hydration mismatch
+  const motionStyle = !isMounted || reduceMotion
+    ? { rotate: 0, y: 0 }
     : { rotate: smoothRotate, y: smoothY };
 
   // Responsive: For <md, make card full width & text smaller, padding tighter, number badge smaller

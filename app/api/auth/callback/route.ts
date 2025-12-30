@@ -1,4 +1,3 @@
-import axios from "axios";
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import User from "@/models/user";
@@ -50,26 +49,37 @@ export async function GET(request: Request) {
       redirectPath = nextParam;
     }
 
-    const tokenRes = await axios.post(
-      "https://oauth2.googleapis.com/token",
-      new URLSearchParams({
+    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
         code,
         client_id: process.env.GOOGLE_CLIENT_ID,
         client_secret: process.env.GOOGLE_CLIENT_SECRET,
         redirect_uri: process.env.OAUTH_REDIRECT_URI,
         grant_type: "authorization_code",
-      }),
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
-    );
+      }).toString(),
+    });
 
-    const { access_token, refresh_token, expires_in, id_token } = tokenRes.data;
+    if (!tokenRes.ok) {
+      const errorData = await tokenRes.text();
+      console.error("OAuth token error:", errorData);
+      throw new Error(`Token exchange failed: ${tokenRes.status}`);
+    }
+
+    const { access_token, refresh_token, expires_in, id_token } = await tokenRes.json();
 
     const accessTokenExpiresAt = Date.now() + expires_in * 1000;
 
-    const { data: googleUser } = await axios.get(
-      "https://www.googleapis.com/oauth2/v3/userinfo",
-      { headers: { Authorization: `Bearer ${access_token}` } }
-    );
+    const userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+      headers: { Authorization: `Bearer ${access_token}` },
+    });
+
+    if (!userInfoRes.ok) {
+      throw new Error(`Failed to get user info: ${userInfoRes.status}`);
+    }
+
+    const googleUser = await userInfoRes.json();
 
     const user = await User.findOneAndUpdate(
       { email: googleUser.email },
@@ -110,11 +120,7 @@ export async function GET(request: Request) {
 
     return response;
   } catch (err: unknown) {
-    if (axios.isAxiosError(err) && err.response) {
-      console.error("OAuth callback error:", err.response.data);
-    } else {
-      console.error("OAuth callback error:", err);
-    }
+    console.error("OAuth callback error:", err);
     return NextResponse.redirect(
       new URL(
         `/signup?error=${encodeURIComponent("oauth_failed")}`,

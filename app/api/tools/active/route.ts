@@ -4,6 +4,7 @@ import Tool from "@/models/tool";
 import { ITool } from "@/models/tool";
 
 export const runtime = "nodejs";
+export const revalidate = 3600; // Cache for 1 hour
 
 // Badge type priority order
 const badgePriority = {
@@ -21,16 +22,32 @@ function getBadgePriority(tool: ITool) {
 }
 
 export async function GET() {
-  await dbConnect();
-  const all = await Tool.find();
+  try {
+    await dbConnect();
+    const all = await Tool.find();
 
-  // Sort by badge priority, then by name as tiebreaker
-  all.sort((a, b) => {
-    const pa = getBadgePriority(a);
-    const pb = getBadgePriority(b);
-    if (pa !== pb) return pa - pb;
-    return a.name.localeCompare(b.name);
-  });
+    // Sort by badge priority, then by name as tiebreaker
+    all.sort((a, b) => {
+      const pa = getBadgePriority(a);
+      const pb = getBadgePriority(b);
+      if (pa !== pb) return pa - pb;
+      return a.name.localeCompare(b.name);
+    });
 
-  return NextResponse.json({ data: all }, { status: 200 });
+    return NextResponse.json({ data: all }, { 
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400'
+      }
+    });
+  } catch (error) {
+    console.error('Failed to fetch tools:', error);
+    // Return empty array if database is unavailable
+    return NextResponse.json({ data: [] }, { 
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300'
+      }
+    });
+  }
 }
