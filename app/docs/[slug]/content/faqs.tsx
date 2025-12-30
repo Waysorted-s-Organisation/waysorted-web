@@ -11,43 +11,43 @@ export default function Faqs() {
       <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">General FAQs</h3>
       <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-4 space-y-6">
         <li>
-          <span className="text-secondary-db-100 font-semibold">What is Waysorted?</span>
+          <h4 id="what-is-waysorted" className="inline text-secondary-db-100 font-semibold text-xl">What is Waysorted?</h4>
           <div className="mt-2">Waysorted unifies essential design tools into one place, so you spend less time switching between plugins and tabs. By reducing tool juggling, it helps teams work faster, stay focused, and avoid unnecessary costs from managing multiple tools.</div>
         </li>
         <li>
-          <span className="text-secondary-db-100 font-semibold">How do I create an account?</span>
+          <h4 id="how-do-i-create-an-account" className="inline text-secondary-db-100 font-semibold text-xl">How do I create an account?</h4>
           <div className="mt-2">Sign up at waysorted.com/signup with your email or Google account, verify, and set up your profile.</div>
         </li>
         <li>
-          <span className="text-secondary-db-100 font-semibold">Is Waysorted free?</span>
+          <h4 id="is-waysorted-free" className="inline text-secondary-db-100 font-semibold text-xl">Is Waysorted free?</h4>
           <div className="mt-2">Open the Waysorted Figma plugin to start using the tools available during the beta. All current features are accessible for testing and feedback. A credit-based system for premium features will be introduced in a future release.</div>
         </li>
         <li>
-          <span className="text-secondary-db-100 font-semibold">How does Waysorted integrate with Figma?</span>
+          <h4 id="how-does-waysorted-integrate-with-figma" className="inline text-secondary-db-100 font-semibold text-xl">How does Waysorted integrate with Figma?</h4>
           <div className="mt-2">Unlike individual plugins or scattered tool sources, Waysorted brings essential tools together in one unified suite. This reduces compatibility issues, performance strain, scattered support, and the cost of managing multiple subscriptions, so teams work more smoothly and efficiently.</div>
         </li>
         <li>
-          <span className="text-secondary-db-100 font-semibold">What plugins are available at Beta launch?</span>
+          <h4 id="what-plugins-are-available-at-beta-launch" className="inline text-secondary-db-100 font-semibold text-xl">What plugins are available at Beta launch?</h4>
           <div className="mt-2">Waysorted currently includes four core tools for color management, PDF export, file importing, and unit conversion. More tools are planned, including Way AI and additional utilities designed to further simplify and streamline creative workflows.</div>
         </li>
         <li>
-          <span className="text-secondary-db-100 font-semibold">Can I suggest new tools?</span>
+          <h4 id="can-i-suggest-new-tools" className="inline text-secondary-db-100 font-semibold text-xl">Can I suggest new tools?</h4>
           <div className="mt-2">Yes, through request a feature; submit ideas or plugins for community review.</div>
         </li>
         <li>
-          <span className="text-secondary-db-100 font-semibold">Is Waysorted secure?</span>
+          <h4 id="is-waysorted-secure" className="inline text-secondary-db-100 font-semibold text-xl">Is Waysorted secure?</h4>
           <div className="mt-2">Yes, with secure integrations, data processing under Privacy Policy, and no third-party sharing without consent.</div>
         </li>
         <li>
-          <span className="text-secondary-db-100 font-semibold">What if I encounter issues?</span>
+          <h4 id="what-if-i-encounter-issues" className="inline text-secondary-db-100 font-semibold text-xl">What if I encounter issues?</h4>
           <div className="mt-2">Check the troubleshooting section in the documentation or contact our support team at info@waysorted.com. Support is available 24/7.</div>
         </li>
         <li>
-          <span className="text-secondary-db-100 font-semibold">How do I upgrade my subscription?</span>
+          <h4 id="how-do-i-upgrade-my-subscription" className="inline text-secondary-db-100 font-semibold text-xl">How do I upgrade my subscription?</h4>
           <div className="mt-2">From the &quot;Account Settings&quot; &gt; Subscription section, select a plan and complete payment.</div>
         </li>
         <li>
-          <span className="text-secondary-db-100 font-semibold">Where can I learn more?</span>
+          <h4 id="where-can-i-learn-more" className="inline text-secondary-db-100 font-semibold text-xl">Where can I learn more?</h4>
           <div className="mt-2">Visit the Learning Hub for tutorials and advanced guides for each tool.</div>
         </li>
       </ul>

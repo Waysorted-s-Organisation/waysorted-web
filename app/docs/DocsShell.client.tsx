@@ -282,7 +282,7 @@ export default function DocsShell({
               </div>
             </main>
 
-            <TableOfContents topOffsetPx={112} />
+            <TableOfContents topOffsetPx={112} maxLevel={4} />
           </div>
         </main>
 

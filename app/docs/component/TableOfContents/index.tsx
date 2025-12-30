@@ -170,6 +170,7 @@ export default function TableOfContents({
                     className={[
                       "block rounded-md px-2 py-1 transition-colors",
                       h.level === 3 ? "pl-4 text-primary-way-100" : "",
+                      h.level === 4 ? "pl-8 text-secondary-db-80" : "",
                       h.level === 2 ? "font-medium" : "",
                       isActive
                         ? "bg-primary-way-10 text-primary-way-100"
