@@ -16,14 +16,14 @@ type DocsShellInnerProps = {
 
 export interface SidebarItem {
   title: string;
-  links?: string[];
+  links: string[];
 }
 
 const sidebarData: SidebarItem[] = [
-  { title: "Getting Started", links: ["Getting Started"] },
+  { title: "Getting Started", links: [] },
   { title: "Waysorted's Plugin Suite", links: ["Introduction", "Main UI", "Wayspace", "Waychallenge", "Other Features"] },
-  { title: "Account and Workspace", links: ["Account Creation and Setup", "Profile and Settings"] },
-  { title: "Tools and Ecosystem", links: ["Searching and Browsing Plugins", "Creator Guidelines", "Request a Feature", "Ratings and Reviews"] },
+  { title: "Account and Workspace", links: [] },
+  { title: "Plugins and Marketplace", links: ["Searching and Browsing Plugins", "Creator Guidelines", "Request a Feature", "Ratings and Reviews"] },
   { title: "Tools Reference", links: ["PDF Exporter", "Palettable", "Unit Converter", "Import Tool", "Upcoming Tools"] },
   { title: "Frequently Asked Questions", links: ["FAQs"] },
   { title: "Troubleshooting & Support", links: ["Common Errors", "Diagnostics", "Contact Support", "Bug Reporting"] },
@@ -201,20 +201,20 @@ export default function DocsShell({
                   return (
                     <div
                       key={item.title}
-                      className={`w-72 rounded-xl ${item.links && isOpen
+                      className={`w-72 rounded-xl ${item.links.length > 0 && isOpen
                         ? "bg-primary-way-10 outline outline-2 outline-primary-way-10"
                         : ""
                         }`}
                     >
                       <button
-                        onClick={() => item.links && toggleSection(item.title)}
-                        className={`flex items-center justify-between w-72 px-2 py-2 text-left text-secondary-db-80 font-medium hover:bg-primary-way-10 cursor-pointer ${item.links && isOpen
+                        onClick={() => item.links.length > 0 ? toggleSection(item.title) : router.push(`/docs/${slugify(item.title)}`)}
+                        className={`flex items-center justify-between w-72 px-2 py-2 text-left text-secondary-db-80 font-medium hover:bg-primary-way-10 cursor-pointer ${item.links.length > 0 && isOpen
                           ? "bg-primary-way-100 text-white hover:bg-primary-way-100 rounded-t-xl"
                           : ""
                           }`}
                       >
                         {item.title}
-                        {item.links && (
+                        {item.links.length > 0 && (
                           <span>
                             {isOpen ? (
                               <Image
@@ -237,7 +237,7 @@ export default function DocsShell({
                         )}
                       </button>
 
-                      {item.links && (
+                      {item.links.length > 0 && (
                         <div
                           className={`ml-3 py-2 relative overflow-hidden transition-[max-height] duration-900 ease-in-out ${isOpen ? "max-h-96" : "max-h-0"
                             }`}

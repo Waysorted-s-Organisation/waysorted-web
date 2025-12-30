@@ -39,6 +39,7 @@ import MainUI from "./content/main-ui";
 import Wayspace from "./content/wayspace";
 import Waychallenge from "./content/waychallenge";
 import OtherFeatures from "./content/other-features";
+import AccountAndWorkspace from "./content/account-and-workspace";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
@@ -81,6 +82,7 @@ const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
   "wayspace": Wayspace,
   "waychallenge": Waychallenge,
   "other-features": OtherFeatures,
+  "account-and-workspace": AccountAndWorkspace,
 };
 
 
