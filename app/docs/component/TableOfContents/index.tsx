@@ -21,7 +21,7 @@ interface Props {
 
 export default function TableOfContents({
   rootSelector = "[data-doc-content]",
-  minLevel = 2,
+  minLevel = 3,
   maxLevel = 3,
   topOffsetPx = 112,
   stopAtSelector = "#footer-sentinel"

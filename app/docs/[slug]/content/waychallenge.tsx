@@ -7,15 +7,18 @@ export default function Waychallenge() {
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Way Challenge is our series of quick and fun arcade-style games, built directly into the Waysorted platform. The first in the series is Way Fall, a mindful escape designed to sharpen your reflexes and take a break from intense design sessions. Clear your mind and return to your work refreshed and refocused.
             </p>
-            <div className="my-6 rounded-xl overflow-hidden">
-                <Image
-                    src="/images/docs/Way-Challenge-Image-1.png"
-                    alt="Way Challenge Game"
-                    width={600}
-                    height={400}
-                    className="w-full h-auto rounded-xl"
-                />
-            </div>
+            <figure className="my-6">
+                <div className="rounded-xl overflow-hidden max-w-md mx-auto">
+                    <Image
+                        src="/images/docs/Way-Challenge-Image-1.png"
+                        alt="Way Challenge Game"
+                        width={834}
+                        height={817}
+                        className="w-full h-auto rounded-xl"
+                    />
+                </div>
+                <figcaption className="text-sm text-secondary-db-60 mt-2 italic text-center">Way Challenge - Arcade-style game for refreshing breaks</figcaption>
+            </figure>
 
             <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Game Mechanics</h3>
 
@@ -34,15 +37,18 @@ export default function Waychallenge() {
                 <li>You gain one point for every object you successfully avoid with your paddle.</li>
                 <li>Your score is displayed in the top right corner of the screen.</li>
             </ul>
-            <div className="my-6 rounded-xl overflow-hidden">
-                <Image
-                    src="/images/docs/Way-Challenge-Image-2.png"
-                    alt="Way Challenge Scoring"
-                    width={600}
-                    height={400}
-                    className="w-full h-auto rounded-xl"
-                />
-            </div>
+            <figure className="my-6">
+                <div className="rounded-xl overflow-hidden max-w-sm mx-auto">
+                    <Image
+                        src="/images/docs/Way-Challenge-Image-2.png"
+                        alt="Way Challenge Scoring"
+                        width={645}
+                        height={651}
+                        className="w-full h-auto rounded-xl"
+                    />
+                </div>
+                <figcaption className="text-sm text-secondary-db-60 mt-2 italic text-center">Score display and game interface</figcaption>
+            </figure>
 
             <h4 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Game Over</h4>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
