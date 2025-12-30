@@ -1,0 +1,16 @@
+export default function NotificationsPreferences() {
+    return (
+        <>
+            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Notifications Preferences</h2>
+            <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
+                Control how you receive notifications. Visit Notifications settings to:
+            </p>
+            <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
+                <li>Set preference per module</li>
+                <li>Manage global and per-product settings</li>
+                <li>Toggle for marketing and promotional emails</li>
+                <li>Control push and SMS settings if available</li>
+            </ul>
+        </>
+    );
+}

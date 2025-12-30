@@ -20,9 +20,9 @@ export interface SidebarItem {
 }
 
 const sidebarData: SidebarItem[] = [
-  { title: "Getting Started", links: [] },
+  { title: "Getting Started", links: ["What is Waysorted", "Accessing Waysorted in Figma", "All-in-one Tools", "Supported Platforms", "Credits and Usage", "Whats Coming Next"] },
   { title: "Waysorted's Plugin Suite", links: ["Introduction", "Main UI", "Wayspace", "Waychallenge", "Other Features"] },
-  { title: "Account and Workspace", links: [] },
+  { title: "Account and Workspace", links: ["Account Settings Navigation", "Profile and Settings Overview", "Profile Photo", "Linked Accounts and Integrations", "Notifications Preferences", "Beta Features"] },
   { title: "Plugins and Marketplace", links: ["Searching and Browsing Plugins", "Creator Guidelines", "Request a Feature", "Ratings and Reviews"] },
   { title: "Tools Reference", links: ["PDF Exporter", "Palettable", "Unit Converter", "Import Tool", "Upcoming Tools"] },
   { title: "Frequently Asked Questions", links: ["FAQs"] },

@@ -40,6 +40,18 @@ import Wayspace from "./content/wayspace";
 import Waychallenge from "./content/waychallenge";
 import OtherFeatures from "./content/other-features";
 import AccountAndWorkspace from "./content/account-and-workspace";
+import WhatIsWaysorted from "./content/what-is-waysorted";
+import AccessingWaysortedInFigma from "./content/accessing-waysorted-in-figma";
+import AllInOneTools from "./content/all-in-one-tools";
+import SupportedPlatforms from "./content/supported-platforms";
+import CreditsAndUsage from "./content/credits-and-usage";
+import WhatsComingNext from "./content/whats-coming-next";
+import AccountSettingsNavigation from "./content/account-settings-navigation";
+import ProfileAndSettingsOverview from "./content/profile-and-settings-overview";
+import ProfilePhoto from "./content/profile-photo";
+import LinkedAccountsAndIntegrations from "./content/linked-accounts-and-integrations";
+import NotificationsPreferences from "./content/notifications-preferences";
+import BetaFeatures from "./content/beta-features";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
@@ -83,6 +95,18 @@ const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
   "waychallenge": Waychallenge,
   "other-features": OtherFeatures,
   "account-and-workspace": AccountAndWorkspace,
+  "what-is-waysorted": WhatIsWaysorted,
+  "accessing-waysorted-in-figma": AccessingWaysortedInFigma,
+  "all-in-one-tools": AllInOneTools,
+  "supported-platforms": SupportedPlatforms,
+  "credits-and-usage": CreditsAndUsage,
+  "whats-coming-next": WhatsComingNext,
+  "account-settings-navigation": AccountSettingsNavigation,
+  "profile-and-settings-overview": ProfileAndSettingsOverview,
+  "profile-photo": ProfilePhoto,
+  "linked-accounts-and-integrations": LinkedAccountsAndIntegrations,
+  "notifications-preferences": NotificationsPreferences,
+  "beta-features": BetaFeatures,
 };
 
 
