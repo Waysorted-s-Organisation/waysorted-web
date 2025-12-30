@@ -34,6 +34,11 @@ import FigmaSync from "./content/figma-sync";
 import BackupAndRecovery from "./content/backup-and-recovery";
 import ThirdPartyIntegrations from "./content/third-party-integrations";
 import Overview from "./content/overview";
+import Introduction from "./content/introduction";
+import MainUI from "./content/main-ui";
+import Wayspace from "./content/wayspace";
+import Waychallenge from "./content/waychallenge";
+import OtherFeatures from "./content/other-features";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
@@ -71,6 +76,11 @@ const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
   "backup-and-recovery": BackupAndRecovery,
   "third-party-integrations": ThirdPartyIntegrations,
   "overview": Overview,
+  "introduction": Introduction,
+  "main-ui": MainUI,
+  "wayspace": Wayspace,
+  "waychallenge": Waychallenge,
+  "other-features": OtherFeatures,
 };
 
 

@@ -153,9 +153,9 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
     >
       {showBanner && (
         <div className="w-full bg-primary-way-100 text-white text-center py-2 text-sm relative">
-          Try Palettable for quick Color schemes and Contrast check ....{' '}
+          Try Palettable for quick Color schemes and Contrast check.{' '}
           <Link href="/learning/palettable" className="underline">
-            Click here
+            Learn more about Palettable
           </Link>
           <button
             onClick={() => setShowBanner(false)}
@@ -323,9 +323,8 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
       >
         {/* Overlay */}
         <div
-          className={`absolute inset-0 bg-black/40 transition-opacity duration-200 ${
-            mobileOpen ? 'opacity-100' : 'opacity-0'
-          }`}
+          className={`absolute inset-0 bg-black/40 transition-opacity duration-200 ${mobileOpen ? 'opacity-100' : 'opacity-0'
+            }`}
           // Also close on overlay click (though aside might cover it)
           onClick={() => setMobileOpen(false)}
         />
@@ -343,9 +342,8 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
           <div
             // Stop propagation so clicks inside the card don't close the drawer
             onClick={(e) => e.stopPropagation()}
-            className={`relative h-[calc(100%-64px)] w-full max-w-[420px] bg-white border border-secondary-db-20 rounded-2xl shadow-xl flex flex-col overflow-hidden transition-all duration-200 ${
-              mobileOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-1 scale-95'
-            }`}
+            className={`relative h-[calc(100%-64px)] w-full max-w-[420px] bg-white border border-secondary-db-20 rounded-2xl shadow-xl flex flex-col overflow-hidden transition-all duration-200 ${mobileOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-1 scale-95'
+              }`}
           >
             {/* Scrollable content (no title row per design) */}
             <nav className="flex-1 overflow-y-auto">
@@ -378,9 +376,8 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               {/* Products panel */}
               <div
                 id="mobile-products-panel"
-                className={`overflow-hidden transition-[max-height,opacity] duration-300 ${
-                  mobileProductsOpen ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'
-                }`}
+                className={`overflow-hidden transition-[max-height,opacity] duration-300 ${mobileProductsOpen ? 'max-h-[1200px] opacity-100' : 'max-h-0 opacity-0'
+                  }`}
               >
                 <ul className="mt-2 px-3 space-y-2">
                   {products.map((p) => (
@@ -441,9 +438,8 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               {/* Resources panel */}
               <div
                 id="mobile-resources-panel"
-                className={`overflow-hidden transition-[max-height,opacity] duration-300 ${
-                  mobileResourcesOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
-                }`}
+                className={`overflow-hidden transition-[max-height,opacity] duration-300 ${mobileResourcesOpen ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+                  }`}
               >
                 <div className="px-3">
                   <div className="mt-2 rounded-xl border border-primary-way-10 bg-primary-way-5 overflow-hidden">
@@ -476,7 +472,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               <div className="px-3">
                 <button
                   className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
-                  onClick={() => {router.push('/about-us')}}
+                  onClick={() => { router.push('/about-us') }}
                 >
                   <span className="font-medium">About Us</span>
                 </button>
@@ -485,7 +481,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               <div className="px-3">
                 <button
                   className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
-                  onClick={() => {router.push('/support')}}
+                  onClick={() => { router.push('/support') }}
                 >
                   <span className="font-medium">Support</span>
                 </button>
@@ -531,7 +527,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 <Image src="/icons/arrow-right-white.svg" alt="" width={18} height={18} />
               </button>
             </div>
-            
+
           </div>
           {mobileOpen && (
             <button
