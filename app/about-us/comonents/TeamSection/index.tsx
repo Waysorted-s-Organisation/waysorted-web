@@ -22,7 +22,7 @@ const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image }) => {
           fill
           className="object-cover"
           sizes="276px"
-          loading="lazy"
+          priority
         />
       </div>
       <h3 className="text-xl font-semibold text-secondary-db-100">{name}</h3>
