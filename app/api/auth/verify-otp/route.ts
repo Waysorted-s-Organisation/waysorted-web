@@ -8,15 +8,11 @@ export { OPTIONS } from "@/lib/cors";
 const PROVIDER_VERIFY_URI =
   process.env.VERIFY_URI || process.env.NEXT_PUBLIC_VERIFY_URI;
 
-export async function POST(req: Request) {
-  // Check for required env vars at runtime, not during build
-  if (!PROVIDER_VERIFY_URI) {
-    return NextResponse.json(
-      { ok: false, message: "VERIFY_URI not configured" },
-      { status: 500 }
-    );
-  }
+if (!PROVIDER_VERIFY_URI) {
+  throw new Error("VERIFY_URI not configured.");
+}
 
+export async function POST(req: Request) {
   try {
     const { request_id, otp } = await req.json();
 

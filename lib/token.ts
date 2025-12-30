@@ -1,3 +1,5 @@
+import axios from "axios";
+
 interface RefreshedTokens {
   access_token: string;
   expires_in: number;
@@ -19,16 +21,11 @@ export async function refreshGoogleToken(
     grant_type: "refresh_token",
   });
 
-  const response = await fetch("https://oauth2.googleapis.com/token", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: params.toString(),
-  });
+  const response = await axios.post<RefreshedTokens>(
+    "https://oauth2.googleapis.com/token",
+    params,
+    { headers: { "Content-Type": "application/x-www-form-urlencoded" } }
+  );
 
-  if (!response.ok) {
-    const errorData = await response.text();
-    throw new Error(`Failed to refresh token: ${response.status} - ${errorData}`);
-  }
-
-  return response.json();
+  return response.data;
 }

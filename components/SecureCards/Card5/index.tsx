@@ -3,38 +3,31 @@ import Base1 from "../Base1";
 import Image from "next/image";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { MotionPathPlugin } from "gsap/MotionPathPlugin";
-
-gsap.registerPlugin(MotionPathPlugin);
+import { animate, svg } from "animejs";
+import { useEffect } from "react";
 
 const Card5 = () => {
   const bgRef = useRef<HTMLDivElement | null>(null);
-  const dotRef = useRef<SVGCircleElement | null>(null);
 
   useGSAP(() => {
-    // Background rotation
     gsap.to(bgRef.current, {
       duration: 7,
       repeat: -1,
       rotate: 360,
-      ease: "linear",
-      transformOrigin: "center center",
+      ease: "linear", // smooth infinite rotation
+      transformOrigin: "center center", // rotate around top-center
     });
-
-    // Moving dot along path using GSAP MotionPathPlugin
-    if (dotRef.current) {
-      gsap.to(dotRef.current, {
-        duration: 4,
-        repeat: -1,
-        ease: "linear",
-        motionPath: {
-          path: "#motionPath",
-          align: "#motionPath",
-          autoRotate: false,
-        },
-      });
-    }
   });
+
+  useEffect(() => {
+    // Moving dot along path
+    animate(".moving-dot", {
+      duration: 4000,
+      ease: "linear",
+      loop: true,
+      ...svg.createMotionPath("#motionPath"), // animates translateX, translateY, rotate
+    });
+  }, []);
 
   return (
     <div
@@ -67,10 +60,10 @@ const Card5 = () => {
         <path
           d="M1 49.5L44 24.5M44 24.5V0M44 24.5L94.5 54"
           stroke="#787878"
-          strokeDasharray="2 2"
+          stroke-dasharray="2 2"
           id="motionPath"
         />
-        <circle ref={dotRef} className="moving-dot" r="5" fill="#787878" />
+        <circle className="moving-dot" r="5" fill="#787878" />
       </svg>
       <Base1
         title={"Data Encryption"}
