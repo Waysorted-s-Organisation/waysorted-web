@@ -22,7 +22,7 @@ function getBadgePriority(tool: ITool) {
 
 export async function GET() {
   await dbConnect();
-  const all = await Tool.find();
+  const all = await Tool.find().lean();
 
   // Sort by badge priority, then by name as tiebreaker
   all.sort((a, b) => {

@@ -17,7 +17,7 @@ export async function GET(req: NextRequest, context: any) {
 
   const slides = await Slide.find({
     toolName: { $regex: `^${slug}$`, $options: "i" }
-  }).sort({ order: 1, createdAt: 1 });
+  }).sort({ order: 1, createdAt: 1 }).lean();
 
   return NextResponse.json(
     { slides },

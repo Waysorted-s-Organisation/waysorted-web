@@ -6,6 +6,7 @@ const SlideSchema = new Schema({
     required: true,
     trim: true,
     maxlength: 100,
+    index: true, // Add index for faster toolName queries
   },
   order: {
     type: Number,
@@ -49,6 +50,9 @@ const SlideSchema = new Schema({
     maxlength: 100,
   },
 }, { timestamps: true });
+
+// Compound index for common query pattern: find by toolName, sort by order
+SlideSchema.index({ toolName: 1, order: 1 });
 
 const Slide = models.Slide || model("Slide", SlideSchema);
 export default Slide;

@@ -20,7 +20,7 @@ const SessionSchema = new Schema<ISession>(
   {
     sessionId: { type: String, required: true, unique: true, index: true },
     user: { type: Schema.Types.ObjectId, ref: "User" },
-    accessToken: String,
+    accessToken: { type: String, index: true }, // Add index for faster token lookups
     refreshToken: String,
     accessTokenExpiresAt: Number,
     idToken: String,
