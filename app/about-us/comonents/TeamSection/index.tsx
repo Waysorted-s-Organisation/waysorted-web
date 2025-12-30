@@ -10,9 +10,10 @@ interface TeamMemberProps {
   name: string;
   role: string;
   image: string;
+  priority?: boolean;
 }
 
-const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image }) => {
+const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image, priority = false }) => {
   return (
     <div className="bg-white rounded-xl text-center">
       <div className="relative w-[276px] h-[300px] bg-dots mx-auto rounded-xl overflow-hidden mb-4">
@@ -22,7 +23,7 @@ const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image }) => {
           fill
           className="object-cover"
           sizes="276px"
-          priority
+          priority={priority}
         />
       </div>
       <h3 className="text-xl font-semibold text-secondary-db-100">{name}</h3>
@@ -118,6 +119,7 @@ export default function TeamSection() {
               name={member.name}
               role={member.role}
               image={member.image}
+              priority={true}
             />
           ))}
           {team1.map((member, index) => (
@@ -126,6 +128,7 @@ export default function TeamSection() {
               name={member.name}
               role={member.role}
               image={member.image}
+              priority={index < 2}
             />
           ))}
           {team1.length > 0 && <JoinUsMobile />}
@@ -144,6 +147,7 @@ export default function TeamSection() {
             name={member.name}
             role={member.role}
             image={member.image}
+            priority={true}
           />
         ))}
         <JoinUsDesktop />
@@ -155,6 +159,7 @@ export default function TeamSection() {
             name={member.name}
             role={member.role}
             image={member.image}
+            priority={false}
           />
         ))}
       </div>
