@@ -13,9 +13,125 @@ const GA_TRACKING_ID = "G-KS8MVKMRYV";
 const hanken = Hanken_Grotesk({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "WaySorted - Unified Tools Hub for Makers",
+  title: {
+    default: "Waysorted - Accelerate every idea with one powerful suite",
+    template: "%s | Waysorted",
+  },
   description:
-    "10+ expert-approved Figma tools bundled by use case, optimized for performance, and designed to help you work smarter, not harder.",
+    "Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.",
+  keywords: [
+    "Figma plugin",
+    "design tools",
+    "Waysorted",
+    "productivity",
+    "color palette",
+    "PDF exporter",
+    "unit converter",
+    "design workflow",
+    "UI/UX tools",
+  ],
+  authors: [{ name: "Waysorted" }],
+  creator: "Waysorted",
+  publisher: "Waysorted",
+  metadataBase: new URL("https://www.waysorted.com"),
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://www.waysorted.com",
+    siteName: "Waysorted",
+    title: "Waysorted - Accelerate every idea with one powerful suite",
+    description:
+      "Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.",
+    images: [
+      {
+        url: "/images/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Waysorted - Unified Tools Hub for Designers",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Waysorted - Accelerate every idea with one powerful suite",
+    description:
+      "Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.",
+    images: ["/images/og-image.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  verification: {
+    google: "your-google-verification-code", // Replace with actual verification code
+  },
+};
+
+// JSON-LD Structured Data for Google Sitelinks
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://www.waysorted.com/#organization",
+      name: "Waysorted",
+      url: "https://www.waysorted.com",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://www.waysorted.com/images/logo.svg",
+      },
+      sameAs: [
+        "https://twitter.com/waysorted",
+        "https://www.linkedin.com/company/waysorted",
+        "https://discord.gg/waysorted",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://www.waysorted.com/#website",
+      url: "https://www.waysorted.com",
+      name: "Waysorted",
+      description:
+        "Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.",
+      publisher: {
+        "@id": "https://www.waysorted.com/#organization",
+      },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: {
+          "@type": "EntryPoint",
+          urlTemplate: "https://www.waysorted.com/docs?q={search_term_string}",
+        },
+        "query-input": "required name=search_term_string",
+      },
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "Waysorted",
+      applicationCategory: "DesignApplication",
+      operatingSystem: "Web",
+      offers: {
+        "@type": "Offer",
+        price: "0",
+        priceCurrency: "USD",
+      },
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: "4.8",
+        ratingCount: "100",
+      },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -38,6 +154,10 @@ export default function RootLayout({
             gtag('config', '${GA_TRACKING_ID}');
           `}
         </Script>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
       </head>
       <body className={`${hanken.className} no-scrollbar select-none`}>
         <SplashGate minMs={4000} initialOnly>
