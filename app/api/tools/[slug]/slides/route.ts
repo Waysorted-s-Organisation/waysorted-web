@@ -4,6 +4,9 @@ import Slide from "@/models/slide";
 
 export const runtime = "nodejs";
 
+// Cache slides for 1 hour - data doesn't change frequently
+export const revalidate = 3600;
+
 //eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function GET(req: NextRequest, context: any) {
   // Use a permissive type for the second param to avoid Next's generated type mismatch
@@ -16,5 +19,13 @@ export async function GET(req: NextRequest, context: any) {
     toolName: { $regex: `^${slug}$`, $options: "i" }
   }).sort({ order: 1, createdAt: 1 });
 
-  return NextResponse.json({ slides });
+  return NextResponse.json(
+    { slides },
+    {
+      headers: {
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      },
+    }
+  );
 }
+

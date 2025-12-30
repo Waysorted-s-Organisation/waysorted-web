@@ -31,25 +31,27 @@ export default function LearnMorePage() {
     async function fetchData() {
       setLoading(true)
       try {
-        // fetch active tools
-        const toolsRes = await fetch('/api/tools/active')
+        // Fetch tools and slides in PARALLEL for faster loading
+        const [toolsRes, slidesRes] = await Promise.all([
+          fetch('/api/tools/active'),
+          toolName ? fetch(`/api/tools/${encodeURIComponent(toolName)}/slides`) : Promise.resolve(null)
+        ])
+
+        if (!mounted) return
+
         const toolsJson = await toolsRes.json()
         const toolsData: ITool[] = toolsJson?.data ?? []
-        if (!mounted) return
         setAllTools(toolsData)
 
         // Find the tool by slug (toolName)
         const foundTool = toolsData.find((t: ITool) => t.slug === toolName)
-        if (!mounted) return
         setTool(foundTool ?? null)
 
-        if (toolName) {
-          const slidesRes = await fetch(`/api/tools/${encodeURIComponent(toolName)}/slides`)
+        if (slidesRes) {
           const slidesJson = await slidesRes.json()
           if (!mounted) return
           setSlides(slidesJson?.slides ?? [])
         } else {
-          if (!mounted) return
           setSlides([])
         }
       } catch (error) {
@@ -84,9 +86,8 @@ export default function LearnMorePage() {
   return (
     <div>
       <main
-        className={`min-h-screen bg-white transition-all duration-300 ${
-          showBanner ? 'pt-24' : 'pt-16'
-        }`}
+        className={`min-h-screen bg-white transition-all duration-300 ${showBanner ? 'pt-24' : 'pt-16'
+          }`}
       >
         <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 
