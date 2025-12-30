@@ -57,7 +57,7 @@ export default function MainUI() {
                 Manages user credits, which unlocks premium features & tools.
             </p>
             <figure className="my-6">
-                <div className="rounded-xl overflow-hidden max-w-xs">
+                <div className="rounded-xl overflow-hidden max-w-[470px] mx-auto">
                     <Image
                         src="/images/docs/Main-UI-Image-3.png"
                         alt="Left Panel Credits"
@@ -81,7 +81,7 @@ export default function MainUI() {
                 <li><span className="text-secondary-db-100">Function:</span> Informs the user of their remaining credit balance. The Active button confirms the credits are usable. The Low button confirms the credits are low. The No credits left button shows that credit is exhausted.</li>
             </ul>
             <figure className="my-6">
-                <div className="rounded-xl overflow-hidden max-w-xs">
+                <div className="rounded-xl overflow-hidden max-w-[470px] mx-auto">
                     <Image
                         src="/images/docs/Main-UI-Image-4.png"
                         alt="Credit Status"
@@ -99,7 +99,7 @@ export default function MainUI() {
                 <li><span className="text-secondary-db-100">Function:</span> Directs users to a page where they can purchase additional credits.</li>
             </ul>
             <figure className="my-6">
-                <div className="rounded-xl overflow-hidden max-w-xs">
+                <div className="rounded-xl overflow-hidden max-w-[470px] mx-auto">
                     <Image
                         src="/images/docs/Main-UI-Image-5.png"
                         alt="Get More Credits Button"

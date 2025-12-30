@@ -8,7 +8,7 @@ export default function Waychallenge() {
                 Way Challenge is our series of quick and fun arcade-style games, built directly into the Waysorted platform. The first in the series is Way Fall, a mindful escape designed to sharpen your reflexes and take a break from intense design sessions. Clear your mind and return to your work refreshed and refocused.
             </p>
             <figure className="my-6">
-                <div className="rounded-xl overflow-hidden max-w-md mx-auto">
+                <div className="rounded-xl overflow-hidden max-w-[834px] mx-auto">
                     <Image
                         src="/images/docs/Way-Challenge-Image-1.png"
                         alt="Way Challenge Game"
@@ -38,7 +38,7 @@ export default function Waychallenge() {
                 <li>Your score is displayed in the top right corner of the screen.</li>
             </ul>
             <figure className="my-6">
-                <div className="rounded-xl overflow-hidden max-w-sm mx-auto">
+                <div className="rounded-xl overflow-hidden max-w-[645px] mx-auto">
                     <Image
                         src="/images/docs/Way-Challenge-Image-2.png"
                         alt="Way Challenge Scoring"
