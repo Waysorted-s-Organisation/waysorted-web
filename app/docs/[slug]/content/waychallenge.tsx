@@ -1,10 +1,21 @@
+import Image from "next/image";
+
 export default function Waychallenge() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Way Challenge</h2>
+            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Waychallenge</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Way Challenge is our series of quick and fun arcade-style games, built directly into the Waysorted platform. The first in the series is Way Fall, a mindful escape designed to sharpen your reflexes and take a break from intense design sessions. Clear your mind and return to your work refreshed and refocused.
             </p>
+            <div className="my-6 rounded-xl overflow-hidden">
+                <Image
+                    src="/images/docs/Way-Challenge-Image-1.png"
+                    alt="Way Challenge Game"
+                    width={600}
+                    height={400}
+                    className="w-full h-auto rounded-xl"
+                />
+            </div>
 
             <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Game Mechanics</h3>
 
@@ -23,6 +34,15 @@ export default function Waychallenge() {
                 <li>You gain one point for every object you successfully avoid with your paddle.</li>
                 <li>Your score is displayed in the top right corner of the screen.</li>
             </ul>
+            <div className="my-6 rounded-xl overflow-hidden">
+                <Image
+                    src="/images/docs/Way-Challenge-Image-2.png"
+                    alt="Way Challenge Scoring"
+                    width={600}
+                    height={400}
+                    className="w-full h-auto rounded-xl"
+                />
+            </div>
 
             <h4 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Game Over</h4>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">

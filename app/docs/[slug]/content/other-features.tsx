@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 export default function OtherFeatures() {
     return (
         <>
@@ -7,8 +9,26 @@ export default function OtherFeatures() {
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 All Waysorted tools are available in this interface. Users can find their preferred tools, mark them as favorites for quick access in Wayspace, and explore additional tools using the categorized tags.
             </p>
+            <div className="my-6 rounded-xl overflow-hidden">
+                <Image
+                    src="/images/docs/Other-feature-Image-1.png"
+                    alt="All Tools Interface"
+                    width={600}
+                    height={400}
+                    className="w-full h-auto rounded-xl"
+                />
+            </div>
 
             <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Resources</h3>
+            <div className="my-6 rounded-xl overflow-hidden">
+                <Image
+                    src="/images/docs/Other-feature-Image-2.png"
+                    alt="Resources Panel"
+                    width={600}
+                    height={400}
+                    className="w-full h-auto rounded-xl"
+                />
+            </div>
 
             <h4 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Help Center</h4>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
@@ -34,6 +54,15 @@ export default function OtherFeatures() {
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 The User Profile section allows users to view their account details, including their name and email address. From here, users can quickly request new features and explore available premium plans. This section also provides easy access to support and social links for staying connected with Waysorted.
             </p>
+            <div className="my-6 rounded-xl overflow-hidden">
+                <Image
+                    src="/images/docs/Other-feature-Image-3.png"
+                    alt="User Profile"
+                    width={600}
+                    height={400}
+                    className="w-full h-auto rounded-xl"
+                />
+            </div>
         </>
     );
 }
