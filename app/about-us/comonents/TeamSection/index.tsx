@@ -21,8 +21,8 @@ const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image }) => {
           alt={name}
           fill
           className="object-cover"
-          sizes="150px"
-          priority
+          sizes="276px"
+          loading="lazy"
         />
       </div>
       <h3 className="text-xl font-semibold text-secondary-db-100">{name}</h3>
@@ -48,6 +48,7 @@ const JoinUsMobile = () => (
     <GlowStarButton
       className="bg-secondary-db-100 text-white px-6 py-3 rounded-xl font-semibold text-base flex items-center justify-center w-full"
       style={{ minHeight: "48px" }}
+      onClick={() => window.open("https://docs.google.com/forms/d/e/1FAIpQLScNSYvYUyXrEM5YNHSliafQHiABC_Rar0sOPnNjRQQFaWf_aw/viewform", "_blank")}
     >
       Join Our Team
       <Image
@@ -77,6 +78,7 @@ const JoinUsDesktop = () => (
     </div>
     <GlowStarButton
       className="bg-secondary-db-100 text-white px-4 py-2 font-semibold text-base rounded-xl cursor-pointer"
+      onClick={() => window.open("https://docs.google.com/forms/d/e/1FAIpQLScNSYvYUyXrEM5YNHSliafQHiABC_Rar0sOPnNjRQQFaWf_aw/viewform", "_blank")}
     >
       Join Our Team
       <Image
