@@ -3,14 +3,14 @@ export default function ProfileAndSettingsOverview() {
         <>
             <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Profile and Settings Overview</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
-                The Profile & Settings area is the control center for managing your Waysorted account. Here you can set your name, manage preferences, update notification settings, toggle beta features, and more.
+                The Profile & Settings area is the central place to manage your Waysorted account. Here you can update your profile, control preferences, manage credits and subscriptions, configure notifications and integrations, and access beta features.
             </p>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
-                Key settings include:
+                All changes are saved automatically and synced across your devices.
             </p>
-            <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-2">
-                <li>Your display name: Profile icon, in-app calls, tip, General</li>
-            </ul>
+            <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
+                Access: Top navigation → Profile icon → Account settings → General
+            </p>
         </>
     );
 }

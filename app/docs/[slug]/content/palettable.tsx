@@ -8,8 +8,8 @@ export default function Palettable() {
 
       <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Core Features</h3>
       <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed">
-        <li><span className="text-secondary-db-100">Color Input</span>: Starting color that serves as the base for palette generation. Accepts HEX, RGB, and HSL formats.</li>
-        <li><span className="text-secondary-db-100">Palette Harmony</span>: Algorithm for creating related colors based on color theory. Options include: Complementary, Analogous, Triadic, Split-complementary, Tetradic, Monochromatic.</li>
+        <li><span className="text-secondary-db-100">Base Color</span>: Starting color that serves as the base for palette generation. Accepts HEX, RGB, and HSL formats.</li>
+        <li><span className="text-secondary-db-100">Variation Types</span>: Brighten, Darken, Desaturate, Hue, Analogous, Monochromatic, Complementary, Split-Complementary, Triad, and Tetrad.</li>
         <li><span className="text-secondary-db-100">Step Slider</span>: Defines the number of color variations to generate.</li>
         <li><span className="text-secondary-db-100">Intensity Slider</span>: Controls the magnitude of change between each step.</li>
       </ul>

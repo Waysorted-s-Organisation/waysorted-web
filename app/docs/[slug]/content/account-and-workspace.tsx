@@ -24,26 +24,26 @@ export default function AccountAndWorkspace() {
 
             <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Profile & Settings Overview</h3>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
-                The Profile & Settings area is the control center for managing your Waysorted account. Here you can set your name, manage preferences, update notification settings, toggle beta features, and more.
+                The Profile & Settings area is the central place to manage your Waysorted account. Here you can update your profile, control preferences, manage credits and subscriptions, configure notifications and integrations, and access beta features.
             </p>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
-                Key settings include:
+                All changes are saved automatically and synced across your devices.
             </p>
-            <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-2">
-                <li>Your display name: Profile icon, in-app calls, tip, General</li>
-            </ul>
+            <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
+                Access: Top navigation → Profile icon → Account settings → General
+            </p>
 
             <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Profile Photo</h3>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
-                Your profile photo appears across Waysorted, from dashboard calls to comments and our website.
+                Your profile photo appears across Waysorted in collaborations, comments, and the marketplace.
             </p>
             <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
-                <li>Uploads to PNG, JPG, or GIF (max 1MB)</li>
-                <li>Automatically displayed in profile</li>
-                <li>Remove any time by editing</li>
+                <li>Upload JPG, PNG, or GIF (max 5MB)</li>
+                <li>Automatically cropped to a circle</li>
+                <li>Remove anytime to revert to initials</li>
             </ul>
-            <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
-                Tip: Use a face photo, it builds trust and personality.
+            <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4 italic">
+                Tip: Use a professional photo for public or creator profiles.
             </p>
 
             <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Linked Accounts & Integrations</h3>

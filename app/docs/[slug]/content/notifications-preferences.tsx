@@ -11,6 +11,16 @@ export default function NotificationsPreferences() {
                 <li>Toggle for marketing and promotional emails</li>
                 <li>Control push and SMS settings if available</li>
             </ul>
+            <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
+                Controls: Enable or disable non-essential notifications from Account settings. Transactional emails (security, billing, password recovery) are always active.
+            </p>
+            <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4 font-semibold text-secondary-db-100">
+                Troubleshooting tips:
+            </p>
+            <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-2">
+                <li>Check spam or promotions folders</li>
+                <li>Ensure your email address is verified</li>
+            </ul>
         </>
     );
 }

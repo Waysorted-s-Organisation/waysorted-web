@@ -3,15 +3,15 @@ export default function ProfilePhoto() {
         <>
             <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Profile Photo</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
-                Your profile photo appears across Waysorted, from dashboard calls to comments and our website.
+                Your profile photo appears across Waysorted in collaborations, comments, and the marketplace.
             </p>
             <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
-                <li>Uploads to PNG, JPG, or GIF (max 1MB)</li>
-                <li>Automatically displayed in profile</li>
-                <li>Remove any time by editing</li>
+                <li>Upload JPG, PNG, or GIF (max 5MB)</li>
+                <li>Automatically cropped to a circle</li>
+                <li>Remove anytime to revert to initials</li>
             </ul>
-            <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
-                Tip: Use a face photo, it builds trust and personality.
+            <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4 italic">
+                Tip: Use a professional photo for public or creator profiles.
             </p>
         </>
     );
