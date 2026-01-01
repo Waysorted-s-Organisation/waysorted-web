@@ -1,24 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import FeatureRequest from "@/models/featureRequest";
+import Session from "@/models/session";
+import type { IUser } from "@/models/user";
 import { cookies } from "next/headers";
 import mongoose from "mongoose";
 
-// Helper to get current user from session
+// Helper to get current user from session (same pattern as /api/me)
 async function getCurrentUser() {
     const cookieStore = await cookies();
-    const sessionToken = cookieStore.get("session_token")?.value;
+    const sessionId = cookieStore.get("sessionId")?.value;
 
-    if (!sessionToken) return null;
+    if (!sessionId) return null;
 
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/auth/me`, {
-            headers: { Cookie: `session_token=${sessionToken}` },
-            cache: "no-store",
-        });
-        if (!res.ok) return null;
-        const data = await res.json();
-        return data.user || null;
+        await dbConnect();
+        const session = await Session.findOne({ sessionId }).populate<{ user: IUser }>("user");
+
+        if (!session || !session.user) return null;
+
+        const user = session.user;
+        return {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            picture: user.picture,
+        };
     } catch {
         return null;
     }
@@ -62,13 +69,13 @@ export async function POST(
             );
         }
 
-        const userId = user._id || user.id;
+        const userId = user.id;
         const hasVoted = featureRequest.votedBy.includes(userId);
 
         if (hasVoted) {
             // Remove vote
             featureRequest.votedBy = featureRequest.votedBy.filter(
-                (id: string) => id !== userId
+                (voterId: string) => voterId !== userId
             );
             featureRequest.votes = Math.max(0, featureRequest.votes - 1);
         } else {
