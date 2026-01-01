@@ -17,29 +17,17 @@ const LanguageDropdown = ({
   const languages = ['English', 'Hindi']
 
   useEffect(() => {
-    // Check URL query param for language state
-    const params = new URLSearchParams(window.location.search);
-    const langParam = params.get('lang');
-
-    const clearCookies = () => {
-      document.cookie = "googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-      document.cookie = "googtrans=; path=/; domain=" + document.domain + "; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-      document.cookie = "googtrans=; path=/; domain=." + document.domain + "; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    // Read cookie on mount to set initial state
+    const getCookie = (name: string) => {
+      const v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+      return v ? v[2] : null;
     };
 
-    if (langParam === 'hi') {
+    const googtrans = getCookie('googtrans');
+    if (googtrans === '/en/hi') {
       setSelected('Hindi');
-      // Ensure cookie is set if param is present
-      document.cookie = "googtrans=/en/hi; path=/";
-      document.cookie = "googtrans=/en/hi; path=/; domain=" + document.domain;
     } else {
       setSelected('English');
-      // If no param, ensure cookies are cleared (Default / Refresh behavior)
-      // We only clear if cookie exists to avoid unnecessary processing/reloads loop checks
-      if (document.cookie.includes('googtrans=/en/hi')) {
-        clearCookies();
-        window.location.reload();
-      }
     }
 
     const handleClickOutside = (e: MouseEvent) => {
@@ -63,31 +51,26 @@ const LanguageDropdown = ({
   }, [isOpen, onClose, buttonRef])
 
   const handleLanguageChange = (lang: string) => {
+    if (lang === selected) {
+      onClose();
+      return;
+    }
+
+    setSelected(lang);
     onClose();
 
+    // Google Translate Cookie Logic
     if (lang === 'Hindi') {
-      if (selected === 'Hindi') return;
-
       document.cookie = "googtrans=/en/hi; path=/";
       document.cookie = "googtrans=/en/hi; path=/; domain=" + document.domain;
-
-      // Add ?lang=hi to URL
-      const url = new URL(window.location.href);
-      url.searchParams.set('lang', 'hi');
-      window.location.href = url.toString();
     } else {
-      if (selected === 'English') return;
-
-      // Clear cookies
-      document.cookie = "googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-      document.cookie = "googtrans=; path=/; domain=" + document.domain + "; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-      document.cookie = "googtrans=; path=/; domain=." + document.domain + "; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-
-      // Remove ?lang=hi from URL
-      const url = new URL(window.location.href);
-      url.searchParams.delete('lang');
-      window.location.href = url.toString();
+      // Clear/Reset to English
+      document.cookie = "googtrans=/en/en; path=/";
+      document.cookie = "googtrans=/en/en; path=/; domain=" + document.domain;
     }
+
+    // Reload to apply translation
+    window.location.reload();
   };
 
   if (!isOpen) return null
