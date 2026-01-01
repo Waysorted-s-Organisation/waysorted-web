@@ -6,7 +6,6 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 // import EarlyAccessPopup from "@/components/EarlyAccessPopup";
-import GoogleTranslate from "@/components/GoogleTranslate";
 import SplashGate from "@/components/SplashGate";
 
 const GA_TRACKING_ID = "G-KS8MVKMRYV";
@@ -189,7 +188,6 @@ export default function RootLayout({
             {/* <EarlyAccessPopup /> */}
           </BannerProvider>
         </SplashGate>
-        <GoogleTranslate />
         <SpeedInsights />
         <Analytics />
       </body>
