@@ -96,6 +96,7 @@ export const RequestFeatureProvider: React.FC<{ children: ReactNode }> = ({ chil
         try {
             const res = await fetch(`/api/feature-requests/${id}`, {
                 method: "DELETE",
+                credentials: "include",
             });
             const result = await res.json();
             if (result.success) {

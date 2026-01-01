@@ -48,7 +48,9 @@ const RequestCard: React.FC<RequestCardProps> = ({ request, showActions = false 
         setVoting(false);
     };
 
-    const handleDelete = async () => {
+    const handleDelete = async (e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
         if (!confirm("Are you sure you want to delete this request?")) return;
         setDeleting(true);
         await deleteRequest(request._id);
