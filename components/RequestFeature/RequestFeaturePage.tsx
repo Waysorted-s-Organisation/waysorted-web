@@ -52,15 +52,15 @@ export default function RequestFeaturePage() {
     ];
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen">
             <main
-                className={`min-h-screen bg-white transition-all duration-300 ${showBanner ? "pt-24" : "pt-16"
+                className={`min-h-screen bg-white transition-all duration-300 pb-24 select-none ${showBanner ? "pt-24" : "pt-16"
                     }`}
             >
                 <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 
                 {/* Hero Section */}
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 md:py-12">
                     {/* Breadcrumb */}
                     <nav className="text-sm font-medium text-secondary-db-100/50 mb-8">
                         <span className="cursor-pointer hover:text-secondary-db-100" onClick={() => window.location.href = "/"}>
@@ -151,7 +151,7 @@ export default function RequestFeaturePage() {
                         </aside>
 
                         {/* Main Content */}
-                        <div className="flex-1">
+                        <div className="flex-1 min-h-[400px]">
                             {/* Sort Controls */}
                             <div className="flex items-center justify-between mb-4">
                                 <p className="text-sm text-secondary-db-70">
@@ -207,10 +207,8 @@ export default function RequestFeaturePage() {
                         </div>
                     </div>
                 </div>
-
-                <Footer />
             </main>
-
+            <Footer />
             <RequestDialog open={dialogOpen} onOpenChange={setDialogOpen} />
         </div>
     );
