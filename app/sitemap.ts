@@ -14,6 +14,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         '/learning',
         '/docs',
         '/settings',
+        '/request-a-feature',
     ]
 
     // Documentation pages
