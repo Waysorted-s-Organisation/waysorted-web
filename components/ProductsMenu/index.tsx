@@ -26,14 +26,14 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
             href={product.href}
             className="flex space-x-3 p-2 rounded-xl bg-white hover:bg-primary-way-10 hover:ring-2 hover:ring-primary-way-10 transition-colors mx-2 my-2"
           >
-              <Image
+            <Image
               src={product.icon}
               alt={product.name}
               width={57}
               height={57}
               className=""
             />
-            
+
             <div>
               <p className="font-normal text-sm text-secondary-db-100">
                 {product.name}
@@ -49,7 +49,7 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
       {/* CTA section */}
       <div
         className="bg-primary-way-100 p-4 m-2 rounded-md flex items-center justify-between cursor-pointer"
-        onClick={() => router.push('/request')}
+        onClick={() => router.push('/request-a-feature')}
         title="Request a Feature"
       >
         <span className="text-white font-medium hover:underline">

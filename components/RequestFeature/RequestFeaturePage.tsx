@@ -101,7 +101,7 @@ export default function RequestFeaturePage() {
 
                         <button
                             onClick={() => setDialogOpen(true)}
-                            className="inline-flex items-center gap-2 bg-primary-way-100 text-white font-semibold px-5 py-3 rounded-xl hover:bg-primary-way-90 transition-colors"
+                            className="relative z-10 inline-flex items-center gap-2 bg-primary-way-100 text-white font-semibold px-5 py-3 rounded-xl hover:bg-primary-way-90 transition-colors cursor-pointer"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -122,8 +122,8 @@ export default function RequestFeaturePage() {
                                             key={s.key}
                                             onClick={() => setFilter(s.key)}
                                             className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors ${filter === s.key
-                                                    ? "bg-white text-secondary-db-100 shadow-sm"
-                                                    : "text-secondary-db-70 hover:bg-white/50"
+                                                ? "bg-white text-secondary-db-100 shadow-sm"
+                                                : "text-secondary-db-70 hover:bg-white/50"
                                                 }`}
                                         >
                                             {s.key !== "all" && (
@@ -139,8 +139,8 @@ export default function RequestFeaturePage() {
                                         <button
                                             onClick={() => setShowMyRequests(!showMyRequests)}
                                             className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${showMyRequests
-                                                    ? "bg-primary-way-100 text-white"
-                                                    : "text-secondary-db-70 hover:bg-white/50"
+                                                ? "bg-primary-way-100 text-white"
+                                                : "text-secondary-db-70 hover:bg-white/50"
                                                 }`}
                                         >
                                             My Requests ({myRequests.length})
