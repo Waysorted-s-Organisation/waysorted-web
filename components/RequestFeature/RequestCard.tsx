@@ -48,13 +48,23 @@ const RequestCard: React.FC<RequestCardProps> = ({ request, showActions = false 
         setVoting(false);
     };
 
+    const [confirmDelete, setConfirmDelete] = React.useState(false);
+
     const handleDelete = async (e: React.MouseEvent) => {
         e.preventDefault();
         e.stopPropagation();
-        if (!confirm("Are you sure you want to delete this request?")) return;
+
+        if (!confirmDelete) {
+            setConfirmDelete(true);
+            // Auto-reset after 3 seconds if not confirmed
+            setTimeout(() => setConfirmDelete(false), 3000);
+            return;
+        }
+
         setDeleting(true);
         await deleteRequest(request._id);
         setDeleting(false);
+        setConfirmDelete(false);
     };
 
     const formatDate = (dateString: string) => {
@@ -125,9 +135,12 @@ const RequestCard: React.FC<RequestCardProps> = ({ request, showActions = false 
                         <button
                             onClick={handleDelete}
                             disabled={deleting}
-                            className="text-xs text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50 transition-all"
+                            className={`text-xs px-2 py-1 rounded transition-all ${confirmDelete
+                                ? "text-white bg-red-500 hover:bg-red-600"
+                                : "text-red-500 hover:text-red-700 hover:bg-red-50"
+                                }`}
                         >
-                            {deleting ? "..." : "Delete"}
+                            {deleting ? "..." : confirmDelete ? "Confirm?" : "Delete"}
                         </button>
                     </div>
                 )}
