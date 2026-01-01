@@ -119,7 +119,9 @@ export async function DELETE(
 
         // Only author can delete their own request
         const userId = user.id;
-        if (featureRequest.authorId !== userId) {
+        const userEmail = user.email;
+        const isOwner = featureRequest.authorId === userId || featureRequest.authorEmail === userEmail;
+        if (!isOwner) {
             return NextResponse.json(
                 { success: false, error: "You can only delete your own requests" },
                 { status: 403 }
@@ -179,7 +181,9 @@ export async function PATCH(
 
         // Only author can edit their request
         const userId = user.id;
-        if (featureRequest.authorId !== userId) {
+        const userEmail = user.email;
+        const isOwner = featureRequest.authorId === userId || featureRequest.authorEmail === userEmail;
+        if (!isOwner) {
             return NextResponse.json(
                 { success: false, error: "You can only edit your own requests" },
                 { status: 403 }
