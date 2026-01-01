@@ -11,6 +11,7 @@ export interface FeatureRequest {
     status: string;
     authorId: string;
     authorName: string;
+    authorEmail?: string;
     votes: number;
     votedBy: string[];
     createdAt: string;
@@ -61,8 +62,13 @@ export const RequestFeatureProvider: React.FC<{ children: ReactNode }> = ({ chil
 
     const myRequests = useMemo(() => {
         if (!user) return [];
-        const userId = typeof user._id === 'string' ? user._id : user._id?.toString() || "";
-        return requests.filter((r) => r.authorId === userId);
+        // The /api/me returns { id: ... } not { _id: ... }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const userAny = user as any;
+        const userId = userAny.id || (typeof user._id === 'string' ? user._id : user._id?.toString()) || "";
+        const userEmail = user.email;
+        // Match by userId or by email as fallback
+        return requests.filter((r) => r.authorId === userId || r.authorEmail === userEmail);
     }, [requests, user]);
 
     const createRequest = useCallback(async (data: { title: string; description: string; type: string; board?: string }) => {
@@ -113,7 +119,9 @@ export const RequestFeatureProvider: React.FC<{ children: ReactNode }> = ({ chil
             const result = await res.json();
             if (result.success) {
                 // Update local state
-                const userId = typeof user?._id === 'string' ? user._id : user?._id?.toString() || "";
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const userAny = user as any;
+                const userId = userAny?.id || (typeof user?._id === 'string' ? user._id : user?._id?.toString()) || "";
                 setRequests((prev) =>
                     prev.map((r) =>
                         r._id === id

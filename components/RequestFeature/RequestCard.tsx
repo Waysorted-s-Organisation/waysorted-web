@@ -30,9 +30,11 @@ const RequestCard: React.FC<RequestCardProps> = ({ request, showActions = false 
     const [voting, setVoting] = React.useState(false);
     const [deleting, setDeleting] = React.useState(false);
 
-    const userId = typeof user?._id === 'string' ? user._id : user?._id?.toString() || "";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userAny = user as any;
+    const userId = userAny?.id || (typeof user?._id === 'string' ? user._id : user?._id?.toString()) || "";
     const hasVoted = request.votedBy?.includes(userId);
-    const isOwner = request.authorId === userId;
+    const isOwner = request.authorId === userId || request.authorEmail === user?.email;
 
     const statusStyle = statusColors[request.status] || statusColors.under_review;
 
