@@ -20,15 +20,32 @@ export const metadata: Metadata = {
   description:
     "Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.",
   keywords: [
-    "Figma plugin",
-    "design tools",
+    // Brand keywords
     "Waysorted",
-    "productivity",
-    "color palette",
-    "PDF exporter",
-    "unit converter",
+    "Waysorted plugin",
+    "Waysorted Figma",
+    "Waysorted beta",
+    "Waysorted tools",
+    // Product keywords
+    "Figma plugin",
+    "Figma plugin bundle",
+    "Figma plugin marketplace",
+    "PDF exporter Figma",
+    "Palettable color palette",
+    "unit converter plugin",
+    "import tool Figma",
+    // Category keywords  
+    "design tools",
     "design workflow",
+    "designer productivity tools",
     "UI/UX tools",
+    "one powerful suite",
+    "unified tool suite",
+    "design plugin collection",
+    // Action keywords
+    "accelerate design workflow",
+    "productivity for designers",
+    "Figma design plugins",
   ],
   authors: [{ name: "Waysorted" }],
   creator: "Waysorted",

@@ -18,44 +18,70 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     // Documentation pages
     const docPages = [
-        'getting-started',
+        // Getting Started
+        'what-is-waysorted',
+        'accessing-waysorted-in-figma',
+        'all-in-one-tools',
+        'supported-platforms',
+        'credits-and-usage',
+        'whats-coming-next',
+        // Plugin Suite
         'introduction',
         'main-ui',
         'wayspace',
         'waychallenge',
         'other-features',
-        'account-creation-and-setup',
-        'profile-and-settings',
+        // Account and Workspace
+        'account-and-workspace',
+        'account-settings-navigation',
+        'profile-and-settings-overview',
+        'profile-photo',
+        'linked-accounts-and-integrations',
+        'notifications-preferences',
+        'beta-features',
+        // Tools & Ecosystem
         'searching-and-browsing-plugins',
         'creator-guidelines',
         'request-a-feature',
         'ratings-and-reviews',
+        // Tools Reference
         'pdf-exporter',
         'palettable',
         'unit-converter',
         'import-tool',
         'upcoming-tools',
+        // FAQs
         'faqs',
+        // Troubleshooting
         'common-errors',
         'diagnostics',
         'contact-support',
         'bug-reporting',
+        // Legal
         'privacy-policy',
         'terms-of-service',
         'data-processing',
         'cookie-policy',
         'intellectual-property-rights',
+        // Integrations
         'figma-sync',
         'backup-and-recovery',
         'third-party-integrations',
+        // Credits
         'overview',
         'earning-credits',
         'using-credits',
         'managing-credits',
+        // API Documentation
         'developer-focused-guide',
         'overview-and-authentication',
         'rate-limits',
         'webhooks',
+        // Legacy redirects
+        'getting-started',
+        'account-creation-and-setup',
+        'profile-and-settings',
+        'quick-integration-with-figma',
     ]
 
     // Learning pages (tools)
