@@ -84,6 +84,11 @@ const LanguageDropdown = ({
         {languages.map((lang) => (
           <button
             key={lang}
+            // Use onMouseDown to prevent focus stealing issues with Google Translate iframe
+            onMouseDown={(e) => {
+              e.preventDefault();
+              handleLanguageChange(lang);
+            }}
             onClick={() => handleLanguageChange(lang)}
             className={`flex items-center text-base font-medium justify-between px-5 py-1 rounded cursor-pointer ${lang === selected ? 'border border-secondary-db-100' : ''
               }`}
