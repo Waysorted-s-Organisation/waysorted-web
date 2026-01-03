@@ -111,18 +111,18 @@ export default function ToolBriefCarousel({
           },
           ...(slidesEls.length > 1
             ? {
-                snap: {
-                  snapTo: (value: number) => {
-                    applyRightSpacer()
-                    const { targetShifts, endShift: freshEnd } = measure()
-                    if (freshEnd <= 0) return 0
-                    const points = targetShifts.map((s) => s / freshEnd)
-                    return gsap.utils.snap(points, value)
-                  },
-                  duration: 0.25,
-                  ease: 'power1.inOut'
-                }
+              snap: {
+                snapTo: (value: number) => {
+                  applyRightSpacer()
+                  const { targetShifts, endShift: freshEnd } = measure()
+                  if (freshEnd <= 0) return 0
+                  const points = targetShifts.map((s) => s / freshEnd)
+                  return gsap.utils.snap(points, value)
+                },
+                duration: 0.25,
+                ease: 'power1.inOut'
               }
+            }
             : {}),
           onUpdate: (self) => {
             setProgress(self.progress)
@@ -201,7 +201,7 @@ export default function ToolBriefCarousel({
               aria-label={`${i + 1} of ${totalItems}`}
               draggable={false}
             >
-              <ToolBrief {...props} />
+              <ToolBrief {...props} priority={i === 0} />
             </div>
           ))}
 
