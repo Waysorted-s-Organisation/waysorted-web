@@ -1,23 +1,26 @@
 "use client"
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 // import FloatingButton from '@/components/FloatingButton'
 import Hero from '@/components/Hero/index'
-import ImpactTop from '@/components/ImpactTop'
-import { InfoCards } from '@/components/InfoCards'
 import ToolsGrid from '@/components/ToolsGrid/index'
 import TopSection from '@/components/TopSection/index'
 import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
-import GetStarted from '@/components/GetStarted'
-import Testimonials from '@/components/Testimonials'
 import Footer from "@/components/Footer";
-import SecureAnimation from "@/components/SecureAnimation";
-import SecureCards from "@/components/SecureCards/index";
-import FloatingStatsSection from "../FloatingStats";
+
+// Dynamic imports for below-fold components to reduce initial bundle size
+const ImpactTop = dynamic(() => import('@/components/ImpactTop'), { ssr: true });
+const InfoCards = dynamic(() => import('@/components/InfoCards').then(mod => ({ default: mod.InfoCards })), { ssr: true });
+const SecureAnimation = dynamic(() => import('@/components/SecureAnimation'), { ssr: false });
+const SecureCards = dynamic(() => import('@/components/SecureCards/index'), { ssr: true });
+const FloatingStatsSection = dynamic(() => import('../FloatingStats'), { ssr: true });
+const Testimonials = dynamic(() => import('@/components/Testimonials'), { ssr: true });
+const GetStarted = dynamic(() => import('@/components/GetStarted'), { ssr: true });
 
 export default function Home() {
-    const { showBanner, setShowBanner } = useBanner();
-     const [showSecureCards, setShowSecureCards] = useState(false);
+  const { showBanner, setShowBanner } = useBanner();
+  const [showSecureCards, setShowSecureCards] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,38 +42,37 @@ export default function Home() {
     };
   }, []);
 
-    return (
-        <main
-            className={`min-h-screen bg-white transition-all duration-300 ${showBanner ? "pt-24" : "pt-16"
-                }`}
-        >
-            <Header showBanner={showBanner} setShowBanner={setShowBanner} />
-            <Hero />
-            <ToolsGrid />
-            <TopSection />
-            {/* <FloatingButton /> */}
-            <ImpactTop />
-            
-            <InfoCards />
-            <div className="my-60" />
-             {/* Section 1: Secure Animation */}
+  return (
+    <main
+      className={`min-h-screen bg-white transition-all duration-300 ${showBanner ? "pt-24" : "pt-16"
+        }`}
+    >
+      <Header showBanner={showBanner} setShowBanner={setShowBanner} />
+      <Hero />
+      <ToolsGrid />
+      <TopSection />
+      {/* <FloatingButton /> */}
+      <ImpactTop />
+
+      <InfoCards />
+      <div className="my-60" />
+      {/* Section 1: Secure Animation */}
       <section id="secure-animation" className="h-[200vh] hidden md:block">
         <SecureAnimation />
       </section>
 
       {/* Section 2: Secure Cards */}
       <section id="secure-cards"
-        className={`transition-opacity duration-700 ${
-          showSecureCards ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
+        className={`transition-opacity duration-700 ${showSecureCards ? "opacity-100" : "opacity-0 pointer-events-none"
+          }`}
       >
         <SecureCards />
       </section>
-            <FloatingStatsSection />
-            <Testimonials />
-            <GetStarted />
-            
-            <Footer />
-        </main>
-    )
+      <FloatingStatsSection />
+      <Testimonials />
+      <GetStarted />
+
+      <Footer />
+    </main>
+  )
 }
