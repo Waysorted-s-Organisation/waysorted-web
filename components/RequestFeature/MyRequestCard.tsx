@@ -30,13 +30,23 @@ import { ChatProvider } from "@/context/ChatContext"
 
 // Props
 interface MyRequestCardProps {
-    request: any;
+    request: {
+        _id?: string;
+        id?: string;
+        title: string;
+        description?: string;
+        details?: string;
+        votes?: string[];
+        status?: string;
+        createdAt?: string | Date;
+        [key: string]: unknown;
+    };
     showManageText?: boolean;
 }
 
 const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) => {
 
-    const { editRequest, deleteRequest, voteRequest } = useRequestFeature()
+    const { editRequest, deleteRequest } = useRequestFeature()
 
     const [count, setCount] = useState(request.votes?.length || 0)
     const [isUpvoted, setIsUpvoted] = useState(false)
@@ -45,7 +55,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
     const [isEditing, setIsEditing] = useState(false)
     const [tempDesc, setTempDesc] = useState(request.description)
 
-    const handleClick = async () => {
+    const _handleClick = async () => {
         // Optimistic update
         if (isUpvoted) {
             setCount((prev: number) => prev - 1)
@@ -54,8 +64,8 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
             setCount((prev: number) => prev + 1)
             setIsUpvoted(true)
         }
-        // Call API
-        await voteRequest(request._id || request.id)
+        // Call API - TODO: re-enable when feature is ready
+        // await voteRequest(request._id || request.id)
     }
 
     const formattedCount = String(count).padStart(2, "0")
@@ -197,7 +207,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
                                                             </AlertDialogTrigger>
 
                                                             <AlertDialogContent className={"m-0 p-0 w-[453px] h-[188px]"}>
-                                                                <AlertDialogHeader>
+                                                                <AlertDialogHeader className="">
                                                                     <AlertDialogTitle className={"text-sm text-[#565A5E] px-2 pt-3 pb-3 border-b"}>Delete Requested Feature</AlertDialogTitle>
                                                                     {/* <Separator/> */}
                                                                     <AlertDialogDescription className={"text-black px-2 pt-2"}>
@@ -212,7 +222,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
                                                                     <AlertDialogCancel className={"w-[108px] h-[36px] bg-[#F3F3F3] border-none cursor-pointer"}>Cancel</AlertDialogCancel>
                                                                     <AlertDialogAction
                                                                         className="bg-[#E84C3D] hover:bg-[#d04537] text-white cursor-pointer w-[108px] h-[36px]"
-                                                                        onClick={() => deleteRequest(request._id || request.id)}
+                                                                        onClick={() => deleteRequest(request._id || request.id || '')}
                                                                     >
                                                                         Delete
                                                                     </AlertDialogAction>
@@ -244,7 +254,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
 
                                                         <Button
                                                             onClick={async () => {
-                                                                await editRequest(request._id || request.id, { description: tempDesc });
+                                                                await editRequest(request._id || request.id || '', { description: tempDesc });
                                                                 setIsEditing(false);
                                                             }}
                                                             className="bg-[#265BD1] text-white px-5"
@@ -271,7 +281,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
 
                                         {/* Comments Section */}
                                         <div className="flex flex-1 items-center justify-center flex-col w-full">
-                                            <ChatProvider requestId={request.id || request._id}>
+                                            <ChatProvider requestId={request.id || request._id || ''}>
                                                 <Chat />
                                             </ChatProvider>
                                         </div>

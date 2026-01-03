@@ -106,7 +106,7 @@ const Chat = () => {
                 <h2 className="text-md font-medium mb-4">Comments</h2>
 
                 <div className="space-y-4">
-                    {comments.map((c: any) => (
+                    {comments.map((c) => (
                         <div key={c._id || c.id} className="space-y-2" id={`comment-${c._id || c.id}`}>
                             {/* Comment */}
                             <div className="flex items-start gap-3">
@@ -152,7 +152,7 @@ const Chat = () => {
                                                     </AlertDialogTrigger>
 
                                                     <AlertDialogContent className="m-0 p-0 w-[453px] h-[188px]">
-                                                        <AlertDialogHeader>
+                                                        <AlertDialogHeader className="">
                                                             <AlertDialogTitle className="text-sm text-[#565A5E] px-2 pt-3 pb-3 border-b">
                                                                 Delete Comment
                                                             </AlertDialogTitle>
@@ -190,9 +190,9 @@ const Chat = () => {
                             </div>
 
                             {/* Replies */}
-                            {c.replies?.length > 0 && (
+                            {c.replies && c.replies.length > 0 && (
                                 <div className="ml-12 space-y-2">
-                                    {c.replies.map((r: any) => (
+                                    {c.replies.map((r) => (
                                         <div
                                             key={r._id || r.id}
                                             className="flex items-start gap-3"
@@ -232,7 +232,7 @@ const Chat = () => {
                                                                 </AlertDialogTrigger>
 
                                                                 <AlertDialogContent className="m-0 p-0 w-[453px] h-[188px]">
-                                                                    <AlertDialogHeader>
+                                                                    <AlertDialogHeader className="">
                                                                         <AlertDialogTitle className="text-sm text-[#565A5E] px-2 pt-3 pb-3 border-b">
                                                                             Delete Reply
                                                                         </AlertDialogTitle>
@@ -280,7 +280,7 @@ const Chat = () => {
                                         className="text-sm"
                                         rows={2}
                                         value={replyInput}
-                                        onChange={(e) => setReplyInput(e.target.value)}
+                                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReplyInput(e.target.value)}
                                     />
                                     <button
                                         onClick={() => handleReplySend(c._id || c.id)}
@@ -304,7 +304,7 @@ const Chat = () => {
                         className="text-sm"
                         rows={3}
                         value={input}
-                        onChange={(e) => setInput(e.target.value)}
+                        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
                     />
                     <button
                         onClick={handleSend}

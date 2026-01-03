@@ -15,7 +15,7 @@ type FilterStatus = "all" | "planned" | "in_progress" | "released" | "not_done";
 export default function RequestFeaturePage() {
     const { showBanner, setShowBanner } = useBanner();
     const { user } = useUser();
-    const { requests, myRequests, loading, error } = useRequestFeature();
+    const { requests, myRequests } = useRequestFeature();
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [sort, setSort] = useState<SortOption>("votes");
@@ -37,7 +37,7 @@ export default function RequestFeaturePage() {
                 new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
             );
         } else {
-            result = [...result].sort((a, b) => b.votes - a.votes);
+            result = [...result].sort((a, b) => (b.votes?.length || 0) - (a.votes?.length || 0));
         }
 
         return result;
@@ -171,15 +171,7 @@ export default function RequestFeaturePage() {
                             </div>
 
                             {/* Request List */}
-                            {loading ? (
-                                <div className="text-center py-12 text-secondary-db-70">
-                                    Loading requests...
-                                </div>
-                            ) : error ? (
-                                <div className="text-center py-12 text-red-500">
-                                    {error}
-                                </div>
-                            ) : filteredRequests.length === 0 ? (
+                            {filteredRequests.length === 0 ? (
                                 <div className="text-center py-12">
                                     <p className="text-secondary-db-70 mb-4">
                                         {showMyRequests
@@ -198,8 +190,12 @@ export default function RequestFeaturePage() {
                                     {filteredRequests.map((request) => (
                                         <RequestCard
                                             key={request._id}
-                                            request={request}
-                                            showActions={showMyRequests}
+                                            id={request._id}
+                                            title={request.title}
+                                            description={request.description || ''}
+                                            details={request.details}
+                                            status={request.status}
+                                            votes={request.votes || []}
                                         />
                                     ))}
                                 </div>

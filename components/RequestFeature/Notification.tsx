@@ -29,7 +29,7 @@ const Notification = () => {
         }
     }, [user])
 
-    const fetchNotifications = async () => {
+    const _fetchNotifications = async () => {
         try {
             const res = await fetch("/api/notifications")
             if (res.ok) {
@@ -77,9 +77,8 @@ const Notification = () => {
                         {notifications.map((notification) => (
                             <div
                                 key={notification._id}
-                                className={`p-2 rounded-md text-sm cursor-pointer hover:bg-gray-100 ${
-                                    !notification.read ? "bg-blue-50" : ""
-                                }`}
+                                className={`p-2 rounded-md text-sm cursor-pointer hover:bg-gray-100 ${!notification.read ? "bg-blue-50" : ""
+                                    }`}
                                 onClick={() => markAsRead(notification._id)}
                             >
                                 <p>{notification.message}</p>

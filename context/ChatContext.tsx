@@ -85,11 +85,11 @@ export const ChatProvider = ({ children, requestId }: { children: React.ReactNod
         try {
             const res = await fetch(`/api/feature-requests/${requestId}/comments`, {
                 method: "POST",
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     text,
                     userId: user._id?.toString(),
                     authorName: user.name || "Anonymous",
-                    authorImage: user.image
+                    authorImage: ""
                 }),
                 headers: { "Content-Type": "application/json" }
             });
@@ -112,12 +112,12 @@ export const ChatProvider = ({ children, requestId }: { children: React.ReactNod
         try {
             const res = await fetch(`/api/feature-requests/${requestId}/comments`, {
                 method: "POST",
-                body: JSON.stringify({ 
-                    text, 
+                body: JSON.stringify({
+                    text,
                     parentId,
                     userId: user._id?.toString(),
                     authorName: user.name || "Anonymous",
-                    authorImage: user.image
+                    authorImage: ""
                 }),
                 headers: { "Content-Type": "application/json" }
             });

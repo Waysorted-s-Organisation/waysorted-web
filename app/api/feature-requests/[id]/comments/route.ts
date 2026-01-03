@@ -2,23 +2,28 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import FeatureComment from "@/models/featureComment";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
     await dbConnect();
     const { id: requestId } = await params;
 
     const comments = await FeatureComment.find({ requestId, deletedAt: null })
-        .sort({ createdAt: 1 }); // Oldest first (threaded logic might run on frontend)
+        .sort({ createdAt: 1 });
 
     return NextResponse.json(comments);
 }
 
-export async function POST(req: Request, { params }: { params: { id: string } }) {
+export async function POST(
+    req: Request,
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
         await dbConnect();
         const { id: requestId } = await params;
         const body = await req.json();
 
-        // body: { userId, authorName, text, parentId ... }
         const { userId, text } = body;
         if (!userId || !text) {
             return NextResponse.json({ error: "Missing fields" }, { status: 400 });

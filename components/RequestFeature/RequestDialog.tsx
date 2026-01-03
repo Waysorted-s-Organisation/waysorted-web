@@ -13,7 +13,7 @@ interface RequestDialogProps {
 const RequestDialog: React.FC<RequestDialogProps> = ({ open, onOpenChange }) => {
     const router = useRouter();
     const { user } = useUser();
-    const { createRequest } = useRequestFeature();
+    const { addRequest } = useRequestFeature();
 
     const [type, setType] = useState<"feature" | "bug">("feature");
     const [title, setTitle] = useState("");
@@ -34,19 +34,20 @@ const RequestDialog: React.FC<RequestDialogProps> = ({ open, onOpenChange }) => 
         }
 
         setLoading(true);
-        const result = await createRequest({
-            title: title.trim(),
-            description: description.trim(),
-            type,
-            board,
-        });
-        setLoading(false);
-
-        if (result) {
+        try {
+            await addRequest({
+                title: title.trim(),
+                description: description.trim(),
+                type,
+                board,
+            });
             setSuccess(true);
             setTitle("");
             setDescription("");
+        } catch {
+            // Error already handled in context with toast
         }
+        setLoading(false);
     };
 
     const handleClose = () => {

@@ -71,7 +71,7 @@ export const RequestFeatureProvider = ({ children }: { children: React.ReactNode
                     ...data,
                     userId: user?._id?.toString(),
                     authorName: user?.name,
-                    authorImage: user?.image,
+                    authorImage: "",
                     status: 'planned',
                 }),
                 headers: { "Content-Type": "application/json" }
@@ -153,14 +153,14 @@ export const RequestFeatureProvider = ({ children }: { children: React.ReactNode
     }
 
     return (
-        <RequestFeatureContext.Provider value={{ 
-            requests, 
-            myRequests, 
-            addRequest, 
-            editRequest, 
-            deleteRequest, 
+        <RequestFeatureContext.Provider value={{
+            requests,
+            myRequests,
+            addRequest,
+            editRequest,
+            deleteRequest,
             voteRequest,
-            refetchRequests: fetchRequests 
+            refetchRequests: fetchRequests
         }}>
             {children}
         </RequestFeatureContext.Provider>

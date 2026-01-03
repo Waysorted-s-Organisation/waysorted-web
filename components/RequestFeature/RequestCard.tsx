@@ -27,13 +27,13 @@ interface RequestCardProps {
     description: string;
     details?: string;
     status: string;
-    votes: any[]; // Array of vote IDs
+    votes: string[]; // Array of vote IDs
     id: string; // Needed for voting
 }
 
 const RequestCard = ({ title, description, details, status, votes, id }: RequestCardProps) => {
     const { voteRequest } = useRequestFeature();
-    
+
     // Vote count calculation
     const [count, setCount] = useState(votes?.length || 0);
     const [isUpvoted, setIsUpvoted] = useState(false); // This should be derived from usage context logic. 

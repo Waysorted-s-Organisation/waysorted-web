@@ -22,11 +22,11 @@ import { toast } from "sonner"
 const BugUploadDialog = ({ open, onOpenChange }: { open: boolean, onOpenChange: (open: boolean) => void }) => {
     // const { files, setFiles } = useRequestFeature() 
     // Temporarily define files state here or add to context if needed globally
-    const [files, setFiles] = useState<File[]>([])
+    const [_files, setFiles] = useState<File[]>([])
 
     const [uploading, setUploading] = useState(false)
-    const [successOpen, setSuccessOpen] = useState(false)
-    const [progress, setProgress] = useState(0)
+    const [_successOpen, setSuccessOpen] = useState(false)
+    const [_progress, setProgress] = useState(0)
 
     useEffect(() => {
         if (open) {
@@ -81,7 +81,7 @@ const BugUploadDialog = ({ open, onOpenChange }: { open: boolean, onOpenChange: 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="w-[453px] h-[450px] m-0 p-0">
-                <DialogHeader>
+                <DialogHeader className="">
                     <DialogTitle className="text-sm text-[#565A5E] px-6 py-4 border-b">
                         Request a feature or report a bug
                     </DialogTitle>
@@ -171,7 +171,7 @@ const RequestNavbar = () => {
                         </Button>
                     </DialogTrigger>
                     <DialogContent className="m-0 p-0 w-[453px] h-[520px] ">
-                        <DialogHeader>
+                        <DialogHeader className="">
                             <DialogTitle className="text-sm text-[#565A5E] px-6 py-4 border-b">
                                 Request a feature or report a bug
                             </DialogTitle>
@@ -216,7 +216,7 @@ const RequestNavbar = () => {
                                     id="desc"
                                     className="bg-[#F3F3F3]"
                                     value={desc}
-                                    onChange={(e) => setDesc(e.target.value)}
+                                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDesc(e.target.value)}
                                 />
                             </div>
 
