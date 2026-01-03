@@ -10,7 +10,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
         '/signup',
         '/figma-beta',
         '/learning',
-        '/request-a-feature',
         '/about-us',
         '/support',
         '/get-early-access',

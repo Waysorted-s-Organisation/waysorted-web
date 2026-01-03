@@ -173,13 +173,6 @@ const jsonLd = {
           description: "Discover the tools included in the current Waysorted Beta release.",
           url: "https://www.waysorted.com/learning",
         },
-        {
-          "@type": "SiteNavigationElement",
-          position: 4,
-          name: "Request a Feature",
-          description: "Have an idea or suggestion? Your feedback drives our roadmap.",
-          url: "https://www.waysorted.com/request-a-feature",
-        },
       ],
     },
   ],

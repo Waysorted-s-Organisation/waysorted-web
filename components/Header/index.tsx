@@ -245,12 +245,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               Support
             </button>
 
-            <button
-              className={`flex items-center pr-3 font-medium text-sm cursor-pointer ${textColor}`}
-              onClick={() => router.push('/request-a-feature')}
-            >
-              Request Feature
-            </button>
+
           </div>
 
           {/* Right actions */}
