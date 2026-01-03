@@ -3,18 +3,19 @@ import { MetadataRoute } from 'next'
 export default function sitemap(): MetadataRoute.Sitemap {
     const baseUrl = 'https://www.waysorted.com'
 
-    // Main pages
+    // Main pages - sitelink-eligible pages first with high priority
     const mainPages = [
         '',
-        '/about-us',
-        '/support',
         '/login',
         '/signup',
-        '/get-early-access',
+        '/figma-beta',
         '/learning',
+        '/request-a-feature',
+        '/about-us',
+        '/support',
+        '/get-early-access',
         '/docs',
         '/settings',
-        '/request-a-feature',
     ]
 
     // Documentation pages
@@ -97,11 +98,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
     return [
         // Main pages with high priority
-        ...mainPages.map((path) => ({
+        ...mainPages.map((path, index) => ({
             url: `${baseUrl}${path}`,
             lastModified: currentDate,
             changeFrequency: 'weekly' as const,
-            priority: path === '' ? 1 : 0.8,
+            // Homepage gets 1.0, first 5 sitelink-eligible pages get 0.9, rest 0.8
+            priority: path === '' ? 1 : (index <= 5 ? 0.9 : 0.8),
         })),
         // Documentation pages
         ...docPages.map((slug) => ({

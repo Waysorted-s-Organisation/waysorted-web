@@ -136,7 +136,8 @@ const jsonLd = {
       "@type": "SoftwareApplication",
       name: "Waysorted",
       applicationCategory: "DesignApplication",
-      operatingSystem: "Web",
+      operatingSystem: "Web, Figma",
+      description: "A unified creative workflow suite for designers to replace multiple plugins with one platform.",
       offers: {
         "@type": "Offer",
         price: "0",
@@ -147,6 +148,39 @@ const jsonLd = {
         ratingValue: "4.8",
         ratingCount: "100",
       },
+    },
+    {
+      "@type": "ItemList",
+      itemListElement: [
+        {
+          "@type": "SiteNavigationElement",
+          position: 1,
+          name: "Login or Signup",
+          description: "Sign in to continue building faster with your curated Waysorted tool stack.",
+          url: "https://www.waysorted.com/login",
+        },
+        {
+          "@type": "SiteNavigationElement",
+          position: 2,
+          name: "Try Waysorted Beta for Figma",
+          description: "Use Waysorted inside Figma to work smarter with bundled, use-case-based plugins.",
+          url: "https://www.waysorted.com/figma-beta",
+        },
+        {
+          "@type": "SiteNavigationElement",
+          position: 3,
+          name: "Explore Beta Release Tools",
+          description: "Discover the tools included in the current Waysorted Beta release.",
+          url: "https://www.waysorted.com/learning",
+        },
+        {
+          "@type": "SiteNavigationElement",
+          position: 4,
+          name: "Request a Feature",
+          description: "Have an idea or suggestion? Your feedback drives our roadmap.",
+          url: "https://www.waysorted.com/request-a-feature",
+        },
+      ],
     },
   ],
 };
