@@ -513,22 +513,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               </div>
             </nav>
 
-            {/* Sticky bottom primary action */}
-            <div
-              className="sticky bottom-0 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-t border-primary-way-10 px-4 py-3"
-              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
-            >
-              <button
-                onClick={() => {
-                  router.push('/request-a-feature');
-                  setMobileOpen(false);
-                }}
-                className="w-full inline-flex items-center justify-between rounded-lg bg-primary-way-100 text-white px-4 py-3 font-medium active:scale-[0.98]"
-              >
-                <span>Request a feature</span>
-                <Image src="/icons/arrow-right-white.svg" alt="" width={18} height={18} />
-              </button>
-            </div>
+
 
           </div>
           {mobileOpen && (

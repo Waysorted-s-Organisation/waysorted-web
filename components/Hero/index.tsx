@@ -25,24 +25,7 @@ const Hero = () => {
     >
       <div id="hero-content" className="text-center">
         {/* Badge */}
-        <button
-          className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-3 py-1 md:px-5 md:py-2 text-sm text-secondary-db-100 mb-4 cursor-pointer"
-          onClick={() => {
-            router.push('/request-a-feature');
-          }}
-        >
-          <Image
-            src="/icons/tools.svg"
-            alt="Hero Badge"
-            width={16}
-            height={16}
-            className="mr-2"
-          />
-          Request a feature
-          <span className="text-primary-way-100 font-medium pl-1.5 hover:underline">
-            Learn More
-          </span>
-        </button>
+
 
         {/* Main heading */}
         <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold text-secondary-db-100 leading-tight mb-4">

@@ -122,12 +122,12 @@ export default function Footer() {
         {/* Social + short text */}
         <div className="flex flex-col gap-3 sm:gap-4">
           <p className="text-sm text-white">Follow Waysorted</p>
-            <div className="flex items-center gap-2 sm:gap-3 text-gray-400">
+          <div className="flex items-center gap-2 sm:gap-3 text-gray-400">
             {[
-              { src: "/icons/insta.svg", alt: "Instagram", link:"https://www.instagram.com/waysorted/" },
-              { src: "/icons/linkedin.svg", alt: "LinkedIn", link:"https://www.linkedin.com/company/waysortedhq"},
-              { src: "/icons/discord.svg", alt: "Discord", link:"https://discord.gg/U2XF76WxNv" },
-              { src: "/icons/x.svg", alt: "X", link:"https://x.com/Waysorted" },
+              { src: "/icons/insta.svg", alt: "Instagram", link: "https://www.instagram.com/waysorted/" },
+              { src: "/icons/linkedin.svg", alt: "LinkedIn", link: "https://www.linkedin.com/company/waysortedhq" },
+              { src: "/icons/discord.svg", alt: "Discord", link: "https://discord.gg/U2XF76WxNv" },
+              { src: "/icons/x.svg", alt: "X", link: "https://x.com/Waysorted" },
             ].map((s) => (
               <button
                 key={s.alt}
@@ -155,7 +155,7 @@ export default function Footer() {
             {/* Replaced the manual input/button markup with the reusable NewsletterInput component */}
             <NewsletterInput
               onSubmit={handleNewsletterSubmit}
-              // wrapperClassName is optional — default matches your original wrapper.
+            // wrapperClassName is optional — default matches your original wrapper.
             />
 
             <p className="text-xs text-secondary-db-60 mt-2 max-w-sm">
@@ -188,7 +188,7 @@ export default function Footer() {
               <div>
                 <h5 className="font-semibold mb-2 sm:mb-3 text-white">Support</h5>
                 <ul className="space-y-2 text-secondary-db-40">
-                  <li><Link href="/request-feature" className="hover:text-white">Request a feature</Link></li>
+
                   <li><Link href="/report-bug" className="hover:text-white">Report a Bug</Link></li>
                   <li><Link href="/learning" className="hover:text-white">Learning</Link></li>
                   <li><Link href="/support" className="hover:text-white">FAQs</Link></li>

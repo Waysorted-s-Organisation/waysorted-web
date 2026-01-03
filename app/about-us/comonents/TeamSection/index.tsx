@@ -16,12 +16,12 @@ interface TeamMemberProps {
 const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image, priority = false }) => {
   return (
     <div className="bg-white rounded-xl text-center">
-      <div className="relative w-[276px] h-[300px] bg-dots mx-auto rounded-xl overflow-hidden mb-4">
+      <div className="relative w-[276px] h-[300px] mx-auto rounded-xl overflow-hidden mb-4">
         <Image
           src={image}
           alt={name}
           fill
-          className="object-cover"
+          className="object-contain"
           sizes="276px"
           priority={priority}
         />
