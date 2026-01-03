@@ -1,92 +1,35 @@
-import mongoose, { Document, Schema } from "mongoose";
-
-export interface IAttachment {
-    filename: string;
-    originalName: string;
-    mimetype: string;
-    size: number;
-    url: string;
-}
-
-export interface IReport {
-    reporterId: string;
-    reason: string;
-    createdAt: Date;
-}
+import mongoose, { Document, Model, Schema } from 'mongoose';
 
 export interface IFeatureRequest extends Document {
-    _id: mongoose.Types.ObjectId;
     title: string;
     description?: string;
-    type: "feature" | "bug";
-    board: string;
-    attachments: IAttachment[];
-    status: "under_review" | "planned" | "in_progress" | "released" | "not_done";
-    authorId: string;
+    type: 'feature' | 'bug';
+    status: 'planned' | 'in-progress' | 'not done' | 'released';
+    userId: string; // Auth ID
     authorName?: string;
-    authorEmail?: string;
-    votes: number;
-    votedBy: string[];
-    reports: IReport[];
-    isDeleted: boolean;
+    authorImage?: string;
+    boardId: string; // Ref to Board
+    attachments: string[];
+    votes: string[]; // Ref to Vote
     deletedAt?: Date;
-    deletedBy?: string;
     createdAt: Date;
     updatedAt: Date;
 }
 
-const AttachmentSchema = new Schema<IAttachment>(
-    {
-        filename: String,
-        originalName: String,
-        mimetype: String,
-        size: Number,
-        url: String,
-    },
-    { _id: false }
-);
+const FeatureRequestSchema: Schema = new Schema({
+    title: { type: String, required: true },
+    description: { type: String },
+    type: { type: String, enum: ["feature", "bug"], required: true },
+    status: { type: String, enum: ["planned", "in-progress", "not done", "released"], default: "planned" },
+    userId: { type: String, required: true },
+    authorName: { type: String },
+    authorImage: { type: String },
+    boardId: { type: Schema.Types.ObjectId, ref: "Board", required: true },
+    attachments: [{ type: String }],
+    votes: [{ type: Schema.Types.ObjectId, ref: "Vote" }],
+    deletedAt: { type: Date, default: null }
+}, { timestamps: true });
 
-const ReportSchema = new Schema<IReport>(
-    {
-        reporterId: String,
-        reason: String,
-        createdAt: { type: Date, default: Date.now },
-    },
-    { _id: false }
-);
-
-const FeatureRequestSchema = new Schema<IFeatureRequest>(
-    {
-        title: { type: String, required: true },
-        description: String,
-        type: { type: String, enum: ["feature", "bug"], default: "feature" },
-        board: { type: String, default: "general" },
-        attachments: { type: [AttachmentSchema], default: [] },
-        status: {
-            type: String,
-            enum: ["under_review", "planned", "in_progress", "released", "not_done"],
-            default: "under_review",
-        },
-        authorId: { type: String, required: true, index: true },
-        authorName: String,
-        authorEmail: String,
-        votes: { type: Number, default: 0 },
-        votedBy: { type: [String], default: [] },
-        reports: { type: [ReportSchema], default: [] },
-        isDeleted: { type: Boolean, default: false },
-        deletedAt: Date,
-        deletedBy: String,
-    },
-    { timestamps: true }
-);
-
-// Indexes for efficient querying
-FeatureRequestSchema.index({ isDeleted: 1, createdAt: -1 });
-FeatureRequestSchema.index({ status: 1 });
-FeatureRequestSchema.index({ votes: -1 });
-
-const FeatureRequest =
-    mongoose.models.FeatureRequest ||
-    mongoose.model<IFeatureRequest>("FeatureRequest", FeatureRequestSchema);
-
+// Prevent overwrite err
+const FeatureRequest: Model<IFeatureRequest> = mongoose.models.FeatureRequest || mongoose.model<IFeatureRequest>('FeatureRequest', FeatureRequestSchema);
 export default FeatureRequest;

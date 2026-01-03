@@ -1,150 +1,181 @@
-"use client";
-import React from "react";
-import { useUser } from "@/hooks/useUser";
-import { useRequestFeature, FeatureRequest } from "@/context/RequestFeatureContext";
+"use client"
+import React, { useState } from "react";
+import {
+    Sheet,
+    SheetContent,
+    SheetHeader,
+    SheetTitle,
+    SheetDescription,
+    SheetTrigger,
+} from "@/components/ui/sheet";
+import { EllipsisIcon } from "lucide-react";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu";
+import { toast } from "sonner"
+import Chat from "./Chat"; // Import local Chat
+import { ChatProvider } from "@/context/ChatContext";
+import { useRequestFeature } from "@/context/RequestFeatureContext";
 
+
+// Define props interface
 interface RequestCardProps {
-    request: FeatureRequest;
-    showActions?: boolean;
+    title: string;
+    description: string;
+    details?: string;
+    status: string;
+    votes: any[]; // Array of vote IDs
+    id: string; // Needed for voting
 }
 
-const statusColors: Record<string, { bg: string; text: string; dot: string }> = {
-    under_review: { bg: "bg-yellow-50", text: "text-yellow-700", dot: "bg-yellow-500" },
-    planned: { bg: "bg-blue-50", text: "text-blue-700", dot: "bg-blue-500" },
-    in_progress: { bg: "bg-green-50", text: "text-green-700", dot: "bg-green-500" },
-    released: { bg: "bg-purple-50", text: "text-purple-700", dot: "bg-purple-500" },
-    not_done: { bg: "bg-gray-50", text: "text-gray-700", dot: "bg-gray-500" },
-};
+const RequestCard = ({ title, description, details, status, votes, id }: RequestCardProps) => {
+    const { voteRequest } = useRequestFeature();
+    
+    // Vote count calculation
+    const [count, setCount] = useState(votes?.length || 0);
+    const [isUpvoted, setIsUpvoted] = useState(false); // This should be derived from usage context logic. 
+    // For now local state, but ideally synced.
 
-const statusLabels: Record<string, string> = {
-    under_review: "Under Review",
-    planned: "Planned",
-    in_progress: "In Progress",
-    released: "Released",
-    not_done: "Not Done",
-};
-
-const RequestCard: React.FC<RequestCardProps> = ({ request, showActions = false }) => {
-    const { user } = useUser();
-    const { voteRequest, deleteRequest } = useRequestFeature();
-    const [voting, setVoting] = React.useState(false);
-    const [deleting, setDeleting] = React.useState(false);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const userAny = user as any;
-    const userId = userAny?.id || (typeof user?._id === 'string' ? user._id : user?._id?.toString()) || "";
-    const hasVoted = request.votedBy?.includes(userId);
-    const isOwner = request.authorId === userId || request.authorEmail === user?.email;
-
-    const statusStyle = statusColors[request.status] || statusColors.under_review;
-
-    const handleVote = async () => {
-        if (!user) {
-            alert("Please log in to vote");
-            return;
+    const handleClick = async () => {
+        // Optimistic update
+        if (isUpvoted) {
+            setCount(count - 1);
+        } else {
+            setCount(count + 1);
         }
-        setVoting(true);
-        await voteRequest(request._id);
-        setVoting(false);
+        setIsUpvoted(!isUpvoted);
+        // Call API
+        await voteRequest(id);
     };
 
-    const [confirmDelete, setConfirmDelete] = React.useState(false);
+    const formattedCount = String(count).padStart(2, "0");
 
-    const handleDelete = async (e: React.MouseEvent) => {
-        e.preventDefault();
-        e.stopPropagation();
+    const handleCopy = async () => {
+        const link = `${window.location.origin}/request-a-feature?id=${id}`
+        await navigator.clipboard.writeText(link)
 
-        if (!confirmDelete) {
-            setConfirmDelete(true);
-            // Auto-reset after 3 seconds if not confirmed
-            setTimeout(() => setConfirmDelete(false), 3000);
-            return;
-        }
-
-        setDeleting(true);
-        await deleteRequest(request._id);
-        setDeleting(false);
-        setConfirmDelete(false);
-    };
-
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-        });
-    };
+        toast("Link Copied to Clipboard", {
+            duration: 2000,
+            position: "bottom-center",
+            style: {
+                width: "227px",
+                height: "43px",
+                background: "#E8EFFC",
+                color: "black",
+                fontWeight: "600",
+                fontSize: "14px",
+                borderRadius: "15px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+            },
+        })
+    }
 
     return (
-        <div className="bg-white border border-secondary-db-10 rounded-xl p-4 mb-3 hover:border-primary-way-100/30 transition-all">
-            <div className="flex items-start gap-4">
-                {/* Vote button */}
-                <button
-                    onClick={handleVote}
-                    disabled={voting || !user}
-                    className={`flex flex-col items-center justify-center min-w-[50px] py-2 px-3 rounded-lg border transition-all ${hasVoted
-                        ? "bg-primary-way-100 text-white border-primary-way-100"
-                        : "bg-secondary-db-5 text-secondary-db-70 border-secondary-db-10 hover:border-primary-way-100"
-                        } ${voting ? "opacity-50" : ""} ${!user ? "cursor-not-allowed opacity-50" : "cursor-pointer"}`}
-                >
-                    <svg
-                        className={`w-4 h-4 mb-1 ${hasVoted ? "text-white" : "text-secondary-db-70"}`}
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                    </svg>
-                    <span className="text-sm font-semibold">{request.votes}</span>
-                </button>
-
-                {/* Content */}
-                <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${statusStyle.bg} ${statusStyle.text}`}>
-                            <span className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`}></span>
-                            {statusLabels[request.status] || request.status}
-                        </span>
-                        <span className="text-xs text-secondary-db-50">
-                            {request.type === "bug" ? "Bug Report" : "Feature Request"}
-                        </span>
-                    </div>
-
-                    <h3 className="text-base font-semibold text-secondary-db-100 mb-1">{request.title}</h3>
-
-                    {request.description && (
-                        <p className="text-sm text-secondary-db-70 mb-2 line-clamp-2">{request.description}</p>
-                    )}
-
-                    <div className="flex items-center gap-3 text-xs text-secondary-db-50">
-                        <span>by {request.authorName}</span>
-                        <span>•</span>
-                        <span>{formatDate(request.createdAt)}</span>
-                        {request.board && request.board !== "general" && (
-                            <>
-                                <span>•</span>
-                                <span className="bg-secondary-db-5 px-2 py-0.5 rounded">{request.board}</span>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                {/* Actions for owner */}
-                {showActions && isOwner && (
-                    <div className="flex gap-2">
-                        <button
-                            onClick={handleDelete}
-                            disabled={deleting}
-                            className={`text-xs px-2 py-1 rounded transition-all ${confirmDelete
-                                ? "text-white bg-red-500 hover:bg-red-600"
-                                : "text-red-500 hover:text-red-700 hover:bg-red-50"
-                                }`}
-                        >
-                            {deleting ? "..." : confirmDelete ? "Confirm?" : "Delete"}
-                        </button>
-                    </div>
-                )}
+        <div className="flex h-[109px] border-b border-[#F3F3F3] rounded-sm w-full items-center hover:bg-[#F3F3F3] px-5 transition-colors">
+            {/* Upvote box */}
+            <div
+                onClick={handleClick}
+                className={`w-14 h-14 min-w-[56px] cursor-pointer border rounded-md flex flex-col items-center justify-center group transition-all duration-200
+        ${isUpvoted ? "border-[#265BD1] bg-[#E8EFFC]" : "border-[#565A5E] bg-white"}`}
+            >
+                <i className={`fa-solid fa-caret-up text-xl transform transition-transform duration-200 group-hover:-translate-y-1 ${isUpvoted ? "text-[#265BD1]" : "text-black group-hover:text-[#265BD1]"}`}></i>
+                <p className="text-black font-medium">{formattedCount}</p>
             </div>
+
+            {/* Content section wrapped in SheetTrigger */}
+            <Sheet>
+                <SheetTrigger asChild>
+                    <div className="px-4 cursor-pointer flex-1">
+                        {/* Title  */}
+                        <h1 className="font-semibold text-sm text-black">{title}</h1>
+                        {/* Description  */}
+                        <p className="text-xs text-[#565A5E] line-clamp-2">{description}</p>
+
+                        <div className="flex items-center gap-2 mt-3">
+                            <button className={`text-xs rounded-md px-2 py-1 items-center flex gap-1 ${status === 'Released' ? 'text-[#7531F9] bg-[#F2EBFF]' :
+                                status === 'In Progress' ? 'text-[#01A04E] bg-[#E6F6EB]' :
+                                    'text-[#265BD1] bg-[#E8EFFC]'
+                                }`}>
+                                <i className="fa-solid fa-square text-[6px]"></i>
+                                {status}
+                            </button>
+                        </div>
+                    </div>
+                </SheetTrigger>
+
+                <SheetContent className="w-[640px] sm:max-w-[750px] rounded-l-lg overflow-y-auto">
+                    <SheetHeader>
+                        <SheetTitle className="mt-8 ml-5 text-sm text-[#565A5E]">
+                            Request Details
+                            {/* {new Date().toLocaleString()}  */}
+                        </SheetTitle>
+                        <SheetDescription asChild className="ml-5">
+                            <div className="flex flex-col gap-4 my-1">
+                                <div className="flex h-[109px] w-full items-center justify-between">
+                                    <div className="flex items-center gap-4 w-full">
+                                        <div onClick={handleClick} className={`w-14 h-14 min-w-[56px] min-h-[56px] cursor-pointer border rounded-md flex flex-col items-center justify-center group 
+                            ${isUpvoted ? "border-[#265BD1] bg-[#E8EFFC]" : "border-[#565A5E] bg-white"}`}>
+                                            <i className={`fa-solid fa-caret-up text-xl transform transition-transform duration-200 group-hover:-translate-y-1 ${isUpvoted ? "text-[#265BD1]" : "text-[#565A5E]"}`}></i>
+                                            <p className="text-black">{formattedCount}</p>
+                                        </div>
+
+                                        <div className="flex flex-col gap-1 w-full">
+                                            <h1 className="font-semibold text-sm text-black">
+                                                {title}
+                                            </h1>
+                                            <p className="text-xs text-[#565A5E]">
+                                                {description}
+                                            </p>
+
+                                            <div className="flex items-center gap-2 mt-2">
+                                                <button className={`text-xs rounded-md px-2 py-1 items-center flex gap-1 ${status === 'Released' ? 'text-[#7531F9] bg-[#F2EBFF]' :
+                                                    status === 'In Progress' ? 'text-[#01A04E] bg-[#E6F6EB]' :
+                                                        'text-[#265BD1] bg-[#E8EFFC]'
+                                                    }`}>
+                                                    <i className="fa-solid fa-square text-[6px]"></i>
+                                                    {status}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="mr-2 cursor-pointer self-start mt-2">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <button className="bg-[#F3F3F3] px-2 py-2 rounded-lg cursor-pointer flex items-center hover:text-[#265BD1] hover:bg-[#E8EFFC] gap-2 focus:outline-none focus:ring-0 transition-colors">
+                                                    <EllipsisIcon size={20} />
+                                                </button>
+                                            </DropdownMenuTrigger>
+
+                                            <DropdownMenuContent className={"cursor-pointer border border-gray-200 shadow-md rounded-md mt-2 mr-5"}>
+                                                <DropdownMenuItem onClick={handleCopy} className="px-3 py-1.5 hover:bg-[#E8EFFC] rounded-md text-xs cursor-pointer">
+                                                    Copy Link
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+
+                                </div>
+
+                                <p className="mb-2 border-b pb-3 border-gray-200 text-sm">
+                                    {details || "No additional details provided."}
+                                </p>
+
+                                <div className="flex flex-1 items-center justify-center flex-col w-full">
+                                    <ChatProvider requestId={id}>
+                                        <Chat />
+                                    </ChatProvider>
+                                </div>
+                            </div>
+                        </SheetDescription>
+                    </SheetHeader>
+                </SheetContent>
+            </Sheet>
         </div>
     );
 };
