@@ -34,7 +34,7 @@ const FeatureNavbar = ({ onCreate, search, sort, setSort }: Props) => {
       </div>
 
       <div className="flex items-center gap-2">
-        <Select value={sort} onValueChange={(val: any) => setSort(val)}>
+        <Select value={sort} onValueChange={(val: string) => setSort(val as "recent" | "votes")}>
           <SelectTrigger className="w-[130px] h-[36px] bg-white border-gray-200">
             <SelectValue placeholder="Sort by" />
           </SelectTrigger>

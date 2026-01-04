@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const query = buildQuery(url.searchParams);
     const sortParam = url.searchParams.get("sort");
-    let sortOption: any = { createdAt: -1 };
+    let sortOption: Record<string, 1 | -1> = { createdAt: -1 };
     if (sortParam === "votes") {
       sortOption = { votes: -1, createdAt: -1 };
     }

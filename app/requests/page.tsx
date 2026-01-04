@@ -110,7 +110,7 @@ export default function RequestsPage() {
           <section className="w-full px-4 md:px-8 lg:px-12 pb-32 pt-10 space-y-10 max-w-6xl mx-auto">
             <div className="max-w-6xl mx-auto space-y-6">
               <div className="flex items-center gap-2 justify-end">
-                <Select value={sort} onValueChange={(val: any) => setSort(val)}>
+                <Select value={sort} onValueChange={(val: string) => setSort(val as "recent" | "votes")}>
                   <SelectTrigger className="w-[130px] h-[36px] bg-white border-gray-200">
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
