@@ -81,8 +81,9 @@ async function parseCreatePayload(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
+    console.log("[POST /api/requests] user:", user ? user.email : "null");
     if (!user) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ message: "Unauthorized - please log in again" }, { status: 401 });
     }
 
     const payload = await parseCreatePayload(req);
