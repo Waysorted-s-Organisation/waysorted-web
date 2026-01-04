@@ -205,7 +205,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 height={4}
                 className={`transition-transform duration-300 ${productsOpen ? 'rotate-180' : ''}`}
               />
-              <ProductsMenu isOpen={productsOpen} className="absolute translate-x-[-20%] translate-y-4" />
+              <ProductsMenu isOpen={productsOpen} className="absolute translate-x-[-20%] top-full pt-4" />
             </div>
 
             <div
@@ -227,7 +227,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               />
               <ResourcesMenu
                 isOpen={resourcesOpen}
-                className="absolute translate-x-[-20%] translate-y-4"
+                className="absolute translate-x-[-20%] top-full pt-4"
               />
             </div>
 
@@ -488,6 +488,15 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                   <span className="font-medium">Support</span>
                 </button>
                 <div className="border-t border-primary-way-10" />
+              </div>
+
+              <div className="px-3 py-3">
+                <button
+                  className="w-full rounded-xl bg-secondary-db-100 text-white px-4 py-3 font-semibold shadow-card active:scale-[0.99]"
+                  onClick={() => { router.push('/requests'); setMobileOpen(false); setMobileProductsOpen(false); setMobileResourcesOpen(false); }}
+                >
+                  Request a feature
+                </button>
               </div>
 
               {/* Language pill + dropdown */}

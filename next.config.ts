@@ -47,6 +47,11 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
   },
+  // Rewrites to proxy API requests to the separate backend
+  // Removed as backend is merged
+  // async rewrites() {
+  //   return [];
+  // },
 };
 
 export default nextConfig;

@@ -13,10 +13,10 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
   const router = useRouter()
   return (
     <div
-      className={`products-menu absolute top-full mt-2 w-[780px] 
+      className={`products-menu absolute top-full w-[780px] 
         bg-white menu-shadow rounded-xl overflow-hidden ${className}
-        transition-all duration-300 origin-top
-        ${isOpen ? "scale-y-100 opacity-100" : "scale-y-0 opacity-0"}`}
+        transition-opacity duration-150
+        ${isOpen ? "opacity-100" : "opacity-0 pointer-events-none"}`}
     >
       {/* Grid area with bg-menu-bg */}
       <div className="bg-white grid grid-cols-3 max-h-[240px] rounded-md overflow-y-auto custom-scrollbar m-2">
@@ -44,6 +44,16 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
             </div>
           </Link>
         ))}
+      </div>
+
+      <div className="px-4 pb-4">
+        <button
+          onClick={() => router.push('/requests')}
+          className="w-full mt-1 inline-flex items-center justify-between rounded-lg bg-primary-way-100 text-white px-4 py-3 text-sm font-semibold active:scale-[0.99] shadow-card"
+        >
+          <span>Request a feature</span>
+          <span aria-hidden className="text-lg leading-none">→</span>
+        </button>
       </div>
 
     </div>

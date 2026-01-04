@@ -4,7 +4,7 @@ import Subscriber from "@/models/subscriber";
 
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json();
+    const { email, name } = await request.json();
 
     // Basic validation
     if (!email || !email.includes("@")) {
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     // Save new subscriber
-    const newSubscriber = await Subscriber.create({ email });
+    const newSubscriber = await Subscriber.create({ email, name });
 
     return NextResponse.json(
       {

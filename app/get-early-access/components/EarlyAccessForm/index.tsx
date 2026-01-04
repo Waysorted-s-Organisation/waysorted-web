@@ -4,17 +4,44 @@ import { useState } from "react";
 import { AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import GlowStarButton from "@/components/GlowStarButton";
+import { toast } from "sonner";
+
+async function subscribeUser(name: string, email: string) {
+  const res = await fetch("/api/subscriber", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ name, email }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body?.error || body?.message || res.statusText);
+  }
+}
 
 export default function EarlyAccessForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [showPopup, setShowPopup] = useState(false);
 
-  function onSubmit(e: React.FormEvent) {
+  async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!email) {
+      toast.error("Please enter your email");
+      return;
+    }
 
-    // TODO: add your actual submission logic (API call etc.)
-    setShowPopup(true);
+    try {
+      await subscribeUser(name, email);
+
+      setShowPopup(true);
+      toast.success("You are on the early access list");
+      setName("");
+      setEmail("");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unable to submit right now";
+      toast.error(message);
+    }
   }
 
   return (
