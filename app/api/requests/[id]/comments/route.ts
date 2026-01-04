@@ -9,19 +9,15 @@ import { saveAttachmentsFromFormData, parseString } from "@/lib/attachments";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function GET(_req: Request, context: any) {
   try {
-    const user = await getCurrentUser();
-    // Allow viewing comments even if guest, but logic might vary. 
-    // Usually fetching comments is public or semi-public.
+    const id = context?.params?.id;
 
     await dbConnect();
     // Fetch comments for this featureId, sorted by createdAt desc
     const comments = await RequestComment.find({
-      featureId: params.id,
+      featureId: id,
       isDeleted: false,
     }).sort({ createdAt: -1 });
 
@@ -32,15 +28,15 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function POST(req: NextRequest, context: any) {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
+
+    const id = context?.params?.id;
 
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
@@ -59,13 +55,13 @@ export async function POST(
     const attachments = await saveAttachmentsFromFormData(formData);
 
     await dbConnect();
-    const featureRequest = await FeatureRequest.findById(params.id);
+    const featureRequest = await FeatureRequest.findById(id);
     if (!featureRequest || featureRequest.isDeleted) {
       return NextResponse.json({ message: "Feature not found" }, { status: 404 });
     }
 
     const comment = await RequestComment.create({
-      featureId: params.id,
+      featureId: id,
       authorId: user.id,
       authorName: user.name || user.email,
       text,

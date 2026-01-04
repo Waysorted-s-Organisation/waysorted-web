@@ -6,13 +6,12 @@ import { getCurrentUser } from "@/lib/user";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function GET(_req: Request, context: any) {
   try {
+    const id = context?.params?.id;
     await dbConnect();
-    const doc = await FeatureRequest.findById(params.id);
+    const doc = await FeatureRequest.findById(id);
     if (!doc || doc.isDeleted) {
       return NextResponse.json({ message: "Not found" }, { status: 404 });
     }
@@ -23,16 +22,16 @@ export async function GET(
   }
 }
 
-export async function DELETE(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function DELETE(_req: Request, context: any) {
   try {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
+    const id = context?.params?.id;
+
     await dbConnect();
-    const doc = await FeatureRequest.findById(params.id);
+    const doc = await FeatureRequest.findById(id);
     if (!doc) return NextResponse.json({ message: "Not found" }, { status: 404 });
     if (doc.authorId !== user.id) {
       return NextResponse.json({ message: "Not allowed" }, { status: 403 });

@@ -3,15 +3,12 @@ import dbConnect from "@/lib/db";
 import FeatureRequest, { type IFeatureRequest } from "@/models/featureRequest";
 import Notification from "@/models/notification";
 import { getCurrentUser } from "@/lib/user";
-import mongoose from "mongoose";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(
-    _req: Request,
-    { params }: { params: { id: string } }
-) {
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function POST(_req: Request, context: any) {
     try {
         const user = await getCurrentUser();
         if (!user) {
@@ -21,10 +18,10 @@ export async function POST(
             );
         }
 
+        const id = context?.params?.id;
+
         await dbConnect();
-        const doc = (await FeatureRequest.findById(
-            params.id
-        )) as IFeatureRequest | null;
+        const doc = (await FeatureRequest.findById(id)) as IFeatureRequest | null;
 
         if (!doc || doc.isDeleted) {
             return NextResponse.json({ message: "Request not found" }, { status: 404 });
@@ -38,7 +35,7 @@ export async function POST(
 
         if (alreadyVoted) {
             // Remove vote
-            doc.votedBy = doc.votedBy.filter((id) => id !== userId);
+            doc.votedBy = doc.votedBy.filter((vid) => vid !== userId);
             doc.votes = Math.max(0, doc.votes - 1);
         } else {
             // Add vote

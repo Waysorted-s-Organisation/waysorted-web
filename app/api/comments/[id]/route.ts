@@ -7,18 +7,18 @@ import { getCurrentUser } from "@/lib/user";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function DELETE(
-    _req: Request,
-    { params }: { params: { id: string } }
-) {
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function DELETE(_req: Request, context: any) {
     try {
         const user = await getCurrentUser();
         if (!user) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
+        const id = context?.params?.id;
+
         await dbConnect();
-        const comment = await RequestComment.findById(params.id);
+        const comment = await RequestComment.findById(id);
         if (!comment) {
             return NextResponse.json({ message: "Comment not found" }, { status: 404 });
         }

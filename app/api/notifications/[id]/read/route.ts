@@ -6,20 +6,20 @@ import { getCurrentUser } from "@/lib/user";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function PUT(
-    _req: Request,
-    { params }: { params: { id: string } }
-) {
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function PUT(_req: Request, context: any) {
     try {
         const user = await getCurrentUser();
         if (!user) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
+        const id = context?.params?.id;
+
         await dbConnect();
 
         const result = await Notification.updateOne(
-            { _id: params.id, recipientId: user.id },
+            { _id: id, recipientId: user.id },
             { $set: { read: true } }
         );
 

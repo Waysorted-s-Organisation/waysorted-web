@@ -6,10 +6,8 @@ import { getCurrentUser } from "@/lib/user";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function POST(
-    req: Request,
-    { params }: { params: { id: string } }
-) {
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function POST(req: Request, context: any) {
     try {
         const user = await getCurrentUser();
         if (!user) {
@@ -17,9 +15,10 @@ export async function POST(
         }
 
         const { reason } = await req.json();
+        const id = context?.params?.id;
 
         await dbConnect();
-        const comment = await RequestComment.findById(params.id);
+        const comment = await RequestComment.findById(id);
         if (!comment || comment.isDeleted) {
             return NextResponse.json({ message: "Comment not found" }, { status: 404 });
         }
