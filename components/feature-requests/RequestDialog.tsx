@@ -240,7 +240,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
       </Dialog>
 
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent className="max-w-[453px] h-[300px] text-center">
+        <DialogContent className="max-w-[453px] h-[300px] text-center bg-white">
           <DialogHeader className="">
             <DialogTitle className="text-sm text-[#565A5E]">
               Request a feature or report a bug
@@ -248,7 +248,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
           </DialogHeader>
           <Separator className="" />
           <div className="flex flex-col items-center gap-2">
-            <img src="/success.svg" alt="Success" className="w-[59px] h-[59px]" />
+            <img src="/icons/success.svg" alt="Success" className="w-[59px] h-[59px]" />
             <p className="text-green-600 font-semibold text-lg">Success!</p>
             <p className="text-gray-500">
               Your request has been added to <b>My Requests</b>.
@@ -268,7 +268,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
       </Dialog>
 
       <Dialog open={bugDialogOpen} onOpenChange={setBugDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-white">
           <DialogHeader className="">
             <DialogTitle className="text-sm text-[#565A5E]">
               Attach files for the bug report
