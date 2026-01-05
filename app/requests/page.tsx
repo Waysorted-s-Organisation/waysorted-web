@@ -124,7 +124,7 @@ export default function RequestsPage() {
 
         {/* Main Content with offset for fixed sidebar */}
         <div className="ml-[225px] flex-1 overflow-y-auto h-[calc(100vh-68px)] px-4">
-          <div className="h-[calc(100vh-68px)] flex-1 flex flex-col z-50 m-5 bg-white">
+          <div className="h-[calc(100vh-68px)] flex-1 flex flex-col z-50 m-5">
             {/* Controls Section - Sort + Status Filters */}
             <div className="flex justify-between items-center mr-5 mb-6">
               {/* Sort dropdown */}
@@ -209,7 +209,7 @@ export default function RequestsPage() {
             )}
 
             {/* Request list */}
-            <div className="space-y-0">
+            <div>
               {renderList(
                 displayList,
                 "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nobis, alias?",
