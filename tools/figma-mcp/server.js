@@ -26,8 +26,8 @@ app.all('/mcp', async (req, res) => {
     const method = payload.method || 'GET'
     const url = `https://api.figma.com${payload.path}`
     const headers = Object.assign({}, payload.headers || {})
-    
-    // Support both Bearer token and X-Figma-Token (file token)
+
+    // Use X-Figma-Token for PATs
     if (!headers['authorization'] && !headers['x-figma-token']) {
       headers['x-figma-token'] = FIGMA_TOKEN
     }
@@ -39,8 +39,14 @@ app.all('/mcp', async (req, res) => {
       fetchOptions.body = bodyToSend
     }
 
+    console.log(`[Proxy] Requesting ${url} with method ${method}`);
+    console.log('[Proxy] Headers:', JSON.stringify(headers));
+
     const resp = await fetch(url, fetchOptions)
+    console.log(`[Proxy] Response status: ${resp.status}`);
     const text = await resp.text()
+    console.log(`[Proxy] Response body prefix: ${text.substring(0, 100)}`);
+
     const respHeaders = {}
     resp.headers.forEach((v, k) => (respHeaders[k] = v))
     res.status(resp.status).set(respHeaders).send(text)
@@ -55,8 +61,8 @@ app.all('/mcp/*', async (req, res) => {
     const target = `https://api.figma.com${req.originalUrl.replace(/^\/mcp/, '')}`
     const headers = { ...req.headers }
     delete headers.host
-    
-    // Support both Bearer token and X-Figma-Token (file token)
+
+    // Use X-Figma-Token for PATs
     if (!headers['authorization'] && !headers['x-figma-token']) {
       headers['x-figma-token'] = FIGMA_TOKEN
     }
