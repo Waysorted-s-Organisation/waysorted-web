@@ -1,0 +1,8 @@
+services:
+  figma-mcp:
+    build: ./tools/figma-mcp
+    ports:
+      - "3845:3845"
+    env_file:
+      - ./tools/figma-mcp/.env
+    restart: unless-stopped
