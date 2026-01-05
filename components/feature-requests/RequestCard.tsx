@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MessageSquare, Flag, Trash2, LinkIcon } from "lucide-react";
+import { MessageSquare, Flag, Trash2, LinkIcon, EllipsisIcon } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -307,19 +307,25 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
         ) : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <button
-                aria-label="Request actions"
-                className="border border-[#CFD0D1] px-2 py-1 rounded-[6px] flex items-center hover:text-[#265BD1] hover:bg-[#E8EFFC] gap-2 focus:outline-none focus:ring-0"
-              >
-                <MessageSquare size={16} />
+              <button className="border px-1 py-1 rounded-sm flex items-center hover:text-[#265BD1] hover:bg-[#E8EFFC] gap-2 focus:outline-none focus:ring-0">
+                <EllipsisIcon />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="border border-[#CFD0D1] shadow-md rounded-[6px] mt-2 mr-5 cursor-pointer bg-white">
-              <DropdownMenuItem inset={false} onClick={() => setOpen(true)}>
+            <DropdownMenuContent className="cursor-pointer border border-gray-200 shadow-md rounded-md mt-2 mr-5">
+              <DropdownMenuItem className="px-3 pr-3 py-1 hover:bg-[#E8EFFC] rounded-md" inset={false} onClick={() => setOpen(true)}>
                 Open details
               </DropdownMenuItem>
+              <DropdownMenuItem
+                className="px-3 pr-3 py-1 hover:bg-[#E8EFFC] rounded-md"
+                inset={false}
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href + "?request=" + request._id);
+                }}
+              >
+                Copy Link
+              </DropdownMenuItem>
               {onReport && (
-                <DropdownMenuItem inset={false} onClick={handleReport}>
+                <DropdownMenuItem className="px-3 pr-3 py-1 hover:bg-[#E8EFFC] rounded-md" inset={false} onClick={handleReport}>
                   Report
                 </DropdownMenuItem>
               )}
