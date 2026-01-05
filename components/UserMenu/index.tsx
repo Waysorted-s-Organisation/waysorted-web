@@ -80,7 +80,7 @@ export default function UserMenu({ user, handleLogout }: UserMenuProps) {
             <MenuItem
               icon="/icons/your-requests.svg"
               label="Your requests"
-              onClick={() => router.push("/requests")}
+              onClick={() => router.push("/requests?view=mine")}
             />
             <MenuItem
               icon="/icons/help.svg"

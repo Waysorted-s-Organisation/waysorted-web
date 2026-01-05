@@ -20,7 +20,7 @@ import { useBanner } from "@/context/BannerContext";
 import type { FeatureRequest } from "@/types/feature-requests";
 import { useMemo, useState, useEffect } from "react";
 import { ChevronLeft, Search } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/cn";
 
 const STATUSES = [
@@ -36,10 +36,24 @@ export default function RequestsPage() {
     useFeatureRequestsData();
   const { user } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
-  const [activeTab, setActiveTab] = useState<"requests" | "reports">("requests");
+  
+  // Check URL for view parameter - "mine" shows "Your Requests", default is home view
+  const urlView = searchParams?.get("view");
+  const [view, setView] = useState<"home" | "my-requests">(urlView === "mine" ? "my-requests" : "home");
+  const [activeTab, setActiveTab] = useState<"requests" | "reports">("requests"); // for my-requests view
   const [selectedBoard, setSelectedBoard] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
+  
+  // Update view when URL param changes
+  useEffect(() => {
+    if (urlView === "mine") {
+      setView("my-requests");
+    } else {
+      setView("home");
+    }
+  }, [urlView]);
 
   // Extract unique boards dynamically from requests
   const boards = useMemo(() => {
@@ -81,7 +95,7 @@ export default function RequestsPage() {
     [myRequests]
   );
 
-  const displayList = activeTab === "reports" ? reportedRequests : filteredRequests;
+  const displayList = view === "home" ? filteredRequests : (activeTab === "reports" ? reportedRequests : myRequests);
 
   const renderList = (
     list: FeatureRequest[],
@@ -119,41 +133,45 @@ export default function RequestsPage() {
 
         <div className="flex items-start">
           {/* Sidebar - Features Board */}
-          <aside className="hidden md:flex sticky top-[80px] h-[calc(100vh-64px)] w-[225px] border-r border-[#CFD0D1] bg-white p-5 flex-col justify-between shrink-0 self-start">
-            <div>
+          <aside className="hidden md:flex sticky top-[80px] h-[calc(100vh-64px)] w-[225px] border-r border-[#CFD0D1] bg-white px-[20px] py-[20px] flex-col justify-between shrink-0 self-start">
+            <div className="flex flex-col gap-3">
               <button
                 onClick={() => router.push("/")}
-                className="text-[14px] text-[#565A5E] p-2 flex items-center my-3 cursor-pointer rounded-[6px] hover:bg-[#E8EFFC] hover:text-[#265BD1] font-medium"
+                className="text-[14px] text-[#565A5E] px-[8px] py-[7px] flex items-center cursor-pointer rounded-[6px] hover:bg-[#E8EFFC] hover:text-[#265BD1] font-medium transition-all duration-200"
               >
-                <ChevronLeft size={16} className="mr-2" /> Back home
+                <ChevronLeft size={16} className="mr-1" /> Back home
               </button>
 
-              {/* Features Board */}
-              <div className="mt-4 space-y-1">
-                <h2 className="font-bold text-[14px] text-[#0D1218] mb-3">Features Board</h2>
-                {boards.length === 0 ? (
-                  <p className="text-[12px] text-[#9EA0A3]">No boards yet</p>
-                ) : (
-                  boards.map((board) => (
-                    <button
-                      key={board}
-                      onClick={() => setSelectedBoard(selectedBoard === board ? null : board)}
-                      className={cn(
-                        "text-[12px] w-full py-2 px-2 rounded-[6px] text-left transition-colors",
-                        selectedBoard === board
-                          ? "bg-[#E8EFFC] text-[#265BD1] font-medium"
-                          : "text-[#565A5E] hover:bg-[#F3F3F3]"
-                      )}
-                    >
-                      {board}
-                    </button>
-                  ))
-                )}
-              </div>
+              {/* Features Board - Only show in home view */}
+              {view === "home" && (
+                <div className="flex flex-col gap-2">
+                  <h2 className="font-bold text-[14px] text-[#0D1218] px-[8px]">Features Board</h2>
+                  {boards.length === 0 ? (
+                    <p className="text-[12px] text-[#9EA0A3] px-[8px]">No boards yet</p>
+                  ) : (
+                    <div className="flex flex-col">
+                      {boards.map((board) => (
+                        <button
+                          key={board}
+                          onClick={() => setSelectedBoard(selectedBoard === board ? null : board)}
+                          className={cn(
+                            "text-[12px] w-full py-[8px] px-[8px] rounded-[6px] text-left transition-all duration-200",
+                            selectedBoard === board
+                              ? "bg-[#E8EFFC] text-[#265BD1] font-medium"
+                              : "text-[#565A5E] hover:bg-[#F3F3F3]"
+                          )}
+                        >
+                          {board}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <Button
               size="sm"
-              className="bg-[#265BD1] w-full hover:bg-[#1F4AA9] cursor-pointer rounded-[8px] h-[36px] text-[14px] font-medium"
+              className="bg-[#265BD1] w-full hover:bg-[#1F4AA9] cursor-pointer rounded-[8px] h-[36px] text-[14px] font-medium transition-all duration-200"
               onClick={() => router.push("/support")}
             >
               Have query ?
@@ -161,6 +179,19 @@ export default function RequestsPage() {
           </aside>
 
           <section className="w-full px-4 md:px-8 lg:px-12 pb-32 pt-6 space-y-6 max-w-6xl mx-auto">
+            {/* Page Title */}
+            {view === "my-requests" && (
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#0D1218]">
+                    <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M7 7H17M7 12H17M7 17H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                  <h1 className="text-[20px] font-bold text-[#0D1218]">Your requests</h1>
+                </div>
+              </div>
+            )}
+            
             {/* Top Bar - Sort + Status Filters */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               {/* Left: Show + Sort */}
@@ -177,27 +208,29 @@ export default function RequestsPage() {
                 </Select>
               </div>
 
-              {/* Right: Status Filter Tabs */}
-              <div className="flex items-center gap-2 flex-wrap">
-                {STATUSES.map((status) => (
-                  <button
-                    key={status.id}
-                    onClick={() => setSelectedStatus(selectedStatus === status.id ? null : status.id)}
-                    className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-[12px] border transition-colors font-medium",
-                      selectedStatus === status.id
-                        ? "bg-[#E8EFFC] border-[#265BD1] text-[#265BD1]"
-                        : "bg-white border-[#CFD0D1] text-[#565A5E] hover:bg-[#F3F3F3]"
-                    )}
-                  >
-                    <span
-                      className="w-2 h-2 rounded-full"
-                      style={{ backgroundColor: status.color }}
-                    />
-                    {status.label}
-                  </button>
-                ))}
-              </div>
+              {/* Right: Status Filter Tabs - Only show in home view */}
+              {view === "home" && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  {STATUSES.map((status) => (
+                    <button
+                      key={status.id}
+                      onClick={() => setSelectedStatus(selectedStatus === status.id ? null : status.id)}
+                      className={cn(
+                        "flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-[12px] border transition-all duration-200 font-medium",
+                        selectedStatus === status.id
+                          ? "bg-[#E8EFFC] border-[#265BD1] text-[#265BD1]"
+                          : "bg-white border-[#CFD0D1] text-[#565A5E] hover:bg-[#F3F3F3]"
+                      )}
+                    >
+                      <span
+                        className="w-[7px] h-[7px] rounded-full"
+                        style={{ backgroundColor: status.color }}
+                      />
+                      {status.label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Header Row */}
@@ -222,63 +255,62 @@ export default function RequestsPage() {
               </div>
             </div>
 
-            {/* Tabs: My requests / My reports */}
-            <div className="flex items-center gap-6 border-b border-[#CFD0D1]">
-              <button
-                onClick={() => setActiveTab("requests")}
-                className={cn(
-                  "pb-2 text-[14px] font-medium border-b-2 transition-colors",
-                  activeTab === "requests"
-                    ? "border-[#265BD1] text-[#265BD1]"
-                    : "border-transparent text-[#565A5E] hover:text-[#265BD1]"
-                )}
-              >
-                My requests
-              </button>
-              <button
-                onClick={() => setActiveTab("reports")}
-                className={cn(
-                  "pb-2 text-[14px] font-medium border-b-2 transition-colors",
-                  activeTab === "reports"
-                    ? "border-[#265BD1] text-[#265BD1]"
-                    : "border-transparent text-[#565A5E] hover:text-[#265BD1]"
-                )}
-              >
-                My report
-              </button>
-            </div>
+            {/* Tabs: Only show when in "my-requests" view */}
+            {view === "my-requests" && (
+              <div className="flex items-center gap-6 border-b border-[#CFD0D1]">
+                <button
+                  onClick={() => setActiveTab("requests")}
+                  className={cn(
+                    "pb-2 text-[14px] font-medium border-b-2 transition-colors",
+                    activeTab === "requests"
+                      ? "border-[#265BD1] text-[#265BD1]"
+                      : "border-transparent text-[#565A5E] hover:text-[#265BD1]"
+                  )}
+                >
+                  My requests
+                </button>
+                <button
+                  onClick={() => setActiveTab("reports")}
+                  className={cn(
+                    "pb-2 text-[14px] font-medium border-b-2 transition-colors",
+                    activeTab === "reports"
+                      ? "border-[#265BD1] text-[#265BD1]"
+                      : "border-transparent text-[#565A5E] hover:text-[#265BD1]"
+                  )}
+                >
+                  My report
+                </button>
+              </div>
+            )}
 
             {/* Content */}
             <section className="space-y-4">
-              {activeTab === "requests" ? (
+              {view === "home" ? (
+                /* Home View - All Requests */
                 <>
-                  {/* My Requests Section */}
-                  {myRequestsSorted.length > 0 && (
-                    <div className="space-y-3 mb-8">
-                      {myRequestsSorted.map((req) => (
-                        <RequestCard
-                          key={req._id}
-                          request={req}
-                          onDelete={removeRequest}
-                          onReport={report}
-                          onVote={toggleVote}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  {/* All Requests */}
                   {renderList(
                     displayList,
-                    "Submit a feature request to get started.",
+                    "No requests yet. Submit a feature request to get started!",
                     "Loading requests…"
                   )}
                 </>
               ) : (
-                renderList(
-                  displayList,
-                  "No reports yet.",
-                  "Loading reports…"
-                )
+                /* My Requests View - Show tabs */
+                <>
+                  {activeTab === "requests" ? (
+                    renderList(
+                      displayList,
+                      "You haven't submitted any requests yet.",
+                      "Loading your requests…"
+                    )
+                  ) : (
+                    renderList(
+                      displayList,
+                      "You haven't reported any issues yet.",
+                      "Loading your reports…"
+                    )
+                  )}
+                </>
               )}
             </section>
           </section>
