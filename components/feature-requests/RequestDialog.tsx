@@ -37,6 +37,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
   const [board, setBoard] = useState("Figma Plugin");
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   const [duplicates, setDuplicates] = useState<FeatureRequest[]>([]);
 
   const handleTitleChange = async (val: string) => {
@@ -64,6 +65,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
       setDesc("");
       setFiles([]);
       setUploading(false);
+      setProgress(0);
     }
   }, [mainOpen]);
 
@@ -73,6 +75,19 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
       return;
     }
     setUploading(true);
+    setProgress(0);
+    
+    // Start progress animation
+    const timer = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 100) {
+          clearInterval(timer);
+          return 100;
+        }
+        return p + 10;
+      });
+    }, 150);
+
     const created = await onCreate({
       title: title.trim(),
       description: desc,
@@ -80,7 +95,11 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
       board,
       attachments: files,
     });
+    
+    clearInterval(timer);
+    setProgress(100);
     setUploading(false);
+    
     if (created) {
       setSuccessOpen(true);
       setMainOpen(false);
@@ -199,22 +218,52 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
                 <span className="text-[#9EA0A3] text-[10px] font-medium">(Max. Files size: 25 MB)</span>
               </label>
               {files.length > 0 && (
-                <ul className="text-xs text-gray-600 space-y-2 mt-2">
-                  {files.map((file, idx) => (
-                    <li key={idx} className="flex items-center justify-between border border-[#CFD0D1] rounded-[8px] px-3 py-2 bg-white">
-                      <div className="flex flex-col">
-                        <span className="text-[14px] font-medium text-[#0D1218]">{file.name}</span>
-                        <span className="text-[10px] text-[#9EA0A3]">{(file.size / 1024).toFixed(0)} KB</span>
-                      </div>
-                      <button
-                        className="w-[26px] h-[26px] rounded-[6px] bg-[#E8EFFC] flex items-center justify-center text-[#565A5E] hover:bg-[#265BD1] hover:text-white transition"
-                        onClick={() => setFiles((prev) => prev.filter((_, i) => i !== idx))}
-                      >
-                        ✕
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                <div className="space-y-2 mt-2">
+                  {uploading && (
+                    <p className="text-[12px] text-[#565A5E] font-medium">
+                      {files.length} {files.length === 1 ? 'file' : 'files'} uploading...
+                    </p>
+                  )}
+                  <ul className="space-y-2">
+                    {files.map((file, idx) => (
+                      <li key={idx} className="border border-[#CFD0D1] rounded-[8px] p-3 bg-white">
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2 flex-1">
+                            <img src="/upload.svg" alt="file" className="w-[16px] h-[16px]" />
+                            <span className="text-[14px] font-medium text-[#0D1218] truncate">{file.name}</span>
+                          </div>
+                          <button
+                            className="w-[26px] h-[26px] rounded-[6px] bg-[#E8EFFC] flex items-center justify-center text-[#565A5E] hover:bg-[#265BD1] hover:text-white transition shrink-0"
+                            onClick={() => setFiles((prev) => prev.filter((_, i) => i !== idx))}
+                            disabled={uploading}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                        {file.size && (
+                          <div className="space-y-1">
+                            <p className="text-[10px] text-[#9EA0A3] flex justify-between items-center">
+                              <span>{(file.size / 1024).toFixed(0)} KB</span>
+                              {uploading && (
+                                <span className="text-[12px] text-[#565A5E] font-medium">
+                                  {progress}%
+                                </span>
+                              )}
+                            </p>
+                            {uploading && (
+                              <div className="relative w-full h-1 bg-gray-200 rounded-full overflow-hidden">
+                                <div
+                                  className="absolute left-0 top-0 h-full bg-[#265BD1] transition-all duration-150"
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
 
