@@ -119,10 +119,15 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
             <h3 className="font-semibold text-sm text-secondary-db-100 line-clamp-1">
               {request.title}
             </h3>
-            <p className="text-xs text-secondary-db-80 line-clamp-2">
-              {request.description || "No description provided."}
-            </p>
-            <div className="flex items-center gap-2 pt-2">
+            {request.board && (
+              <p className="text-xs text-[#565A5E]">{request.board}</p>
+            )}
+            <div className="flex items-center gap-2 pt-1 flex-wrap">
+              {isOwner && (
+                <span className="text-xs text-[#265BD1] bg-[#E8EFFC] rounded-md px-2 py-1">
+                  Your request
+                </span>
+              )}
               <span
                 className={cn(
                   "text-xs rounded-md px-2 py-1 inline-flex items-center gap-1 border",
@@ -132,11 +137,6 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
                 <i className="fa-solid fa-square text-[6px]"></i>
                 {statusLabel}
               </span>
-              {request.board && (
-                <span className="text-xs text-[#565A5E] bg-[#F3F3F3] rounded-md px-2 py-1">
-                  {request.board}
-                </span>
-              )}
             </div>
           </div>
         </SheetTrigger>
