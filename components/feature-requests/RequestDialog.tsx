@@ -252,14 +252,18 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
               Your {type === "bug" ? "report" : "request"} has been added to <b>My Requests</b>.
             </p>
           </div>
-          <div className="bg-[#E8EFFC] w-full p-2 rounded-md text-sm text-[#0D1218] flex items-center justify-center">
-            You can
+          <div className="bg-[#E8EFFC] w-full p-3 rounded-md text-sm text-[#0D1218] text-center">
+            You can{" "}
             <button
-              onClick={() => router.push("/requests")}
-              className="cursor-pointer text-[#265BD1] px-1 underline"
+              type="button"
+              onClick={() => {
+                setSuccessOpen(false);
+                router.push("/requests");
+              }}
+              className="text-[#265BD1] underline hover:text-[#1F4AA9] font-medium"
             >
               click here
-            </button>
+            </button>{" "}
             to track the status of your request
           </div>
           <div className="mt-4 flex justify-center">
