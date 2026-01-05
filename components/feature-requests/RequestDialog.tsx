@@ -261,7 +261,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
               type="button"
               onClick={() => {
                 setSuccessOpen(false);
-                router.push("/requests");
+                router.push("/requests?view=mine");
               }}
               className="text-[#265BD1] underline hover:text-[#1F4AA9] font-medium"
             >
