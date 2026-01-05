@@ -127,13 +127,7 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
                   Your request
                 </button>
               )}
-              <button className={cn(
-                "text-xs rounded-md px-2 py-1 items-center flex gap-1",
-                statusLabel === "Planned" ? "text-[#265BD1] bg-[#E8EFFC]" :
-                  statusLabel === "In Progress" ? "text-[#01A04E] bg-[#E5F5EC]" :
-                    statusLabel === "Released" ? "text-[#7531F9] bg-[#F0E8FF]" :
-                      "text-[#F24E1E] bg-[#FFE8E8]"
-              )}>
+              <button className="text-xs text-[#265BD1] rounded-md bg-[#E8EFFC] px-2 py-1 items-center flex gap-1">
                 <i className="fa-solid fa-square text-[6px]"></i>
                 {statusLabel}
               </button>
