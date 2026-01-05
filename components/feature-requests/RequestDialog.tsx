@@ -32,7 +32,6 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
   const [type, setType] = useState("feature");
   const [mainOpen, setMainOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
-  const [bugDialogOpen, setBugDialogOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [board, setBoard] = useState("Figma Plugin");
@@ -83,11 +82,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
     });
     setUploading(false);
     if (created) {
-      if (type === "bug") {
-        setBugDialogOpen(true);
-      } else {
-        setSuccessOpen(true);
-      }
+      setSuccessOpen(true);
       setMainOpen(false);
     }
   };
@@ -105,7 +100,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
             <PlusIcon size={12} /> {triggerLabel}
           </Button>
         </DialogTrigger>
-        <DialogContent className="sm:max-w-md bg-white">
+        <DialogContent className="max-w-[453px] bg-white rounded-xl">
           <DialogHeader className="">
             <DialogTitle className="text-sm text-[#565A5E]">
               Request a feature or report a bug
@@ -122,11 +117,11 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
                 onValueChange={setType}
                 className="flex items-center gap-6"
               >
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <RadioGroupItem value="feature" id="feature" />
                   <Label htmlFor="feature">Request a feature</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center gap-2">
                   <RadioGroupItem value="bug" id="bug" />
                   <Label htmlFor="bug">Report a Bug</Label>
                 </div>
@@ -136,7 +131,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
             <div className="space-y-2">
               <Label>Select Board</Label>
               <Select value={board} onValueChange={setBoard}>
-                <SelectTrigger className="w-full bg-[#F3F3F3]">
+                <SelectTrigger className="w-full bg-[#F3F3F3] rounded-md h-9">
                   <SelectValue placeholder="Select board" />
                 </SelectTrigger>
                 <SelectContent className="w-full bg-white z-[60]">
@@ -152,7 +147,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
               <Input
                 type="text"
                 id="title"
-                className="bg-[#F3F3F3]"
+                className="bg-[#F3F3F3] rounded-md h-9"
                 value={title}
                 onChange={(e) => {
                   setTitle(e.target.value);
@@ -177,10 +172,10 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="desc">Description</Label>
+              <Label htmlFor="desc">{type === "bug" ? "Describe the issue in detail" : "Description"}</Label>
               <Textarea
                 id="desc"
-                className="bg-[#F3F3F3]"
+                className="bg-[#F3F3F3] rounded-md min-h-[94px]"
                 value={desc}
                 onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDesc(e.target.value)}
               />
@@ -188,7 +183,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
 
             <div className="space-y-2">
               <Label>Attachments</Label>
-              <label className="flex flex-col w-full h-[124px] bg-[#F3F3F3] items-center justify-center border-2 border-dashed border-[#CFD0D1] rounded-md p-6 text-sm cursor-pointer hover:border-blue-400 transition">
+              <label className="flex flex-col w-full h-[124px] bg-[#F3F3F3] items-center justify-center border border-dashed border-[#CFD0D1] rounded-lg p-6 text-sm cursor-pointer hover:border-[#265BD1] transition">
                 <input
                   type="file"
                   multiple
@@ -196,11 +191,12 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
                   className="hidden"
                   onChange={handleFiles}
                 />
-                <img src="/upload.png" alt="upload" className="py-2" />
-                <p className="text-[#265BD1]">
-                  Click to Upload <span className="text-[#565A5E]">(max 5 files)</span>
+                <img src="/upload.svg" alt="upload" className="w-[21px] h-[21px] mb-2" />
+                <p className="text-sm">
+                  <span className="text-[#265BD1]">Click to Upload an Image</span>
+                  <span className="text-[#565A5E]"> (max 5 files)</span>
                 </p>
-                <span className="text-gray-400 text-xs">Max file size 25 MB</span>
+                <span className="text-[#9EA0A3] text-xs">(Max. Files size: 25 MB)</span>
               </label>
               {files.length > 0 && (
                 <ul className="text-xs text-gray-600 space-y-1">
@@ -221,15 +217,15 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
 
             {user ? (
               <Button
-                className="bg-[#265BD1] hover:bg-blue-700 text-white"
+                className="bg-[#265BD1] hover:bg-[#1F4AA9] text-white rounded-lg w-full"
                 onClick={handleSubmit}
                 disabled={uploading}
               >
-                {uploading ? "Submitting..." : "Submit request"}
+                {uploading ? "Submitting..." : (type === "bug" ? "Submit report" : "Submit request")}
               </Button>
             ) : (
               <Button
-                className="bg-[#265BD1] hover:bg-blue-700 text-white"
+                className="bg-[#265BD1] hover:bg-[#1F4AA9] text-white rounded-lg w-full"
                 onClick={() => router.push("/login")}
               >
                 Login to submit
@@ -240,21 +236,23 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
       </Dialog>
 
       <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-        <DialogContent className="max-w-[453px] h-[300px] text-center bg-white">
+        <DialogContent className="max-w-[453px] bg-white rounded-xl">
           <DialogHeader className="">
             <DialogTitle className="text-sm text-[#565A5E]">
               Request a feature or report a bug
             </DialogTitle>
           </DialogHeader>
           <Separator className="" />
-          <div className="flex flex-col items-center gap-2">
-            <img src="/icons/success.svg" alt="Success" className="w-[59px] h-[59px]" />
-            <p className="text-green-600 font-semibold text-lg">Success!</p>
+          <div className="flex flex-col items-center gap-2 py-4">
+            <div className="w-[59px] h-[59px] bg-[#E8EFFC] rounded-2xl flex items-center justify-center">
+              <img src="/icons/success.svg" alt="Success" className="w-[40px] h-[40px]" />
+            </div>
+            <p className="text-[#0F8D2A] font-semibold text-lg">Success!</p>
             <p className="text-gray-500">
-              Your request has been added to <b>My Requests</b>.
+              Your {type === "bug" ? "report" : "request"} has been added to <b>My Requests</b>.
             </p>
           </div>
-          <div className="bg-[#E8EFFC] w-full p-2 rounded-md text-sm text-gray-600 items-center mt-4">
+          <div className="bg-[#E8EFFC] w-full p-2 rounded-md text-sm text-[#0D1218] flex items-center justify-center">
             You can
             <button
               onClick={() => router.push("/requests")}
@@ -264,53 +262,17 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
             </button>
             to track the status of your request
           </div>
+          <div className="mt-4 flex justify-center">
+            <Button
+              className="bg-[#265BD1] hover:bg-[#1F4AA9] text-white rounded-lg w-full"
+              onClick={() => setSuccessOpen(false)}
+            >
+              Done
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={bugDialogOpen} onOpenChange={setBugDialogOpen}>
-        <DialogContent className="sm:max-w-md bg-white">
-          <DialogHeader className="">
-            <DialogTitle className="text-sm text-[#565A5E]">
-              Attach files for the bug report
-            </DialogTitle>
-          </DialogHeader>
-          <Separator className="" />
-          <p className="text-sm text-gray-600">Thanks for flagging the bug. Attach any screenshots to help us reproduce.</p>
-          <div className="space-y-2">
-            <label className="flex flex-col w-full h-[124px] bg-[#F3F3F3] items-center justify-center border-2 border-dashed border-[#CFD0D1] rounded-md p-6 text-sm cursor-pointer hover:border-blue-400 transition">
-              <input
-                type="file"
-                multiple
-                accept="image/*,application/pdf"
-                className="hidden"
-                onChange={handleFiles}
-              />
-              <img src="/upload.png" alt="upload" className="py-2" />
-              <p className="text-[#265BD1]">Click to Upload</p>
-              <span className="text-gray-400 text-xs">Max file size 25 MB</span>
-            </label>
-            {files.length > 0 && (
-              <ul className="text-xs text-gray-600 space-y-1">
-                {files.map((file, idx) => (
-                  <li key={idx} className="flex items-center justify-between border rounded px-2 py-1 bg-white">
-                    <span>{file.name}</span>
-                    <button
-                      className="text-black text-xs"
-                      onClick={() => setFiles((prev) => prev.filter((_, i) => i !== idx))}
-                    >
-                      ✕
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setBugDialogOpen(false)}>Close</Button>
-            <Button className="bg-[#265BD1]" onClick={() => setBugDialogOpen(false)}>Done</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </>
   );
 }
