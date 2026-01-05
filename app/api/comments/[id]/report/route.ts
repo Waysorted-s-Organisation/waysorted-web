@@ -15,7 +15,8 @@ export async function POST(req: Request, context: any) {
         }
 
         const { reason } = await req.json();
-        const id = context?.params?.id;
+        const params = await context?.params;
+        const id = params?.id;
 
         await dbConnect();
         const comment = await RequestComment.findById(id);

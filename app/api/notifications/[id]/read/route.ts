@@ -14,7 +14,8 @@ export async function PUT(_req: Request, context: any) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
-        const id = context?.params?.id;
+        const params = await context?.params;
+        const id = params?.id;
 
         await dbConnect();
 

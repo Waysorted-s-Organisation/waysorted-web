@@ -12,7 +12,8 @@ export const dynamic = "force-dynamic";
 //eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function GET(_req: Request, context: any) {
   try {
-    const id = context?.params?.id;
+    const params = await context?.params;
+    const id = params?.id;
 
     await dbConnect();
     // Fetch comments for this featureId, sorted by createdAt desc
@@ -36,7 +37,8 @@ export async function POST(req: NextRequest, context: any) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const id = context?.params?.id;
+    const params = await context?.params;
+    const id = params?.id;
 
     const contentType = req.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
@@ -52,7 +54,14 @@ export async function POST(req: NextRequest, context: any) {
       return NextResponse.json({ message: "Text is required" }, { status: 400 });
     }
     const parent = parseString(formData.get("parent")) || null;
-    const attachments = await saveAttachmentsFromFormData(formData);
+    
+    let attachments: Awaited<ReturnType<typeof saveAttachmentsFromFormData>> = [];
+    try {
+      attachments = await saveAttachmentsFromFormData(formData);
+    } catch (err) {
+      console.warn("Comment attachment upload skipped:", err);
+      attachments = [];
+    }
 
     await dbConnect();
     const featureRequest = await FeatureRequest.findById(id);

@@ -15,7 +15,8 @@ export async function DELETE(_req: Request, context: any) {
             return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
-        const id = context?.params?.id;
+        const params = await context?.params;
+        const id = params?.id;
 
         await dbConnect();
         const comment = await RequestComment.findById(id);

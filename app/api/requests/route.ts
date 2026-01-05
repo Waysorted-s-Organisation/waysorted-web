@@ -56,7 +56,16 @@ async function parseCreatePayload(req: NextRequest) {
     const description = parseString(formData.get("description"));
     const type = parseString(formData.get("type") || formData.get("requestType") || "feature");
     const board = parseString(formData.get("board"));
-    const attachments = await saveAttachmentsFromFormData(formData);
+
+    let attachments: SavedAttachment[] = [];
+    try {
+      attachments = await saveAttachmentsFromFormData(formData);
+    } catch (err) {
+      // In environments with read-only filesystems (e.g., some serverless hosts),
+      // attachment writes can fail. We still accept the request without files.
+      console.warn("Attachment upload skipped:", err);
+      attachments = [];
+    }
 
     return { title, description, type, board, attachments } as {
       title: string;

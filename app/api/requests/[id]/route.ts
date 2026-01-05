@@ -9,7 +9,8 @@ export const dynamic = "force-dynamic";
 //eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function GET(_req: Request, context: any) {
   try {
-    const id = context?.params?.id;
+    const params = await context?.params;
+    const id = params?.id;
     await dbConnect();
     const doc = await FeatureRequest.findById(id);
     if (!doc || doc.isDeleted) {
@@ -28,7 +29,8 @@ export async function DELETE(_req: Request, context: any) {
     const user = await getCurrentUser();
     if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
 
-    const id = context?.params?.id;
+    const params = await context?.params;
+    const id = params?.id;
 
     await dbConnect();
     const doc = await FeatureRequest.findById(id);

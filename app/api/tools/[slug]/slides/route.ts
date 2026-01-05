@@ -12,7 +12,8 @@ export async function GET(req: NextRequest, context: any) {
   // Use a permissive type for the second param to avoid Next's generated type mismatch
   await dbConnect();
 
-  const rawSlug = context?.params?.slug;
+  const params = await context?.params;
+  const rawSlug = params?.slug;
   const slug = Array.isArray(rawSlug) ? rawSlug[0] ?? "" : rawSlug ?? "";
 
   const slides = await Slide.find({

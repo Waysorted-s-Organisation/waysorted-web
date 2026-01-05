@@ -41,12 +41,12 @@ export async function fetchRequests(params?: FetchRequestsParams) {
 }
 
 export async function fetchMyRequests() {
-  const res = await fetch("/api/requests/mine", { cache: "no-store" });
+  const res = await fetch("/api/requests/mine", { cache: "no-store", credentials: "include" });
   return handleResponse<FeatureRequest[]>(res);
 }
 
 export async function fetchReportedRequests() {
-  const res = await fetch("/api/requests/reported", { cache: "no-store" });
+  const res = await fetch("/api/requests/reported", { cache: "no-store", credentials: "include" });
   return handleResponse<FeatureRequest[]>(res);
 }
 
@@ -63,12 +63,13 @@ export async function createRequest(input: CreateRequestInput) {
   const res = await fetch("/api/requests", {
     method: "POST",
     body: form,
+    credentials: "include",
   });
   return handleResponse<FeatureRequest>(res);
 }
 
 export async function deleteRequest(id: string) {
-  const res = await fetch(`/api/requests/${id}`, { method: "DELETE" });
+  const res = await fetch(`/api/requests/${id}`, { method: "DELETE", credentials: "include" });
   if (!res.ok) {
     let message = res.statusText;
     try {
@@ -86,6 +87,7 @@ export async function reportRequest(id: string, reason?: string) {
   const res = await fetch(`/api/requests/${id}/report`, {
     method: "POST",
     headers: { "content-type": "application/json" },
+    credentials: "include",
     body: JSON.stringify({ reason }),
   });
   return handleResponse<{ ok: boolean; featureId: string; reportsCount: number }>(res);
@@ -95,6 +97,7 @@ export async function toggleVote(id: string) {
   const res = await fetch(`/api/requests/${id}/vote`, {
     method: "POST",
     headers: { "content-type": "application/json" },
+    credentials: "include",
   });
   return handleResponse<FeatureRequest>(res);
 }
@@ -115,12 +118,13 @@ export async function createComment(featureId: string, input: CreateCommentInput
   const res = await fetch(`/api/requests/${featureId}/comments`, {
     method: "POST",
     body: form,
+    credentials: "include",
   });
   return handleResponse<RequestComment>(res);
 }
 
 export async function deleteComment(commentId: string) {
-  const res = await fetch(`/api/comments/${commentId}`, { method: "DELETE" });
+  const res = await fetch(`/api/comments/${commentId}`, { method: "DELETE", credentials: "include" });
   if (!res.ok) {
     let message = res.statusText;
     try {
@@ -138,27 +142,28 @@ export async function reportComment(commentId: string, reason?: string) {
   const res = await fetch(`/api/comments/${commentId}/report`, {
     method: "POST",
     headers: { "content-type": "application/json" },
+    credentials: "include",
     body: JSON.stringify({ reason }),
   });
   return handleResponse<{ ok: boolean; commentId: string; reportsCount: number }>(res);
 }
 
 export async function fetchMyReportedComments() {
-  const res = await fetch("/api/comments/reported/me", { cache: "no-store" });
+  const res = await fetch("/api/comments/reported/me", { cache: "no-store", credentials: "include" });
   return handleResponse<RequestComment[]>(res);
 }
 
 export async function fetchNotifications() {
-  const res = await fetch("/api/notifications", { cache: "no-store" });
+  const res = await fetch("/api/notifications", { cache: "no-store", credentials: "include" });
   return handleResponse<{ notifications: Notification[]; unreadCount: number }>(res);
 }
 
 export async function markNotificationRead(id: string) {
-  const res = await fetch(`/api/notifications/${id}/read`, { method: "PUT" });
+  const res = await fetch(`/api/notifications/${id}/read`, { method: "PUT", credentials: "include" });
   return handleResponse<{ ok: boolean }>(res);
 }
 
 export async function markAllNotificationsRead() {
-  const res = await fetch("/api/notifications/read-all", { method: "PUT" });
+  const res = await fetch("/api/notifications/read-all", { method: "PUT", credentials: "include" });
   return handleResponse<{ ok: boolean }>(res);
 }

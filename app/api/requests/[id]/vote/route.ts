@@ -18,7 +18,8 @@ export async function POST(_req: Request, context: any) {
             );
         }
 
-        const id = context?.params?.id;
+        const params = await context?.params;
+        const id = params?.id;
 
         await dbConnect();
         const doc = (await FeatureRequest.findById(id)) as IFeatureRequest | null;
