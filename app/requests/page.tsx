@@ -2,26 +2,23 @@
 
 import RequestCard from "@/components/feature-requests/RequestCard";
 import RequestDialog from "@/components/feature-requests/RequestDialog";
-import Header from "@/components/Header";
 import Notification from "@/components/feature-requests/Notification";
-import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useFeatureRequestsData } from "@/hooks/useFeatureRequestsData";
 import { useUser } from "@/hooks/useUser";
-import { useBanner } from "@/context/BannerContext";
 import type { FeatureRequest } from "@/types/feature-requests";
 import { useMemo, useState, useEffect } from "react";
-import { ChevronLeft, Search } from "lucide-react";
+import { ChevronLeft, ChevronDown, SearchIcon, Sun } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/cn";
+import Image from "next/image";
 
 const STATUSES = [
   { id: "planned", label: "Planned", color: "#265BD1" },
@@ -31,22 +28,21 @@ const STATUSES = [
 ];
 
 export default function RequestsPage() {
-  const { showBanner, setShowBanner } = useBanner();
-  const { requests, myRequests, reportedRequests, loading, refreshAll, addRequest, removeRequest, report, searchRequests, toggleVote, sort, setSort } =
+  const { requests, myRequests, reportedRequests, loading, addRequest, removeRequest, report, searchRequests, toggleVote, sort, setSort } =
     useFeatureRequestsData();
   const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortOpen, setSortOpen] = useState(false);
 
-  // Check URL for view parameter - "mine" shows "Your Requests", default is home view
+  // Check URL for view parameter
   const urlView = searchParams?.get("view");
   const [view, setView] = useState<"home" | "my-requests">(urlView === "mine" ? "my-requests" : "home");
-  const [activeTab, setActiveTab] = useState<"requests" | "reports">("requests"); // for my-requests view
+  const [activeTab, setActiveTab] = useState<"requests" | "reports">("requests");
   const [selectedBoard, setSelectedBoard] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
 
-  // Update view when URL param changes
   useEffect(() => {
     if (urlView === "mine") {
       setView("my-requests");
@@ -71,7 +67,7 @@ export default function RequestsPage() {
     return () => clearTimeout(handle);
   }, [searchTerm, searchRequests]);
 
-  // Filter requests based on selected board and status
+  // Filter requests
   const filteredRequests = useMemo(() => {
     let list = [...requests];
     if (selectedBoard) {
@@ -90,12 +86,9 @@ export default function RequestsPage() {
     return list;
   }, [requests, selectedBoard, selectedStatus]);
 
-  const myRequestsSorted = useMemo(
-    () => [...myRequests].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "")),
-    [myRequests]
-  );
-
   const displayList = view === "home" ? filteredRequests : (activeTab === "reports" ? reportedRequests : myRequests);
+
+  const sortLabel = sort === "votes" ? "Most votes" : "Recently added";
 
   const renderList = (
     list: FeatureRequest[],
@@ -103,13 +96,13 @@ export default function RequestsPage() {
     loadingText: string
   ) => {
     if (loading) {
-      return <p className="text-[14px] text-[#565A5E]">{loadingText}</p>;
+      return <p className="text-sm text-gray-500">{loadingText}</p>;
     }
     if (list.length === 0) {
       return (
-        <div className="text-center py-16">
-          <p className="text-[16px] font-medium text-[#0D1218]">Nothing here yet!</p>
-          <p className="text-[14px] text-[#565A5E] mt-1">{emptyText}</p>
+        <div className="flex flex-col items-center justify-center py-20">
+          <p className="text-md text-black">Nothing here yet!</p>
+          <p className="text-xs text-black">{emptyText}</p>
         </div>
       );
     }
@@ -126,196 +119,180 @@ export default function RequestsPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
-      <main
-        className={`flex-1 bg-white transition-all duration-300 ${showBanner ? "pt-24" : "pt-[96px]"}`}
-      >
-        <Header showBanner={showBanner} setShowBanner={setShowBanner} />
-
-        <div className="flex items-start">
-          {/* Sidebar - Features Board */}
-          <aside className="hidden md:flex sticky top-[80px] h-[calc(100vh-64px)] w-[225px] border-r border-[#CFD0D1] bg-white px-[20px] py-[20px] flex-col justify-between shrink-0 self-start">
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => router.push("/")}
-                className="text-[14px] text-[#565A5E] px-[8px] py-[7px] flex items-center cursor-pointer rounded-[6px] hover:bg-[#E8EFFC] hover:text-[#265BD1] font-medium transition-all duration-200"
-              >
-                <ChevronLeft size={16} className="mr-1" /> Back home
-              </button>
-
-              {/* Features Board - Only show in home view */}
-              {view === "home" && (
-                <div className="flex flex-col gap-2">
-                  <h2 className="font-bold text-[14px] text-[#0D1218] px-[8px]">Features Board</h2>
-                  {boards.length === 0 ? (
-                    <p className="text-[12px] text-[#9EA0A3] px-[8px]">No boards yet</p>
-                  ) : (
-                    <div className="flex flex-col">
-                      {boards.map((board) => (
-                        <button
-                          key={board}
-                          onClick={() => setSelectedBoard(selectedBoard === board ? null : board)}
-                          className={cn(
-                            "text-[12px] w-full py-[8px] px-[8px] rounded-[6px] text-left transition-all duration-200",
-                            selectedBoard === board
-                              ? "bg-[#E8EFFC] text-[#265BD1] font-medium"
-                              : "text-[#565A5E] hover:bg-[#F3F3F3]"
-                          )}
-                        >
-                          {board}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-            <Button
-              size="sm"
-              className="bg-[#265BD1] w-full hover:bg-[#1F4AA9] cursor-pointer rounded-[8px] h-[36px] text-[14px] font-medium transition-all duration-200"
-              onClick={() => router.push("/support")}
-            >
-              Have query ?
-            </Button>
-          </aside>
-
-          <section className="w-full px-4 md:px-8 lg:px-12 pb-32 pt-6 space-y-6 max-w-6xl mx-auto">
-            {/* Page Title */}
-            {view === "my-requests" && (
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#0D1218]">
-                    <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M7 7H17M7 12H17M7 17H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <h1 className="text-[20px] font-bold text-[#0D1218]">Your requests</h1>
-                </div>
-              </div>
-            )}
-
-            {/* Top Bar - Sort + Status Filters */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              {/* Left: Show + Sort */}
-              <div className="flex items-center gap-2">
-                <span className="text-[14px] text-[#565A5E] font-medium">Show</span>
-                <Select value={sort} onValueChange={(val: string) => setSort(val as "recent" | "votes")}>
-                  <SelectTrigger className="w-[130px] h-[36px] bg-white border border-[#CFD0D1] rounded-[6px] text-[14px]">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white rounded-[6px] border border-[#CFD0D1]">
-                    <SelectItem value="votes" className="text-[14px]">Most votes</SelectItem>
-                    <SelectItem value="recent" className="text-[14px]">Most Recent</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Right: Status Filter Tabs - Only show in home view */}
-              {view === "home" && (
-                <div className="flex items-center gap-1 flex-wrap">
-                  {STATUSES.map((status) => (
-                    <button
-                      key={status.id}
-                      onClick={() => setSelectedStatus(selectedStatus === status.id ? null : status.id)}
-                      className={cn(
-                        "text-sm text-[#565A5E] rounded-md hover:bg-[#F3F3F3] border px-2 py-1 items-center flex gap-1 transition-all duration-200",
-                        selectedStatus === status.id && "bg-[#E8EFFC] border-[#265BD1] text-[#265BD1]"
-                      )}
-                    >
-                      <i
-                        className="fa-solid fa-square text-[6px]"
-                        style={{ color: status.color }}
-                      ></i>
-                      {status.label}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Header Row */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              {/* Search */}
-              <div className="flex items-center gap-2 border border-[#CFD0D1] rounded-[8px] px-3 py-2 w-full md:w-[360px] bg-white shadow-sm">
-                <Search size={16} className="text-[#9EA0A3]" />
-                <Input
-                  placeholder="Search"
-                  className="border-none shadow-none p-0 h-auto focus-visible:ring-0 text-[14px] bg-transparent"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-2">
-                <RequestDialog onCreate={addRequest} />
-                <div className="h-[36px] flex items-center">
-                  <Notification />
-                </div>
-              </div>
-            </div>
-
-            {/* Tabs: Only show when in "my-requests" view */}
-            {view === "my-requests" && (
-              <div className="flex items-center gap-6 border-b border-[#CFD0D1]">
-                <button
-                  onClick={() => setActiveTab("requests")}
-                  className={cn(
-                    "pb-2 text-[14px] font-medium border-b-2 transition-colors",
-                    activeTab === "requests"
-                      ? "border-[#265BD1] text-[#265BD1]"
-                      : "border-transparent text-[#565A5E] hover:text-[#265BD1]"
-                  )}
-                >
-                  My requests
-                </button>
-                <button
-                  onClick={() => setActiveTab("reports")}
-                  className={cn(
-                    "pb-2 text-[14px] font-medium border-b-2 transition-colors",
-                    activeTab === "reports"
-                      ? "border-[#265BD1] text-[#265BD1]"
-                      : "border-transparent text-[#565A5E] hover:text-[#265BD1]"
-                  )}
-                >
-                  My report
-                </button>
-              </div>
-            )}
-
-            {/* Content */}
-            <section className="space-y-4">
-              {view === "home" ? (
-                /* Home View - All Requests */
-                <>
-                  {renderList(
-                    displayList,
-                    "No requests yet. Submit a feature request to get started!",
-                    "Loading requests…"
-                  )}
-                </>
-              ) : (
-                /* My Requests View - Show tabs */
-                <>
-                  {activeTab === "requests" ? (
-                    renderList(
-                      displayList,
-                      "You haven't submitted any requests yet.",
-                      "Loading your requests…"
-                    )
-                  ) : (
-                    renderList(
-                      displayList,
-                      "You haven't reported any issues yet.",
-                      "Loading your reports…"
-                    )
-                  )}
-                </>
-              )}
-            </section>
-          </section>
+      {/* Simple Navbar like reference repo */}
+      <nav className="bg-white z-50 h-[68px] w-full border-b border-gray-200 flex justify-between items-center px-5 fixed top-0">
+        <div>
+          <Image src="/Waysorted.svg" alt="logo" width={100} height={24} />
         </div>
-      </main>
-      <div className="relative z-10 w-full">
-        <Footer />
+
+        <div className="flex items-center gap-1">
+          <button className="border bg-white p-1 rounded-md w-[36px] h-[36px] flex items-center justify-center cursor-pointer">
+            <Sun size={16} />
+          </button>
+
+          <div className="flex items-center hover:bg-[#F3F3F3] border rounded-md w-[241px] h-[36px] px-2">
+            <SearchIcon size={16} />
+            <Input
+              type="text"
+              placeholder="Search..."
+              className="border-none shadow-none px-1 focus:outline-none focus:ring-0 focus-visible:ring-0"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+
+          <RequestDialog onCreate={addRequest} />
+          <Notification />
+
+          {/* Profile avatar */}
+          <div className="w-[36px] h-[36px] rounded-full bg-[#E8EFFC] flex items-center justify-center text-[#265BD1] text-sm font-medium cursor-pointer">
+            {user ? ((user as { name?: string }).name?.slice(0, 2).toUpperCase() || "U") : "?"}
+          </div>
+        </div>
+      </nav>
+
+      {/* Main content */}
+      <div className="flex pt-[68px]">
+        {/* Sidebar */}
+        <aside className="bg-white h-[calc(100vh-68px)] w-[225px] z-50 border-r border-gray-200 p-5 flex flex-col justify-between sticky top-[68px]">
+          <div>
+            <div
+              onClick={() => router.push("/")}
+              className="text-sm text-[#565A5E] p-2 flex items-center my-3 cursor-pointer rounded-md hover:bg-[#E8EFFC] hover:text-[#265BD1]"
+            >
+              <ChevronLeft size={16} />
+              <p>Back home</p>
+            </div>
+
+            {/* Features Board - only on home view */}
+            {view === "home" && (
+              <div>
+                <h1 className="font-bold text-sm my-2">Features Board</h1>
+                <div>
+                  {boards.length === 0 ? (
+                    <p className="text-xs text-gray-400 py-2 px-2">No boards yet</p>
+                  ) : (
+                    boards.map((board) => (
+                      <p
+                        key={board}
+                        onClick={() => setSelectedBoard(selectedBoard === board ? null : board)}
+                        className={cn(
+                          "text-xs text-[#565A5E] hover:bg-[#F3F3F3] w-full h-full py-2 px-2 rounded-sm cursor-pointer",
+                          selectedBoard === board && "bg-[#E8EFFC] text-[#265BD1]"
+                        )}
+                      >
+                        {board}
+                      </p>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <Button
+            size="sm"
+            className="bg-[#265BD1] w-fit hover:bg-[#1F4AA9] cursor-pointer"
+            onClick={() => router.push("/support")}
+          >
+            Have query ?
+          </Button>
+        </aside>
+
+        {/* Main content area */}
+        <div className="h-[calc(100vh-68px)] flex-1 flex flex-col z-50 m-5">
+          {/* Top bar */}
+          <div className="flex justify-between items-center mr-5 mb-6">
+            {/* Sort dropdown */}
+            <div className="flex text-sm items-center mt-4 gap-2">
+              <p>Show</p>
+              <DropdownMenu open={sortOpen} onOpenChange={setSortOpen}>
+                <DropdownMenuTrigger asChild>
+                  <button className="border px-2 py-1 rounded-sm flex items-center hover:text-[#265BD1] gap-2 focus:outline-none focus:ring-0">
+                    {sortLabel}
+                    <ChevronDown
+                      size={16}
+                      className={`transition-transform duration-300 ${sortOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="cursor-pointer">
+                  <DropdownMenuItem
+                    onClick={() => setSort("votes")}
+                    inset={false}
+                  >
+                    Most votes
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setSort("recent")}
+                    inset={false}
+                  >
+                    Recently added
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+
+            {/* Status filter tabs - only on home view */}
+            {view === "home" && (
+              <div className="flex gap-1">
+                {STATUSES.map((status) => (
+                  <button
+                    key={status.id}
+                    onClick={() => setSelectedStatus(selectedStatus === status.id ? null : status.id)}
+                    className={cn(
+                      "text-sm text-[#565A5E] rounded-md hover:bg-[#F3F3F3] border px-2 py-1 items-center flex gap-1",
+                      selectedStatus === status.id && "bg-[#E8EFFC] text-[#265BD1]"
+                    )}
+                  >
+                    <i
+                      className="fa-solid fa-square text-[6px]"
+                      style={{ color: status.color }}
+                    ></i>
+                    {status.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* My requests view tabs */}
+          {view === "my-requests" && (
+            <div className="flex gap-4 mb-4 border-b border-gray-200">
+              <button
+                onClick={() => setActiveTab("requests")}
+                className={cn(
+                  "text-sm pb-2 border-b-2",
+                  activeTab === "requests"
+                    ? "border-[#265BD1] text-[#265BD1]"
+                    : "border-transparent text-[#565A5E]"
+                )}
+              >
+                My requests
+              </button>
+              <button
+                onClick={() => setActiveTab("reports")}
+                className={cn(
+                  "text-sm pb-2 border-b-2",
+                  activeTab === "reports"
+                    ? "border-[#265BD1] text-[#265BD1]"
+                    : "border-transparent text-[#565A5E]"
+                )}
+              >
+                My report
+              </button>
+            </div>
+          )}
+
+          {/* Request list */}
+          <div className="space-y-0">
+            {renderList(
+              displayList,
+              "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Nobis, alias?",
+              "Loading requests…"
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -99,50 +99,44 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <div className="flex w-full max-w-4xl items-center gap-4 rounded-[12px] border border-[#CFD0D1] bg-white px-5 py-5 shadow-sm">
+      <div className="flex h-[109px] w-full max-w-[791px] border-b border-gray-200 items-center">
         <div
           onClick={handleVote}
           className={cn(
-            "group w-[54px] h-[54px] border rounded-[7px] flex flex-col items-center justify-center cursor-pointer transition-colors duration-200",
+            "w-[54px] h-[54px] cursor-pointer border rounded-md flex flex-col items-center justify-center group transition-colors duration-200",
             hasVoted
-              ? "bg-[#E8EFFC] border-[#265BD1] text-[#265BD1]"
-              : "border-[#565A5E] bg-white text-[#565A5E] hover:bg-[#F3F3F3]"
+              ? "border-[#265BD1] bg-[#E8EFFC]"
+              : "border-[#565A5E] bg-white"
           )}
-          style={{ borderWidth: "0.59px" }}
           title={userId ? "Click to vote" : "Login to vote"}
         >
-          <i
-            className={cn(
-              "fa-solid fa-caret-up text-xl transform transition-transform duration-200 group-hover:-translate-y-1",
-              hasVoted ? "text-[#265BD1]" : "text-[#565A5E]"
-            )}
-          ></i>
-          <p className={cn("text-xs font-semibold", hasVoted ? "text-[#265BD1]" : "text-[#0D1218]")}>{voteDisplay}</p>
+          <i className="fa-solid fa-caret-up text-xl text-[#265BD1] group-hover:-translate-y-1 transition-transform"></i>
+          <p className="text-black">{voteDisplay}</p>
         </div>
 
+        {/* Content section wrapped in SheetTrigger */}
         <SheetTrigger asChild>
-          <div className="cursor-pointer flex-1 space-y-1">
-            <h3 className="font-semibold text-[14px] text-[#0D1218] line-clamp-1">
-              {request.title}
-            </h3>
-            {request.board && (
-              <p className="text-[12px] text-[#565A5E]">{request.board}</p>
-            )}
-            <div className="flex items-center gap-2 pt-1 flex-wrap">
+          <div className="px-4 cursor-pointer">
+            <h1 className="font-semibold text-sm text-black">{request.title}</h1>
+            <p className="text-xs text-[#565A5E]">{request.description}</p>
+
+            <div className="flex items-center gap-2 mt-3">
               {isOwner && (
-                <span className="text-[12px] text-[#265BD1] bg-[#E8EFFC] rounded-[6px] px-2 py-1 font-medium">
+                <button className="text-xs text-[#565A5E] rounded-md bg-[#F3F3F3] px-2 py-1 items-center flex gap-1">
+                  <i className="fa-solid fa-square text-[6px]"></i>
                   Your request
-                </span>
+                </button>
               )}
-              <span
-                className={cn(
-                  "text-[12px] rounded-[6px] px-2 py-1 inline-flex items-center gap-1 border font-medium",
-                  statusColor[statusLabel] || statusColor.default
-                )}
-              >
+              <button className={cn(
+                "text-xs rounded-md px-2 py-1 items-center flex gap-1",
+                statusLabel === "Planned" ? "text-[#265BD1] bg-[#E8EFFC]" :
+                  statusLabel === "In Progress" ? "text-[#01A04E] bg-[#E5F5EC]" :
+                    statusLabel === "Released" ? "text-[#7531F9] bg-[#F0E8FF]" :
+                      "text-[#F24E1E] bg-[#FFE8E8]"
+              )}>
                 <i className="fa-solid fa-square text-[6px]"></i>
                 {statusLabel}
-              </span>
+              </button>
             </div>
           </div>
         </SheetTrigger>
@@ -333,7 +327,7 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
           </DropdownMenu>
         )}
 
-        </div>
+      </div>
 
       <SheetContent className="w-[640px] sm:max-w-[750px] rounded-l-[12px] bg-white">
         <SheetHeader>
