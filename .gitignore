@@ -42,3 +42,4 @@ next-env.d.ts
 full_docx_text.txt
 Documentation Data (2).docx
 tools/figma-mcp/output.log
+tools/figma-mcp/node_modules/

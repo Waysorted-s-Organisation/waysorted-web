@@ -31,11 +31,11 @@ interface Props {
 }
 
 const statusColor: Record<string, string> = {
-  Planned: "bg-[#E8EFFC] text-[#265BD1]",
-  "In Progress": "bg-[#E5F5EC] text-[#01A04E]",
-  Released: "bg-[#F0E8FF] text-[#7531F9]",
-  "Under Review": "bg-[#F3F3F3] text-[#565A5E]",
-  default: "bg-[#F3F3F3] text-[#565A5E]",
+  Planned: "bg-[#E8EFFC] text-[#265BD1] border-[#E8EFFC]",
+  "In Progress": "bg-[#E5F5EC] text-[#01A04E] border-[#E5F5EC]",
+  Released: "bg-[#F0E8FF] text-[#7531F9] border-[#F0E8FF]",
+  "Under Review": "bg-[#F3F3F3] text-[#565A5E] border-[#F3F3F3]",
+  default: "bg-[#F3F3F3] text-[#565A5E] border-[#F3F3F3]",
 };
 
 function displayStatus(status?: string) {
@@ -99,38 +99,39 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <div className="flex w-full max-w-4xl items-center gap-4 rounded-xl border border-gray-200 bg-white px-5 py-5 shadow-sm">
+      <div className="flex w-full max-w-4xl items-center gap-4 rounded-[12px] border border-[#CFD0D1] bg-white px-5 py-5 shadow-sm">
         <div
           onClick={handleVote}
           className={cn(
-            "w-[54px] h-[54px] border rounded-md flex flex-col items-center justify-center cursor-pointer transition-colors",
+            "w-[54px] h-[54px] border rounded-[7px] flex flex-col items-center justify-center cursor-pointer transition-colors",
             hasVoted
-              ? "bg-[#265BD1] border-[#265BD1] text-white"
-              : "border-[#565A5E] bg-white text-[#565A5E] hover:bg-gray-50"
+              ? "bg-[#E8EFFC] border-[#265BD1] text-[#265BD1]"
+              : "border-[#565A5E] bg-white text-[#565A5E] hover:bg-[#F3F3F3]"
           )}
+          style={{ borderWidth: "0.59px" }}
           title={userId ? "Click to vote" : "Login to vote"}
         >
-          <i className={cn("fa-xl mb-1", hasVoted ? "fa-solid fa-caret-up text-white" : "fa-solid fa-caret-up")}></i>
-          <p className={cn("text-xs font-semibold", hasVoted ? "text-white" : "text-black")}>{voteDisplay}</p>
+          <i className={cn("fa-xl mb-1", hasVoted ? "fa-solid fa-caret-up text-[#265BD1]" : "fa-solid fa-caret-up")}></i>
+          <p className={cn("text-xs font-semibold", hasVoted ? "text-[#265BD1]" : "text-[#0D1218]")}>{voteDisplay}</p>
         </div>
 
         <SheetTrigger asChild>
           <div className="cursor-pointer flex-1 space-y-1">
-            <h3 className="font-semibold text-sm text-secondary-db-100 line-clamp-1">
+            <h3 className="font-semibold text-[14px] text-[#0D1218] line-clamp-1">
               {request.title}
             </h3>
             {request.board && (
-              <p className="text-xs text-[#565A5E]">{request.board}</p>
+              <p className="text-[12px] text-[#565A5E]">{request.board}</p>
             )}
             <div className="flex items-center gap-2 pt-1 flex-wrap">
               {isOwner && (
-                <span className="text-xs text-[#265BD1] bg-[#E8EFFC] rounded-md px-2 py-1">
+                <span className="text-[12px] text-[#265BD1] bg-[#E8EFFC] rounded-[6px] px-2 py-1 font-medium">
                   Your request
                 </span>
               )}
               <span
                 className={cn(
-                  "text-xs rounded-md px-2 py-1 inline-flex items-center gap-1 border",
+                  "text-[12px] rounded-[6px] px-2 py-1 inline-flex items-center gap-1 border font-medium",
                   statusColor[statusLabel] || statusColor.default
                 )}
               >
@@ -145,17 +146,17 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
           <DropdownMenuTrigger asChild>
             <button
               aria-label="Request actions"
-              className="border px-2 py-1 rounded-sm flex items-center hover:text-[#265BD1] hover:bg-[#E8EFFC] gap-2 focus:outline-none focus:ring-0"
+              className="border border-[#CFD0D1] px-2 py-1 rounded-[6px] flex items-center hover:text-[#265BD1] hover:bg-[#E8EFFC] gap-2 focus:outline-none focus:ring-0"
             >
               <MessageSquare size={16} />
             </button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="border border-gray-200 shadow-md rounded-md mt-2 mr-5 cursor-pointer bg-white">
+          <DropdownMenuContent className="border border-[#CFD0D1] shadow-md rounded-[6px] mt-2 mr-5 cursor-pointer bg-white">
             <DropdownMenuItem inset={false} onClick={() => setOpen(true)}>
               Open details
             </DropdownMenuItem>
             {isOwner && onDelete && (
-              <DropdownMenuItem inset={false} onClick={handleDelete} className="text-red-600">
+              <DropdownMenuItem inset={false} onClick={handleDelete} className="text-[#E84C3D]">
                 Delete
               </DropdownMenuItem>
             )}
@@ -168,9 +169,9 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
         </DropdownMenu>
       </div>
 
-      <SheetContent className="w-[640px] sm:max-w-[750px] rounded-l-lg bg-white">
+      <SheetContent className="w-[640px] sm:max-w-[750px] rounded-l-[12px] bg-white">
         <SheetHeader>
-          <SheetTitle className="mt-10 text-sm text-[#565A5E]">
+          <SheetTitle className="mt-10 text-[12px] text-[#565A5E] font-normal">
             {formatDate(request.createdAt)}
           </SheetTitle>
           <SheetDescription asChild>
@@ -179,34 +180,35 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
                 <div
                   onClick={handleVote}
                   className={cn(
-                    "w-[54px] h-[54px] border rounded-md flex flex-col items-center justify-center cursor-pointer transition-colors group",
+                    "w-[54px] h-[54px] border rounded-[7px] flex flex-col items-center justify-center cursor-pointer transition-colors group",
                     hasVoted
-                      ? "bg-[#265BD1] border-[#265BD1] text-white"
-                      : "border-[#565A5E] bg-[#F3F3F3] text-[#565A5E] hover:bg-gray-200"
+                      ? "bg-[#E8EFFC] border-[#265BD1] text-[#265BD1]"
+                      : "border-[#565A5E] bg-[#F3F3F3] text-[#565A5E] hover:bg-[#E8EFFC]"
                   )}
+                  style={{ borderWidth: "0.59px" }}
                 >
                   <i
                     className={cn(
                       "fa-solid fa-caret-up text-xl transform transition-transform duration-200 group-hover:-translate-y-1",
-                      hasVoted ? "text-white" : "text-[#565A5E]"
+                      hasVoted ? "text-[#265BD1]" : "text-[#565A5E]"
                     )}
                   ></i>
-                  <p className={cn(hasVoted ? "text-white" : "text-[#565A5E]")}>{voteDisplay}</p>
+                  <p className={cn("text-xs font-semibold", hasVoted ? "text-[#265BD1]" : "text-[#0D1218]")}>{voteDisplay}</p>
                 </div>
 
                 <div className="flex-1">
                   <div className="flex justify-between items-start gap-3">
                     <div>
-                      <h2 className="font-semibold text-base text-secondary-db-100 leading-snug">
+                      <h2 className="font-semibold text-[16px] text-[#0D1218] leading-snug">
                         {request.title}
                       </h2>
-                      <p className="text-sm text-secondary-db-80 whitespace-pre-line">
+                      <p className="text-[14px] text-[#565A5E] whitespace-pre-line mt-1">
                         {request.description || "No description provided."}
                       </p>
                     </div>
                     <div className="flex gap-2">
                       {isOwner && onDelete && (
-                        <Button variant="outline" size="sm" onClick={handleDelete} className="text-red-600 border-red-200">
+                        <Button variant="outline" size="sm" onClick={handleDelete} className="text-[#E84C3D] border-[#E84C3D]/20 hover:bg-[#E84C3D]/10">
                           <Trash2 size={14} className="mr-1" /> Delete
                         </Button>
                       )}
@@ -221,7 +223,7 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
                   <div className="flex items-center gap-2 mt-3 flex-wrap">
                     <span
                       className={cn(
-                        "text-xs rounded-md px-2 py-1 inline-flex items-center gap-1 border",
+                        "text-[12px] rounded-[6px] px-2 py-1 inline-flex items-center gap-1 border font-medium",
                         statusColor[statusLabel] || statusColor.default
                       )}
                     >
@@ -229,19 +231,19 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
                       {statusLabel}
                     </span>
                     {request.board && (
-                      <span className="text-xs text-[#565A5E] bg-[#F3F3F3] rounded-md px-2 py-1">
+                      <span className="text-[12px] text-[#565A5E] bg-[#F3F3F3] rounded-[6px] px-2 py-1 font-medium">
                         {request.board}
                       </span>
                     )}
                     {request.authorName && (
-                      <span className="text-xs text-[#565A5E]">By {request.authorName}</span>
+                      <span className="text-[12px] text-[#565A5E]">By {request.authorName}</span>
                     )}
                   </div>
                 </div>
               </div>
 
               {request.attachments?.length ? (
-                <div className="border-t border-b py-3 text-sm">
+                <div className="border-t border-b border-[#CFD0D1] py-3 text-[14px]">
                   <p className="font-medium text-[#565A5E] mb-2">Attachments</p>
                   <ul className="space-y-2">
                     {request.attachments.map((att) => (
@@ -262,25 +264,25 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
               ) : null}
 
               <div className="flex flex-col gap-4">
-                <div className="flex items-center gap-2 text-sm font-medium">
+                <div className="flex items-center gap-2 text-[14px] font-medium text-[#0D1218]">
                   <MessageSquare size={16} /> Comments ({comments.length})
                 </div>
                 <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
                   {comments.length === 0 && (
-                    <p className="text-sm text-gray-500">No comments yet.</p>
+                    <p className="text-[14px] text-[#565A5E]">No comments yet.</p>
                   )}
                   {comments.map((comment) => {
                     const canDelete = userId && comment.authorId === userId;
                     return (
-                      <div key={comment._id} className="border rounded-md p-3 bg-[#F9FAFB]">
-                        <div className="flex justify-between text-xs text-gray-500 mb-1">
-                          <span className="font-medium text-gray-800">
+                      <div key={comment._id} className="border border-[#CFD0D1] rounded-[8px] p-3 bg-[#F9FAFB]">
+                        <div className="flex justify-between text-[12px] text-[#565A5E] mb-1">
+                          <span className="font-medium text-[#0D1218]">
                             {comment.authorName || "User"}
                           </span>
                           <span>{formatDate(comment.createdAt)}</span>
                         </div>
-                        <p className="text-sm text-gray-800 whitespace-pre-line">{comment.text}</p>
-                        <div className="flex gap-3 text-xs text-gray-600 mt-2">
+                        <p className="text-[14px] text-[#0D1218] whitespace-pre-line">{comment.text}</p>
+                        <div className="flex gap-3 text-[12px] text-[#565A5E] mt-2">
                           {canDelete ? (
                             <button
                               onClick={() => removeComment(comment._id)}
@@ -305,14 +307,14 @@ export default function RequestCard({ request, onDelete, onReport, onVote }: Pro
                 <div className="space-y-2">
                   <Textarea
                     placeholder="Write a comment..."
-                    className="text-sm"
+                    className="text-[14px] bg-[#F3F3F3] rounded-[6px] border-none"
                     rows={3}
                     value={commentText}
                     onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCommentText(e.target.value)}
                   />
                   <Button
                     onClick={handleAddComment}
-                    className="bg-[#265BD1] hover:bg-blue-700 text-white"
+                    className="bg-[#265BD1] hover:bg-[#1F4AA9] text-white rounded-[8px] h-[36px] text-[14px] font-medium"
                     disabled={!commentText.trim()}
                   >
                     Add comment

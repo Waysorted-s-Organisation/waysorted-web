@@ -89,13 +89,13 @@ export default function RequestsPage() {
     loadingText: string
   ) => {
     if (loading) {
-      return <p className="text-sm text-gray-500">{loadingText}</p>;
+      return <p className="text-[14px] text-[#565A5E]">{loadingText}</p>;
     }
     if (list.length === 0) {
       return (
         <div className="text-center py-16">
-          <p className="text-lg font-medium text-gray-600">Nothing here yet!</p>
-          <p className="text-sm text-gray-400 mt-1">{emptyText}</p>
+          <p className="text-[16px] font-medium text-[#0D1218]">Nothing here yet!</p>
+          <p className="text-[14px] text-[#565A5E] mt-1">{emptyText}</p>
         </div>
       );
     }
@@ -119,27 +119,27 @@ export default function RequestsPage() {
 
         <div className="flex items-start">
           {/* Sidebar - Features Board */}
-          <aside className="hidden md:flex sticky top-[80px] h-[calc(100vh-64px)] w-[225px] border-r bg-white p-5 flex-col justify-between shrink-0 self-start">
+          <aside className="hidden md:flex sticky top-[80px] h-[calc(100vh-64px)] w-[225px] border-r border-[#CFD0D1] bg-white p-5 flex-col justify-between shrink-0 self-start">
             <div>
               <button
                 onClick={() => router.push("/")}
-                className="text-sm text-[#565A5E] p-2 flex items-center my-3 cursor-pointer rounded-md hover:bg-[#E8EFFC] hover:text-[#265BD1]"
+                className="text-[14px] text-[#565A5E] p-2 flex items-center my-3 cursor-pointer rounded-[6px] hover:bg-[#E8EFFC] hover:text-[#265BD1] font-medium"
               >
                 <ChevronLeft size={16} className="mr-2" /> Back home
               </button>
 
               {/* Features Board */}
               <div className="mt-4 space-y-1">
-                <h2 className="font-bold text-sm mb-3">Features Board</h2>
+                <h2 className="font-bold text-[14px] text-[#0D1218] mb-3">Features Board</h2>
                 {boards.length === 0 ? (
-                  <p className="text-xs text-gray-400">No boards yet</p>
+                  <p className="text-[12px] text-[#9EA0A3]">No boards yet</p>
                 ) : (
                   boards.map((board) => (
                     <button
                       key={board}
                       onClick={() => setSelectedBoard(selectedBoard === board ? null : board)}
                       className={cn(
-                        "text-xs w-full py-2 px-2 rounded-sm text-left transition-colors",
+                        "text-[12px] w-full py-2 px-2 rounded-[6px] text-left transition-colors",
                         selectedBoard === board
                           ? "bg-[#E8EFFC] text-[#265BD1] font-medium"
                           : "text-[#565A5E] hover:bg-[#F3F3F3]"
@@ -153,7 +153,7 @@ export default function RequestsPage() {
             </div>
             <Button
               size="sm"
-              className="bg-[#265BD1] w-full hover:bg-[#1F4AA9] cursor-pointer"
+              className="bg-[#265BD1] w-full hover:bg-[#1F4AA9] cursor-pointer rounded-[8px] h-[36px] text-[14px] font-medium"
               onClick={() => router.push("/support")}
             >
               Have query ?
@@ -165,14 +165,14 @@ export default function RequestsPage() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               {/* Left: Show + Sort */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-[#565A5E]">Show</span>
+                <span className="text-[14px] text-[#565A5E] font-medium">Show</span>
                 <Select value={sort} onValueChange={(val: string) => setSort(val as "recent" | "votes")}>
-                  <SelectTrigger className="w-[130px] h-[36px] bg-white border-gray-200">
+                  <SelectTrigger className="w-[130px] h-[36px] bg-white border border-[#CFD0D1] rounded-[6px] text-[14px]">
                     <SelectValue placeholder="Sort by" />
                   </SelectTrigger>
-                  <SelectContent className="bg-white">
-                    <SelectItem value="votes" className="">Most votes</SelectItem>
-                    <SelectItem value="recent" className="">Most Recent</SelectItem>
+                  <SelectContent className="bg-white rounded-[6px] border border-[#CFD0D1]">
+                    <SelectItem value="votes" className="text-[14px]">Most votes</SelectItem>
+                    <SelectItem value="recent" className="text-[14px]">Most Recent</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -184,10 +184,10 @@ export default function RequestsPage() {
                     key={status.id}
                     onClick={() => setSelectedStatus(selectedStatus === status.id ? null : status.id)}
                     className={cn(
-                      "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs border transition-colors",
+                      "flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-[12px] border transition-colors font-medium",
                       selectedStatus === status.id
                         ? "bg-[#E8EFFC] border-[#265BD1] text-[#265BD1]"
-                        : "bg-white border-gray-200 text-[#565A5E] hover:bg-gray-50"
+                        : "bg-white border-[#CFD0D1] text-[#565A5E] hover:bg-[#F3F3F3]"
                     )}
                   >
                     <span
@@ -203,11 +203,11 @@ export default function RequestsPage() {
             {/* Header Row */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               {/* Search */}
-              <div className="flex items-center gap-2 border border-gray-200 rounded-lg px-3 py-2 w-full md:w-[360px] bg-white shadow-sm">
-                <Search size={16} className="text-gray-400" />
+              <div className="flex items-center gap-2 border border-[#CFD0D1] rounded-[8px] px-3 py-2 w-full md:w-[360px] bg-white shadow-sm">
+                <Search size={16} className="text-[#9EA0A3]" />
                 <Input
                   placeholder="Search"
-                  className="border-none shadow-none p-0 h-auto focus-visible:ring-0 text-sm"
+                  className="border-none shadow-none p-0 h-auto focus-visible:ring-0 text-[14px] bg-transparent"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -223,11 +223,11 @@ export default function RequestsPage() {
             </div>
 
             {/* Tabs: My requests / My reports */}
-            <div className="flex items-center gap-6 border-b border-gray-200">
+            <div className="flex items-center gap-6 border-b border-[#CFD0D1]">
               <button
                 onClick={() => setActiveTab("requests")}
                 className={cn(
-                  "pb-2 text-sm font-medium border-b-2 transition-colors",
+                  "pb-2 text-[14px] font-medium border-b-2 transition-colors",
                   activeTab === "requests"
                     ? "border-[#265BD1] text-[#265BD1]"
                     : "border-transparent text-[#565A5E] hover:text-[#265BD1]"
@@ -238,7 +238,7 @@ export default function RequestsPage() {
               <button
                 onClick={() => setActiveTab("reports")}
                 className={cn(
-                  "pb-2 text-sm font-medium border-b-2 transition-colors",
+                  "pb-2 text-[14px] font-medium border-b-2 transition-colors",
                   activeTab === "reports"
                     ? "border-[#265BD1] text-[#265BD1]"
                     : "border-transparent text-[#565A5E] hover:text-[#265BD1]"
