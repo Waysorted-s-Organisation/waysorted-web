@@ -38,14 +38,14 @@ export default function RequestsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   // Check URL for view parameter - "mine" shows "Your Requests", default is home view
   const urlView = searchParams?.get("view");
   const [view, setView] = useState<"home" | "my-requests">(urlView === "mine" ? "my-requests" : "home");
   const [activeTab, setActiveTab] = useState<"requests" | "reports">("requests"); // for my-requests view
   const [selectedBoard, setSelectedBoard] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
-  
+
   // Update view when URL param changes
   useEffect(() => {
     if (urlView === "mine") {
@@ -184,14 +184,14 @@ export default function RequestsPage() {
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-2">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="text-[#0D1218]">
-                    <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M7 7H17M7 12H17M7 17H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M19 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H19C20.1046 21 21 20.1046 21 19V5C21 3.89543 20.1046 3 19 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M7 7H17M7 12H17M7 17H13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   <h1 className="text-[20px] font-bold text-[#0D1218]">Your requests</h1>
                 </div>
               </div>
             )}
-            
+
             {/* Top Bar - Sort + Status Filters */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               {/* Left: Show + Sort */}
@@ -210,22 +210,20 @@ export default function RequestsPage() {
 
               {/* Right: Status Filter Tabs - Only show in home view */}
               {view === "home" && (
-                <div className="flex items-center gap-2 flex-wrap">
+                <div className="flex items-center gap-1 flex-wrap">
                   {STATUSES.map((status) => (
                     <button
                       key={status.id}
                       onClick={() => setSelectedStatus(selectedStatus === status.id ? null : status.id)}
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] text-[12px] border transition-all duration-200 font-medium",
-                        selectedStatus === status.id
-                          ? "bg-[#E8EFFC] border-[#265BD1] text-[#265BD1]"
-                          : "bg-white border-[#CFD0D1] text-[#565A5E] hover:bg-[#F3F3F3]"
+                        "text-sm text-[#565A5E] rounded-md hover:bg-[#F3F3F3] border px-2 py-1 items-center flex gap-1 transition-all duration-200",
+                        selectedStatus === status.id && "bg-[#E8EFFC] border-[#265BD1] text-[#265BD1]"
                       )}
                     >
-                      <span
-                        className="w-[7px] h-[7px] rounded-full"
-                        style={{ backgroundColor: status.color }}
-                      />
+                      <i
+                        className="fa-solid fa-square text-[6px]"
+                        style={{ color: status.color }}
+                      ></i>
                       {status.label}
                     </button>
                   ))}
