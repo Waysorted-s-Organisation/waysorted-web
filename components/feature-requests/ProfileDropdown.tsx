@@ -26,11 +26,11 @@ export default function ProfileDropdown() {
         .join("");
     }
     if (user?.email) return user.email.slice(0, 2).toUpperCase();
-    return "WS";
+    return "RG";
   }, [user]);
 
-  const email = user?.email ?? "";
-  const name = user?.name ?? "";
+  const email = user?.email ?? "user@example.com";
+  const name = user?.name ?? "USERNAME";
 
   if (!user) {
     return (
@@ -56,6 +56,7 @@ export default function ProfileDropdown() {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="w-58 mr-2 p-1">
+        {/* Username + Email */}
         <DropdownMenuLabel className="flex flex-col items-start" inset={false}>
           <div className="flex gap-2">
             <div className="w-[36px] h-[36px] text-[#265BD1] bg-[#E8EFFC] rounded-md flex items-center justify-center">
@@ -69,10 +70,31 @@ export default function ProfileDropdown() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
 
+        {/* Workspace */}
+        <div className="px-2 py-2">
+          <p className="text-xs text-gray-500 mb-1">
+            Your Workspace &nbsp;
+            <span className="text-[#265BD1] bg-[#E8EFFC] p-1 rounded-sm">Unlock&apos;s soon</span>
+          </p>
+          
+          <div className="flex items-center gap-2">
+            <div className="w-[36px] h-[36px] rounded-md">
+              <img src="/lock.svg" alt="" />
+            </div>
+            <div className="flex flex-col">
+              <a href="#" className="text-sm text-[#265BD1] font-medium">Waystudio</a>
+              <p className="text-xs text-gray-500">All tools in one way!</p>
+            </div>
+          </div>
+        </div>
+
+        <DropdownMenuSeparator />
+
+        {/* Profile Options */}
         <DropdownMenuItem inset={false} onClick={() => router.push("/settings")}>
           <Settings className="mr-2 h-4 w-4" /> Account settings
         </DropdownMenuItem>
-        <DropdownMenuItem inset={false} onClick={() => router.push("/requests")}>
+        <DropdownMenuItem inset={false} onClick={() => router.push("/requests?view=mine")}>
           <FileText className="mr-2 h-4 w-4" /> Your requests
         </DropdownMenuItem>
         <DropdownMenuItem inset={false} onClick={() => router.push("/support")}>
