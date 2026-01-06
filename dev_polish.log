@@ -1,0 +1,141 @@
+
+> waysorted@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.7 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.29.103:3000
+   - Environments: .env
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Compiled middleware in 103ms
+ ✓ Ready in 1233ms
+ ○ Compiling /requests ...
+ ✓ Compiled /requests in 3.2s
+ GET /requests 200 in 3782ms
+ ✓ Compiled /api/me in 364ms
+ GET /favicon.ico?favicon.4b805d3d.ico 200 in 900ms
+ GET /api/requests 200 in 1723ms
+ GET /api/me 200 in 1832ms
+ GET /api/me 200 in 344ms
+ ✓ Compiled /api/requests/mine in 115ms
+ GET /api/me 200 in 346ms
+ GET /api/requests/mine 200 in 547ms
+ GET /api/me 200 in 358ms
+ GET /api/me 200 in 350ms
+ GET /api/me 200 in 448ms
+ GET /api/me 200 in 324ms
+ GET /api/me 200 in 324ms
+ ✓ Compiled /api/requests/[id]/vote in 142ms
+ POST /api/requests/695b884861a3d5f352bf0b2f/vote 200 in 1528ms
+ GET /api/requests 200 in 309ms
+ GET /requests 200 in 229ms
+ ✓ Compiled /api/requests/[id]/comments in 201ms
+ GET /api/requests 200 in 393ms
+ GET /api/me 200 in 532ms
+ GET /api/me 200 in 387ms
+ GET /api/me 200 in 342ms
+ GET /api/me 200 in 396ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 1677ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 332ms
+ GET /api/me 200 in 374ms
+ GET /api/requests/mine 200 in 509ms
+ GET /api/me 200 in 337ms
+ GET /api/me 200 in 395ms
+ GET /api/me 200 in 316ms
+ GET /api/me 200 in 319ms
+ GET /api/me 200 in 396ms
+ POST /api/requests/695b885235dd5a04197af8e8/vote 200 in 567ms
+ GET /api/requests 200 in 309ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 322ms
+ GET /api/me 200 in 358ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 337ms
+ GET /api/me 200 in 335ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 314ms
+ GET /api/me 200 in 360ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 339ms
+ GET /api/me 200 in 350ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 347ms
+ GET /api/me 200 in 381ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 313ms
+ GET /api/me 200 in 332ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 316ms
+ GET /api/me 200 in 351ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 335ms
+ GET /api/me 200 in 385ms
+ ✓ Compiled in 538ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 386ms
+ GET /api/me 200 in 431ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 331ms
+ GET /api/me 200 in 375ms
+ GET /requests 200 in 439ms
+ GET /favicon.ico?favicon.4b805d3d.ico 200 in 273ms
+ GET /api/requests 200 in 316ms
+ GET /api/me 200 in 355ms
+ GET /api/me 200 in 321ms
+ GET /api/me 200 in 330ms
+ GET /api/requests/mine 200 in 377ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 296ms
+ GET /api/me 200 in 341ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 289ms
+ GET /api/me 200 in 312ms
+ GET /api/me 200 in 311ms
+ GET /api/me 200 in 377ms
+ GET /api/me 200 in 307ms
+ GET /api/me 200 in 361ms
+ GET /api/me 200 in 389ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 354ms
+ GET /api/me 200 in 405ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 284ms
+ GET /api/me 200 in 256ms
+ GET /requests 200 in 313ms
+ GET /favicon.ico?favicon.4b805d3d.ico 200 in 283ms
+ GET /api/requests 200 in 312ms
+ GET /api/me 200 in 357ms
+ GET /api/me 200 in 321ms
+ GET /requests 200 in 196ms
+ GET /favicon.ico?favicon.4b805d3d.ico 200 in 280ms
+ GET /api/requests 200 in 312ms
+ GET /api/me 200 in 353ms
+ GET /api/me 200 in 355ms
+ GET /api/me 200 in 419ms
+ GET /api/requests/mine 200 in 432ms
+ GET /api/me 200 in 308ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 281ms
+ GET /api/me 200 in 314ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 276ms
+ GET /api/me 200 in 315ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 307ms
+ GET /api/me 200 in 305ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 283ms
+ GET /api/me 200 in 370ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 299ms
+ GET /api/me 200 in 336ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 301ms
+ GET /api/me 200 in 314ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 288ms
+ GET /api/me 200 in 387ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 296ms
+ GET /api/me 200 in 313ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 308ms
+ GET /api/me 200 in 312ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 384ms
+ GET /api/me 200 in 411ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 287ms
+ GET /api/me 200 in 310ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 278ms
+ GET /api/me 200 in 323ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 284ms
+ GET /api/me 200 in 375ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 278ms
+ GET /api/me 200 in 312ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 268ms
+ GET /api/requests/695b885235dd5a04197af8e8/comments 200 in 315ms
+ GET /api/me 200 in 340ms
+ GET /api/me 200 in 411ms
+ GET /api/me 200 in 304ms
+ GET /api/me 200 in 312ms
+ GET /api/me 200 in 396ms
+ GET /api/me 200 in 316ms

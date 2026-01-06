@@ -877,3 +877,29 @@ html, body {
 .spin{
   animation: spin 3s linear infinite;
 }
+/* Sheet Slide Animation */
+@keyframes sheet-slide-in-from-right {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes sheet-slide-out-to-right {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+[data-state="open"][data-slot="sheet-content"] {
+  animation: sheet-slide-in-from-right 0.5s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+[data-state="closed"][data-slot="sheet-content"] {
+  animation: sheet-slide-out-to-right 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}

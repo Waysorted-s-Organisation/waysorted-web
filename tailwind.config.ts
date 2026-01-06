@@ -68,10 +68,28 @@ const config = {
                     from: { height: "var(--radix-accordion-content-height)" },
                     to: { height: "0" },
                 },
+                "enter": {
+                    from: { opacity: "0", transform: "var(--tw-enter-translate, none) var(--tw-enter-scale, none) var(--tw-enter-rotate, none)" },
+                    to: { opacity: "1", transform: "none" },
+                },
+                "exit": {
+                    from: { opacity: "1", transform: "none" },
+                    to: { opacity: "0", transform: "var(--tw-exit-translate, none) var(--tw-exit-scale, none) var(--tw-exit-rotate, none)" },
+                },
+                "slide-in-from-right": {
+                    from: { transform: "translateX(100%)" },
+                    to: { transform: "translateX(0)" },
+                },
+                "slide-out-to-right": {
+                    from: { transform: "translateX(0)" },
+                    to: { transform: "translateX(100%)" },
+                },
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
                 "accordion-up": "accordion-up 0.2s ease-out",
+                "slide-in-from-right": "slide-in-from-right 0.5s cubic-bezier(0.32, 0.72, 0, 1)",
+                "slide-out-to-right": "slide-out-to-right 0.3s cubic-bezier(0.32, 0.72, 0, 1)",
             },
         },
     },
