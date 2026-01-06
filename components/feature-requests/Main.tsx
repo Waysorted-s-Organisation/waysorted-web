@@ -90,14 +90,7 @@ const Main: React.FC = () => {
             <div>
                 {/* My requests  */}
                 <div className="space-y-4">
-                    {myRequests.length === 0 ? (
-                        <p className="text-sm text-gray-500">
-                            You have not submitted any requests yet.
-                        </p>
-                    ) : (
-                        // myRequests.map((req) => (
-                        //   <MyRequestCard key={req.id} request={req} />
-                        // ))
+                    {myRequests.length > 0 && (
                         <MyRequestCard
                             key={myRequests[myRequests.length - 1]?.id}
                             request={myRequests[myRequests.length - 1]!}

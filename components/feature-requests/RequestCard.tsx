@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import Chat from "./Chat";
-import { EllipsisVertical } from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { useRequests } from "@/context/RequestContext";
 import { useUser } from "@/hooks/useUser";
@@ -50,11 +50,11 @@ const RequestCard: React.FC<CardProps> = ({ title, description, details, status,
       {/* Upvote box */}
       <div
         onClick={handleVote}
-        className={`w-[54px] h-[54px] cursor-pointer border rounded-md flex flex-col items-center justify-center group
-        ${isUpvoted ? "border-[#265BD1] bg-[#E8EFFC]" : "border-[#565A5E] bg-white"} `}
+        className={`w-[54px] h-[54px] cursor-pointer border rounded-md flex flex-col items-center justify-center group transition-all duration-200 ease-out
+        ${isUpvoted ? "border-[#265BD1] bg-[#E8EFFC]" : "border-[#565A5E] bg-white hover:border-[#265BD1]"} `}
       >
-        <i className={cn("fa-solid fa-caret-up text-xl group-hover:-translate-y-1", isUpvoted ? "text-[#265BD1]" : "text-[#565A5E]")}></i>
-        <p className="text-black">{formattedCount}</p>
+        <i className={cn("fa-solid fa-caret-up text-xl transition-transform duration-200 ease-out group-hover:-translate-y-1", isUpvoted ? "text-[#265BD1]" : "text-[#565A5E]")}></i>
+        <p className={cn("transition-colors duration-200", isUpvoted ? "text-[#265BD1]" : "text-black")}>{formattedCount}</p>
       </div>
 
       {/* Content section wrapped in SheetTrigger */}
@@ -142,7 +142,7 @@ const RequestCard: React.FC<CardProps> = ({ title, description, details, status,
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button className="border px-1 py-1 rounded-sm flex items-center hover:text-[#265BD1] hover:bg-[#E8EFFC] gap-2 focus:outline-none focus:ring-0">
-                          <EllipsisVertical size={16} />
+                          <MoreHorizontal size={16} />
                         </button>
                       </DropdownMenuTrigger>
 

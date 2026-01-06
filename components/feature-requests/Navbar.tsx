@@ -226,7 +226,7 @@ const Navbar = () => {
 
   return (
     <div className="bg-white z-50 h-[68px] w-screen border-b border-gray-200 flex justify-between items-center px-5 sticky top-0">
-      <div><img src="/Waysorted.svg" alt="logo" className="h-8" /></div>
+      <div><img src="/images/logo.svg" alt="logo" className="h-8" /></div>
 
       <div className="flex items-center gap-1">
         <button className="border bg-white p-1 rounded-md w-[36px] h-[36px] flex items-center justify-center cursor-pointer hover:bg-gray-50">

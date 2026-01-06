@@ -23,7 +23,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-import { EllipsisVertical } from "lucide-react"
+import { MoreHorizontal } from "lucide-react"
 import { DropdownMenu, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useMyRequest } from "@/context/MyRequestContext"
@@ -84,14 +84,14 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
             {/* Upvote Box */}
             <div
                 onClick={handleVote}
-                className={`w-[54px] h-[54px] cursor-pointer border rounded-md flex flex-col items-center justify-center group transition-colors duration-200
+                className={`w-[54px] h-[54px] cursor-pointer border rounded-md flex flex-col items-center justify-center group transition-all duration-200 ease-out
           ${isUpvoted
                         ? "border-[#265BD1] bg-[#E8EFFC]"
-                        : "bg-white border-[#565A5E]"
+                        : "bg-white border-[#565A5E] hover:border-[#265BD1]"
                     }`}
             >
-                <i className={cn("fa-solid fa-caret-up text-xl transform transition-transform duration-200 group-hover:-translate-y-1", isUpvoted ? "text-[#265BD1]" : "text-[#565A5E]")}></i>
-                <p className="text-black">{formattedCount}</p>
+                <i className={cn("fa-solid fa-caret-up text-xl transition-transform duration-200 ease-out group-hover:-translate-y-1", isUpvoted ? "text-[#265BD1]" : "text-[#565A5E]")}></i>
+                <p className={cn("transition-colors duration-200", isUpvoted ? "text-[#265BD1]" : "text-black")}>{formattedCount}</p>
             </div>
 
             {/* Request Info */}
@@ -132,7 +132,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
                                 variant="outline"
                                 className="hover:bg-[#E8EFFC] hover:text-[#265BD1] cursor-pointer px-2"
                             >
-                                {showManageText ? "Manage Request" : <EllipsisVertical size={16} />}
+                                {showManageText ? "Manage Request" : <MoreHorizontal size={16} />}
                             </Button>
                         </SheetTrigger>
                         <SheetContent className="w-[640px] sm:max-w-[750px] rounded-l-lg bg-white overflow-y-auto">
@@ -189,7 +189,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
                                                             <button className="border px-2 py-1 rounded-sm flex items-center hover:text-[#265BD1] hover:bg-[#F3F3F3] gap-2 focus:outline-none focus:ring-0">
-                                                                <EllipsisVertical size={16} />
+                                                                <MoreHorizontal size={16} />
                                                             </button>
                                                         </DropdownMenuTrigger>
 
