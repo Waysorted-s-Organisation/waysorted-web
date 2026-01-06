@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Bell, PlusIcon, SearchIcon, Sun } from "lucide-react";
 import {
   Dialog,
@@ -15,6 +16,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { useMyRequest } from "@/context/MyRequestContext";
 import ProfileDropdown from "./ProfileDropdown";
@@ -34,6 +36,7 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
   const [uploading, setUploading] = useState<boolean>(false);
   const [successOpen, setSuccessOpen] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
+  const [bugDescription, setBugDescription] = useState<string>("");
 
   useEffect(() => {
     if (open) {
@@ -70,22 +73,40 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
     // }
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (!bugDescription.trim()) {
+      toast.error("Please describe the bug");
+      return;
+    }
     setUploading(true)
     setProgress(0)
-    const timer = setInterval(() => {
-      setProgress((p) => {
-        if (p >= 100) {
-          clearInterval(timer)
-          setUploading(false)
-          onOpenChange(false)
-          setSuccessOpen(true)
-          return 100
-        }
-        return p + 10
-      })
-    }, 150)
-    // 🔑 send files to backend here when progress completes
+    try {
+      // Submit bug report to API
+      const res = await fetch("/api/requests", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: bugDescription.slice(0, 100), // Use first 100 chars as title
+          description: bugDescription,
+          type: "bug",
+          board: "Figma Plugin"
+        })
+      });
+
+      if (res.ok) {
+        setProgress(100);
+        onOpenChange(false);
+        toast.success("Bug report submitted successfully!");
+      } else {
+        const data = await res.json();
+        toast.error(data.message || "Failed to submit bug report");
+      }
+    } catch (error) {
+      console.error("Bug report submission error:", error);
+      toast.error("Failed to submit bug report");
+    } finally {
+      setUploading(false);
+    }
   }
 
   return (
@@ -100,10 +121,21 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
         <Separator className="" />
 
         <div className="flex flex-col gap-4">
-          <p className="text-sm font-medium">Upload and attach files</p>
+          {/* Bug Description */}
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Describe the bug</p>
+            <Textarea
+              placeholder="What went wrong? Please describe the issue..."
+              className="bg-[#F3F3F3] min-h-[100px]"
+              value={bugDescription}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setBugDescription(e.target.value)}
+            />
+          </div>
+
+          <p className="text-sm font-medium">Upload and attach files (optional)</p>
 
           {/* Upload Box */}
-          <label className="flex flex-col w-[399px] h-[124px] bg-[#F3F3F3] items-center justify-center border-2 border-dashed border-[#CFD0D1] rounded-md p-6 text-sm cursor-pointer hover:border-blue-400 transition">
+          <label className="flex flex-col w-full h-[100px] bg-[#F3F3F3] items-center justify-center border-2 border-dashed border-[#CFD0D1] rounded-md p-6 text-sm cursor-pointer hover:border-blue-400 transition">
             <input
               type="file"
               multiple
@@ -111,7 +143,7 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
               className="hidden"
               onChange={handleFiles}
             />
-            <img src="/upload.png" alt="" className="py-4" />
+            <img src="/upload.png" alt="" className="py-2 h-8" />
             <p className="text-[#265BD1]">
               Click to Upload <span className="text-[#565A5E]">an Image</span>
             </p>
@@ -183,24 +215,20 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-between mt-2 w-full">
-            {files.length === 0 ? (
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => onOpenChange(false)}
-              >
-                Skip for now
-              </Button>
-            ) : (
-              <Button
-                className="bg-[#265BD1] w-1/2 text-white"
-                disabled={uploading}
-                onClick={handleSubmit}
-              >
-                {uploading ? "Uploading..." : "Submit report"}
-              </Button>
-            )}
+          <div className="flex justify-end gap-2 mt-2 w-full">
+            <Button
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              className="bg-[#265BD1] text-white"
+              disabled={uploading || !bugDescription.trim()}
+              onClick={handleSubmit}
+            >
+              {uploading ? "Submitting..." : "Submit report"}
+            </Button>
           </div>
         </div>
       </DialogContent>
@@ -226,8 +254,18 @@ const Navbar = () => {
   const router = useRouter()
 
   return (
-    <div className="bg-white z-50 h-[68px] w-screen border-b border-gray-200 flex justify-between items-center px-5 sticky top-0">
-      <Link href="/"><img src="/images/logo.svg" alt="logo" className="h-8 cursor-pointer" /></Link>
+    <div className="bg-white z-50 h-[68px] w-screen border-b border-gray-200 flex justify-between items-center px-4 md:px-5 sticky top-0">
+      <Link href="/" className="block" aria-label="Waysorted Home">
+        <div className="relative w-24 h-8 sm:w-28 sm:h-9 md:w-32 md:h-10">
+          <Image
+            src="/images/logo.svg"
+            alt="WaySorted Logo"
+            fill
+            className="object-contain"
+            priority
+          />
+        </div>
+      </Link>
 
       <div className="flex items-center gap-1">
         <button className="border bg-white p-1 rounded-md w-[36px] h-[36px] flex items-center justify-center cursor-pointer hover:bg-gray-50">
