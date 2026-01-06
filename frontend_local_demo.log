@@ -1,0 +1,207 @@
+
+> waysorted@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.7 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.29.103:3000
+   - Environments: .env
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Compiled middleware in 137ms
+ ✓ Ready in 1351ms
+ ○ Compiling /requests ...
+ ✓ Compiled /requests in 4.4s
+ ⨯ ./components/feature-requests/Navbar.tsx:22:10
+Ecmascript file had an error
+[0m [90m 20 |[39m [36mimport[39m [33mNotification[39m [36mfrom[39m [32m"./Notification"[39m[33m;[39m
+ [90m 21 |[39m [36mimport[39m { useRouter } [36mfrom[39m [32m"next/navigation"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 22 |[39m [36mimport[39m { useRouter } [36mfrom[39m [32m"next/navigation"[39m[33m;[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 23 |[39m [36mimport[39m { useUser } [36mfrom[39m [32m"@/hooks/useUser"[39m[33m;[39m
+ [90m 24 |[39m [36mimport[39m { useRequests } [36mfrom[39m [32m"@/context/RequestContext"[39m[33m;[39m
+ [90m 25 |[39m[0m
+
+the name `useRouter` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./components/feature-requests/Navbar.tsx [Client Component Browser]
+    ./app/requests/page.tsx [Client Component Browser]
+    ./app/requests/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/feature-requests/Navbar.tsx [Client Component SSR]
+    ./app/requests/page.tsx [Client Component SSR]
+    ./app/requests/page.tsx [Server Component]
+
+
+ ○ Compiling /_error ...
+ ✓ Compiled /_error in 976ms
+ GET /requests 500 in 5532ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 782ms
+ GET /favicon.ico 500 in 830ms
+ ⨯ ./components/feature-requests/Navbar.tsx:22:10
+Ecmascript file had an error
+[0m [90m 20 |[39m [36mimport[39m [33mNotification[39m [36mfrom[39m [32m"./Notification"[39m[33m;[39m
+ [90m 21 |[39m [36mimport[39m { useRouter } [36mfrom[39m [32m"next/navigation"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 22 |[39m [36mimport[39m { useRouter } [36mfrom[39m [32m"next/navigation"[39m[33m;[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 23 |[39m [36mimport[39m { useUser } [36mfrom[39m [32m"@/hooks/useUser"[39m[33m;[39m
+ [90m 24 |[39m [36mimport[39m { useRequests } [36mfrom[39m [32m"@/context/RequestContext"[39m[33m;[39m
+ [90m 25 |[39m[0m
+
+the name `useRouter` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./components/feature-requests/Navbar.tsx [Client Component Browser]
+    ./app/requests/page.tsx [Client Component Browser]
+    ./app/requests/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/feature-requests/Navbar.tsx [Client Component SSR]
+    ./app/requests/page.tsx [Client Component SSR]
+    ./app/requests/page.tsx [Server Component]
+
+
+ GET /requests 500 in 243ms
+ GET /favicon.ico 500 in 114ms
+ ⨯ ./components/feature-requests/Navbar.tsx:22:10
+Ecmascript file had an error
+[0m [90m 20 |[39m [36mimport[39m [33mNotification[39m [36mfrom[39m [32m"./Notification"[39m[33m;[39m
+ [90m 21 |[39m [36mimport[39m { useRouter } [36mfrom[39m [32m"next/navigation"[39m[33m;[39m
+[31m[1m>[22m[39m[90m 22 |[39m [36mimport[39m { useRouter } [36mfrom[39m [32m"next/navigation"[39m[33m;[39m
+ [90m    |[39m          [31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+ [90m 23 |[39m [36mimport[39m { useUser } [36mfrom[39m [32m"@/hooks/useUser"[39m[33m;[39m
+ [90m 24 |[39m [36mimport[39m { useRequests } [36mfrom[39m [32m"@/context/RequestContext"[39m[33m;[39m
+ [90m 25 |[39m[0m
+
+the name `useRouter` is defined multiple times
+
+Import traces:
+  Client Component Browser:
+    ./components/feature-requests/Navbar.tsx [Client Component Browser]
+    ./app/requests/page.tsx [Client Component Browser]
+    ./app/requests/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./components/feature-requests/Navbar.tsx [Client Component SSR]
+    ./app/requests/page.tsx [Client Component SSR]
+    ./app/requests/page.tsx [Server Component]
+
+
+ GET /requests 500 in 115ms
+ GET /favicon.ico 500 in 245ms
+ ○ Compiling / ...
+ ✓ Compiled / in 2.6s
+Invalid DOM property `color-interpolation-filters`. Did you mean `colorInterpolationFilters`?
+Invalid DOM property `flood-opacity`. Did you mean `floodOpacity`?
+Invalid DOM property `stop-color`. Did you mean `stopColor`?
+Invalid DOM property `stop-opacity`. Did you mean `stopOpacity`?
+Invalid DOM property `fill-opacity`. Did you mean `fillOpacity`?
+Invalid DOM property `stroke-dasharray`. Did you mean `strokeDasharray`?
+ GET / 200 in 4535ms
+ GET /favicon.ico?favicon.4b805d3d.ico 500 in 218ms
+ ○ Compiling /api/me ...
+ ✓ Compiled /api/me in 500ms
+ GET /api/tools/active 500 in 709ms
+ GET /api/me 500 in 772ms
+ GET /api/tools/active 500 in 379ms
+ ○ Compiling /_not-found/page ...
+ ✓ Compiled /_not-found/page in 1396ms
+ GET /feature-requests 404 in 1788ms
+ GET /favicon.ico?favicon.4b805d3d.ico 500 in 301ms
+ ○ Compiling /api/requests ...
+ ✓ Compiled /api/requests in 688ms
+ GET /api/requests 500 in 933ms
+ GET /favicon.ico 500 in 117ms
+ ✓ Compiled in 590ms
+ ✓ Compiled /requests in 199ms
+ GET /feature-requests 404 in 989ms
+ GET /requests 200 in 1792ms
+ GET / 200 in 1794ms
+ GET /feature-requests 404 in 2076ms
+ GET /requests 200 in 1530ms
+ GET /api/requests 200 in 3078ms
+ GET /requests 200 in 1083ms
+ GET /favicon.ico?favicon.4b805d3d.ico 200 in 935ms
+ GET /favicon.ico 200 in 825ms
+ GET /api/requests 200 in 849ms
+ GET /api/me 200 in 1288ms
+ GET /favicon.ico?favicon.4b805d3d.ico 200 in 425ms
+ GET /api/requests 200 in 414ms
+ GET /api/me 200 in 417ms
+ ✓ Compiled /api/requests/mine in 142ms
+ GET /favicon.ico?favicon.4b805d3d.ico 200 in 290ms
+ GET /api/requests 200 in 371ms
+ GET /api/me 200 in 376ms
+ GET /favicon.ico?favicon.4b805d3d.ico 200 in 269ms
+ GET /api/requests/mine 200 in 527ms
+ GET /api/me 200 in 474ms
+ GET /api/me 200 in 562ms
+ GET /api/requests/mine 200 in 580ms
+ GET /api/me 200 in 316ms
+ GET /api/me 200 in 338ms
+ GET /api/me 200 in 373ms
+ GET /api/me 200 in 309ms
+ GET /api/me 200 in 379ms
+ GET /api/me 200 in 432ms
+ GET /api/me 200 in 404ms
+ GET /api/me 200 in 388ms
+ GET /api/requests/mine 200 in 551ms
+ GET /api/me 200 in 346ms
+ GET /api/me 200 in 346ms
+ GET /api/me 200 in 340ms
+ GET /api/me 200 in 376ms
+ GET /api/me 200 in 340ms
+ GET /api/me 200 in 317ms
+ GET /api/me 200 in 305ms
+ GET /api/me 200 in 371ms
+ GET /api/me 200 in 333ms
+ GET /api/me 200 in 305ms
+ GET /api/me 200 in 413ms
+ ✓ Compiled in 422ms
+ GET /api/me 200 in 353ms
+ GET /api/me 200 in 316ms
+ GET /api/me 200 in 443ms
+ GET /api/me 200 in 585ms
+ GET /api/me 200 in 694ms
+ GET /api/me 200 in 508ms
+ GET /api/requests/mine 200 in 473ms
+ GET /api/me 200 in 325ms
+ GET /api/me 200 in 419ms
+ GET /api/me 200 in 388ms
+ GET /api/requests/mine 200 in 524ms
+ GET /api/me 200 in 316ms
+ GET /api/me 200 in 362ms
+ GET /api/me 200 in 303ms
+ GET /api/me 200 in 315ms
+ GET /api/me 200 in 390ms
+ GET /api/me 200 in 306ms
+ GET /api/me 200 in 307ms
+ GET /api/me 200 in 394ms
+ GET /api/me 200 in 522ms
+ GET /api/me 200 in 364ms
+ GET /api/requests/mine 200 in 415ms
+ GET /api/me 200 in 692ms
+ GET /api/requests/mine 200 in 581ms
+ GET /api/me 200 in 562ms
+ GET /api/requests/mine 200 in 555ms
+ GET /api/me 200 in 513ms
+ GET /api/me 200 in 477ms
+ GET /api/me 200 in 325ms
+ GET /api/me 200 in 382ms
+ GET /api/requests/mine 200 in 399ms
+ GET /api/me 200 in 471ms
+ GET /api/me 200 in 400ms
+ GET /api/me 200 in 336ms
+ GET /api/me 200 in 316ms
+ GET /api/me 200 in 390ms
+ ✓ Compiled in 659ms
+ GET /api/me 200 in 427ms
+ GET /api/me 200 in 339ms
+ GET /api/me 200 in 366ms

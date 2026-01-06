@@ -1,299 +1,177 @@
-"use client";
-
-import { useMemo, useState } from "react";
-import { MessageSquare, Flag, Trash2, LinkIcon, EllipsisIcon } from "lucide-react";
+import React, { useState } from "react";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useFeatureComments } from "@/hooks/useFeatureComments";
-import type { FeatureRequest } from "@/types/feature-requests";
+import { cn } from "@/lib/utils";
+import Chat from "./Chat";
+import { EllipsisVertical } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuItem } from "@/components/ui/dropdown-menu";
+import { useRequests } from "@/context/RequestContext";
 import { useUser } from "@/hooks/useUser";
-import { cn } from "@/lib/cn";
+import { toast } from "sonner";
 
-interface Props {
-  request: FeatureRequest;
-  onDelete?: (id: string) => Promise<void>;
-  onReport?: (id: string) => Promise<void>;
-  onVote?: (id: string) => Promise<void>;
+interface CardProps {
+  id: string; // added id
+  title: string;
+  description: string;
+  details: string;
+  status: string;
+  votes: number;
+  votedBy: string[]; // added votedBy
 }
 
-const statusColor: Record<string, string> = {
-  Planned: "bg-[#E8EFFC] text-[#265BD1] border-[#E8EFFC]",
-  "In Progress": "bg-[#E5F5EC] text-[#01A04E] border-[#E5F5EC]",
-  Released: "bg-[#F0E8FF] text-[#7531F9] border-[#F0E8FF]",
-  "Under Review": "bg-[#F3F3F3] text-[#565A5E] border-[#F3F3F3]",
-  default: "bg-[#F3F3F3] text-[#565A5E] border-[#F3F3F3]",
-};
-
-function displayStatus(status?: string) {
-  if (!status) return "Under Review";
-  const normalized = status.toLowerCase();
-  if (normalized === "under_review" || normalized === "under review") return "Under Review";
-  if (normalized === "planned") return "Planned";
-  if (normalized === "in_progress" || normalized === "in progress") return "In Progress";
-  if (normalized === "released") return "Released";
-  return status;
-}
-
-function formatDate(value?: string) {
-  if (!value) return "";
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleString();
-}
-
-export default function RequestCard({ request, onDelete, onReport, onVote }: Props) {
-  const { comments, addComment, removeComment, flagComment } = useFeatureComments(
-    request._id
-  );
+const RequestCard: React.FC<CardProps> = ({ title, description, details, status, votes, id, votedBy }) => {
+  const { voteRequest } = useRequests();
   const { user } = useUser();
-  const [open, setOpen] = useState(false);
-  const [commentText, setCommentText] = useState("");
 
-  const userId = useMemo(() => {
-    // user.id comes from toPublic; fallback to _id
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const raw: any = user as any;
-    return raw?.id || raw?._id?.toString?.();
-  }, [user]);
-
-  const isOwner = Boolean(userId && request.authorId === userId);
-  const statusLabel = displayStatus(request.status);
-  const voteDisplay = (request.votes ?? 0).toString().padStart(2, "0");
-
-  const handleAddComment = async () => {
-    if (!commentText.trim()) return;
-    const created = await addComment({ text: commentText.trim() });
-    if (created) setCommentText("");
-  };
-
-  const handleDelete = async () => {
-    if (!onDelete) return;
-    await onDelete(request._id);
-  };
-
-  const handleReport = async () => {
-    if (!onReport) return;
-    await onReport(request._id);
-  };
+  // Derived state is safer than local state for sync
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const isUpvoted = user ? votedBy?.includes((user as any).id || (user as any)._id) : false;
+  const count = votes;
 
   const handleVote = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onVote) await onVote(request._id);
+    e.stopPropagation(); // Prevent opening sheet
+    if (!user) {
+      toast.error("Please login to vote");
+      return;
+    }
+    await voteRequest(id);
   };
 
-  const hasVoted = userId ? request.votedBy?.includes(userId) : false;
+  const formattedCount: string = String(count).padStart(2, "0");
 
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <div className="flex h-[109px] w-full max-w-[791px] border-b border-gray-200 items-center">
-        <div
-          onClick={handleVote}
-          className={cn(
-            "w-[54px] h-[54px] cursor-pointer border rounded-md flex flex-col items-center justify-center group transition-colors duration-200",
-            hasVoted
-              ? "border-[#265BD1] bg-[#E8EFFC]"
-              : "border-[#565A5E] bg-white"
-          )}
-          title={userId ? "Click to vote" : "Login to vote"}
-        >
-          <i className="fa-solid fa-caret-up text-xl text-[#265BD1] group-hover:-translate-y-1 transition-transform"></i>
-          <p className="text-black">{voteDisplay}</p>
-        </div>
+    <div className="flex h-[109px] w-full max-w-[791px] border-b border-gray-200 items-center">
+      {/* Upvote box */}
+      <div
+        onClick={handleVote}
+        className={`w-[54px] h-[54px] cursor-pointer border rounded-md flex flex-col items-center justify-center group
+        ${isUpvoted ? "border-[#265BD1] bg-[#E8EFFC]" : "border-[#565A5E] bg-white"} `}
+      >
+        <i className={cn("fa-solid fa-caret-up text-xl group-hover:-translate-y-1", isUpvoted ? "text-[#265BD1]" : "text-[#565A5E]")}></i>
+        <p className="text-black">{formattedCount}</p>
+      </div>
 
-        {/* Content section wrapped in SheetTrigger */}
+      {/* Content section wrapped in SheetTrigger */}
+      <Sheet>
         <SheetTrigger asChild>
           <div className="px-4 cursor-pointer">
-            <h1 className="font-semibold text-sm text-black">{request.title}</h1>
-            <p className="text-xs text-[#565A5E]">{request.description}</p>
+            {/* Title  */}
+            <h1 className="font-semibold text-sm text-black">{title}</h1>
+            {/* Description  */}
+            <p className="text-xs text-[#565A5E]">{description}</p>
 
             <div className="flex items-center gap-2 mt-3">
-              {isOwner && (
-                <button className="text-xs text-[#565A5E] rounded-md bg-[#F3F3F3] px-2 py-1 items-center flex gap-1">
-                  <i className="fa-solid fa-square text-[6px]"></i>
-                  Your request
-                </button>
-              )}
-              <button className="text-xs text-[#265BD1] rounded-md bg-[#E8EFFC] px-2 py-1 items-center flex gap-1">
-                <i className="fa-solid fa-square text-[6px]"></i>
-                {statusLabel}
+              <button className={cn(
+                "text-[10px] rounded-sm px-2 py-0.5 items-center flex gap-1 font-medium",
+                status === "Planned" ? "text-blue-600 bg-blue-50" :
+                  status === "In Progress" ? "text-green-600 bg-green-50" :
+                    status === "Released" ? "text-purple-600 bg-purple-50" :
+                      (status === "Under Review" || status === "under_review") ? "text-[#FF4D4D] bg-[#FFE5E5]" : // Red/Salmon
+                        "text-gray-600 bg-gray-100"
+              )}>
+                <i className={cn("fa-solid fa-square text-[6px]",
+                  status === "Planned" ? "text-blue-600" :
+                    status === "In Progress" ? "text-green-600" :
+                      status === "Released" ? "text-purple-600" :
+                        (status === "Under Review" || status === "under_review") ? "text-[#FF4D4D]" : "text-gray-500"
+                )}></i>
+                {status === "under_review" ? "Under Review" : status}
               </button>
             </div>
           </div>
         </SheetTrigger>
-      </div>
 
-      <SheetContent className="w-[640px] sm:max-w-[750px] rounded-l-lg">
-        <SheetHeader>
-          <SheetTitle className="mt-20 ml-5 text-sm text-[#565A5E]">
-            {formatDate(request.createdAt)}
-          </SheetTitle>
-          <SheetDescription asChild className="ml-5">
-            <div className="flex flex-col gap-4 my-1">
-              <div className="flex h-[109px] w-full items-center">
-                {/* Vote box */}
-                <div
-                  onClick={handleVote}
-                  className={cn(
-                    "w-[54px] h-[54px] border rounded-md flex flex-col items-center justify-center group cursor-pointer",
-                    hasVoted
-                      ? "border-[#265BD1] bg-[#E8EFFC]"
-                      : "bg-[#F3F3F3] border-[#565A5E]"
-                  )}
-                >
-                  <i className={cn(
-                    "fa-solid fa-caret-up text-xl transform transition-transform duration-200 group-hover:-translate-y-1",
-                    hasVoted ? "text-[#265BD1]" : "text-[#565A5E]"
-                  )}></i>
-                  <p className="text-black">{voteDisplay}</p>
-                </div>
+        <SheetContent className="w-[640px] sm:max-w-[750px] rounded-l-lg bg-white overflow-y-auto">
+          <SheetHeader className="">
+            <SheetTitle className="mt-20 ml-5 text-sm text-[#565A5E]">
+              January 26, 2024 at 02:45 AM
+              {/* {new Date().toLocaleString()}  */}
+            </SheetTitle>
+            <SheetDescription asChild className="ml-5">
+              <div className="flex flex-col gap-4 my-1">
+                <div className="flex h-[109px] w-full items-center">
 
-                {/* Content */}
-                <div className="px-4 flex justify-between w-full">
-                  <div>
-                    <h1 className="font-semibold text-sm text-black">{request.title}</h1>
-                    <p className="text-xs text-[#565A5E]">{request.description}</p>
-                    <div className="flex items-center gap-2 mt-3">
-                      <button className={cn(
-                        "text-xs rounded-md px-2 py-1 items-center flex gap-1",
-                        statusLabel === "Planned" ? "text-[#265BD1] bg-[#E8EFFC]" :
-                          statusLabel === "In Progress" ? "text-[#01A04E] bg-[#E5F5EC]" :
-                            statusLabel === "Released" ? "text-[#7531F9] bg-[#F0E8FF]" :
-                              "text-[#565A5E] bg-[#F3F3F3]"
-                      )}>
-                        <i className="fa-solid fa-square text-[6px]"></i>
-                        {statusLabel}
-                      </button>
+                  <div
+                    onClick={handleVote}
+                    className={`w-[54px] h-[54px] bg-[#F3F3F3] border border-[#565A5E] rounded-md flex flex-col items-center justify-center group cursor-pointer
+                    ${isUpvoted ? "border-[#265BD1] bg-[#E8EFFC]" : "border-[#565A5E] bg-white text-[#565A5E]"}
+                    `}
+                  >
+                    <i className={cn("fa-solid fa-caret-up text-xl transform transition-transform duration-200 group-hover:-translate-y-1", isUpvoted ? "text-[#265BD1]" : "text-[#565A5E]")}></i>
+                    <p className="text-black">{formattedCount}</p>
+                  </div>
+
+
+                  <div className="px-4 flex justify-between w-full">
+                    <div>
+                      <h1 className="font-semibold text-sm text-black">
+                        {title}
+                      </h1>
+                      <p className="text-xs text-[#565A5E]">
+                        {description}
+                      </p>
+
+                      <div className="flex items-center gap-2 mt-3">
+                        <button className={cn(
+                          "text-[10px] rounded-sm px-2 py-0.5 items-center flex gap-1 font-medium",
+                          status === "Planned" ? "text-blue-600 bg-blue-50" :
+                            status === "In Progress" ? "text-green-600 bg-green-50" :
+                              status === "Released" ? "text-purple-600 bg-purple-50" :
+                                (status === "Under Review" || status === "under_review") ? "text-[#FF4D4D] bg-[#FFE5E5]" :
+                                  "text-gray-600 bg-gray-100"
+                        )}>
+                          <i className={cn("fa-solid fa-square text-[6px]",
+                            status === "Planned" ? "text-blue-600" :
+                              status === "In Progress" ? "text-green-600" :
+                                status === "Released" ? "text-purple-600" :
+                                  (status === "Under Review" || status === "under_review") ? "text-[#FF4D4D]" : "text-gray-500"
+                          )}></i>
+                          {status === "under_review" ? "Under Review" : status}
+                        </button>
+                      </div>
                     </div>
                   </div>
+
+                  <div className="mr-2 cursor-pointer">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="border px-1 py-1 rounded-sm flex items-center hover:text-[#265BD1] hover:bg-[#E8EFFC] gap-2 focus:outline-none focus:ring-0">
+                          <EllipsisVertical size={16} />
+                        </button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent className={" cursor-pointer border border-gray-200 shadow-md rounded-md mt-2 mr-5"}>
+                        <DropdownMenuItem className="px-3 pr-3 py-1 hover:bg-[#E8EFFC] rounded-md " inset={false}>
+                          Copy Link
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+
                 </div>
 
-                {/* Ellipsis dropdown */}
-                <div className="mr-2 cursor-pointer">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <button className="border px-1 py-1 rounded-sm flex items-center hover:text-[#265BD1] hover:bg-[#E8EFFC] gap-2 focus:outline-none focus:ring-0">
-                        <EllipsisIcon />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="cursor-pointer border border-gray-200 shadow-md rounded-md mt-2 mr-5">
-                      <DropdownMenuItem
-                        className="px-3 pr-3 py-1 hover:bg-[#E8EFFC] rounded-md"
-                        inset={false}
-                        onClick={() => navigator.clipboard.writeText(window.location.href + "?request=" + request._id)}
-                      >
-                        Copy Link
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
+                <p className="mb-2 border-b pb-3 border-gray-200">
+                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                  Dolorum eos obcaecati culpa id dignissimos dolor recusandae
+                  ex, ducimus.
+                </p>
 
-              {/* Description separator */}
-              <p className="mb-2 border-b pb-3 border-gray-200 text-sm text-[#565A5E]">
-                {request.description || "No description provided."}
-              </p>
-
-              {/* Comments section */}
-              <div className="flex flex-1 items-center justify-center flex-col">
-
-                {request.attachments?.length ? (
-                  <div className="border-t border-b border-[#CFD0D1] py-3 text-[14px]">
-                    <p className="font-medium text-[#565A5E] mb-2">Attachments</p>
-                    <ul className="space-y-2">
-                      {request.attachments.map((att) => (
-                        <li key={att.filename} className="flex items-center gap-2 text-[#265BD1]">
-                          <LinkIcon size={14} />
-                          <a
-                            className="underline"
-                            href={att.url}
-                            target="_blank"
-                            rel="noreferrer"
-                          >
-                            {att.originalName || att.filename}
-                          </a>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : null}
-
-                <div className="flex flex-col gap-4">
-                  <div className="flex items-center gap-2 text-[14px] font-medium text-[#0D1218]">
-                    <MessageSquare size={16} /> Comments ({comments.length})
-                  </div>
-                  <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
-                    {comments.length === 0 && (
-                      <p className="text-[14px] text-[#565A5E]">No comments yet.</p>
-                    )}
-                    {comments.map((comment) => {
-                      const canDelete = userId && comment.authorId === userId;
-                      return (
-                        <div key={comment._id} className="border border-[#CFD0D1] rounded-[8px] p-3 bg-[#F9FAFB]">
-                          <div className="flex justify-between text-[12px] text-[#565A5E] mb-1">
-                            <span className="font-medium text-[#0D1218]">
-                              {comment.authorName || "User"}
-                            </span>
-                            <span>{formatDate(comment.createdAt)}</span>
-                          </div>
-                          <p className="text-[14px] text-[#0D1218] whitespace-pre-line">{comment.text}</p>
-                          <div className="flex gap-3 text-[12px] text-[#565A5E] mt-2">
-                            {canDelete ? (
-                              <button
-                                onClick={() => removeComment(comment._id)}
-                                className="hover:text-[#265BD1]"
-                              >
-                                Delete
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => flagComment(comment._id)}
-                                className="hover:text-[#265BD1]"
-                              >
-                                Report
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Textarea
-                      placeholder="Write a comment..."
-                      className="text-[14px] bg-[#F3F3F3] rounded-[6px] border-none"
-                      rows={3}
-                      value={commentText}
-                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setCommentText(e.target.value)}
-                    />
-                    <Button
-                      onClick={handleAddComment}
-                      className="bg-[#265BD1] hover:bg-[#1F4AA9] text-white rounded-[8px] h-[36px] text-[14px] font-medium"
-                      disabled={!commentText.trim()}
-                    >
-                      Add comment
-                    </Button>
-                  </div>
+                <div className="flex flex-1 items-center justify-center flex-col">
+                  <Chat requestId={id} />
                 </div>
               </div>
-            </div>
-          </SheetDescription>
-        </SheetHeader>
-      </SheetContent>
-    </Sheet>
+            </SheetDescription>
+          </SheetHeader>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
-}
+};
+
+export default RequestCard;

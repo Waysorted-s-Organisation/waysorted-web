@@ -1,0 +1,37 @@
+
+> waysorted@0.1.0 dev
+> next dev --turbopack
+
+   ▲ Next.js 15.5.7 (Turbopack)
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.29.103:3000
+   - Environments: .env
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Compiled middleware in 85ms
+ ✓ Ready in 1132ms
+ ○ Compiling /requests ...
+ ✓ Compiled /requests in 3.9s
+ GET /requests 200 in 4998ms
+ ○ Compiling /api/me ...
+ ✓ Compiled /api/me in 1575ms
+ GET /favicon.ico?favicon.4b805d3d.ico 200 in 2433ms
+ GET /api/requests 200 in 3389ms
+ GET /api/me 200 in 3556ms
+ GET /api/me 200 in 450ms
+ ✓ Compiled /api/requests/mine in 284ms
+ GET /api/me 200 in 563ms
+ GET /api/requests/mine 200 in 904ms
+ GET /api/me 200 in 765ms
+ GET /api/me 200 in 552ms
+ GET /api/me 200 in 499ms
+ GET /api/me 200 in 496ms
+ GET /api/me 200 in 532ms
+ GET /api/me 200 in 362ms
+ GET /api/me 200 in 363ms
+ GET /api/requests?q=t 200 in 494ms
+ GET /api/requests?q=te 200 in 496ms
+ GET /api/requests?q=test 200 in 468ms
+ GET /api/requests?q=tes 200 in 1166ms

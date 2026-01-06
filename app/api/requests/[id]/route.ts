@@ -50,3 +50,32 @@ export async function DELETE(_req: Request, context: any) {
     return NextResponse.json({ message: "Failed to delete" }, { status: 500 });
   }
 }
+//eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function PUT(req: Request, context: any) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+    const params = await context?.params;
+    const id = params?.id;
+    const body = await req.json();
+
+    await dbConnect();
+    const doc = await FeatureRequest.findById(id);
+    if (!doc) return NextResponse.json({ message: "Not found" }, { status: 404 });
+
+    if (doc.authorId !== user.id) {
+      return NextResponse.json({ message: "Not allowed" }, { status: 403 });
+    }
+
+    if (body.title) doc.title = body.title;
+    if (body.description) doc.description = body.description;
+
+    await doc.save();
+
+    return NextResponse.json({ data: doc });
+  } catch (err) {
+    console.error("PUT /api/requests/:id error", err);
+    return NextResponse.json({ message: "Failed to update" }, { status: 500 });
+  }
+}

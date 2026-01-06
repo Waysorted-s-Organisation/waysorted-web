@@ -21,11 +21,14 @@ interface UseFeatureRequestsResult {
   myRequests: FeatureRequest[];
   reportedRequests: FeatureRequest[];
   loading: boolean;
+  error: string | null;
   refreshAll: () => Promise<void>;
   searchRequests: (term: string) => Promise<void>;
   addRequest: (input: CreateRequestInput) => Promise<FeatureRequest | null>;
   removeRequest: (id: string) => Promise<void>;
+  deleteRequest: (id: string) => Promise<void>;
   report: (id: string, reason?: string) => Promise<void>;
+  reportRequest: (id: string, reason?: string) => Promise<void>;
   toggleVote: (id: string) => Promise<void>;
   sort: "recent" | "votes";
   setSort: (val: "recent" | "votes") => void;
@@ -36,6 +39,7 @@ export function useFeatureRequestsData(): UseFeatureRequestsResult {
   const [myRequests, setMyRequests] = useState<FeatureRequest[]>([]);
   const [reportedRequests, setReportedRequests] = useState<FeatureRequest[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   const [sort, setSort] = useState<"recent" | "votes">("recent");
 
@@ -132,13 +136,16 @@ export function useFeatureRequestsData(): UseFeatureRequestsResult {
     myRequests,
     reportedRequests,
     loading,
+    error,
     sort,
     setSort,
     refreshAll: load,
     searchRequests,
     addRequest,
     removeRequest,
+    deleteRequest: removeRequest,
     report,
+    reportRequest: report,
     toggleVote,
   };
 }

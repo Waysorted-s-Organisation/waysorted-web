@@ -1,66 +1,51 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
-import FeatureRequest, { type IFeatureRequest } from "@/models/featureRequest";
-import Notification from "@/models/notification";
+import FeatureRequest from "@/models/featureRequest";
 import { getCurrentUser } from "@/lib/user";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
-//eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function POST(_req: Request, context: any) {
+export async function POST(
+    req: NextRequest,
+    { params }: { params: { id: string } }
+) {
     try {
+        const { id } = await params;
         const user = await getCurrentUser();
+
         if (!user) {
-            return NextResponse.json(
-                { message: "Login required to vote" },
-                { status: 401 }
-            );
+            return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
         }
 
-        const params = await context?.params;
-        const id = params?.id;
-
         await dbConnect();
-        const doc = (await FeatureRequest.findById(id)) as IFeatureRequest | null;
 
-        if (!doc || doc.isDeleted) {
+        const request = await FeatureRequest.findById(id);
+        if (!request) {
             return NextResponse.json({ message: "Request not found" }, { status: 404 });
         }
 
-        const userId = user.id;
-        // votedBy might be undefined if old doc, ensure array
-        if (!doc.votedBy) doc.votedBy = [];
+        const userIdStr = user.id.toString();
+        const hasUpvoted = request.votedBy.includes(userIdStr);
 
-        const alreadyVoted = doc.votedBy.includes(userId);
-
-        if (alreadyVoted) {
+        if (hasUpvoted) {
             // Remove vote
-            doc.votedBy = doc.votedBy.filter((vid) => vid !== userId);
-            doc.votes = Math.max(0, doc.votes - 1);
+            request.votedBy = request.votedBy.filter((uid: string) => uid !== userIdStr);
+            request.votes = Math.max(0, request.votes - 1);
         } else {
             // Add vote
-            doc.votedBy.push(userId);
-            doc.votes += 1;
-
-            // Notify author if not self-vote
-            if (doc.authorId && doc.authorId !== userId) {
-                await Notification.create({
-                    recipientId: doc.authorId,
-                    type: "vote",
-                    message: `${user.name || "Someone"} voted for your request: "${doc.title
-                        }"`,
-                    featureId: doc._id,
-                    senderId: userId,
-                    senderName: user.name,
-                });
-            }
+            request.votedBy.push(userIdStr);
+            request.votes += 1;
         }
 
-        await doc.save();
-        return NextResponse.json({ data: doc });
-    } catch (err) {
-        console.error("POST /api/requests/:id/vote error", err);
-        return NextResponse.json({ message: "Failed to vote" }, { status: 500 });
+        await request.save();
+
+        return NextResponse.json({
+            votes: request.votes,
+            hasUpvoted: !hasUpvoted,
+        });
+    } catch (error) {
+        console.error("Vote error:", error);
+        return NextResponse.json(
+            { message: "Internal server error" },
+            { status: 500 }
+        );
     }
 }

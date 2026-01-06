@@ -76,7 +76,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
     }
     setUploading(true);
     setProgress(0);
-    
+
     // Start progress animation
     const timer = setInterval(() => {
       setProgress((p) => {
@@ -95,11 +95,11 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
       board,
       attachments: files,
     });
-    
+
     clearInterval(timer);
     setProgress(100);
     setUploading(false);
-    
+
     if (created) {
       setSuccessOpen(true);
       setMainOpen(false);
