@@ -19,6 +19,8 @@ interface LocalRequestContextType {
     searchRequests: (query: string) => void;
     filterByBoard: (board: string | null) => void;
     activeBoard: string | null;
+    filterByStatus: (status: string | null) => void;
+    activeStatus: string | null;
     loading: boolean;
     refetch: () => void;
 }
@@ -29,15 +31,17 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
     const [requests, setRequests] = useState<LocalRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeBoard, setActiveBoard] = useState<string | null>(null);
+    const [activeStatus, setActiveStatus] = useState<string | null>(null);
 
     // Function to fetch requests from the API
-    const fetchRequests = async (query = "", board: string | null = null) => {
+    const fetchRequests = async (query = "", board: string | null = null, status: string | null = null) => {
         try {
             setLoading(true);
             let url = "/api/requests";
             const params = new URLSearchParams();
             if (query) params.set("q", query);
             if (board) params.set("board", board);
+            if (status) params.set("status", status);
             if (params.toString()) url += `?${params.toString()}`;
 
             const res = await fetch(url);
@@ -65,8 +69,8 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
     };
 
     useEffect(() => {
-        fetchRequests("", activeBoard);
-    }, [activeBoard]);
+        fetchRequests("", activeBoard, activeStatus);
+    }, [activeBoard, activeStatus]);
 
     const addRequest = (title: string, description: string): void => {
         console.warn("Global addRequest called - should be handled via MyRequestContext or API");
@@ -84,7 +88,7 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
                         // Actually, better to just refetch to get clean state or use returned specific data
                         : req
                 ));
-                fetchRequests("", activeBoard); // Simplest way to sync everything including "votedBy" array correctness
+                fetchRequests("", activeBoard, activeStatus); // Simplest way to sync everything including "votedBy" array correctness
             }
         } catch (error) {
             console.error("Failed to vote", error);
@@ -92,11 +96,15 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
     };
 
     const searchRequests = (query: string) => {
-        fetchRequests(query, activeBoard);
+        fetchRequests(query, activeBoard, activeStatus);
     };
 
     const filterByBoard = (board: string | null) => {
         setActiveBoard(board);
+    };
+
+    const filterByStatus = (status: string | null) => {
+        setActiveStatus(status);
     };
 
     const contextValue = useMemo(() => ({
@@ -106,9 +114,11 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
         searchRequests,
         filterByBoard,
         activeBoard,
+        filterByStatus,
+        activeStatus,
         loading,
-        refetch: () => fetchRequests("", activeBoard)
-    }), [requests, loading, activeBoard]);
+        refetch: () => fetchRequests("", activeBoard, activeStatus)
+    }), [requests, loading, activeBoard, activeStatus]);
 
     return (
         <RequestContext.Provider value={contextValue}>

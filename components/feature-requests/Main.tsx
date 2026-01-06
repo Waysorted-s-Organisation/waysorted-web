@@ -15,7 +15,7 @@ import MyRequestCard from './MyRequestCard';
 type SortOption = "Most votes" | "Recently added" | "Random";
 
 const Main: React.FC = () => {
-    const { requests } = useRequests();
+    const { requests, activeStatus, filterByStatus } = useRequests();
     const { myRequests } = useMyRequest();
 
     const [selected, setSelected] = useState<SortOption>("Most votes");
@@ -64,26 +64,26 @@ const Main: React.FC = () => {
                 </div>
 
                 <div className='flex gap-1'>
-                    <button className='text-sm text-[#565A5E] rounded-md hover:bg-[#F3F3F3] border  px-2 py-1 items-center flex gap-1'>
-                        <i className="fa-solid fa-square text-[6px] text-[#265BD1]"></i>
-                        {' '}
-                        Planned
-                    </button>
-                    <button className='text-sm text-[#565A5E] rounded-md hover:bg-[#F3F3F3] border  px-2 py-1 items-center flex gap-1'>
-                        <i className="fa-solid fa-square text-[6px] text-[#01A04E]"></i>
-                        {' '}
-                        In Progress
-                    </button>
-                    <button className='text-sm text-[#565A5E] rounded-md hover:bg-[#F3F3F3] border  px-2 py-1 items-center flex gap-1'>
-                        <i className="fa-solid fa-square text-[6px] text-[#7531F9]"></i>
-                        {' '}
-                        Released
-                    </button>
-                    <button className='text-sm text-[#565A5E] rounded-md hover:bg-[#F3F3F3] border  px-2 py-1 items-center flex gap-1'>
-                        <i className="fa-solid fa-square text-[6px] text-[#565A5E]"></i>
-                        {' '}
-                        Not done
-                    </button>
+                    {[
+                        { label: 'Planned', color: '#265BD1' },
+                        { label: 'In Progress', color: '#01A04E' },
+                        { label: 'Released', color: '#7531F9' },
+                        { label: 'Not done', color: '#565A5E' }
+                    ].map((status) => (
+                        <button
+                            key={status.label}
+                            onClick={() => filterByStatus(activeStatus === status.label ? null : status.label)}
+                            className={`text-sm rounded-md border px-2 py-1 items-center flex gap-1 transition-colors
+                                ${activeStatus === status.label
+                                    ? 'bg-[#E8EFFC] text-[#265BD1] border-[#265BD1]'
+                                    : 'text-[#565A5E] hover:bg-[#F3F3F3] border-gray-200'
+                                }`}
+                        >
+                            <i className="fa-solid fa-square text-[6px]" style={{ color: status.color }}></i>
+                            {' '}
+                            {status.label}
+                        </button>
+                    ))}
                 </div>
             </div>
 

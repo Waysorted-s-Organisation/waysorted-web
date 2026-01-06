@@ -11,9 +11,11 @@ function buildQuery(searchParams: URLSearchParams) {
   const query: Record<string, unknown> = { isDeleted: false };
   const type = searchParams.get("type");
   const board = searchParams.get("board");
+  const status = searchParams.get("status");
   const search = (searchParams.get("q") || "").trim();
   if (type) query.type = type;
   if (board) query.board = board;
+  if (status) query.status = status;
   if (search) {
     query.$or = [
       { title: { $regex: search, $options: "i" } },

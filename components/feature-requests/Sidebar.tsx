@@ -10,8 +10,7 @@ interface SidebarProps {
 }
 
 const boards = [
-  { name: "Figma Plugin: Palletable", value: "Figma Plugin" },
-  { name: "Waystudio", value: "Waystudio" },
+  { name: "Figma Plugin", value: "Figma Plugin" },
   { name: "Waychallenge", value: "Waychallenge" },
 ];
 
@@ -53,8 +52,8 @@ const Sidebar = ({ hideFeatures = false }: SidebarProps) => {
                   key={board.value}
                   onClick={() => handleBoardClick(board.value)}
                   className={`text-xs py-2 px-2 rounded-sm cursor-pointer transition-colors ${activeBoard === board.value
-                      ? "bg-[#E8EFFC] text-[#265BD1] font-medium"
-                      : "text-[#565A5E] hover:bg-[#F3F3F3]"
+                    ? "bg-[#E8EFFC] text-[#265BD1] font-medium"
+                    : "text-[#565A5E] hover:bg-[#F3F3F3]"
                     }`}
                 >
                   {board.name}
