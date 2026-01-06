@@ -897,9 +897,9 @@ html, body {
 }
 
 [data-state="open"][data-slot="sheet-content"] {
-  animation: sheet-slide-in-from-right 0.5s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  animation: sheet-slide-in-from-right 0.5s ease-in-out forwards;
 }
 
 [data-state="closed"][data-slot="sheet-content"] {
-  animation: sheet-slide-out-to-right 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+  animation: sheet-slide-out-to-right 0.3s ease-in-out forwards;
 }
