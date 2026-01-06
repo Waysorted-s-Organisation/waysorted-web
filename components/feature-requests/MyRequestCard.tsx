@@ -286,8 +286,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
                                         <div className="flex flex-1 mt-40 items-center justify-center flex-col">
                                             <h1 className="text-md text-black">No comments Yet!</h1>
                                             <p className="text-black text-xs">
-                                                Lorem ipsum, dolor sit amet consectetur adipisicing elit.
-                                                Nobis, alias?
+                                                Be the first to comment on this request.
                                             </p>
                                         </div>
                                     </div>

@@ -157,9 +157,7 @@ const RequestCard: React.FC<CardProps> = ({ title, description, details, status,
                 </div>
 
                 <p className="mb-2 border-b pb-3 border-gray-200">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Dolorum eos obcaecati culpa id dignissimos dolor recusandae
-                  ex, ducimus.
+                  {description}
                 </p>
 
                 <div className="flex flex-1 items-center justify-center flex-col">
