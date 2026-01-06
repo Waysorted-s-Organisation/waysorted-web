@@ -111,11 +111,13 @@ const Main: React.FC = () => {
                     {requests.map((req) => (
                         <RequestCard
                             key={req.id}
+                            id={req.id}
                             title={req.title}
                             description={req.description}
                             details={req.details}
                             status={req.status}
                             votes={req.votes}
+                            votedBy={req.votedBy}
                         />
                     ))}
                 </div>

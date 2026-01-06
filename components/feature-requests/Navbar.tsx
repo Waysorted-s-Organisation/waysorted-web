@@ -356,7 +356,7 @@ const Navbar = () => {
               <DialogTitle className="text-lg font-bold">Successfully Request Submitted!</DialogTitle>
             </DialogHeader>
             <p className="text-sm text-gray-500 mt-2">
-              Your feature request has been submitted successfully to the "Figma Plugin" board.
+              Your feature request has been submitted successfully to the &quot;Figma Plugin&quot; board.
             </p>
             <Button
               className="bg-[#265BD1] text-white mt-6 w-full"

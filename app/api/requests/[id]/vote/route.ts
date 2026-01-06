@@ -3,12 +3,11 @@ import dbConnect from "@/lib/db";
 import FeatureRequest from "@/models/featureRequest";
 import { getCurrentUser } from "@/lib/user";
 
-export async function POST(
-    req: NextRequest,
-    { params }: { params: { id: string } }
-) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export async function POST(req: NextRequest, context: any) {
     try {
-        const { id } = await params;
+        const params = await context?.params;
+        const id = params?.id;
         const user = await getCurrentUser();
 
         if (!user) {
