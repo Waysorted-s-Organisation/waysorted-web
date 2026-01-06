@@ -77,6 +77,15 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
         await voteMyRequest(request.id);
     };
 
+    const handleCopyLink = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const link = `${window.location.origin}/requests?request=${request.id}`;
+        navigator.clipboard.writeText(link);
+        toast.success("Link copied to clipboard", {
+            duration: 2000,
+        });
+    };
+
     const formattedCount = count.toString().padStart(2, "0")
 
     return (
@@ -232,7 +241,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
                                                                 </AlertDialogContent>
                                                             </AlertDialog>
 
-                                                            <DropdownMenuItem className="px-3 py-1 hover:bg-[#E8EFFC] rounded-md">
+                                                            <DropdownMenuItem className="px-3 py-1 hover:bg-[#E8EFFC] rounded-md" onClick={handleCopyLink}>
                                                                 Copy link
                                                             </DropdownMenuItem>
 

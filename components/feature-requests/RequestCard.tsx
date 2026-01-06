@@ -43,6 +43,15 @@ const RequestCard: React.FC<CardProps> = ({ title, description, details, status,
     await voteRequest(id);
   };
 
+  const handleCopyLink = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const link = `${window.location.origin}/requests?request=${id}`;
+    navigator.clipboard.writeText(link);
+    toast.success("Link copied to clipboard", {
+      duration: 2000,
+    });
+  };
+
   const formattedCount: string = String(count).padStart(2, "0");
 
   return (
@@ -147,7 +156,7 @@ const RequestCard: React.FC<CardProps> = ({ title, description, details, status,
                       </DropdownMenuTrigger>
 
                       <DropdownMenuContent className={" cursor-pointer border border-gray-200 shadow-md rounded-md mt-2 mr-5"}>
-                        <DropdownMenuItem className="px-3 pr-3 py-1 hover:bg-[#E8EFFC] rounded-md " inset={false}>
+                        <DropdownMenuItem className="px-3 pr-3 py-1 hover:bg-[#E8EFFC] rounded-md " inset={false} onClick={handleCopyLink}>
                           Copy Link
                         </DropdownMenuItem>
                       </DropdownMenuContent>

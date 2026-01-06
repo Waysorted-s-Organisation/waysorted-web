@@ -256,7 +256,7 @@ const Navbar = () => {
   return (
     <div className="bg-white z-50 h-[68px] w-screen border-b border-gray-200 flex justify-between items-center px-4 md:px-5 sticky top-0">
       <Link href="/" className="block" aria-label="Waysorted Home">
-        <div className="relative w-24 h-8 sm:w-28 sm:h-9 md:w-32 md:h-10">
+        <div className="relative w-24 h-8 sm:w-28 sm:h-9 md:w-32 md:h-10 lg:w-36 lg:h-11 translate-y-1">
           <Image
             src="/images/logo.svg"
             alt="WaySorted Logo"
@@ -428,7 +428,7 @@ const Navbar = () => {
           </div>
         )}
       </div>
-    </div>
+    </div >
   )
 }
 
