@@ -63,7 +63,7 @@ function SheetContent({
         className={cn(
           "bg-background fixed z-50 flex flex-col gap-4 shadow-lg",
           side === "right" &&
-          "inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm data-[state=open]:animate-slide-in-from-right data-[state=closed]:animate-slide-out-to-right",
+          "inset-y-0 right-0 h-full w-3/4 rounded-l-lg sm:max-w-sm data-[state=open]:animate-slide-in-from-right data-[state=closed]:animate-slide-out-to-right",
           side === "left" &&
           "data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm",
           side === "top" &&
