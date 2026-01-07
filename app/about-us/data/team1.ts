@@ -2,31 +2,31 @@ export const team1 = [
     {
         name: "Sushant Kumar",
         role: "Founding Engineer",
-        image: "/icons/sushant.png",
+        image: "/icons/sushant.svg",
     },
     {
         name: "Ankit Lingwal",
         role: "Founding Engineer",
-        image: "/icons/ankit.png",
+        image: "/icons/ankit.svg",
     },
     {
         name: "Ayush Singh",
         role: "UX Researcher",
-        image: "/icons/ayush.png",
+        image: "/icons/ayush.svg",
     },
     {
         name: "Sohit Punia",
         role: "Full Stack Developer",
-        image: "/icons/sohit.png",
+        image: "/icons/sohit.svg",
     },
     {
         name: "Vineet Singh Negi",
         role: "DevOps Engineer",
-        image: "/icons/vineet.png",
+        image: "/icons/vineet.svg",
     },
     {
         name: "Anshika Mishra",
         role: "Full Stack Developer",
-        image: "/icons/anshika.png",
+        image: "/icons/anshika.svg",
     },
 ]
