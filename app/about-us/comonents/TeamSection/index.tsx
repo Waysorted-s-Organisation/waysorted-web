@@ -12,6 +12,9 @@ interface TeamMemberProps {
   image: string;
 }
 
+
+const JOIN_TEAM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScNSYvYUyXrEM5YNHSliafQHiABC_Rar0sOPnNjRQQFaWf_aw/viewform";
+
 const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image }) => {
   return (
     <div className="bg-white rounded-xl text-center">
@@ -48,6 +51,7 @@ const JoinUsMobile = () => (
     <GlowStarButton
       className="bg-secondary-db-100 text-white px-6 py-3 rounded-xl font-semibold text-base flex items-center justify-center w-full"
       style={{ minHeight: "48px" }}
+      onClick={() => window.open(JOIN_TEAM_URL, "_blank")}
     >
       Join Our Team
       <Image
@@ -77,6 +81,7 @@ const JoinUsDesktop = () => (
     </div>
     <GlowStarButton
       className="bg-secondary-db-100 text-white px-4 py-2 font-semibold text-base rounded-xl cursor-pointer"
+      onClick={() => window.open(JOIN_TEAM_URL, "_blank")}
     >
       Join Our Team
       <Image
