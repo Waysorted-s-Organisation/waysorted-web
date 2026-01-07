@@ -275,7 +275,7 @@ html, body {
 
 .tertiary-orange-500-bg-dots {
   background-color: rgba(249, 119, 49, 0.1);
-  background-image: radial-gradient(#43474b 0.25px, transparent 1px);
+  background-image: radial-gradient(#43474b80 0.25px, transparent 1px);
   background-size: 25px 25px;
 }
 
