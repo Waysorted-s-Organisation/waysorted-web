@@ -7,7 +7,12 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const CONTENT_ITEMS = [
+
+type ContentItem =
+  | { type: "text"; value: string }
+  | { type: "icon"; src: string; alt: string; width: number; height: number; className?: string };
+
+const CONTENT_ITEMS: ContentItem[] = [
   { type: "text", value: "Waysorted" },
   { type: "text", value: "is" },
   { type: "text", value: "empowering" },
@@ -29,7 +34,6 @@ const CONTENT_ITEMS = [
   { type: "text", value: "design" },
   { type: "text", value: "productivity." },
   { type: "icon", src: "/icons/rocket.svg", alt: "Productivity", width: 32, height: 32 },
-
 ];
 
 export default function VisionSection() {
