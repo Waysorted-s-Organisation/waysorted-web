@@ -13,9 +13,8 @@ export default function SupportPage() {
   return (
     <>
       <main
-        className={`min-h-screen bg-white transition-all duration-300 select-none ${
-          showBanner ? "pt-24" : "pt-16"
-        } `}
+        className={`min-h-screen bg-white transition-all duration-300 select-none ${showBanner ? "pt-24" : "pt-16"
+          } `}
       >
         <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 
@@ -53,10 +52,10 @@ export default function SupportPage() {
                 <div className="text-left mt-6 md:mt-90">
                   <p className="text-left font-normal text-sm sm:text-base">Support Mail</p>
                   <a
-                    href="mailto:info@wayosrted.com"
+                    href="mailto:info@waysorted.com"
                     className="text-white font-normal underline text-sm sm:text-base break-words"
                   >
-                    Info@wayosrted.com
+                    Info@waysorted.com
                   </a>
                 </div>
               </div>

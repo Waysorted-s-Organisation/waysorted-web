@@ -25,13 +25,13 @@ export const metadata: Metadata = {
     "Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.",
   keywords: [
     // Brand keywords
+    "Waysorted Infotech Pvt Ltd",
+    "Waysorted Infotech",
     "Waysorted",
     "Waysorted plugin",
     "Waysorted Figma",
     "Waysorted beta",
     "Waysorted tools",
-    "Waysorted Infotech",
-    "Waysorted Infotech Pvt Ltd",
     "waysorted.com",
     // Product keywords
     "Figma plugin",
