@@ -20,6 +20,34 @@ export default function SplashGate({
 }: Props) {
   const [show, setShow] = React.useState(true);
 
+  const [ready, setReady] = React.useState(false);
+  const [loaded, setLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    // 1. Min Duration Timer
+    const t = setTimeout(() => {
+      setReady(true);
+    }, minMs);
+
+    // 2. Resource Loading Check
+    const handleLoad = () => setLoaded(true);
+
+    if (typeof window !== "undefined") {
+      if (document.readyState === "complete") {
+        setLoaded(true);
+      } else {
+        window.addEventListener("load", handleLoad);
+      }
+    }
+
+    return () => {
+      clearTimeout(t);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("load", handleLoad);
+      }
+    };
+  }, [minMs]);
+
   React.useEffect(() => {
     // If you only want to show the splash once per tab, use sessionStorage
     if (initialOnly && typeof window !== "undefined") {
@@ -30,15 +58,14 @@ export default function SplashGate({
       }
     }
 
-    const t = setTimeout(() => {
+    // Smart Logic: Hide only when BOTH timer is done AND resources are loaded
+    if (ready && loaded) {
       setShow(false);
       if (initialOnly && typeof window !== "undefined") {
         sessionStorage.setItem("splash-shown", "1");
       }
-    }, minMs);
-
-    return () => clearTimeout(t);
-  }, [minMs, initialOnly]);
+    }
+  }, [ready, loaded, initialOnly]);
 
   const icons: IconDef[] = [
     { id: "infinity", Icon: InfinityIcon, activeClass: "text-[#24B7FD]", bgClass: "bg-[#E9F7FE]", iconPx: 64 },
