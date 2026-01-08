@@ -50,7 +50,7 @@ const Card3 = () => {
     >
       <Image
         src="/icons/left-cloud.svg"
-        alt=""
+        alt="Decorative cloud"
         aria-hidden="true"
         className="vib-cloud1 relative top-20 w-16 "
         width={10}
