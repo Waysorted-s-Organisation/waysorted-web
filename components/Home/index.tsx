@@ -4,13 +4,13 @@ import { useEffect, useState } from "react";
 import dynamic from 'next/dynamic';
 import Hero from '@/components/Hero/index'
 import TopSection from '@/components/TopSection/index'
+import ToolsGrid from '@/components/ToolsGrid/index'
 import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
 
 // Dynamic Imports for Below-the-Fold components
 const ImpactTop = dynamic(() => import('@/components/ImpactTop'), { ssr: false });
 const InfoCards = dynamic(() => import('@/components/InfoCards').then(mod => mod.InfoCards), { ssr: false });
-const ToolsGrid = dynamic(() => import('@/components/ToolsGrid/index'), { ssr: false });
 const GetStarted = dynamic(() => import('@/components/GetStarted'), { ssr: false });
 const Testimonials = dynamic(() => import('@/components/Testimonials'), { ssr: false });
 const Footer = dynamic(() => import("@/components/Footer"), { ssr: false });
