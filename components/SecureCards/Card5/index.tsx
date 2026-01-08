@@ -32,11 +32,14 @@ const Card5 = () => {
   return (
     <div
       className="relative bg-gradient-to-b from-[#2A2E34] to-[#525252] rounded-xl overflow-hidden w-full w-[345px] lg:w-[312.71px] h-[455.11px]"
+      role="img"
+      aria-label="Data Encryption illustration"
     >
       {/* Animated Background */}
       <div
         ref={bgRef}
         className="h-[76%] w-full "
+        aria-hidden="true"
         style={{
           backgroundImage: "url('/icons/rotate-dot1.svg')",
           backgroundPosition: "center",

@@ -74,9 +74,11 @@ const Card1 = () => {
     <div
       ref={cardsLR}
       className="relative overflow-hidden bg-gradient-to-t from-[#8f8f8f] to-[#292929] rounded-lg shadow-md w-full w-[345px] lg:w-[280px] h-[199.17px]"
+      role="img"
+      aria-label="Permission Control illustration"
     >
       {/* Moving background */}
-      <div className="scroll-bg flex top-0 relative h-[125px] ">
+      <div className="scroll-bg flex top-0 relative h-[125px]" aria-hidden="true">
         <div className="absolute left-[50px] md:left-10 h-full w-full bg-[url('/icons/background-cards.svg')] bg-contain bg-no-repeat bg-center"></div>
         <div className="absolute left-[-246px] md:left-[-230px] h-full w-full bg-[url('/icons/background-cards.svg')] bg-contain bg-no-repeat bg-center"></div>
         <div className="absolute left-[-538px] md:left-[-500px] h-full w-full bg-[url('/icons/background-cards.svg')] bg-contain bg-no-repeat bg-center"></div>

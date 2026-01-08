@@ -156,6 +156,8 @@ const Card2 = () => {
   return (
     <div
       className="relative overflow-hidden bg-gradient-to-t from-[#525252] to-[#2A2E34] rounded-lg shadow-md w-full lg:w-[402.06px] h-[199.17px]"
+      role="img"
+      aria-label="Trusted Keys illustration"
     >
       <div ref={keyDrop} className="relative w-full h-full overflow-hidden">
         {/* Left falling key */}

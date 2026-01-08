@@ -45,10 +45,13 @@ const Card3 = () => {
   return (
     <div
       className="bg-gradient-to-b from-[#2A2E34] to-[#525252] relative rounded-xl overflow-hidden w-full lg:w-[345.29px] h-[241.05px]"
+      role="img"
+      aria-label="Secure API Access illustration"
     >
       <Image
         src="/icons/left-cloud.svg"
-        alt="Decorative cloud"
+        alt=""
+        aria-hidden="true"
         className="vib-cloud1 relative top-20 w-16 "
         width={10}
         height={10}
