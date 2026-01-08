@@ -1,8 +1,20 @@
 "use client";
 
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState, PropsWithChildren } from "react";
-import Image from "next/image";
+return (
+  <Link
+    href={`/docs/${slug}`}
+    key={link}
+    onClick={() => {
+      setActiveLink(link);
+    }}
+    className={`text-sm ml-2 font-regular cursor-pointer transition-colors duration-200 py-1 block ${activeLink === link
+      ? "text-primary-way-100"
+      : "text-secondary-db-100 hover:text-primary-way-100"
+      }`}
+  >
+    {link}
+  </Link>
+);
 import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -247,19 +259,17 @@ export default function DocsShell({
                             {item.links.map((link) => {
                               const slug = slugify(link);
                               return (
-                                <div
+                                <Link
                                   key={link}
-                                  onClick={() => {
-                                    setActiveLink(link);
-                                    router.push(`/docs/${slug}`);
-                                  }}
-                                  className={`text-sm ml-2 font-regular cursor-pointer transition-colors duration-200 py-1 ${activeLink === link
+                                  href={`/docs/${slug}`}
+                                  onClick={() => setActiveLink(link)}
+                                  className={`text-sm ml-2 font-regular cursor-pointer transition-colors duration-200 py-1 block ${activeLink === link
                                     ? "text-primary-way-100"
                                     : "text-secondary-db-100 hover:text-primary-way-100"
                                     }`}
                                 >
                                   {link}
-                                </div>
+                                </Link>
                               );
                             })}
                           </div>
