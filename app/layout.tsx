@@ -153,6 +153,13 @@ const jsonLd = {
         contactType: "customer support",
         url: "https://www.waysorted.com/support",
       },
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "1 Eldeco Centre Malviya Nagar",
+        addressLocality: "New Delhi",
+        postalCode: "110017",
+        addressCountry: "IN",
+      },
     },
     {
       "@type": "WebSite",
