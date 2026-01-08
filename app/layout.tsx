@@ -293,7 +293,7 @@ export default function RootLayout({
         />
       </head>
       <body className={`${hanken.className} no-scrollbar select-none`}>
-        <SplashGate minMs={1500} initialOnly>
+        <SplashGate minMs={4000} initialOnly>
           <BannerProvider>
             {children}
             {/* <EarlyAccessPopup /> */}
