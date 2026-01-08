@@ -100,7 +100,7 @@ const Card1 = () => {
         >
           <Image
             src="/icons/two-strip.svg"
-            alt=""
+            alt="Permission control strip decoration"
             width={100}
             height={250}
             className="strip  bottom-[-50px] left-[-40px] "

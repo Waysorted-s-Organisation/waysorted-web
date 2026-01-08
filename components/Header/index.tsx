@@ -394,7 +394,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                       >
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-way-50/30">
                           {p.icon ? (
-                            <Image src={p.icon} alt="" width={40} height={40} />
+                            <Image src={p.icon} alt={p.name} width={40} height={40} />
                           ) : (
                             <span className="text-lg">✨</span>
                           )}
@@ -534,7 +534,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               }}
               className="absolute left-1/2 top-4 -translate-x-1/2 z-[60] h-12 w-12 rounded-full flex items-center justify-center bg-neutral-800/70 text-white border border-white/40 ring-1 ring-white/30 shadow-2xl backdrop-blur p-0 leading-none"
             >
-              <Image src="/icons/close.svg" alt="" width={18} height={18} />
+              <Image src="/icons/close.svg" alt="Close menu" width={18} height={18} />
             </button>
           )}
         </aside>

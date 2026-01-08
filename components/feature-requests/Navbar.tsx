@@ -143,7 +143,7 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
               className="hidden"
               onChange={handleFiles}
             />
-            <img src="/upload.png" alt="" className="py-2 h-8" />
+            <img src="/upload.png" alt="Upload icon" className="py-2 h-8" />
             <p className="text-[#265BD1]">
               Click to Upload <span className="text-[#565A5E]">an Image</span>
             </p>
@@ -172,7 +172,7 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
                     >
                       <div className="flex-col w-full items-center gap-2">
                         <div className="flex items-center gap-2 mb-2">
-                          <img src="/upload.png" alt="" />
+                          <img src="/upload.png" alt="Uploaded file icon" />
                           {file.name}
                         </div>
                         {file.size && (
