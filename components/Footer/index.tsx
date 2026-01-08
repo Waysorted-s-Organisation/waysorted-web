@@ -200,7 +200,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-white/10 pt-3 flex flex-col md:flex-row justify-between items-start md:items-center text-secondary-db-50 text-xs sm:text-sm gap-3">
-          <span>© 2025 Waysorted Infotech Pvt Ltd</span>
+          <span>© 2025 Waysorted</span>
           <div className="flex gap-4 sm:gap-6">
             <Link href="/docs/privacy-policy" className="hover:text-white">Privacy Policy</Link>
             <Link href="/docs/terms-of-service" className="hover:text-white">Terms of Service</Link>
