@@ -1,4 +1,5 @@
 import React from "react";
+import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import GettingStarted from "./content/getting-started";
 import AccountCreationAndSetup from "./content/account-creation-and-setup";
@@ -109,6 +110,54 @@ const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
   "beta-features": BetaFeatures,
 };
 
+// pSEO: Dynamic metadata for each doc page
+const META_MAP: Record<string, { title: string; description: string }> = {
+  "getting-started": { title: "Getting Started with Waysorted", description: "Learn how to get started with Waysorted - the unified Figma plugin suite. Quick setup guide for designers." },
+  "account-creation-and-setup": { title: "Create Your Waysorted Account", description: "Step-by-step guide to creating and setting up your Waysorted account for Figma plugin access." },
+  "pdf-exporter": { title: "PDF Exporter Tool - Export Figma to PDF", description: "Export Figma frames to high-quality PDF with zero latency. Complete guide to Waysorted's PDF Exporter tool." },
+  "palettable": { title: "Palettable - Color Palette Generator", description: "Generate beautiful color palettes with instant contrast checking. Waysorted's Palettable tool documentation." },
+  "unit-converter": { title: "Unit Converter - px to rem, em, pt", description: "Convert between design units instantly. Real-time px, rem, em, pt conversion in Figma with Waysorted." },
+  "import-tool": { title: "Import Tool - Import Assets to Figma", description: "Fast asset import into Figma with Waysorted's Import Tool. Supports images, SVGs, and more." },
+  "faqs": { title: "Waysorted FAQs - Frequently Asked Questions", description: "Find answers to common questions about Waysorted Figma plugins, billing, features, and troubleshooting." },
+  "what-is-waysorted": { title: "What is Waysorted?", description: "Discover Waysorted - a unified creative workflow suite replacing multiple Figma plugins with one platform." },
+  "quick-integration-with-figma": { title: "Quick Figma Integration Guide", description: "Integrate Waysorted with Figma in minutes. Step-by-step installation and setup instructions." },
+  "privacy-policy": { title: "Privacy Policy", description: "Waysorted's privacy policy. Learn how we protect your data with local-first architecture and encryption." },
+  "terms-of-service": { title: "Terms of Service", description: "Waysorted terms of service agreement. Read our usage terms and conditions." },
+  "bug-reporting": { title: "Report a Bug", description: "How to report bugs and issues with Waysorted plugins. Help us improve your design workflow." },
+  "contact-support": { title: "Contact Support", description: "Get help from Waysorted support team. Contact options and response times." },
+};
+
+function formatSlugToTitle(slug: string): string {
+  return slug
+    .split("-")
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const meta = META_MAP[slug];
+  const title = meta?.title || `${formatSlugToTitle(slug)} - Waysorted Docs`;
+  const description = meta?.description || `Learn about ${formatSlugToTitle(slug)} in Waysorted documentation. Guides and tutorials for designers.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://www.waysorted.com/docs/${slug}`,
+      type: "article",
+    },
+    twitter: {
+      title,
+      description,
+    },
+    alternates: {
+      canonical: `/docs/${slug}`,
+    },
+  };
+}
 
 export async function generateStaticParams() {
   return Object.keys(CONTENT_MAP).map((slug) => ({ slug }));
@@ -118,5 +167,44 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
   const { slug } = await params;
   const Comp = CONTENT_MAP[slug];
   if (!Comp) return notFound();
-  return <Comp />;
+
+  const meta = META_MAP[slug];
+  const title = meta?.title || formatSlugToTitle(slug);
+  const description = meta?.description || `Learn about ${title} in Waysorted documentation.`;
+
+  // TechArticle JSON-LD for pSEO
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "TechArticle",
+    headline: title,
+    description: description,
+    url: `https://www.waysorted.com/docs/${slug}`,
+    author: {
+      "@type": "Organization",
+      name: "Waysorted",
+      url: "https://www.waysorted.com",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Waysorted",
+      logo: {
+        "@type": "ImageObject",
+        url: "https://www.waysorted.com/images/logo.svg",
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `https://www.waysorted.com/docs/${slug}`,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <Comp />
+    </>
+  );
 }
