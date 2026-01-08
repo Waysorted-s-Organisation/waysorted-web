@@ -1,20 +1,9 @@
 "use client";
 
-return (
-  <Link
-    href={`/docs/${slug}`}
-    key={link}
-    onClick={() => {
-      setActiveLink(link);
-    }}
-    className={`text-sm ml-2 font-regular cursor-pointer transition-colors duration-200 py-1 block ${activeLink === link
-      ? "text-primary-way-100"
-      : "text-secondary-db-100 hover:text-primary-way-100"
-      }`}
-  >
-    {link}
-  </Link>
-);
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { useEffect, useState, PropsWithChildren } from "react";
+import Image from "next/image";
 import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -112,9 +101,9 @@ export default function DocsShell({
             />
           </div>
 
-          <h1 className="text-2xl font-medium text-white mb-10 leading-snug">
+          <h2 className="text-2xl font-medium text-white mb-10 leading-snug">
             Way&apos;s UI delivers its best experience on desktop.
-          </h1>
+          </h2>
 
           <button
             onClick={() => router.push("/")}

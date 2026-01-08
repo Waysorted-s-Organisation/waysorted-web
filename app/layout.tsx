@@ -5,7 +5,6 @@ import { BannerProvider } from "@/context/BannerContext";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
-// import EarlyAccessPopup from "@/components/EarlyAccessPopup";
 import SplashGate from "@/components/SplashGate";
 
 const GA_TRACKING_ID = "G-KS8MVKMRYV";
@@ -86,10 +85,7 @@ export const metadata: Metadata = {
   authors: [{ name: "Waysorted" }],
   creator: "Waysorted",
   publisher: "Waysorted",
-  metadataBase: new URL("https://www.waysorted.com"),
-  alternates: {
-    canonical: "/",
-  },
+
   openGraph: {
     type: "website",
     locale: "en_US",
