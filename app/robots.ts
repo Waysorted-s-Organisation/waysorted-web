@@ -54,6 +54,5 @@ export default function robots(): MetadataRoute.Robots {
             },
         ],
         sitemap: 'https://www.waysorted.com/sitemap.xml',
-        host: 'https://www.waysorted.com',
     }
 }
