@@ -26,6 +26,9 @@ export const metadata: Metadata = {
     "Waysorted Figma",
     "Waysorted beta",
     "Waysorted tools",
+    "Waysorted Infotech",
+    "Waysorted Infotech Pvt Ltd",
+    "waysorted.com",
     // Product keywords
     "Figma plugin",
     "Figma plugin bundle",
@@ -34,6 +37,9 @@ export const metadata: Metadata = {
     "Palettable color palette",
     "unit converter plugin",
     "import tool Figma",
+    "Figma PDF export plugin",
+    "Figma color palette plugin",
+    "px to rem converter Figma",
     // Category keywords
     "design tools",
     "design workflow",
@@ -42,10 +48,14 @@ export const metadata: Metadata = {
     "one powerful suite",
     "unified tool suite",
     "design plugin collection",
+    "best Figma plugins 2024",
+    "top Figma plugins",
     // Action keywords
     "accelerate design workflow",
     "productivity for designers",
     "Figma design plugins",
+    "export Figma to PDF",
+    "convert px to rem Figma",
     // Speed semantic cluster (GEO)
     "fast design tools",
     "zero latency",
@@ -62,6 +72,8 @@ export const metadata: Metadata = {
     "Figma plugin alternative",
     "all-in-one design solution",
     "replace multiple plugins",
+    "Figma plugin to export PDF",
+    "free Figma plugin bundle",
   ],
   authors: [{ name: "Waysorted" }],
   creator: "Waysorted",
