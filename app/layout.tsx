@@ -10,7 +10,11 @@ import SplashGate from "@/components/SplashGate";
 
 const GA_TRACKING_ID = "G-KS8MVKMRYV";
 
-const hanken = Hanken_Grotesk({ subsets: ["latin"] });
+const hanken = Hanken_Grotesk({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-hanken",
+});
 
 export const metadata: Metadata = {
   title: {

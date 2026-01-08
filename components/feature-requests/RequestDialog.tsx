@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
 import {
@@ -210,7 +211,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
                   className="hidden"
                   onChange={handleFiles}
                 />
-                <img src="/upload.svg" alt="upload" className="w-[21px] h-[21px] mb-2" />
+                <Image src="/upload.svg" alt="upload" width={21} height={21} className="mb-2" />
                 <p className="text-[14px] font-medium">
                   <span className="text-[#565A5E]">Click to Upload an Image </span>
                   <span className="text-[#565A5E]">(max 5 files)</span>
@@ -229,7 +230,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
                       <li key={idx} className="border border-[#CFD0D1] rounded-[8px] p-3 bg-white">
                         <div className="flex items-start justify-between mb-2">
                           <div className="flex items-center gap-2 flex-1">
-                            <img src="/upload.svg" alt="file" className="w-[16px] h-[16px]" />
+                            <Image src="/upload.svg" alt="file" width={16} height={16} />
                             <span className="text-[14px] font-medium text-[#0D1218] truncate">{file.name}</span>
                           </div>
                           <button
@@ -297,7 +298,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
           <Separator className="bg-[#CFD0D1]" />
           <div className="flex flex-col items-center gap-[5px] py-4">
             <div className="w-[59px] h-[59px] bg-[#E8EFFC] rounded-[15px] flex items-center justify-center">
-              <img src="/icons/success.svg" alt="Success" className="w-[40px] h-[40px]" />
+              <Image src="/icons/success.svg" alt="Success" width={40} height={40} />
             </div>
             <p className="text-[#0F8D2A] font-medium text-[16px] mt-2">Success!</p>
             <p className="text-[14px] font-medium text-[#0D1218] text-center">
