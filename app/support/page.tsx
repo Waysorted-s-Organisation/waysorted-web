@@ -10,8 +10,92 @@ import Footer from "@/components/Footer";
 export default function SupportPage() {
   const { showBanner, setShowBanner } = useBanner();
 
+  // JSON-LD for FAQPage
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Waysorted?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Waysorted unifies essential design tools into one place, so you spend less time switching between plugins and tabs. By reducing tool juggling, it helps teams work faster, stay focused, and avoid unnecessary costs from managing multiple tools."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How is Waysorted different from the other apps or plugins sources?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Unlike individual plugins or scattered tool sources, Waysorted brings essential tools together in one unified suite. This reduces compatibility issues, performance strain, scattered support, and the cost of managing multiple subscriptions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What kind of tools are included?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Waysorted currently includes four core tools for color management, PDF export, file importing, and unit conversion. More tools are planned, including Way AI and additional utilities designed to further simplify and streamline creative workflows."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Who creates these tools packs?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "The core packs are created by a team of highly skilled designers & developers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I suggest tools to be included?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, through the Request-a-Feature tab which encourages user input and suggestions."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Will Waysorted slow down my Figma?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No, Our unified design minimizes system strain and performance issues rather improves accessibility that lacks with multiple disjointed plugins."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Waysorted safe and secure?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, we emphasize secure tool bundling and usability within Figma's ecosystem while complying all certificates as an integrated platform."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What if I face issues while using Waysorted?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Reach out to support, the platform provides consistent, up-to-date assistance to resolve any concerns. Moreover, use the Report-a-Bug tab for reporting issues."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do I get started?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Open the Waysorted Figma plugin to start using the tools available during the beta. All current features are accessible for testing and feedback."
+        }
+      }
+    ]
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <main
         className={`min-h-screen bg-white transition-all duration-300 select-none ${showBanner ? "pt-24" : "pt-16"
           } `}

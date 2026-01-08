@@ -12,10 +12,10 @@ export default function SubscriptionCard({ user }: Props) {
 
   const startedDisplay = user.createdAt
     ? new Date(user.createdAt).toLocaleDateString(undefined, {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      })
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
     : "N/A";
   const renewalDisplay = null;
   const statusDisplay = earlyAccess ? "Active" : "N/A";
@@ -23,7 +23,7 @@ export default function SubscriptionCard({ user }: Props) {
   return (
     <section className="max-w-3xl rounded-lg border border-secondary-db-5 bg-white">
       <header className="px-5 py-3 border-b border-secondary-db-5">
-        <h1 className="text-base font-medium text-secondary-db-100">Subscription</h1>
+        <h2 className="text-base font-medium text-secondary-db-100">Subscription</h2>
         <p className="text-sm text-secondary-db-80 font-medium">
           Stay on top of your plan and benefits.
         </p>
@@ -118,13 +118,13 @@ export default function SubscriptionCard({ user }: Props) {
               <span className="font-semibold">
                 {/* {remaining} */}
                 ∞
-                </span> / 
-                {/* {creditsTotal} */}
-                ∞ credits left
+              </span> /
+              {/* {creditsTotal} */}
+              ∞ credits left
             </span>
           </div>
 
-          {!earlyAccess && 
+          {!earlyAccess &&
             <button
               type="button"
               className="inline-flex items-center rounded-md bg-primary-way-10 px-4 py-1.5 text-xs font-medium text-primary-way-100 border border-primary-way-20 hover:bg-primary-way-20 transition cursor-pointer"

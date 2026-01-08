@@ -22,7 +22,7 @@ export default function CreditsUsageCard({ user }: Props) {
     <section className="max-w-3xl rounded-lg border border-secondary-db-5 bg-white">
       {/* Header */}
       <header className="px-5 py-3 border-b border-secondary-db-5">
-        <h1 className="text-base font-medium text-secondary-db-100">Credits Usage</h1>
+        <h2 className="text-base font-medium text-secondary-db-100">Credits Usage</h2>
         <p className="text-sm text-secondary-db-80 font-medium">
           Track and manage your Waysorted credits with ease
         </p>
@@ -47,9 +47,9 @@ export default function CreditsUsageCard({ user }: Props) {
             </span>
             <span className="text-secondary-db-90 text-sm">
               / <span className="text-xl">∞ </span>
-              {/* {total} */} 
-               {!earlyAccess && "credits left"}
-               {earlyAccess && <span className="text-secondary-db-100 font-medium">Beta Access: Unlimited Credits</span>} 
+              {/* {total} */}
+              {!earlyAccess && "credits left"}
+              {earlyAccess && <span className="text-secondary-db-100 font-medium">Beta Access: Unlimited Credits</span>}
             </span>
           </div>
 

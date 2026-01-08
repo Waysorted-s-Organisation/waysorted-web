@@ -20,7 +20,7 @@ export default function IntegrationsCard({ integrations, anyConnected }: Integra
   return (
     <section className="max-w-3xl rounded-lg border border-secondary-db-5 bg-white">
       <header className="px-5 py-3 border-b border-secondary-db-5">
-        <h1 className="text-base font-medium text-secondary-db-100">Integrations</h1>
+        <h2 className="text-base font-medium text-secondary-db-100">Integrations</h2>
         <p className="text-sm text-secondary-db-80 font-medium">
           No more tool chaos. Just smooth connections.
         </p>
@@ -31,20 +31,20 @@ export default function IntegrationsCard({ integrations, anyConnected }: Integra
         {!anyConnected ? (
           <div className="relative mb-6 rounded-md bg-error-100 p-4 text-error-500">
             <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Image
-                    src="/icons/info-red.svg"
-                    alt="Error Icon"
-                    width={16}
-                    height={16}
-                    className="object-contain"
-                    />
+                  src="/icons/info-red.svg"
+                  alt="Error Icon"
+                  width={16}
+                  height={16}
+                  className="object-contain"
+                />
                 <p className="text-sm font-medium">
-                    No integrations yet. 
+                  No integrations yet.
                 </p>
-                </div>
+              </div>
             </div>
-        </div>
+          </div>
         ) : (
           <div className="mb-6 rounded-md bg-blue-50 p-4 text-blue-700 border border-blue-100 flex items-start gap-2">
             <span
@@ -95,11 +95,10 @@ export default function IntegrationsCard({ integrations, anyConnected }: Integra
                   <button
                     disabled={comingSoon}
                     onClick={() => router.push(`/allow-access`)}
-                    className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${
-                      comingSoon
+                    className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${comingSoon
                         ? "cursor-not-allowed bg-secondary-db-5 text-secondary-db-50"
                         : "bg-primary-way-10 text-primary-way-100 hover:bg-primary-way-20 cursor-pointer"
-                    }`}
+                      }`}
                   >
                     {comingSoon ? "Connect" : "Connect"}
                   </button>

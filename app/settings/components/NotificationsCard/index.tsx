@@ -16,7 +16,7 @@ export default function NotificationsCard({ user }: Props) {
   return (
     <section className="max-w-3xl rounded-lg border border-secondary-db-5 bg-white">
       <header className="px-5 py-3 border-b border-secondary-db-5">
-        <h1 className="text-base font-medium text-secondary-db-100">Notifications</h1>
+        <h2 className="text-base font-medium text-secondary-db-100">Notifications</h2>
         <p className="text-sm text-secondary-db-80 font-medium">
           Never miss a plugin update or credit drop.
         </p>
@@ -24,29 +24,29 @@ export default function NotificationsCard({ user }: Props) {
 
       <div className="px-6 pb-8 pt-5">
         {!hasAnyNotifications ? (
-        <div className="relative mb-6 rounded-md bg-primary-way-5 p-4 text-primary-way-100">
+          <div className="relative mb-6 rounded-md bg-primary-way-5 p-4 text-primary-way-100">
             <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Image
-                    src="/icons/info-icon.svg"
-                    alt="Info Icon"
-                    width={16}
-                    height={16}
-                    className="object-contain"
-                    />
+                  src="/icons/info-icon.svg"
+                  alt="Info Icon"
+                  width={16}
+                  height={16}
+                  className="object-contain"
+                />
                 <p className="text-sm font-medium">
-                    No notification for now!
+                  No notification for now!
                 </p>
-                </div>
-                <button
+              </div>
+              <button
                 onClick={handleSubscribe}
                 type="button"
                 className="bg-primary-way-10 outline outline-1 outline-primary-way-100 rounded-lg text-sm font-medium text-primary-way-100 p-2 cursor-pointer hover:bg-primary-way-30 hover:outline hover:outline-1 hover:outline-primary-way-100"
-                >
+              >
                 Subscribe Newsletter
-                </button>
+              </button>
             </div>
-        </div>
+          </div>
         ) : (
           <>
             <div className="space-y-3">

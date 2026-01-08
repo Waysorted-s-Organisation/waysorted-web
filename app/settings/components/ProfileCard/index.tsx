@@ -3,7 +3,7 @@
 import { useState, useRef, useTransition } from "react";
 import type { IUser } from "@/models/user";
 import { updateName, removeProfilePicture, updateProfilePicture } from "@/app/actions/profile";
-import Image from "next/image"; 
+import Image from "next/image";
 
 export default function ProfileCard({ user }: { user: IUser }) {
   const [name, setName] = useState(user.name || "");
@@ -30,16 +30,16 @@ export default function ProfileCard({ user }: { user: IUser }) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) { 
-       alert("File is too large. Max 2MB.");
-       return;
+    if (file.size > 2 * 1024 * 1024) {
+      alert("File is too large. Max 2MB.");
+      return;
     }
 
     // Use the photo-specific transition
     startPhotoTransition(async () => {
       const formData = new FormData();
       formData.append("file", file);
-      
+
       const result = await updateProfilePicture(formData);
       if (!result.success) {
         alert("Failed to update picture");
@@ -49,7 +49,7 @@ export default function ProfileCard({ user }: { user: IUser }) {
 
   // Handle Remove Image
   const handleRemovePhoto = () => {
-    if(!confirm("Are you sure you want to remove your profile picture?")) return;
+    if (!confirm("Are you sure you want to remove your profile picture?")) return;
 
     // Use the photo-specific transition
     startPhotoTransition(async () => {
@@ -64,7 +64,7 @@ export default function ProfileCard({ user }: { user: IUser }) {
     <section className="max-w-4xl rounded-lg border border-secondary-db-5 bg-white">
       {/* ... Header ... */}
       <header className="px-3 sm:px-5 py-3 border-b border-secondary-db-5">
-        <h1 className="text-base font-medium text-secondary-db-100">Profile Details</h1>
+        <h2 className="text-base font-medium text-secondary-db-100">Profile Details</h2>
         <p className="text-sm text-secondary-db-80 font-medium">Settings and details of your ID</p>
       </header>
 
@@ -75,10 +75,10 @@ export default function ProfileCard({ user }: { user: IUser }) {
           <div className="relative">
             {user.picture ? (
               <Image
-                src={user.picture} 
+                src={user.picture}
                 alt="Profile"
                 height={96}
-                width={96} 
+                width={96}
                 className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl object-cover border border-secondary-db-5"
               />
             ) : (
@@ -86,7 +86,7 @@ export default function ProfileCard({ user }: { user: IUser }) {
                 {user.initials}
               </div>
             )}
-            
+
             {user.earlyAccess && (
               <span className="border border-tertiary-voilet-500 bg-tertiary-voilet-100 text-tertiary-voilet-500 px-2 py-1 text-[10px] sm:text-[12px] font-medium rounded-md absolute -bottom-2 left-3 shadow-sm">
                 Early Bird
@@ -96,26 +96,26 @@ export default function ProfileCard({ user }: { user: IUser }) {
 
           {/* Change photo & Remove */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <input 
-              type="file" 
-              ref={fileInputRef} 
-              className="hidden" 
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
               accept="image/png, image/jpeg, image/jpg"
               onChange={handleFileChange}
             />
-            
-            <button 
+
+            <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isPendingPhoto}
               className="border border-transparent outline outline-primary-way-100 hover:bg-primary-way-20 rounded-lg text-xs sm:text-sm font-medium text-primary-way-100 p-2 cursor-pointer transition disabled:opacity-50"
             >
               {isPendingPhoto ? "Updating..." : "Change photo"}
             </button>
-            
+
             {user.picture && (
-              <button 
+              <button
                 onClick={handleRemovePhoto}
-                disabled={isPendingPhoto} 
+                disabled={isPendingPhoto}
                 className="underline hover:bg-red-50 hover:text-red-600 rounded-lg text-xs sm:text-sm font-medium text-primary-way-100 p-2 cursor-pointer transition disabled:opacity-50"
               >
                 Remove
@@ -132,15 +132,14 @@ export default function ProfileCard({ user }: { user: IUser }) {
                 <div className="text-secondary-db-100 text-xs sm:text-sm p-1">Name</div>
                 <div className="flex w-full">
                   <input
-                    className={`bg-primary-way-5 border w-full sm:w-md rounded-lg px-4 py-3 text-sm text-secondary-db-100 focus:outline-none focus:ring-2 focus:ring-primary-way-100 transition ${
-                      isEditingName ? "border-primary-way-100 bg-white" : "border-primary-way-20"
-                    }`}
+                    className={`bg-primary-way-5 border w-full sm:w-md rounded-lg px-4 py-3 text-sm text-secondary-db-100 focus:outline-none focus:ring-2 focus:ring-primary-way-100 transition ${isEditingName ? "border-primary-way-100 bg-white" : "border-primary-way-20"
+                      }`}
                     placeholder="Your name"
                     disabled={!isEditingName || isPendingName}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                   />
-                  
+
                   {isEditingName ? (
                     <div className="flex gap-2 ml-2 sm:ml-4">
                       <button
