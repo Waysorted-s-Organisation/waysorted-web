@@ -17,6 +17,10 @@ const hanken = Hanken_Grotesk({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.waysorted.com"),
+  alternates: {
+    canonical: "./",
+  },
   title: {
     default: "Waysorted - Accelerate every idea with one powerful suite",
     template: "%s | Waysorted",
