@@ -6,15 +6,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Main pages - sitelink-eligible pages first with high priority
     const mainPages = [
         '',
-        '/login',
-        '/signup',
         '/figma-beta',
         '/learning',
         '/about-us',
         '/support',
         '/get-early-access',
         '/docs',
-        '/settings',
+        '/release-notes',
     ]
 
     // Documentation pages

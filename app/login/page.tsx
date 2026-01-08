@@ -8,6 +8,10 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.waysorted.com/login",
   },
+  robots: {
+    index: false,
+    follow: true,
+  },
   openGraph: {
     title: "Login or Signup | Waysorted",
     description:

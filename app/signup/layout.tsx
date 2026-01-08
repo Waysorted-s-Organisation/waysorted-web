@@ -9,6 +9,10 @@ export const metadata: Metadata = {
         "free design tools",
         "Figma plugin signup",
     ],
+    robots: {
+        index: false,
+        follow: true,
+    },
     openGraph: {
         title: "Sign Up for Waysorted",
         description: "Create your Waysorted account and start using the unified tool suite for designers.",
