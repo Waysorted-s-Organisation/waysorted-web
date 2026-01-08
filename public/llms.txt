@@ -1,0 +1,49 @@
+# Waysorted
+
+> Accelerate every idea with one powerful suite
+
+## Overview
+
+Waysorted is a unified creative workflow suite for designers. It replaces multiple plugins with one powerful platform that works across Figma and other design tools.
+
+## Key Links
+
+- [Documentation](https://www.waysorted.com/docs): Complete guides and API references
+- [Learning Hub](https://www.waysorted.com/learning): Tool tutorials and best practices
+- [About Us](https://www.waysorted.com/about-us): Our mission and team
+- [Figma Beta](https://www.waysorted.com/figma-beta): Try Waysorted in Figma
+- [Support](https://www.waysorted.com/support): Get help and contact us
+
+## Products
+
+### Palettable
+Color palette generator with contrast checking for accessible design.
+- [Learn more](https://www.waysorted.com/learning/palettable)
+- [Documentation](https://www.waysorted.com/docs/palettable)
+
+### PDF Exporter
+Export Figma frames to high-quality PDFs with custom settings.
+- [Learn more](https://www.waysorted.com/learning/pdf-exporter)
+- [Documentation](https://www.waysorted.com/docs/pdf-exporter)
+
+### Unit Converter
+Convert between design units (px, rem, em, pt) instantly.
+- [Learn more](https://www.waysorted.com/learning/unit-converter)
+- [Documentation](https://www.waysorted.com/docs/unit-converter)
+
+### Import Tool
+Import assets and designs from external sources into Figma.
+- [Learn more](https://www.waysorted.com/learning/import-tool)
+- [Documentation](https://www.waysorted.com/docs/import-tool)
+
+## Company
+
+- **Legal Name**: Waysorted Infotech Pvt Ltd
+- **Website**: https://www.waysorted.com
+- **Contact**: https://www.waysorted.com/support
+
+## Social
+
+- [LinkedIn](https://www.linkedin.com/company/waysorted)
+- [Twitter](https://twitter.com/waysorted)
+- [Discord](https://discord.gg/waysorted)

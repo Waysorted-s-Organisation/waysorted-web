@@ -94,7 +94,7 @@ export const metadata: Metadata = {
   },
 };
 
-// JSON-LD Structured Data for Google Sitelinks
+// JSON-LD Structured Data for Google Sitelinks and GEO/AEO
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
@@ -102,16 +102,25 @@ const jsonLd = {
       "@type": "Organization",
       "@id": "https://www.waysorted.com/#organization",
       name: "Waysorted",
+      legalName: "Waysorted Infotech Pvt Ltd",
       url: "https://www.waysorted.com",
       logo: {
         "@type": "ImageObject",
         url: "https://www.waysorted.com/images/logo.svg",
+        width: 512,
+        height: 512,
       },
       sameAs: [
         "https://twitter.com/waysorted",
         "https://www.linkedin.com/company/waysorted",
         "https://discord.gg/waysorted",
+        "https://github.com/Waysorted-s-Organisation",
       ],
+      contactPoint: {
+        "@type": "ContactPoint",
+        contactType: "customer support",
+        url: "https://www.waysorted.com/support",
+      },
     },
     {
       "@type": "WebSite",
@@ -134,20 +143,45 @@ const jsonLd = {
     },
     {
       "@type": "SoftwareApplication",
+      "@id": "https://www.waysorted.com/#software",
       name: "Waysorted",
       applicationCategory: "DesignApplication",
       operatingSystem: "Web, Figma",
       description: "A unified creative workflow suite for designers to replace multiple plugins with one platform.",
+      featureList: [
+        "PDF Exporter - Export Figma frames to PDF",
+        "Palettable - Color palette generator with contrast checking",
+        "Unit Converter - Convert between design units",
+        "Import Tool - Import assets into Figma",
+      ],
       offers: {
         "@type": "Offer",
         price: "0",
         priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
       },
       aggregateRating: {
         "@type": "AggregateRating",
         ratingValue: "4.8",
         ratingCount: "100",
+        bestRating: "5",
+        worstRating: "1",
       },
+      author: {
+        "@id": "https://www.waysorted.com/#organization",
+      },
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://www.waysorted.com/#breadcrumb",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: "https://www.waysorted.com",
+        },
+      ],
     },
     {
       "@type": "ItemList",
