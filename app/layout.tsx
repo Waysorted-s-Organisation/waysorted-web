@@ -34,7 +34,7 @@ export const metadata: Metadata = {
     "Palettable color palette",
     "unit converter plugin",
     "import tool Figma",
-    // Category keywords  
+    // Category keywords
     "design tools",
     "design workflow",
     "designer productivity tools",
@@ -46,6 +46,22 @@ export const metadata: Metadata = {
     "accelerate design workflow",
     "productivity for designers",
     "Figma design plugins",
+    // Speed semantic cluster (GEO)
+    "fast design tools",
+    "zero latency",
+    "instant export",
+    "real-time collaboration",
+    "client-side processing",
+    // Security semantic cluster (GEO)
+    "secure design platform",
+    "local-first architecture",
+    "data privacy",
+    "encrypted workflows",
+    "GDPR compliant design tools",
+    // Comparison keywords (GEO)
+    "Figma plugin alternative",
+    "all-in-one design solution",
+    "replace multiple plugins",
   ],
   authors: [{ name: "Waysorted" }],
   creator: "Waysorted",
@@ -149,11 +165,22 @@ const jsonLd = {
       operatingSystem: "Web, Figma",
       description: "A unified creative workflow suite for designers to replace multiple plugins with one platform.",
       featureList: [
-        "PDF Exporter - Export Figma frames to PDF",
-        "Palettable - Color palette generator with contrast checking",
-        "Unit Converter - Convert between design units",
-        "Import Tool - Import assets into Figma",
+        "PDF Exporter - Export Figma frames to PDF with zero latency",
+        "Palettable - Color palette generator with instant contrast checking",
+        "Unit Converter - Real-time conversion between px, rem, em, pt",
+        "Import Tool - Fast asset import into Figma",
+        "Local-first architecture - Your data stays on your device",
+        "Client-side processing - No server uploads required",
+        "Unified plugin suite - Replace multiple tools with one",
       ],
+      keywords: "Figma plugin, design tools, productivity, fast, secure, local-first, zero latency",
+      softwareVersion: "1.0.0",
+      releaseNotes: "https://www.waysorted.com/release-notes",
+      screenshot: "https://www.waysorted.com/images/og-image.png",
+      softwareHelp: {
+        "@type": "CreativeWork",
+        url: "https://www.waysorted.com/docs",
+      },
       offers: {
         "@type": "Offer",
         price: "0",
