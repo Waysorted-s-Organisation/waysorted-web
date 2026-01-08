@@ -33,7 +33,7 @@ const Hero = () => {
         >
           <Image
             src="/icons/tools.svg"
-            alt="Hero Badge"
+            alt="Waysorted Feature Request icon showing tools"
             width={16}
             height={16}
             className="mr-2"
@@ -67,14 +67,14 @@ const Hero = () => {
             <span className="flex items-center gap-x-2">
               <Image
                 src="/icons/figma.svg"
-                alt="Waysorted for Figma"
+                alt="Figma logo icon for Waysorted Figma plugin"
                 width={16}
                 height={16}
               />
               <span>Waysorted for Figma</span>
               <Image
                 src="/icons/arrow-white.svg"
-                alt="Arrow Right"
+                alt="Arrow icon indicating navigation to Figma plugin"
                 width={12}
                 height={12}
               />

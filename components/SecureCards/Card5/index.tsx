@@ -47,7 +47,7 @@ const Card5 = () => {
       ></div>
       <Image
         src="/icons/cpu.svg"
-        alt="lock"
+        alt="Waysorted CPU chip icon representing encrypted data processing"
         width={249}
         height={210}
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"

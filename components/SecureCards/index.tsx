@@ -12,7 +12,7 @@ export default function SecureCards() {
       <span className="inline-flex mt-[67px] py-1 pl-1 pr-2 items-center text-sm font-medium bg-[#F3F3F3] text-[#0D1218] rounded-md mb-4">
         <Image
           src="/icons/secure-lock.svg"
-          alt="Our Impact"
+          alt="Waysorted security lock icon for data protection"
           width={24}
           height={24}
           className="block"

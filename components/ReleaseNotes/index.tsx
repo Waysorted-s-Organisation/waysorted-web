@@ -54,7 +54,7 @@ export default function ReleaseNotes() {
             {/* Header Badge & Title */}
             <div className="text-center mb-16">
                 <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 rounded-lg text-xs font-semibold text-secondary-db-80 mb-4 ">
-                    <Image src="/icons/documentation.svg" alt="doc" width={16} height={16} className="opacity-70" />
+                    <Image src="/icons/documentation.svg" alt="Waysorted documentation icon for release notes" width={16} height={16} className="opacity-70" />
                     Release Notes
                 </div>
                 <h1 className="text-3xl md:text-5xl font-bold text-secondary-db-100">
@@ -76,7 +76,7 @@ export default function ReleaseNotes() {
                         />
                         <Image
                             src="/icons/search.svg"
-                            alt="Search"
+                            alt="Search icon for filtering release notes"
                             width={16}
                             height={16}
                             className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-50"
@@ -121,7 +121,7 @@ export default function ReleaseNotes() {
                             </div>
                             {/* Icons floating mockup */}
                             <div className="absolute top-10 left-10 opacity-30">
-                                <Image src="/icons/info-1.svg" alt="icon" width={64} height={64} />
+                                <Image src="/icons/info-1.svg" alt="Waysorted version update decorative icon" width={64} height={64} />
                             </div>
 
                             <h2 className="text-6xl md:text-8xl font-bold tracking-tighter relative z-10">{RELEASE_DATA[0].bannerText}</h2>

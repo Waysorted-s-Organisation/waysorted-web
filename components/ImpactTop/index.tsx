@@ -9,7 +9,7 @@ export default function ImpactTop() {
       <span className="inline-flex items-center text-xs sm:text-sm font-medium bg-secondary-db-5 text-secondary-db-100 rounded-md mb-4">
         <Image
           src="/icons/impact.svg"
-          alt="Our Impact"
+          alt="Waysorted impact icon showing user trust and reviews"
           width={28}
           height={28}
           className="block p-1"
