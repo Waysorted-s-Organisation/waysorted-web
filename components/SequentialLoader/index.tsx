@@ -39,28 +39,21 @@ export default function SequentialLogoLoader({
   // Defaults
   const resolvedIconPx = iconPx ?? Math.round(tileSizePx * 0.5);
   // Default mobile to 100px tile if not set, or smaller relative to desktop
-  const resolvedMobileTilePx = mobileTileSizePx ?? 100;
+  const resolvedMobileTilePx = mobileTileSizePx ?? 100; 
   const resolvedMobileIconPx = mobileIconPx ?? Math.round(resolvedMobileTilePx * 0.5);
 
   React.useEffect(() => {
-    // Optimize for performance: Target ~30fps (approx 33ms) to reduce main thread load on mobile
-    const FPS = 30;
-    const intervalMs = Math.floor(1000 / FPS);
-
-    // Calculate increment to complete 0-100 in estimatedMs
-    const increment = 100 / (Math.max(estimatedMs, 100) / intervalMs);
-
+    const stepMs = Math.max(10, Math.floor(estimatedMs / 100));
     const id = window.setInterval(() => {
       setProgress((p) => {
-        const next = p + increment;
-        if (next >= 100) {
+        if (p >= 100) {
           window.clearInterval(id);
-          onDone?.(); // Animation done
+          onDone?.();
           return 100;
         }
-        return next;
+        return p + 1;
       });
-    }, intervalMs);
+    }, stepMs);
     return () => window.clearInterval(id);
   }, [estimatedMs, onDone]);
 
@@ -125,7 +118,7 @@ function IconTile({
         "rounded-2xl flex items-center justify-center",
         "transition-all duration-500 ease-out",
         bgClass ?? "bg-gray-100",
-        isActive ? activeClass : "grayscale opacity-50",
+        isActive? activeClass : "grayscale opacity-50",
         "w-[var(--mob-tile-size)] h-[var(--mob-tile-size)] md:w-[var(--tile-size)] md:h-[var(--tile-size)]",
       ].join(" ")}
     >
