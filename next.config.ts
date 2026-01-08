@@ -55,6 +55,27 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
         ],
       },
+      {
+        // Cache fonts for 1 year
+        source: "/fonts/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        // Cache JS and CSS chunks for 1 year (they have hashed filenames)
+        source: "/_next/static/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        // Stale-while-revalidate for public files like llms.txt
+        source: "/:file(llms\\.txt|robots\\.txt|sitemap\\.xml)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=3600, stale-while-revalidate=86400" },
+        ],
+      },
     ];
   },
 
