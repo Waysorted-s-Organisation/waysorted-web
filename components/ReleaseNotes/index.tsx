@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Frown, Meh, Smile, Laugh, Heart, User, ArrowUpRight, Plus, Wrench, Bug, Check } from "lucide-react";
+import { Frown, Meh, Smile, User, ArrowUpRight, Plus, Wrench, Bug, Check } from "lucide-react";
 import GlowStarButton from "@/components/GlowStarButton";
 
 const RELEASE_DATA = [
@@ -245,15 +245,48 @@ export default function ReleaseNotes() {
                         <button
                             key={rating}
                             onClick={() => setUserRating(rating)}
-                            className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200
-                                    ${userRating === rating ? "bg-blue-100 text-blue-600 shadow-sm scale-110" : "bg-gray-100 text-gray-400 hover:bg-gray-200"}
-                                `}
+                            className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all duration-200
+                                ${userRating === rating
+                                    ? "bg-[#2563EB] text-white shadow-md scale-105"
+                                    : "bg-secondary-db-5 text-secondary-db-40 hover:bg-secondary-db-10 hover:text-secondary-db-60"
+                                }
+                            `}
                         >
-                            {rating === 1 && <Frown size={24} />}
-                            {rating === 2 && <Meh size={24} />}
-                            {rating === 3 && <Smile size={24} />}
-                            {rating === 4 && <Laugh size={24} />}
-                            {rating === 5 && <Heart size={24} fill={userRating === 5 ? "currentColor" : "none"} />}
+                            {rating === 1 && <Frown size={28} strokeWidth={2.5} />}
+                            {rating === 2 && <Meh size={28} strokeWidth={2.5} />}
+                            {rating === 3 && <Smile size={28} strokeWidth={2.5} />}
+
+                            {/* Rating 4: Heart Eyes */}
+                            {rating === 4 && (
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+                                    {/* Left Heart Eye - Moved slightly right and down */}
+                                    <path d="M9.5 9C9.5 8.17157 8.82843 7.5 8 7.5C7.17157 7.5 6.5 8.17157 6.5 9C6.5 10.5 9.5 12.5 9.5 12.5C9.5 12.5 12.5 10.5 12.5 9C12.5 8.17157 11.8284 7.5 11 7.5C10.1716 7.5 9.5 8.17157 9.5 9Z" fill="currentColor" stroke="none" transform="translate(-0.5, 0.5) scale(0.95)" />
+                                    {/* Right Heart Eye - Moved slightly left and down */}
+                                    <path d="M14.5 9C14.5 8.17157 15.1716 7.5 16 7.5C16.8284 7.5 17.5 8.17157 17.5 9C17.5 10.5 14.5 12.5 14.5 12.5C14.5 12.5 11.5 10.5 11.5 9C11.5 8.17157 12.1716 7.5 13 7.5C13.8284 7.5 14.5 8.17157 14.5 9Z" fill="currentColor" stroke="none" transform="translate(0.5, 0.5) scale(0.95)" />
+                                    <path d="M8 15C8 15 9.5 18 12 18C14.5 18 16 15 16 15" strokeLinecap="round" />
+                                </svg>
+                            )}
+
+                            {/* Rating 5: Star Eyes */}
+                            {rating === 5 && (
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                    <circle cx="12" cy="12" r="10" />
+
+                                    {/* Stars for eyes - filled */}
+                                    <g transform="translate(8, 9) scale(0.6)">
+                                        <path d="M0 -3 L0.8 -1 L3 -1 L1.2 0.5 L2 2.5 L0 1.2 L-2 2.5 L-1.2 0.5 L-3 -1 L-0.8 -1 Z" fill="currentColor" stroke="none" transform="scale(1.8)" />
+                                    </g>
+                                    <g transform="translate(16, 9) scale(0.6)">
+                                        <path d="M0 -3 L0.8 -1 L3 -1 L1.2 0.5 L2 2.5 L0 1.2 L-2 2.5 L-1.2 0.5 L-3 -1 L-0.8 -1 Z" fill="currentColor" stroke="none" transform="scale(1.8)" />
+                                    </g>
+
+                                    {/* Laughing mouth */}
+                                    {/* Laughing Open Mouth - Shallower "D" shape */}
+                                    <path d="M8 14.5C8 14.5 9.5 18 12 18C14.5 18 16 14.5 16 14.5" />
+                                    <path d="M8 14.5H16" />
+                                </svg>
+                            )}
                         </button>
                     ))}
                 </div>
