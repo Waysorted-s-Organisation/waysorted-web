@@ -151,23 +151,51 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
       ref={headerRef}
       className={`w-full fixed top-0 z-40 ${isSecureSection ? 'bg-secondary-db-100' : 'bg-white border-b border-gray-200'}`}
     >
-      {showBanner && (
-        <div className="w-full bg-primary-way-100 text-white text-center py-2 text-sm relative">
-          Try Palettable for quick Color schemes and Contrast check.{' '}
-          <Link href="/learning/palettable" className="underline">
-            Learn more about Palettable
-          </Link>
-          <button
-            onClick={() => setShowBanner(false)}
-            className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
-            aria-label="Close banner"
-          >
-            <div className="bg-white/10 p-2 rounded-lg">
-              <Image src="/icons/close.svg" alt="Close" width={10} height={10} />
-            </div>
-          </button>
-        </div>
-      )}
+      {showBanner && (() => {
+        // Random CTA variations - dice effect
+        const ctaVariations = [
+          {
+            text: "Create presentation-ready PDFs in one click...",
+            link: "/learning/palettable",
+            linkText: "Click here"
+          },
+          {
+            text: "Convert units & prep designs for print instantly...",
+            link: "/learning/palettable",
+            linkText: "Click here"
+          },
+          {
+            text: "Import external design assets more seamlessly...",
+            link: "/learning/palettable",
+            linkText: "Click here"
+          },
+          {
+            text: "Try Palettable for quick Color schemes and Contrast check...",
+            link: "/learning/palettable",
+            linkText: "Click here"
+          }
+        ];
+        const randomIndex = Math.floor(Math.random() * ctaVariations.length);
+        const cta = ctaVariations[randomIndex];
+
+        return (
+          <div className="w-full bg-primary-way-100 text-white text-center py-2 text-sm relative">
+            {cta.text}{' '}
+            <Link href={cta.link} className="underline">
+              {cta.linkText}
+            </Link>
+            <button
+              onClick={() => setShowBanner(false)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
+              aria-label="Close banner"
+            >
+              <div className="bg-white/10 p-2 rounded-lg">
+                <Image src="/icons/close.svg" alt="Close" width={10} height={10} />
+              </div>
+            </button>
+          </div>
+        );
+      })()}
 
       <nav className="mx-auto px-4 md:px-16 z-40">
         <div className="flex justify-between items-center h-16 md:h-16">
