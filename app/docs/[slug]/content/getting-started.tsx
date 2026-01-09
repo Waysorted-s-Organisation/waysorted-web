@@ -1,17 +1,10 @@
 export default function GettingStarted() {
   return (
-<<<<<<< HEAD
-    <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Getting Started</h2>
-      <p className="text-secondary-db-70 font-regular text-sm italic leading-relaxed mb-6">
-        This is a living document. It will continue to evolve as Waysorted grows, with updates reflecting new features, improvements, and user feedback.
-=======
     <div className="select-text">
       {/* Article headings included so TOC can map them */}
       <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Overview of waysorted</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Waysorted is a comprehensive platform designed to address common challenges in design workflows, such as compatibility issues, scattered support, performance slowdowns, and budget drain from multiple plugin subscriptions. By bundling plugins into curated packs, offering a credit system, and providing an all-in-one marketplace, Waysorted streamlines access to tools while promoting community-driven growth.
->>>>>>> wayweb/dev
       </p>
 
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
@@ -30,7 +23,7 @@ export default function GettingStarted() {
         <li>Reducing cost and subscription clutter</li>
         <li>Managing essential tools from one interface</li>
       </ul>
-<<<<<<< HEAD
+
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
         Waysorted is built for UI/UX designers, product designers, students, and design teams who rely on multiple plugins and want a simpler, more efficient workflow.
       </p>
@@ -124,9 +117,6 @@ export default function GettingStarted() {
       <p className="text-secondary-db-70 font-regular text-sm leading-relaxed mt-6">
         Last updated: December 2025. Need help? Contact info@waysorted.com or use Report a Bug from your dashboard.
       </p>
-    </>
-=======
     </div>
->>>>>>> wayweb/dev
   );
 }
