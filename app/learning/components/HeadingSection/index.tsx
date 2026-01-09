@@ -14,7 +14,7 @@ export default function HeadingSection() {
               height={30}
               className="block p-1"
             />
-            <span className="pl-1 pr-2 py-1 text-secondary-db-100">WayLearning</span>
+            <span className="pl-1 pr-2 py-1 text-secondary-db-100">Learning Hub</span>
           </span>
         </div>
 

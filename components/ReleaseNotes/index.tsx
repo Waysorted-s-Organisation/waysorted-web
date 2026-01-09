@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Frown, Meh, Smile, Laugh, Heart, User, ArrowUpRight, Plus, Wrench, Bug, Check } from "lucide-react";
+import { User, ArrowUpRight, Plus, Wrench, Bug, Check } from "lucide-react";
 import GlowStarButton from "@/components/GlowStarButton";
 
 const RELEASE_DATA = [
@@ -241,21 +241,31 @@ export default function ReleaseNotes() {
                 <h3 className="text-xl font-medium text-secondary-db-100 mb-6">Rate the way this page helped you.</h3>
 
                 <div className="flex items-center justify-center gap-4 mb-8">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                        <button
-                            key={rating}
-                            onClick={() => setUserRating(rating)}
-                            className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-200
-                                    ${userRating === rating ? "bg-blue-100 text-blue-600 shadow-sm scale-110" : "bg-gray-100 text-gray-400 hover:bg-gray-200"}
-                                `}
-                        >
-                            {rating === 1 && <Frown size={24} />}
-                            {rating === 2 && <Meh size={24} />}
-                            {rating === 3 && <Smile size={24} />}
-                            {rating === 4 && <Laugh size={24} />}
-                            {rating === 5 && <Heart size={24} fill={userRating === 5 ? "currentColor" : "none"} />}
-                        </button>
-                    ))}
+                    {[
+                        { emoji: '😡', label: 'Very unsatisfied' },
+                        { emoji: '😐', label: 'Unsatisfied' },
+                        { emoji: '🙂', label: 'Neutral' },
+                        { emoji: '😍', label: 'Satisfied' },
+                        { emoji: '🤩', label: 'Very satisfied' }
+                    ].map((item, index) => {
+                        const rating = index + 1;
+                        return (
+                            <button
+                                key={rating}
+                                onClick={() => setUserRating(rating)}
+                                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-3xl transition-all duration-200
+                                ${userRating === rating
+                                        ? "bg-[#2563EB] text-white shadow-md scale-105"
+                                        : "bg-secondary-db-5 text-secondary-db-40 hover:bg-secondary-db-10 hover:text-secondary-db-60"
+                                    }
+                            `}
+                            >
+                                <span className={userRating === rating ? 'grayscale-0' : 'grayscale opacity-60'}>
+                                    {item.emoji}
+                                </span>
+                            </button>
+                        )
+                    })}
                 </div>
 
                 <div className="bg-secondary-db-5 rounded-xl p-4 mb-6">

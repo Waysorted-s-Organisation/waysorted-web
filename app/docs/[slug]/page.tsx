@@ -53,6 +53,12 @@ import ProfilePhoto from "./content/profile-photo";
 import LinkedAccountsAndIntegrations from "./content/linked-accounts-and-integrations";
 import NotificationsPreferences from "./content/notifications-preferences";
 import BetaFeatures from "./content/beta-features";
+// New imports from dev branch
+import AccessibilityWcag from "./content/accessibility-wcag";
+import HandoffStandards from "./content/handoff-standards";
+import UiUxBestPractices from "./content/ui-ux-best-practices";
+import WaysortedPrinciples from "./content/waysorted-principles";
+import Examples from "./content/examples";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
@@ -108,6 +114,12 @@ const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
   "linked-accounts-and-integrations": LinkedAccountsAndIntegrations,
   "notifications-preferences": NotificationsPreferences,
   "beta-features": BetaFeatures,
+  // New mappings from dev branch
+  "accessibility-wcag": AccessibilityWcag,
+  "handoff-standards": HandoffStandards,
+  "ui-ux-best-practices": UiUxBestPractices,
+  "waysorted-principles": WaysortedPrinciples,
+  "examples": Examples,
 };
 
 // pSEO: Dynamic metadata for each doc page

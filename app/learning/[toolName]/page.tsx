@@ -111,7 +111,7 @@ export default function LearnMorePage() {
               className="text-secondary-db-100/50 text-base font-medium hover:text-secondary-db-100 cursor-pointer hover:border-b-2 hover:border-b-primary-way-100"
               onClick={() => router.push('/learning')}
             >
-              Learning
+              Learning Hub
             </span>
             <Image
               src="/icons/chevron-right.svg"
@@ -127,20 +127,21 @@ export default function LearnMorePage() {
         </div>
 
         {/* Heading */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-5 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 sm:gap-6">
-          <div>
-            <h1 className="text-3xl sm:text-6xl font-medium text-secondary-db-100 leading-tight w-full sm:w-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-5 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 sm:gap-16 mt-8 sm:mt-12">
+          <div className="w-full lg:max-w-3xl text-left">
+            <h1 className="text-3xl sm:text-5xl font-bold text-secondary-db-100 leading-tight">
               {tool?.heading ?? ''}
             </h1>
-            <div>
-              <button className="bg-secondary-db-100 hidden md:block text-white my-6 sm:my-8 py-3 px-6 sm:px-7 font-semibold text-base rounded-full cursor-pointer hover:bg-secondary-db-90">
-                Try now for free
-              </button>
-            </div>
+            <button className="bg-secondary-db-100 text-white mt-8 py-3.5 px-8 font-semibold text-base rounded-full cursor-pointer hover:bg-secondary-db-90 transition-colors">
+              Try now for free
+            </button>
           </div>
-          <p className="text-secondary-db-100 mt-4 sm:mt-16 text-base sm:text-xl font-medium max-w-full sm:max-w-lg">
-            {tool?.tagline ?? ''}
-          </p>
+
+          <div className="w-full lg:max-w-lg mt-2 lg:mt-4">
+            <p className="text-secondary-db-100 text-lg sm:text-xl font-medium leading-relaxed">
+              {tool?.tagline ?? ''}
+            </p>
+          </div>
         </div>
 
         {/* Carousel of ToolBriefs */}

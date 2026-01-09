@@ -21,17 +21,50 @@ export interface SidebarItem {
 }
 
 const sidebarData: SidebarItem[] = [
-  { title: "Getting Started", links: ["What is Waysorted", "Accessing Waysorted in Figma", "All-in-one Tools", "Supported Platforms", "Credits and Usage", "Whats Coming Next"] },
-  { title: "Waysorted's Plugin Suite", links: ["Introduction", "Main UI", "Wayspace", "Waychallenge", "Other Features"] },
-  { title: "Account and Workspace", links: ["Account Settings Navigation", "Profile and Settings Overview", "Profile Photo", "Linked Accounts and Integrations", "Notifications Preferences", "Beta Features"] },
-  { title: "Tools & Ecosystem", links: ["Searching and Browsing Plugins", "Creator Guidelines", "Request a Feature", "Ratings and Reviews"] },
-  { title: "Tools Reference", links: ["PDF Exporter", "Palettable", "Unit Converter", "Import Tool", "Upcoming Tools"] },
-  { title: "Frequently Asked Questions", links: ["FAQs"] },
-  { title: "Troubleshooting & Support", links: ["Common Errors", "Diagnostics", "Contact Support", "Bug Reporting"] },
-  { title: "Legal", links: ["Privacy Policy", "Terms of Service", "Data Processing", "Cookie Policy", "Intellectual Property Rights"] },
-  { title: "Integrations and Cloud", links: ["Figma Sync", "Backup and Recovery", "Third-Party Integrations"] },
-  { title: "Credits and Usage", links: ["Overview", "Earning Credits", "Using Credits", "Managing Credits"] },
-  { title: "Waysorted API Documentation", links: ["Developer Focused Guide", "Overview and Authentication", "Rate Limits", "Webhooks"] },
+  {
+    title: "General",
+    links: ["Getting Started", "What is Waysorted", "Account Creation and Setup", "Quick Integration with Figma", "Accessing Waysorted in Figma", "FAQs"]
+  },
+  {
+    title: "Waysorted's Plugin Suite",
+    links: ["Introduction", "Main UI", "Wayspace", "Waychallenge", "Other Features"]
+  },
+  {
+    title: "Plugins and Marketplace",
+    links: ["Searching and Browsing Plugins", "Creator Guidelines", "Ratings and Reviews"]
+  },
+  {
+    title: "Account and Workspace",
+    links: ["Profile and Settings", "Account Settings Navigation", "Profile and Settings Overview", "Profile Photo", "Linked Accounts and Integrations", "Notifications Preferences", "Beta Features"]
+  },
+  {
+    title: "Tools Reference",
+    links: ["PDF Exporter", "Palettable", "Unit Converter", "Import Tool", "Upcoming Tools"]
+  },
+  {
+    title: "Design Standards",
+    links: ["Waysorted Principles", "Accessibility-WCAG", "UI/UX Best Practices", "Handoff Standards"]
+  },
+  {
+    title: "Troubleshooting & Support",
+    links: ["Common Errors", "Diagnostics", "Contact Support", "Bug Reporting", "Request a Feature"]
+  },
+  {
+    title: "Legal",
+    links: ["Privacy Policy", "Terms of Service", "Data Processing", "Cookie Policy", "Intellectual Property Rights"]
+  },
+  {
+    title: "Integrations and Cloud",
+    links: ["Figma Sync", "Backup and Recovery", "Third-Party Integrations"]
+  },
+  {
+    title: "Credits and Usage",
+    links: ["Overview", "Earning Credits", "Using Credits", "Managing Credits"]
+  },
+  {
+    title: "Waysorted API Documentation",
+    links: ["Developer Focused Guide", "Overview and Authentication", "Examples", "Rate Limits", "Webhooks"]
+  },
 ];
 
 const slugify = (s: string) =>
@@ -39,7 +72,7 @@ const slugify = (s: string) =>
     .toLowerCase()
     .trim()
     .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9\\-]/g, "");
+    .replace(/[^a-z0-9\-]/g, "");
 
 export default function DocsShell({
   children,
@@ -101,9 +134,9 @@ export default function DocsShell({
             />
           </div>
 
-          <h2 className="text-2xl font-medium text-white mb-10 leading-snug">
+          <h1 className="text-2xl font-medium text-white mb-10 leading-snug">
             Way&apos;s UI delivers its best experience on desktop.
-          </h2>
+          </h1>
 
           <button
             onClick={() => router.push("/")}
@@ -124,15 +157,15 @@ export default function DocsShell({
       {/* Desktop View (Hidden on screens smaller than lg) */}
       <div className="hidden lg:block min-h-screen bg-white">
         <main
-          className={`min-h-screen bg-white transition-all duration-300 pb-45${showBanner ? "pt-24" : "pt-16"
+          className={`min-h-screen bg-white transition-all duration-300 pb-45 ${showBanner ? "pt-24" : "pt-16"
             }`}
         >
           <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 
-          <div className="max-w-7xl bg-white mx-auto px-5 py-24">
+          <div className="max-w-7xl bg-white mx-auto px-5 pt-24 pb-4">
             <nav className="text-base font-medium text-secondary-db-100/50">
               <span
-                className="cursor-pointer hover:text-secondary-db-100 hover:border-b-2 hover:border-b-primary-way-100"
+                className="cursor-pointer hover:text-secondary-db-100 hover:border-b-2 hover:border-b-primary-way-10"
                 onClick={() => router.push("/")}
               >
                 Home
@@ -178,7 +211,7 @@ export default function DocsShell({
           {/* Three-column layout: Sidebar / Content / TOC */}
           <div className="max-w-7xl mx-auto px-5 py-12 flex gap-8 items-stretch">
             {/* Sidebar */}
-            <aside className="w-72 p-4 flex flex-col shrink-0">
+            <aside className="w-72 px-4 pb-4 flex flex-col shrink-0">
               <div className="relative w-72 mb-6">
                 <input
                   type="text"
@@ -202,14 +235,14 @@ export default function DocsShell({
                   return (
                     <div
                       key={item.title}
-                      className={`w-72 rounded-xl ${item.links.length > 0 && isOpen
+                      className={`w-72 rounded-xl ${item.links && isOpen
                         ? "bg-primary-way-10 outline outline-2 outline-primary-way-10"
                         : ""
                         }`}
                     >
                       <button
-                        onClick={() => item.links.length > 0 ? toggleSection(item.title) : router.push(`/docs/${slugify(item.title)}`)}
-                        className={`flex items-center justify-between w-72 px-2 py-2 text-left text-secondary-db-80 font-medium hover:bg-primary-way-10 cursor-pointer ${item.links.length > 0 && isOpen
+                        onClick={() => item.links && toggleSection(item.title)}
+                        className={`flex items-center justify-between w-72 px-2 py-2 text-left text-secondary-db-80 font-medium hover:bg-primary-way-10 cursor-pointer ${item.links && isOpen
                           ? "bg-primary-way-100 text-white hover:bg-primary-way-100 rounded-t-xl"
                           : ""
                           }`}
