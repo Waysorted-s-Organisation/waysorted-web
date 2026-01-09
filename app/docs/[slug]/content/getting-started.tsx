@@ -1,6 +1,6 @@
 export default function GettingStarted() {
   return (
-    <>
+    <div className="select-text">
       {/* Article headings included so TOC can map them */}
       <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Overview of waysorted</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
@@ -28,6 +28,6 @@ export default function GettingStarted() {
         <li><span className="text-secondary-db-100">Aviral Garg</span>: Co-Founder &amp; CTO</li>
         <li><span className="text-secondary-db-100">Sudhanshu Singh</span>: Co-Founder &amp; CIO</li>
       </ul>
-    </>
+    </div>
   );
 }
