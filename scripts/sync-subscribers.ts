@@ -51,9 +51,10 @@ async function migrate() {
         console.log("✅ Connected to Source DB");
 
         // 2. Connect to Dest (Subscriber DB)
-        const destConn = await mongoose.createConnection(DEST_URI!).asPromise();
+        // 2. Connect to Dest (Subscriber DB) - Force 'waysorted' db
+        const destConn = await mongoose.createConnection(DEST_URI!, { dbName: 'waysorted' }).asPromise();
         const SubscriberModel = destConn.model('Subscriber', SubscriberSchema);
-        console.log("✅ Connected to Destination DB");
+        console.log("✅ Connected to Destination DB (waysorted)");
 
         // 3. Fetch Users
         const users = await UserModel.find({}).lean();

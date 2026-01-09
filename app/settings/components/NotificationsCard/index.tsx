@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useState } from "react";
 import type { IUser } from "@/models/user";
 
 type Props = {
@@ -9,9 +10,49 @@ type Props = {
 
 export default function NotificationsCard({ user }: Props) {
   const { hasAnyNotifications, notifications } = user;
-  const handleSubscribe = () => {
-    console.log("Subscribe to newsletter");
-  }
+  const [showModal, setShowModal] = useState(false);
+  const [email, setEmail] = useState(user.email || "");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  const emailIsValid = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
+  const handleUnsubscribe = async () => {
+    if (!emailIsValid(email)) {
+      setToast({ message: "Please enter a valid email address", type: "error" });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch("/api/newsletter/unsubscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim() }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setToast({
+          message: data.message || "Successfully unsubscribed!",
+          type: "success"
+        });
+        setShowModal(false);
+        setTimeout(() => setToast(null), 3000);
+      } else {
+        setToast({ message: data.error || "Failed to unsubscribe", type: "error" });
+        setTimeout(() => setToast(null), 3000);
+      }
+    } catch (error) {
+      console.error("Newsletter unsubscribe error:", error);
+      setToast({ message: "Failed to unsubscribe. Please try again.", type: "error" });
+      setTimeout(() => setToast(null), 3000);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <section className="max-w-3xl rounded-lg border border-secondary-db-5 bg-white">
@@ -39,11 +80,11 @@ export default function NotificationsCard({ user }: Props) {
                 </p>
               </div>
               <button
-                onClick={handleSubscribe}
+                onClick={() => setShowModal(true)}
                 type="button"
                 className="bg-primary-way-10 outline outline-1 outline-primary-way-100 rounded-lg text-sm font-medium text-primary-way-100 p-2 cursor-pointer hover:bg-primary-way-30 hover:outline hover:outline-1 hover:outline-primary-way-100"
               >
-                Subscribe Newsletter
+                Unsubscribe
               </button>
             </div>
           </div>
@@ -76,6 +117,58 @@ export default function NotificationsCard({ user }: Props) {
           </>
         )}
       </div>
+
+      {/* Newsletter Subscription Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-secondary-db-100">Unsubscribe from Newsletter</h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-secondary-db-60 hover:text-secondary-db-100"
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                  <path d="M15 5L5 15M5 5L15 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+            </div>
+            <p className="text-sm text-secondary-db-80 mb-4">
+              Confirm your email to unsubscribe from plugin updates and credit drops.
+            </p>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="w-full px-4 py-2 border border-secondary-db-20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-way-60 mb-4"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowModal(false)}
+                className="flex-1 px-4 py-2 border border-secondary-db-20 rounded-lg text-secondary-db-80 hover:bg-secondary-db-5"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUnsubscribe}
+                disabled={isSubmitting || !emailIsValid(email)}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? "Unsubscribing..." : "Unsubscribe"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast && (
+        <div className={`fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 ${toast.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+          }`}>
+          {toast.message}
+        </div>
+      )}
     </section>
   );
 }
