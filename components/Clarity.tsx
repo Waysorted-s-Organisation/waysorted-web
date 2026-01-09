@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
-import { init } from "@microsoft/clarity";
+import Clarity from "@microsoft/clarity";
 
-export default function Clarity() {
+export default function ClarityTracking() {
     useEffect(() => {
-        init("uycxde58x1");
+        Clarity.init("uycxde58x1");
     }, []);
 
     return null;
