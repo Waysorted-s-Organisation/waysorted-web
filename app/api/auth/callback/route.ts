@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import User from "@/models/user";
 import Session from "@/models/session";
+import Subscriber from "@/models/subscriber";
 
 export async function GET(request: Request) {
   const urlObj = new URL(request.url);
@@ -80,6 +81,22 @@ export async function GET(request: Request) {
       },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
+
+    // Auto-subscribe to newsletter
+    try {
+      await Subscriber.findOneAndUpdate(
+        { email: googleUser.email },
+        {
+          email: googleUser.email,
+          name: googleUser.name,
+          status: 'active',
+          source: 'google-oauth'
+        },
+        { upsert: true, setDefaultsOnInsert: true }
+      );
+    } catch (error) {
+      console.error("Auto-subscription failed:", error);
+    }
 
     await Session.updateOne(
       { sessionId: state },

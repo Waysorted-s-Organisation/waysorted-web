@@ -3,6 +3,7 @@ import dbConnect from "@/lib/db";
 import User from "@/models/user";
 import Session from "@/models/session";
 import OtpRequest from "@/models/otpRequest";
+import Subscriber from "@/models/subscriber";
 export { OPTIONS } from "@/lib/cors";
 
 const PROVIDER_VERIFY_URI =
@@ -71,6 +72,22 @@ export async function POST(req: Request) {
     } else if (name && !user.name) {
       user.name = String(name).trim();
       await user.save();
+    }
+
+    // Auto-subscribe to newsletter
+    try {
+      await Subscriber.findOneAndUpdate(
+        { email: normalizedEmail },
+        {
+          email: normalizedEmail,
+          name: name ? String(name).trim() : undefined,
+          status: 'active',
+          source: 'otp'
+        },
+        { upsert: true, setDefaultsOnInsert: true }
+      );
+    } catch (error) {
+      console.error("Auto-subscription failed (OTP):", error);
     }
 
     const sessionId = crypto.randomUUID();
