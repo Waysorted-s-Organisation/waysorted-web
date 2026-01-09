@@ -156,17 +156,17 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
         const ctaVariations = [
           {
             text: "Create presentation-ready PDFs in one click...",
-            link: "/learning/palettable",
+            link: "/learning/frames-to-pdf",
             linkText: "Click here"
           },
           {
             text: "Convert units & prep designs for print instantly...",
-            link: "/learning/palettable",
+            link: "/learning/unit-converter",
             linkText: "Click here"
           },
           {
             text: "Import external design assets more seamlessly...",
-            link: "/learning/palettable",
+            link: "/learning/file-importer",
             linkText: "Click here"
           },
           {
