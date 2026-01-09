@@ -6,6 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
 import SplashGate from "@/components/SplashGate";
+import Clarity from "@/components/Clarity";
 
 const GA_TRACKING_ID = "G-KS8MVKMRYV";
 
@@ -287,15 +288,7 @@ export default function RootLayout({
             gtag('config', '${GA_TRACKING_ID}');
           `}
         </Script>
-        <Script id="microsoft-clarity" strategy="afterInteractive">
-          {`
-            (function(c,l,a,r,i,t,y){
-                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i+"?ref=bwt";
-                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-            })(window, document, "clarity", "script", "uycxde58x1");
-          `}
-        </Script>
+        <Clarity />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
