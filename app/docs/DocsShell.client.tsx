@@ -176,7 +176,7 @@ export default function DocsShell({
           {/* Three-column layout: Sidebar / Content / TOC */}
           <div className="max-w-7xl mx-auto px-5 py-12 flex gap-8 items-stretch">
             {/* Sidebar */}
-            <aside className="w-72 p-4 flex flex-col shrink-0">
+            <aside className="w-72 px-4 pb-4 flex flex-col shrink-0">
               <div className="relative w-72 mb-6">
                 <input
                   type="text"
@@ -201,15 +201,15 @@ export default function DocsShell({
                     <div
                       key={item.title}
                       className={`w-72 rounded-xl ${item.links && isOpen
-                          ? "bg-primary-way-10 outline outline-2 outline-primary-way-10"
-                          : ""
+                        ? "bg-primary-way-10 outline outline-2 outline-primary-way-10"
+                        : ""
                         }`}
                     >
                       <button
                         onClick={() => item.links && toggleSection(item.title)}
                         className={`flex items-center justify-between w-72 px-2 py-2 text-left text-secondary-db-80 font-medium hover:bg-primary-way-10 cursor-pointer ${item.links && isOpen
-                            ? "bg-primary-way-100 text-white hover:bg-primary-way-100 rounded-t-xl"
-                            : ""
+                          ? "bg-primary-way-100 text-white hover:bg-primary-way-100 rounded-t-xl"
+                          : ""
                           }`}
                       >
                         {item.title}
@@ -253,8 +253,8 @@ export default function DocsShell({
                                     router.push(`/docs/${slug}`);
                                   }}
                                   className={`text-sm ml-2 font-regular cursor-pointer transition-colors duration-200 py-1 ${activeLink === link
-                                      ? "text-primary-way-100"
-                                      : "text-secondary-db-100 hover:text-primary-way-100"
+                                    ? "text-primary-way-100"
+                                    : "text-secondary-db-100 hover:text-primary-way-100"
                                     }`}
                                 >
                                   {link}
