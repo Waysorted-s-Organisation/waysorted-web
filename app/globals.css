@@ -712,7 +712,8 @@ html, body {
 /* On hover/focus: entrance, then floating loop.
    IMPORTANT: use --enter-delay if provided, else fallback to --delay. */
 .btn-glow:hover .btn-star,
-.btn-glow:focus-visible .btn-star {
+.btn-glow:focus-visible .btn-star,
+.btn-glow.force-hover .btn-star {
   opacity: 1;
   animation:
     starEnter var(--enter-dur, .45s) cubic-bezier(.2,.8,.2,1) var(--enter-delay, var(--delay, 0s)) forwards,
@@ -724,7 +725,8 @@ html, body {
 }
  
 .btn-glow:hover .btn-star::before,
-.btn-glow:focus-visible .btn-star::before {
+.btn-glow:focus-visible .btn-star::before,
+.btn-glow.force-hover .btn-star::before {
   opacity: 1;
   transform: scale(1);
   filter: blur(12px);
@@ -774,7 +776,8 @@ html, body {
 /* Reduced motion: no movement, keep a visible glow */
 @media (prefers-reduced-motion: reduce) {
   .btn-glow:hover .btn-star,
-  .btn-glow:focus-visible .btn-star {
+  .btn-glow:focus-visible .btn-star,
+  .btn-glow.force-hover .btn-star {
     animation: none !important;
     opacity: 1;
     transform: translate(-50%, -50%) scale(var(--scale, 1)) rotate(var(--rot, 0deg));

@@ -14,7 +14,7 @@ const Hero = () => {
       router.push('/mobile-redirect');
     } else {
       // Desktop behavior
-      window.open("https://www.figma.com/community/plugin/1532842109377504268/waysorted", "_blank");
+      window.open("https://docs.google.com/forms/d/e/1FAIpQLSdAFf4A4aV4v1TkRBWn8DrTZMb4W-4lkMsMVy1T-LiWo2doBg/viewform?usp=header", "_blank");
     }
   };
 
@@ -62,7 +62,7 @@ const Hero = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <GlowStarButton
             onClick={handleFigmaClick}
-            className="inline-flex border bg-secondary-db-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer"
+            className="inline-flex border bg-secondary-db-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer force-hover"
           >
             <span className="flex items-center gap-x-2">
               <span>Join Waitlist</span>
