@@ -319,6 +319,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                   width={16}
                   height={16}
                 />
+                <span>Waysorted for Figma</span>
               </span>
             </GlowStarButton>
 
