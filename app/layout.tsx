@@ -294,7 +294,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${hanken.className} no-scrollbar select-none`}>
+      <body className={`${hanken.className} no-scrollbar`}>
         <SplashGate minMs={4000} initialOnly>
           <BannerProvider>
             {children}
