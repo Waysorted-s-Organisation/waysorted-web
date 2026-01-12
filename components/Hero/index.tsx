@@ -8,14 +8,7 @@ const Hero = () => {
   const router = useRouter();
 
   const handleFigmaClick = () => {
-    // Check for mobile (matches Tailwind's lg breakpoint of 1024px)
-    if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
-      // Redirect to your new dedicated mobile page
-      router.push('/mobile-redirect');
-    } else {
-      // Desktop behavior
-      window.open("https://docs.google.com/forms/d/e/1FAIpQLSdAFf4A4aV4v1TkRBWn8DrTZMb4W-4lkMsMVy1T-LiWo2doBg/viewform?usp=header", "_blank");
-    }
+    window.open("https://docs.google.com/forms/d/e/1FAIpQLSdAFf4A4aV4v1TkRBWn8DrTZMb4W-4lkMsMVy1T-LiWo2doBg/viewform?usp=header", "_blank");
   };
 
   return (
