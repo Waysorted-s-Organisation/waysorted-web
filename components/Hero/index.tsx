@@ -28,7 +28,11 @@ const Hero = () => {
         <button
           className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-3 py-1 md:px-5 md:py-2 text-sm text-secondary-db-100 mb-4 cursor-pointer"
           onClick={() => {
-            router.push('/requests');
+            if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
+              router.push('/mobile-redirect');
+            } else {
+              router.push('/requests');
+            }
           }}
         >
           <Image
