@@ -29,7 +29,7 @@ export async function GET(req: NextRequest, context: any) {
           "Arrange frames in your desired sequence before exporting.",
           "Merge all frames into a single, perfectly sequenced PDF document."
         ],
-        image: "/images/frames-to-pdf/1.png",
+        image: "/images/frames-to-pdf/1.png?v=1",
         imageAlt: "Frame reordering interface with drag-and-drop functionality for PDF merging"
       },
       {
@@ -43,7 +43,7 @@ export async function GET(req: NextRequest, context: any) {
           "Drag frames into groups and reposition them for your desired output.",
           "Process batch exports efficiently with intelligent grouping controls."
         ],
-        image: "/images/frames-to-pdf/2.png",
+        image: "/images/frames-to-pdf/2.png?v=1",
         imageAlt: "Group merge interface showing multiple PDF creation in batch"
       },
       {
@@ -57,7 +57,7 @@ export async function GET(req: NextRequest, context: any) {
           "Verify frame order and content accuracy before exporting.",
           "Catch errors early with instant visual feedback."
         ],
-        image: "/images/frames-to-pdf/3.png",
+        image: "/images/frames-to-pdf/3.png?v=1",
         imageAlt: "Preview panel displaying merged PDF output for verification"
       },
       {
@@ -71,7 +71,7 @@ export async function GET(req: NextRequest, context: any) {
           "Choose 72 DPI for web screens, 300 DPI for professional printing, or 150 DPI for standard file sharing.",
           "Adjust DPI to ensure your final design is pixel-perfect for any output medium."
         ],
-        image: "/images/frames-to-pdf/4.png",
+        image: "/images/frames-to-pdf/4.png?v=1",
         imageAlt: "DPI settings panel with options for 72, 150, and 300 DPI resolution"
       },
       {
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest, context: any) {
           "Choose between high or low compression based on your needs.",
           "Optimize files for faster sharing via web and email."
         ],
-        image: "/images/frames-to-pdf/5.png",
+        image: "/images/frames-to-pdf/5.png?v=1",
         imageAlt: "PDF compression settings with high and low compression options"
       },
       {
@@ -99,7 +99,7 @@ export async function GET(req: NextRequest, context: any) {
           "Ensure only authorized viewers can access your sensitive designs.",
           "Maintain full security control over your exported documents."
         ],
-        image: "/images/frames-to-pdf/6.png",
+        image: "/images/frames-to-pdf/6.png?v=1",
         imageAlt: "Password encryption dialog for securing PDF documents"
       },
       {
@@ -113,7 +113,7 @@ export async function GET(req: NextRequest, context: any) {
           "Select RGB for digital screens and online viewing.",
           "Pick CMYK for professional print media to ensure accurate color reproduction."
         ],
-        image: "/images/frames-to-pdf/7.png",
+        image: "/images/frames-to-pdf/7.png?v=1",
         imageAlt: "Color mode selection panel with RGB and CMYK options"
       },
       {
@@ -127,7 +127,7 @@ export async function GET(req: NextRequest, context: any) {
           "Instantly download your ready-to-share PDF file.",
           "Use Zip Export to bundle multiple files efficiently for organized delivery."
         ],
-        image: "/images/frames-to-pdf/8.png",
+        image: "/images/frames-to-pdf/8.png?v=1",
         imageAlt: "Export options showing PDF download and Zip export functionality"
       }
     ];
