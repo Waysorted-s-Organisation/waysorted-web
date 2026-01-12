@@ -210,7 +210,14 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 src={logoSrc}
                 alt="WaySorted Logo"
                 fill
-                className="object-contain"
+                className="hidden md:block object-contain"
+                priority
+              />
+              <Image
+                src={isSecureSection ? '/icons/logo-white.svg' : '/images/blue-logo.png'}
+                alt="WaySorted Logo"
+                fill
+                className="block md:hidden object-contain"
                 priority
               />
             </div>
