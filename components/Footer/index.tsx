@@ -190,7 +190,7 @@ export default function Footer() {
                 <ul className="space-y-2 text-secondary-db-40">
 
                   <li><Link href="/report-bug" className="hover:text-white">Report a Bug</Link></li>
-                  <li><Link href="/learning" className="hover:text-white">Learning</Link></li>
+                  <li><Link href="/learning" className="hover:text-white">Learning Hub</Link></li>
                   <li><Link href="/support" className="hover:text-white">FAQs</Link></li>
                 </ul>
               </div>

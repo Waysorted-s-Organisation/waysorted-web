@@ -35,7 +35,7 @@ export default function Breadcrumb() {
           className="text-primary-way-100 text-sm md:text-base font-medium cursor-pointer"
           onClick={() => router.push("/learning")}
         >
-          Learning
+          Learning Hub
         </span>
       </nav>
     </div>

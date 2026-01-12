@@ -507,7 +507,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                         setMobileResourcesOpen(false);
                       }}
                     >
-                      Learning
+                      Learning Hub
                     </button>
                     <button
                       className="w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
@@ -592,8 +592,8 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
             </button>
           )}
         </aside>
-      </div>
-    </header>
+      </div >
+    </header >
   );
 };
 

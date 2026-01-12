@@ -20,7 +20,7 @@ export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps)
       {/* Top section */}
       <div className="flex flex-col p-2 rounded-md bg-white m-2">
         {[
-          { title: 'Learning', link: 'learning', desc: 'Quick tips and tutorials to get you started fast.', icon: '/icons/learning.svg' },
+          { title: 'Learning Hub', link: 'learning', desc: 'Quick tips and tutorials to get you started fast.', icon: '/icons/learning.svg' },
           { title: 'Documentation', link: 'docs/getting-started', desc: 'Everything you need, explained in detail.', icon: '/icons/documentation.svg' },
         ].map((item, idx) => (
           <button
