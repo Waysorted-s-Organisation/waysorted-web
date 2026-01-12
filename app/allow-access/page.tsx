@@ -3,10 +3,20 @@
 import GlowStarButton from "@/components/GlowStarButton";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
+function AccessContent() {
+  const searchParams = useSearchParams();
+  const nextUrl = searchParams.get("next");
 
-export default function DisconnectedPage() {
-
+  const handleAllowAccess = () => {
+    if (nextUrl) {
+      window.location.href = nextUrl;
+    } else {
+      console.warn("No redirect URL provided");
+    }
+  };
 
   return (
     <div className="error-bg-dots min-h-screen flex flex-col">
@@ -41,6 +51,7 @@ export default function DisconnectedPage() {
                 <GlowStarButton
                   className="mt-6 w-full inline-flex items-center justify-center rounded-lg bg-primary-way-100 font-medium text-base text-white px-5 py-3 cursor-pointer"
                   aria-label="Allow access"
+                  onClick={handleAllowAccess}
                 >
                   Allow access
                 </GlowStarButton>
@@ -63,5 +74,13 @@ export default function DisconnectedPage() {
         </section>
       </main>
     </div>
+  );
+}
+
+export default function DisconnectedPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <AccessContent />
+    </Suspense>
   );
 }
