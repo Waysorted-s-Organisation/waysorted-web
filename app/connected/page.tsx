@@ -20,16 +20,16 @@ export default function ConnectedPage() {
         </nav>
 
         <section className="flex-grow flex items-center justify-center px-4 py-20">
-          <div className="max-w-2xl w-full text-center">
+          <div className="max-w-2xl w-full text-center flex flex-col items-center">
             <div className="mx-auto w-[157px] h-[157px] rounded-full bg-[#EAF2FF] flex items-center justify-center">
               <Image src="/icons/confeti.svg" alt="celebration" width={157} height={157} className="object-contain" />
             </div>
 
-            <h1 className="mt-8 text-3xl md:text-4xl font-semibold text-secondary-db-100">
-              <span className="text-primary-way-100">Awesome,</span>You&apos;re in with Way!
+            <h1 className="mt-8 text-3xl md:text-4xl font-semibold text-secondary-db-100 text-center">
+              <span className="text-primary-way-100">Awesome, </span>You&apos;re in with Way!
             </h1>
 
-            <p className="mt-3 text-sm md:text-base font-regular text-secondary-db-100 w-full md:max-w-md mx-auto">
+            <p className="mt-3 text-sm md:text-base font-regular text-secondary-db-100 w-full md:max-w-md mx-auto text-center">
               <span className="font-semibold">Head back to Figma</span> and start exploring the Waysorted.
               <br /> Your productivity boost is waiting for you.
             </p>
