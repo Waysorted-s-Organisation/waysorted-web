@@ -64,14 +64,14 @@ const GetStarted = () => {
     // Check for mobile (matches Tailwind's lg breakpoint of 1024px)
     if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
       // Redirect to your new dedicated mobile page
-      router.push('/mobile-redirect'); 
+      router.push('/mobile-redirect');
     } else {
       // Desktop behavior
       window.open("https://www.figma.com/community/plugin/1532842109377504268/waysorted", "_blank");
     }
   };
   return (
-    <section className="bg-white flex flex-col items-center justify-center text-center px-4 py-16 sm:py-24 md:py-40 overflow-hidden md:mb-90">
+    <section className="bg-white flex flex-col items-center justify-center text-center px-4 py-16 sm:py-24 md:py-20 overflow-hidden md:mb-44">
       {/* Heading and Subtext (z-index ensures they sit above floating elements if they overlap) */}
       <div className="relative z-10">
         <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-secondary-db-100 text-center leading-tight select-none">
@@ -83,39 +83,39 @@ const GetStarted = () => {
       </div>
 
       {/* INTERACTIVE CONTAINER */}
-      <motion.div 
+      <motion.div
         className="relative mt-12 sm:mt-16 md:mt-24 flex items-center justify-center"
         initial="initial"
         whileHover="hover"
-        // "animate" is optional here, but 'whileHover' handles the interaction automatically
+      // "animate" is optional here, but 'whileHover' handles the interaction automatically
       >
-        
+
         {/* FLOATING SVGs (Behind the button) */}
         {FLOATING_ITEMS.map((item) => (
           <motion.img
             key={item.id}
             src={item.src}
             alt={`Floating icon ${item.id}`}
-            className={`absolute select-none pointer-events-none ${item.className}`} 
+            className={`absolute select-none pointer-events-none ${item.className}`}
             // The className handles sizing (h-12 w-auto preserves aspect ratio)
-            
+
             variants={{
-              initial: { 
-                x: 0, 
-                y: 0, 
-                opacity: 0, 
-                scale: 0.5, 
+              initial: {
+                x: 0,
+                y: 0,
+                opacity: 0,
+                scale: 0.5,
               },
-              hover: { 
-                x: item.x, 
-                y: item.y, 
-                opacity: 1, 
-                scale: 1, 
+              hover: {
+                x: item.x,
+                y: item.y,
+                opacity: 1,
+                scale: 1,
                 transition: {
                   type: "spring",
                   stiffness: 180,
                   damping: 15,
-                  delay: item.delay 
+                  delay: item.delay
                 }
               }
             }}
@@ -143,7 +143,7 @@ const GetStarted = () => {
 
         {/* Button Glow Effect */}
         <div className="absolute inset-0 bg-secondary-db-100 blur-3xl opacity-20 z-0 rounded-full pointer-events-none" />
-        
+
       </motion.div>
     </section>
   );
