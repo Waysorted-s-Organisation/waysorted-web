@@ -129,7 +129,7 @@ export default function LearnMorePage() {
         {/* Heading */}
         <div className="max-w-7xl mx-auto px-4 sm:px-5 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 sm:gap-16 mt-8 sm:mt-12">
           <div className="w-full lg:max-w-3xl text-left">
-            <h1 className="text-3xl sm:text-5xl font-bold text-secondary-db-100 leading-tight">
+            <h1 className="text-[36px] font-semibold text-secondary-db-100 leading-tight">
               {tool?.heading ?? ''}
             </h1>
             <button className="bg-secondary-db-100 text-white mt-8 py-3.5 px-8 font-semibold text-base rounded-full cursor-pointer hover:bg-secondary-db-90 transition-colors">
