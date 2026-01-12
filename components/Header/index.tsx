@@ -547,7 +547,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               <div className="px-3 py-3">
                 <button
                   className="w-full rounded-xl bg-secondary-db-100 text-white px-4 py-3 font-semibold shadow-card active:scale-[0.99]"
-                  onClick={() => { router.push('/requests'); setMobileOpen(false); setMobileProductsOpen(false); setMobileResourcesOpen(false); }}
+                  onClick={() => { router.push('/mobile-redirect'); setMobileOpen(false); setMobileProductsOpen(false); setMobileResourcesOpen(false); }}
                 >
                   Request a feature
                 </button>
