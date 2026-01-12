@@ -65,16 +65,10 @@ const Hero = () => {
             className="inline-flex border bg-secondary-db-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer"
           >
             <span className="flex items-center gap-x-2">
-              <Image
-                src="/icons/figma.svg"
-                alt="Figma logo icon for Waysorted Figma plugin"
-                width={16}
-                height={16}
-              />
-              <span>Waysorted for Figma</span>
+              <span>Join Waitlist</span>
               <Image
                 src="/icons/arrow-white.svg"
-                alt="Arrow icon indicating navigation to Figma plugin"
+                alt="Arrow icon"
                 width={12}
                 height={12}
               />
@@ -82,7 +76,7 @@ const Hero = () => {
           </GlowStarButton>
         </div>
       </div>
-    </section>
+    </section >
   );
 };
 

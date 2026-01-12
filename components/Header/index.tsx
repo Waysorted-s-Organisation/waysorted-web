@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@/hooks/useUser';
 import UserMenu from '@/components/UserMenu';
 import products from "@/data/products.json"
-// import GlowingStarButton from '@/components/GlowStarButton';
+import GlowStarButton from '@/components/GlowStarButton';
 
 interface HeaderProps {
   showBanner: boolean;
@@ -50,6 +50,10 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
       console.error('Logout failed', e);
     }
   }
+
+  const handleFigmaClick = () => {
+    window.open("https://www.figma.com/community/plugin/1532842109377504268/waysorted", "_blank");
+  };
 
   // Close menus on route change (back/forward)
   useEffect(() => {
@@ -303,6 +307,20 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 buttonRef={languageBtnRef}
               />
             </div>
+
+            <GlowStarButton
+              onClick={handleFigmaClick}
+              className={`hidden md:inline-flex border bg-secondary-db-100 text-white font-semibold text-sm button-shadow px-3 py-2 rounded-xl active:scale-95 transition-transform cursor-pointer ml-2`}
+            >
+              <span className="flex items-center gap-x-2">
+                <Image
+                  src="/icons/figma.svg"
+                  alt="Figma"
+                  width={16}
+                  height={16}
+                />
+              </span>
+            </GlowStarButton>
 
             {/* <GlowingStarButton
               className={`hidden md:flex bg-secondary-db-100 shadow-glow font-medium text-sm md:text-base text-white px-4 md:px-5 py-2 rounded-lg items-center active:scale-95 transition-colors duration-100 cursor-pointer ${isSecureSection ? 'border border-secondary-db-80' : ''}`}
