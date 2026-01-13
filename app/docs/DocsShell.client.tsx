@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState, PropsWithChildren } from "react";
+import { useEffect, useState, useMemo, PropsWithChildren } from "react";
 import Image from "next/image";
 import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
@@ -120,6 +120,40 @@ export default function DocsShell({
     }
   }, [pathname]);
 
+  const filteredSidebarData = useMemo(() => {
+    if (!searchTerm.trim()) return sidebarData;
+
+    const lowerTerm = searchTerm.toLowerCase().trim();
+
+    return sidebarData
+      .map((section) => {
+        // Check if section title matches
+        const titleMatches = section.title.toLowerCase().includes(lowerTerm);
+
+        // Filter links that match
+        const matchingLinks = section.links.filter((link) =>
+          link.toLowerCase().includes(lowerTerm)
+        );
+
+        // If title matches, keep all links. If not, keep only matching links.
+        if (titleMatches) {
+          return section;
+        }
+
+        // If title doesn't match but we have matching links, return section with those links
+        if (matchingLinks.length > 0) {
+          return {
+            ...section,
+            links: matchingLinks,
+          };
+        }
+
+        // No match
+        return null;
+      })
+      .filter(Boolean) as SidebarItem[];
+  }, [searchTerm]);
+
   return (
     <>
       <div className="lg:hidden fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-center blue-bg-dots">
@@ -230,76 +264,82 @@ export default function DocsShell({
               </div>
 
               <nav className="space-y-1">
-                {sidebarData.map((item) => {
-                  const isOpen = openSection === item.title;
-                  return (
-                    <div
-                      key={item.title}
-                      className={`w-72 rounded-xl ${item.links && isOpen
-                        ? "bg-primary-way-10 outline outline-2 outline-primary-way-10"
-                        : ""
-                        }`}
-                    >
-                      <button
-                        onClick={() => item.links && toggleSection(item.title)}
-                        className={`flex items-center justify-between w-72 px-2 py-2 text-left text-secondary-db-80 font-medium hover:bg-primary-way-10 cursor-pointer ${item.links && isOpen
-                          ? "bg-primary-way-100 text-white hover:bg-primary-way-100 rounded-t-xl"
+                {filteredSidebarData.length === 0 ? (
+                  <p className="text-sm text-secondary-db-70 px-2">No results found.</p>
+                ) : (
+                  filteredSidebarData.map((item) => {
+                    const isSearching = searchTerm.trim().length > 0;
+                    const isOpen = openSection === item.title || isSearching;
+
+                    return (
+                      <div
+                        key={item.title}
+                        className={`w-72 rounded-xl ${item.links && isOpen
+                          ? "bg-primary-way-10 outline outline-2 outline-primary-way-10"
                           : ""
                           }`}
                       >
-                        {item.title}
-                        {item.links.length > 0 && (
-                          <span>
-                            {isOpen ? (
-                              <Image
-                                src="/icons/arrow-up-white.svg"
-                                alt="Collapse"
-                                width={12}
-                                height={6}
-                                className="inline"
-                              />
-                            ) : (
-                              <Image
-                                src="/icons/arrow-down-blue.svg"
-                                alt="Expand"
-                                width={12}
-                                height={6}
-                                className="inline"
-                              />
-                            )}
-                          </span>
-                        )}
-                      </button>
-
-                      {item.links.length > 0 && (
-                        <div
-                          className={`ml-3 py-2 relative overflow-hidden transition-[max-height] duration-900 ease-in-out ${isOpen ? "max-h-96" : "max-h-0"
+                        <button
+                          onClick={() => item.links && toggleSection(item.title)}
+                          className={`flex items-center justify-between w-72 px-2 py-2 text-left text-secondary-db-80 font-medium hover:bg-primary-way-10 cursor-pointer ${item.links && isOpen
+                            ? "bg-primary-way-100 text-white hover:bg-primary-way-100 rounded-t-xl"
+                            : ""
                             }`}
                         >
-                          <div className="absolute left-0 top-[1.2em] bottom-[1em] w-[1.5px] bg-primary-way-100" />
-                          <div className="pt-1">
-                            {item.links.map((link) => {
-                              const slug = slugify(link);
-                              return (
-                                <Link
-                                  key={link}
-                                  href={`/docs/${slug}`}
-                                  onClick={() => setActiveLink(link)}
-                                  className={`text-sm ml-2 font-regular cursor-pointer transition-colors duration-200 py-1 block ${activeLink === link
-                                    ? "text-primary-way-100"
-                                    : "text-secondary-db-100 hover:text-primary-way-100"
-                                    }`}
-                                >
-                                  {link}
-                                </Link>
-                              );
-                            })}
+                          {item.title}
+                          {item.links.length > 0 && !isSearching && (
+                            <span>
+                              {isOpen ? (
+                                <Image
+                                  src="/icons/arrow-up-white.svg"
+                                  alt="Collapse"
+                                  width={12}
+                                  height={6}
+                                  className="inline"
+                                />
+                              ) : (
+                                <Image
+                                  src="/icons/arrow-down-blue.svg"
+                                  alt="Expand"
+                                  width={12}
+                                  height={6}
+                                  className="inline"
+                                />
+                              )}
+                            </span>
+                          )}
+                        </button>
+
+                        {item.links.length > 0 && (
+                          <div
+                            className={`ml-3 py-2 relative overflow-hidden transition-[max-height] duration-900 ease-in-out ${isOpen ? "max-h-96" : "max-h-0"
+                              }`}
+                          >
+                            <div className="absolute left-0 top-[1.2em] bottom-[1em] w-[1.5px] bg-primary-way-100" />
+                            <div className="pt-1">
+                              {item.links.map((link) => {
+                                const slug = slugify(link);
+                                return (
+                                  <Link
+                                    key={link}
+                                    href={`/docs/${slug}`}
+                                    onClick={() => setActiveLink(link)}
+                                    className={`text-sm ml-2 font-regular cursor-pointer transition-colors duration-200 py-1 block ${activeLink === link
+                                      ? "text-primary-way-100"
+                                      : "text-secondary-db-100 hover:text-primary-way-100"
+                                      }`}
+                                  >
+                                    {link}
+                                  </Link>
+                                );
+                              })}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+                        )}
+                      </div>
+                    );
+                  })
+                )}
               </nav>
             </aside>
 
