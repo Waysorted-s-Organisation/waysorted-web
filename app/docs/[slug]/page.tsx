@@ -28,9 +28,6 @@ import RatingsAndReviews from "./content/ratings-and-reviews";
 import PdfExporter from "./content/pdf-exporter";
 import PrivacyPolicy from "./content/privacy-policy";
 import TermsOfService from "./content/terms-of-service";
-import DataProcessing from "./content/data-processing";
-import CookiePolicy from "./content/cookie-policy";
-import IntellectualPropertyRights from "./content/intellectual-property-rights";
 import FigmaSync from "./content/figma-sync";
 import BackupAndRecovery from "./content/backup-and-recovery";
 import ThirdPartyIntegrations from "./content/third-party-integrations";
@@ -89,9 +86,6 @@ const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
   "pdf-exporter": PdfExporter,
   "privacy-policy": PrivacyPolicy,
   "terms-of-service": TermsOfService,
-  "data-processing": DataProcessing,
-  "cookie-policy": CookiePolicy,
-  "intellectual-property-rights": IntellectualPropertyRights,
   "figma-sync": FigmaSync,
   "backup-and-recovery": BackupAndRecovery,
   "third-party-integrations": ThirdPartyIntegrations,

@@ -51,7 +51,7 @@ const sidebarData: SidebarItem[] = [
   },
   {
     title: "Legal",
-    links: ["Privacy Policy", "Terms of Service", "Data Processing", "Cookie Policy", "Intellectual Property Rights"]
+    links: ["Privacy Policy", "Terms of Service"]
   },
   {
     title: "Integrations and Cloud",
