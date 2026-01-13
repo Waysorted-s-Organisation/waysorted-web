@@ -4,7 +4,6 @@ export default function TermsOfService() {
     return (
         <>
             <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Terms & Conditions</h2>
-            <p className="text-secondary-db-70 font-regular text-base leading-relaxed mb-2">(Also referred to as &quot;Terms of Service&quot; or &quot;Terms&quot;)</p>
 
             <h3 id="introduction" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">1. Introduction</h3>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
