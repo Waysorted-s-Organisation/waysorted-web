@@ -1,7 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { Bell, PlusIcon, SearchIcon, Sun } from "lucide-react";
 import {
   Dialog,
@@ -16,14 +14,11 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import { Separator } from "@/components/ui/separator";
 import { useMyRequest } from "@/context/MyRequestContext";
-import ProfileDropdown from "./ProfileDropdown";
-import Notification from "./Notification";
-import { useRouter } from "next/navigation";
-import { useUser } from "@/hooks/useUser";
 import { useRequests } from "@/context/RequestContext";
+import ProfileDropdown from "@/components/feature-requests/ProfileDropdown";
+import { useRouter } from "next/navigation";
 
 interface BugUploadDialogProps {
   open: boolean;
@@ -36,7 +31,6 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
   const [uploading, setUploading] = useState<boolean>(false);
   const [successOpen, setSuccessOpen] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
-  const [bugDescription, setBugDescription] = useState<string>("");
 
   useEffect(() => {
     if (open) {
@@ -44,7 +38,7 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
       setUploading(false)
       setProgress(0)
     }
-  }, [open])
+  }, [open, setFiles])
 
   function startMockUpload() {
     setUploading(true)
@@ -65,48 +59,25 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
   function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const newFiles = Array.from(e.target.files || []).slice(0, 2)
     setFiles(newFiles)
-    if (newFiles.length) { startMockUpload() }
-    // if (newFiles.length) {
-    //   setUploading(true)
-    //   // simulate upload progress
-    //   setTimeout(() => setUploading(false), 1500)
-    // }
+      if (newFiles.length) {startMockUpload()}
   }
 
-  const handleSubmit = async () => {
-    if (!bugDescription.trim()) {
-      toast.error("Please describe the bug");
-      return;
-    }
+  const handleSubmit = () => {
     setUploading(true)
     setProgress(0)
-    try {
-      // Submit bug report to API
-      const res = await fetch("/api/requests", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: bugDescription.slice(0, 100), // Use first 100 chars as title
-          description: bugDescription,
-          type: "bug",
-          board: "Figma Plugin"
-        })
-      });
-
-      if (res.ok) {
-        setProgress(100);
-        onOpenChange(false);
-        toast.success("Bug report submitted successfully!");
-      } else {
-        const data = await res.json();
-        toast.error(data.message || "Failed to submit bug report");
-      }
-    } catch (error) {
-      console.error("Bug report submission error:", error);
-      toast.error("Failed to submit bug report");
-    } finally {
-      setUploading(false);
-    }
+    const timer = setInterval(() => {
+      setProgress((p) => {
+        if (p >= 100) {
+          clearInterval(timer)
+          setUploading(false)
+          onOpenChange(false)
+          setSuccessOpen(true)
+          return 100
+        }
+        return p + 10
+      })
+    }, 150)
+    // 🔑 send files to backend here when progress completes
   }
 
   return (
@@ -118,24 +89,15 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
           </DialogTitle>
         </DialogHeader>
 
-        <Separator className="" />
+        <div className="relative -mx-6 h-px">
+          <Separator className="absolute inset-x-0" />
+        </div>
 
         <div className="flex flex-col gap-4">
-          {/* Bug Description */}
-          <div className="space-y-2">
-            <p className="text-sm font-medium">Describe the bug</p>
-            <Textarea
-              placeholder="What went wrong? Please describe the issue..."
-              className="bg-[#F3F3F3] min-h-[100px]"
-              value={bugDescription}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setBugDescription(e.target.value)}
-            />
-          </div>
-
-          <p className="text-sm font-medium">Upload and attach files (optional)</p>
+          <p className="text-sm font-medium">Upload and attach files</p>
 
           {/* Upload Box */}
-          <label className="flex flex-col w-full h-[100px] bg-[#F3F3F3] items-center justify-center border-2 border-dashed border-[#CFD0D1] rounded-md p-6 text-sm cursor-pointer hover:border-blue-400 transition">
+          <label className="flex flex-col w-[399px] h-[124px] bg-[#F3F3F3] items-center justify-center border-2 border-dashed border-[#CFD0D1] rounded-md p-6 text-sm cursor-pointer hover:border-blue-400 transition">
             <input
               type="file"
               multiple
@@ -143,7 +105,7 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
               className="hidden"
               onChange={handleFiles}
             />
-            <Image src="/upload.png" alt="Upload icon" width={32} height={32} className="py-2 h-auto w-auto" />
+            <img src="/upload.png" alt="" className="py-4"/>
             <p className="text-[#265BD1]">
               Click to Upload <span className="text-[#565A5E]">an Image</span>
             </p>
@@ -172,7 +134,7 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
                     >
                       <div className="flex-col w-full items-center gap-2">
                         <div className="flex items-center gap-2 mb-2">
-                          <Image src="/upload.png" alt="Uploaded file icon" width={16} height={16} />
+                          <img src="/upload.png" alt="" />
                           {file.name}
                         </div>
                         {file.size && (
@@ -183,21 +145,14 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
                             </span>
                           </p>
                         )}
-                        {/* <div className=" relative w-full h-1 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className={`absolute h-1 bg-[#265BD1] transition-all duration-500 ${
-                              uploading ? "w-[70%]" : "w-[100%]"
-                            }`}
-                          />
-                        </div> */}
-
+                        
                         <div className="relative w-full h-1 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className="absolute left-0 top-0 h-full bg-[#265BD1] transition-all duration-150"
-                            style={{ width: `${progress}%` }}
-                          />
-
-                        </div>
+                        <div
+                          className="absolute left-0 top-0 h-full bg-[#265BD1] transition-all duration-150"
+                          style={{ width: `${progress}%` }} 
+                        />
+                        
+                      </div>
                       </div>
                       <button
                         onClick={() =>
@@ -215,20 +170,24 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-end gap-2 mt-2 w-full">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              className="bg-[#265BD1] text-white"
-              disabled={uploading || !bugDescription.trim()}
-              onClick={handleSubmit}
-            >
-              {uploading ? "Submitting..." : "Submit report"}
-            </Button>
+          <div className="flex justify-between mt-2 w-full">
+            {files.length === 0 ? (
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={() => onOpenChange(false)}
+              >
+                Skip for now
+              </Button>
+            ) : (
+              <Button
+                className="bg-[#265BD1] w-1/2"
+                disabled={uploading}
+                onClick={handleSubmit}
+              >
+                {uploading ? "Uploading..." : "Submit report"}
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>
@@ -241,52 +200,52 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
 const Navbar = () => {
   const [type, setType] = useState("feature")
   const [mainOpen, setMainOpen] = useState(false)
-  const [successOpen, setSuccessOpen] = useState(false)
   const [bugDialogOpen, setBugDialogOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
 
   const { addMyRequest } = useMyRequest()
   const { searchRequests } = useRequests()
-  const { user } = useUser()
 
   const [title, setTitle] = useState("")
   const [desc, setDesc] = useState("")
 
-  const router = useRouter()
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchQuery(value)
+    searchRequests(value)
+  }
 
   return (
-    <div className="bg-white z-50 h-[68px] w-screen border-b border-gray-200 flex justify-between items-center px-4 md:px-5 sticky top-0">
-      <Link href="/" className="block" aria-label="Waysorted Home">
-        <div className="relative w-24 h-8 sm:w-28 sm:h-9 md:w-32 md:h-10 lg:w-36 lg:h-11 translate-y-1">
-          <Image
-            src="/images/logo.svg"
-            alt="WaySorted Logo"
-            fill
-            className="object-contain"
-            priority
-          />
-        </div>
-      </Link>
+    <div className="bg-white z-50 h-[68px] w-screen border-b border-gray-200 flex justify-between items-center px-5">
+      <div><img src="/Waysorted.svg" alt="logo" /></div>
 
       <div className="flex items-center gap-1">
-        <button className="border bg-white p-1 rounded-md w-[36px] h-[36px] flex items-center justify-center cursor-pointer hover:bg-gray-50">
+        <button className="border bg-white p-1 rounded-md w-[36px] h-[36px] flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
           <Sun size={16} />
         </button>
 
-        <div className="flex items-center hover:bg-[#F3F3F3] border rounded-md w-[241px] h-[36px] px-2 transition-colors">
-          <SearchIcon size={16} className="text-gray-400" />
+        <div className="flex items-center hover:bg-[#F3F3F3] border rounded-md w-[241px] h-[36px] px-2">
+          <SearchIcon size={16} />
           <Input
             type="text"
             placeholder="Search..."
-            className="border-none shadow-none px-2 focus:outline-none focus:ring-0 focus-visible:ring-0 h-full bg-transparent text-sm"
-            onChange={(e) => searchRequests(e.target.value)}
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="border-none shadow-none bg-transparent px-1 focus:outline-none focus:ring-0 focus-visible:ring-0"
           />
         </div>
+
+        <button className="relative border bg-white p-1 rounded-md w-[36px] h-[36px] flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
+          <Bell size={16} />
+          {/* Notification badge - uncomment when you want to show unread count */}
+          {/* <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span> */}
+        </button>
 
         {/* Main Request Dialog */}
         <Dialog open={mainOpen} onOpenChange={setMainOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-[#265BD1] text-white hover:bg-[#1F4AA9] cursor-pointer h-[36px]">
-              <PlusIcon size={12} className="mr-1" /> Request a feature
+            <Button className="bg-[#265BD1] text-white hover:bg-[#1F4AA9] cursor-pointer">
+              <PlusIcon size={12} /> Request a feature
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
@@ -296,7 +255,9 @@ const Navbar = () => {
               </DialogTitle>
             </DialogHeader>
 
-            <Separator className="" />
+            <div className="relative -mx-6 h-px">
+              <Separator className="absolute inset-x-0" />
+            </div>
 
             <div className="space-y-4">
               <div className="space-y-2">
@@ -348,88 +309,49 @@ const Navbar = () => {
                 <Label htmlFor="desc" className="">Description</Label>
                 <Textarea
                   id="desc"
-                  className="bg-[#F3F3F3] min-h-[100px]"
-                  placeholder="Describe your request..."
+                  className="bg-[#F3F3F3]"
                   value={desc}
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDesc(e.target.value)}
                 />
               </div>
 
-              <div className="flex justify-end pt-2">
-                <Button
-                  className="bg-[#265BD1] w-full text-white"
-                  onClick={async () => {
-                    if (type === 'bug') {
-                      setMainOpen(false);
-                      setTimeout(() => setBugDialogOpen(true), 200)
-                    } else {
-                      // Handle feature request submission
-                      await addMyRequest({
-                        title: title,
-                        description: desc,
-                        details: "Figma Plugin", // Hardcoded default for now
-                        status: "Under Review"
-                      })
-                      setMainOpen(false);
-                      setSuccessOpen(true);
-                      setTitle("")
-                      setDesc("")
-                    }
-                  }}
-                >
-                  Next step
-                </Button>
-              </div>
+              <Button
+                className="bg-[#265BD1] hover:bg-blue-700 text-white"
+                onClick={() => {
+                  addMyRequest({
+                    title,
+                    description: desc,
+                    details: "Submitted from Navbar",
+                    status:
+                      type === "bug" ? "Bug Reported" : "Under Review",
+                  })
+                  setMainOpen(false)
+                  if (type === "bug") {
+                    setBugDialogOpen(true)   // 🚀 open bug upload
+                  }
+                  setTitle("")
+                  setDesc("")
+                }}
+              >
+                Submit request
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
 
-        {/* Success Dialog */}
-        <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-          {/* <DialogContent align="center" className="sm:max-w-md flex flex-col items-center justify-center text-center p-6"> */}
-          <DialogContent className="sm:max-w-md flex flex-col items-center justify-center text-center p-6">
-            <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-2">
-              <i className="fa-solid fa-check text-green-600 text-xl"></i>
-            </div>
-            <DialogHeader className="">
-              <DialogTitle className="text-lg font-bold">Successfully Request Submitted!</DialogTitle>
-            </DialogHeader>
-            <p className="text-sm text-gray-500 mt-2">
-              Your feature request has been submitted successfully to the &quot;Figma Plugin&quot; board.
-            </p>
-            <Button
-              className="bg-[#265BD1] text-white mt-6 w-full"
-              onClick={() => setSuccessOpen(false)}
-            >
-              Done
-            </Button>
-          </DialogContent>
-        </Dialog>
+        {/* Bug upload dialog */}
+        <BugUploadDialog
+          open={bugDialogOpen}
+          onOpenChange={(v) => {
+            // Defer update to avoid "update during render"
+            setTimeout(() => setBugDialogOpen(v), 0);
+          }}
+        />
 
-
-        <BugUploadDialog open={bugDialogOpen} onOpenChange={setBugDialogOpen} />
-
-        {/* Notification Bell */}
-        <Notification />
-
-        <div className="h-6 w-[1px] bg-gray-300 mx-2"></div>
-
-        {/* Profile Dropdown or Auth Buttons */}
-        {user ? (
-          <ProfileDropdown />
-        ) : (
-          <div className="flex gap-2 text-sm">
-            <button onClick={() => router.push('/login')} className="bg-[#E8EFFC] text-[#265BD1] px-3 py-1.5 rounded-md hover:bg-[#dce6f9] transition-colors">
-              Log in
-            </button>
-            <button onClick={() => router.push('/signup')} className="bg-[#265BD1] text-white px-3 py-1.5 rounded-md hover:bg-[#1f4aa9] transition-colors">
-              Sign up
-            </button>
-          </div>
-        )}
+        <ProfileDropdown />
       </div>
-    </div >
+    </div>
   )
 }
 
-export default Navbar;
+export default Navbar

@@ -1,5 +1,5 @@
 "use client";
-import React, { createContext, useContext, useState, ReactNode, useMemo, useEffect } from "react";
+import React, { createContext, useContext, useState, ReactNode, useMemo, useEffect, useCallback } from "react";
 import { useUser } from "@/hooks/useUser";
 
 export interface LocalRequest {
@@ -21,27 +21,63 @@ interface LocalRequestContextType {
     activeBoard: string | null;
     filterByStatus: (status: string | null) => void;
     activeStatus: string | null;
+    sortBy: (sort: string | null) => void;
+    activeSort: string | null;
     loading: boolean;
     refetch: () => void;
 }
 
 const RequestContext = createContext<LocalRequestContextType | undefined>(undefined);
 
+// Map frontend status labels to backend status values (outside component)
+const mapStatusToBackend = (status: string | null): string | null => {
+    if (!status) return null;
+    const statusMap: Record<string, string> = {
+        "Planned": "planned",
+        "In Progress": "in-progress",
+        "Released": "released",
+        "Not done": "not done",
+        "Under Review": "under_review"
+    };
+    return statusMap[status] || status.toLowerCase().replace(/\s+/g, "-");
+};
+
+// Map backend status values to frontend labels (outside component)
+const mapStatusFromBackend = (status: string): string => {
+    const statusMap: Record<string, string> = {
+        "planned": "Planned",
+        "in-progress": "In Progress",
+        "in_progress": "In Progress",
+        "released": "Released",
+        "not done": "Not done",
+        "not_done": "Not done",
+        "under_review": "Under Review",
+        "under review": "Under Review"
+    };
+    return statusMap[status.toLowerCase()] || status;
+};
+
 export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+    const { user } = useUser(); // Get user from hook
     const [requests, setRequests] = useState<LocalRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeBoard, setActiveBoard] = useState<string | null>(null);
     const [activeStatus, setActiveStatus] = useState<string | null>(null);
+    const [activeSort, setActiveSort] = useState<string | null>("Most votes");
 
-    // Function to fetch requests from the API
-    const fetchRequests = async (query = "", board: string | null = null, status: string | null = null) => {
+    // Function to fetch requests from the API (excludes user's own requests)
+    const fetchRequests = useCallback(async (query = "", board: string | null = null, status: string | null = null, sort: string | null = null) => {
         try {
             setLoading(true);
             let url = "/api/requests";
             const params = new URLSearchParams();
             if (query) params.set("q", query);
             if (board) params.set("board", board);
-            if (status) params.set("status", status);
+            const backendStatus = mapStatusToBackend(status);
+            if (backendStatus) params.set("status", backendStatus);
+            if (sort === "Most votes") {
+                params.set("sort", "votes");
+            }
             if (params.toString()) url += `?${params.toString()}`;
 
             const res = await fetch(url);
@@ -50,15 +86,29 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
             if (res.ok && json.data) {
                 // Map backend data to LocalRequest interface
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const mapped: LocalRequest[] = json.data.map((req: any) => ({
+                let mapped: LocalRequest[] = json.data.map((req: any) => ({
                     id: req._id,
                     title: req.title,
                     description: req.description,
-                    status: req.status || "Planned",
+                    status: mapStatusFromBackend(req.status || "under_review"),
                     details: req.board || req.type || "",
                     votes: req.votes || 0,
                     votedBy: req.votedBy || [],
+                    authorId: req.authorId, // Keep author info for filtering
                 }));
+
+                // Filter out user's own requests (they go in My Issues)
+                if (user) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const userId = (user as any).id || (user as any)._id;
+                    mapped = mapped.filter(req => (req as any).authorId !== userId);
+                }
+
+                // Handle client-side sorting for "Random" (backend doesn't support it)
+                if (sort === "Random") {
+                    mapped = [...mapped].sort(() => Math.random() - 0.5);
+                }
+
                 setRequests(mapped);
             }
         } catch (error) {
@@ -66,29 +116,25 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
         } finally {
             setLoading(false);
         }
-    };
+    }, [user]); // Only depend on user - mapping functions are stable
 
     useEffect(() => {
-        fetchRequests("", activeBoard, activeStatus);
-    }, [activeBoard, activeStatus]);
+        fetchRequests("", activeBoard, activeStatus, activeSort);
+    }, [activeBoard, activeStatus, activeSort, fetchRequests]); // Include fetchRequests
 
     const addRequest = (title: string, description: string): void => {
         console.warn("Global addRequest called - should be handled via MyRequestContext or API");
     };
 
     const voteRequest = async (id: string) => {
-        // Optimistic update could happen here, but let's stick to simple fetch-then-update for safety first
         try {
-            const res = await fetch(`/api/requests/${id}/vote`, { method: "POST" });
+            const res = await fetch(`/api/requests/${id}/vote`, { 
+                method: "POST",
+                credentials: "include"
+            });
             if (res.ok) {
-                const data = await res.json();
-                setRequests(prev => prev.map(req =>
-                    req.id === id
-                        ? { ...req, votes: data.votes, votedBy: data.hasUpvoted ? [...req.votedBy, "ME"] : req.votedBy.filter(u => u !== "ME") } // "ME" is a placeholder, strictly we should refetch or assume logic.
-                        // Actually, better to just refetch to get clean state or use returned specific data
-                        : req
-                ));
-                fetchRequests("", activeBoard, activeStatus); // Simplest way to sync everything including "votedBy" array correctness
+                // Refetch to get clean state including "votedBy" array correctness
+                fetchRequests("", activeBoard, activeStatus, activeSort);
             }
         } catch (error) {
             console.error("Failed to vote", error);
@@ -107,6 +153,10 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
         setActiveStatus(status);
     };
 
+    const sortBy = (sort: string | null) => {
+        setActiveSort(sort);
+    };
+
     const contextValue = useMemo(() => ({
         requests,
         addRequest,
@@ -116,9 +166,11 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
         activeBoard,
         filterByStatus,
         activeStatus,
+        sortBy,
+        activeSort,
         loading,
-        refetch: () => fetchRequests("", activeBoard, activeStatus)
-    }), [requests, loading, activeBoard, activeStatus]);
+        refetch: () => fetchRequests("", activeBoard, activeStatus, activeSort)
+    }), [requests, loading, activeBoard, activeStatus, activeSort]);
 
     return (
         <RequestContext.Provider value={contextValue}>

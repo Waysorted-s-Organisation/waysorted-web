@@ -42,7 +42,6 @@ const Chat: React.FC<ChatProps> = ({ requestId }) => {
                     ...root,
                     replies: raw.filter(c => c.parentId === root._id)
                 }));
-                // Sort by date?
                 setComments(threaded);
             }
         } catch (err) {
@@ -130,15 +129,12 @@ const Chat: React.FC<ChatProps> = ({ requestId }) => {
                             {/* Comment */}
                             <div className="flex items-start gap-3">
                                 {/* Avatar */}
-                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-[#265BD1] text-xs font-semibold">
-                                    {c.authorInitials}
+                                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-[#265BD1] text-sm">
+                                    {c.authorInitials || c.authorName?.slice(0, 2).toUpperCase() || "U"}
                                 </div>
 
                                 {/* Comment Box */}
                                 <div className="p-3 rounded-md bg-white border text-sm w-full relative">
-                                    <div className="flex justify-between items-start">
-                                        <p className="font-semibold text-xs text-gray-900 mb-1">{c.authorName}</p>
-                                    </div>
                                     <p className="text-gray-800">{c.text}</p>
                                     <div className="text-xs text-black mt-1 flex items-center gap-2">
                                         {formatDate(c.createdAt)} ·{" "}
@@ -156,8 +152,10 @@ const Chat: React.FC<ChatProps> = ({ requestId }) => {
                                                         <MoreHorizontal size={16} />
                                                     </button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent className="p-1 min-w-[120px]">
-                                                    <DropdownMenuItem className="text-xs">Report</DropdownMenuItem>
+                                                <DropdownMenuContent className="">
+                                                    <DropdownMenuItem className="">Edit Request</DropdownMenuItem>
+                                                    <DropdownMenuItem className="">Delete</DropdownMenuItem>
+                                                    <DropdownMenuItem className="">Copy link</DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
                                         </div>
@@ -171,14 +169,28 @@ const Chat: React.FC<ChatProps> = ({ requestId }) => {
                                 <div className="ml-12 space-y-2">
                                     {c.replies.map((r) => (
                                         <div key={r._id} className="flex items-start gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-xs font-semibold">
-                                                {r.authorInitials}
+                                            <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 text-sm">
+                                                {r.authorInitials || r.authorName?.slice(0, 2).toUpperCase() || "U"}
                                             </div>
-                                            <div className="p-3 rounded-md bg-gray-100 text-sm w-full relative flex flex-col items-start gap-0">
-                                                <p className="font-semibold text-xs text-gray-900 mb-1">{r.authorName}</p>
+                                            <div className="p-3 rounded-md bg-gray-100 text-sm w-full relative flex flex-col items-start gap-2">
                                                 <p className="text-gray-800">{r.text}</p>
                                                 <div className="w-full flex gap-2 items-center">
                                                     <p className="text-xs text-gray-500 mt-1">{formatDate(r.createdAt)}</p>
+
+                                                    <div className="">
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <button>
+                                                                    <MoreHorizontal size={16} />
+                                                                </button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent className="">
+                                                                <DropdownMenuItem className="">Edit Request</DropdownMenuItem>
+                                                                <DropdownMenuItem className="">Delete</DropdownMenuItem>
+                                                                <DropdownMenuItem className="">Copy link</DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -196,20 +208,12 @@ const Chat: React.FC<ChatProps> = ({ requestId }) => {
                                         value={replyInput}
                                         onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setReplyInput(e.target.value)}
                                     />
-                                    <div className="flex gap-2">
-                                        <button
-                                            onClick={() => handleReplySend(c._id)}
-                                            className="self-start bg-[#265BD1] hover:bg-blue-700 text-white text-xs font-medium px-3 py-1 rounded-md"
-                                        >
-                                            Reply
-                                        </button>
-                                        <button
-                                            onClick={() => setReplyingTo(null)}
-                                            className="self-start bg-gray-200 hover:bg-gray-300 text-black text-xs font-medium px-3 py-1 rounded-md"
-                                        >
-                                            Cancel
-                                        </button>
-                                    </div>
+                                    <button
+                                        onClick={() => handleReplySend(c._id)}
+                                        className="self-start bg-[#265BD1] hover:bg-blue-700 text-white text-xs font-medium px-3 py-1 rounded-md"
+                                    >
+                                        Reply
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -219,7 +223,7 @@ const Chat: React.FC<ChatProps> = ({ requestId }) => {
 
             {/* Comment Input */}
             <div>
-                <h2 className="text-md font-medium mt-6 mb-2">Leave a comment</h2>
+                <h2 className="text-md font-medium mt-6 mb-2">Comments</h2>
                 <div className="flex flex-col gap-2">
                     <Textarea
                         placeholder="Write a comment..."

@@ -5,28 +5,24 @@ import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useRequests } from "@/context/RequestContext";
 
-interface SidebarProps {
-  hideFeatures?: boolean;
-}
-
-const boards = [
-  { name: "Figma Plugin", value: "Figma Plugin" },
-  { name: "Waychallenge", value: "Waychallenge" },
-];
-
-const Sidebar = ({ hideFeatures = false }: SidebarProps) => {
+const Sidebar = ({ hideFeatures = false }) => {
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname(); 
   const { filterByBoard, activeBoard } = useRequests();
 
   const isHome = pathname === "/";
 
-  const handleBoardClick = (boardValue: string) => {
-    if (activeBoard === boardValue) {
-      // Toggle off if already selected
-      filterByBoard(null);
+  const boards = [
+    { id: "Figma Plugin", label: "Figma Plugin: Palletable" },
+    { id: "Color Contrast", label: "Palatable: Color contrast" },
+    { id: "Waychallenge", label: "Waychallenge" },
+  ];
+
+  const handleBoardClick = (boardId: string) => {
+    if (activeBoard === boardId) {
+      filterByBoard(null); // Clear filter if clicking active board
     } else {
-      filterByBoard(boardValue);
+      filterByBoard(boardId);
     }
   };
 
@@ -36,27 +32,27 @@ const Sidebar = ({ hideFeatures = false }: SidebarProps) => {
       <div>
         <div
           onClick={() => router.push("/")}
-          className="text-sm text-[#565A5E] p-2 flex items-center my-3 cursor-pointer rounded-md hover:bg-[#E8EFFC] hover:text-[#265BD1]"
+          className="text-sm text-[#565A5E] p-2 border border-gray-200 bg-white flex justify-center items-center my-3 cursor-pointer rounded-md hover:bg-[#E8EFFC] hover:text-[#265BD1] hover:border-[#E8EFFC] active:bg-[#D4E1F8] active:text-[#265BD1] transition-colors"
         >
           <ChevronLeft size={16} />
           <p>{isHome ? "Back home" : "Go back"}</p>
         </div>
 
-        {/* Features Board */}
         {!hideFeatures && (
-          <div>
+          <div className="pl-27px">
             <h1 className="font-bold text-sm my-2">Features Board</h1>
             <div>
               {boards.map((board) => (
                 <p
-                  key={board.value}
-                  onClick={() => handleBoardClick(board.value)}
-                  className={`text-xs py-2 px-2 rounded-sm cursor-pointer transition-colors ${activeBoard === board.value
-                    ? "bg-[#E8EFFC] text-[#265BD1] font-medium"
-                    : "text-[#565A5E] hover:bg-[#F3F3F3]"
-                    }`}
+                  key={board.id}
+                  onClick={() => handleBoardClick(board.id)}
+                  className={`text-xs w-full h-full py-2 px-2 rounded-sm cursor-pointer transition-colors ${
+                    activeBoard === board.id
+                      ? "bg-[#E8EFFC] text-[#265BD1]"
+                      : "text-[#565A5E] hover:bg-[#F3F3F3]"
+                  }`}
                 >
-                  {board.name}
+                  {board.label}
                 </p>
               ))}
             </div>
@@ -64,9 +60,10 @@ const Sidebar = ({ hideFeatures = false }: SidebarProps) => {
         )}
       </div>
 
-      <Button
+      <Button 
         size="sm"
-        className="bg-[#265BD1] w-fit hover:bg-[#1F4AA9] cursor-pointer text-white"
+        onClick={() => router.push("/support")}
+        className="bg-[#265BD1] w-fit hover:bg-[#1F4AA9] cursor-pointer"
       >
         Have query ?
       </Button>

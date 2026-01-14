@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, useAnimation, useMotionValue, animate } from "framer-motion";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
