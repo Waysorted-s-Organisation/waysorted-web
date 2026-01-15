@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import Image from "next/image";
 import { Bell, PlusIcon, SearchIcon, Sun } from "lucide-react";
 import {
   Dialog,
@@ -18,7 +19,6 @@ import { Separator } from "@/components/ui/separator";
 import { useMyRequest } from "@/context/MyRequestContext";
 import { useRequests } from "@/context/RequestContext";
 import ProfileDropdown from "@/components/feature-requests/ProfileDropdown";
-import { useRouter } from "next/navigation";
 
 interface BugUploadDialogProps {
   open: boolean;
@@ -29,7 +29,7 @@ interface BugUploadDialogProps {
 const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange }) => {
   const { files, setFiles } = useMyRequest();
   const [uploading, setUploading] = useState<boolean>(false);
-  const [successOpen, setSuccessOpen] = useState<boolean>(false);
+  // const [successOpen, setSuccessOpen] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
 
   useEffect(() => {
@@ -59,7 +59,7 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
   function handleFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const newFiles = Array.from(e.target.files || []).slice(0, 2)
     setFiles(newFiles)
-      if (newFiles.length) {startMockUpload()}
+    if (newFiles.length) { startMockUpload() }
   }
 
   const handleSubmit = () => {
@@ -71,7 +71,7 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
           clearInterval(timer)
           setUploading(false)
           onOpenChange(false)
-          setSuccessOpen(true)
+          // setSuccessOpen(true)
           return 100
         }
         return p + 10
@@ -105,7 +105,7 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
               className="hidden"
               onChange={handleFiles}
             />
-            <img src="/upload.png" alt="" className="py-4"/>
+            <Image src="/upload.png" alt="" width={64} height={64} className="py-4" />
             <p className="text-[#265BD1]">
               Click to Upload <span className="text-[#565A5E]">an Image</span>
             </p>
@@ -134,7 +134,7 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
                     >
                       <div className="flex-col w-full items-center gap-2">
                         <div className="flex items-center gap-2 mb-2">
-                          <img src="/upload.png" alt="" />
+                          <Image src="/upload.png" alt="" width={16} height={16} />
                           {file.name}
                         </div>
                         {file.size && (
@@ -145,14 +145,14 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
                             </span>
                           </p>
                         )}
-                        
+
                         <div className="relative w-full h-1 bg-gray-200 rounded-full overflow-hidden">
-                        <div
-                          className="absolute left-0 top-0 h-full bg-[#265BD1] transition-all duration-150"
-                          style={{ width: `${progress}%` }} 
-                        />
-                        
-                      </div>
+                          <div
+                            className="absolute left-0 top-0 h-full bg-[#265BD1] transition-all duration-150"
+                            style={{ width: `${progress}%` }}
+                          />
+
+                        </div>
                       </div>
                       <button
                         onClick={() =>
@@ -217,7 +217,7 @@ const Navbar = () => {
 
   return (
     <div className="bg-white z-50 h-[68px] w-screen border-b border-gray-100 flex justify-between items-center px-6">
-      <div><img src="/Waysorted.svg" alt="logo" /></div>
+      <div><Image src="/Waysorted.svg" alt="logo" width={140} height={40} /></div>
 
       <div className="flex items-center gap-2">
         <button className="bg-white p-1 rounded-lg w-[36px] h-[36px] flex items-center justify-center cursor-pointer hover:bg-[#F9FAFB] transition-colors">

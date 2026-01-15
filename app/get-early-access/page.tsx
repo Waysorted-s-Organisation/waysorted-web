@@ -3,6 +3,7 @@ import Image from "next/image";
 import EarlyAccessForm from "@/app/get-early-access/components/EarlyAccessForm";
 import FeatureCard from "@/app/get-early-access/components/FeatureCard";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function EarlyAccessPage() {
   const router = useRouter();
@@ -11,7 +12,7 @@ export default function EarlyAccessPage() {
     <main className="bg-white h-screen">
       <div className="mx-auto max-w-full h-full">
         <div className="grid grid-cols-1 md:grid-cols-2 items-stretch h-full">
-          
+
           {/* Left: Form */}
           <section className="max-w-2xl flex flex-col justify-between h-full">
             <div>
@@ -30,11 +31,11 @@ export default function EarlyAccessPage() {
 
               <div className="px-25 py-5">
                 <span className="inline-flex items-center rounded-md bg-tertiary-green-100 text-tertiary-green-500 px-3 py-1 text-sm font-medium">
-                  Full version drops soon.
+                  BETA version drops soon.
                 </span>
 
                 <h1 className="mt-5 text-4xl sm:text-5xl font-bold tracking-tight text-secondary-db-100">
-                  Get early access!
+                  Join Waitlist for Waysorted
                 </h1>
                 <p className="mt-3 text-base text-secondary-db-60">
                   Be one of the first few creators to become an early adopter.
@@ -53,14 +54,14 @@ export default function EarlyAccessPage() {
             {/* Footer text naturally at bottom */}
             <div className="flex px-22 pb-10 text-xs justify-center text-secondary-db-50 inline-block">
               By clicking “continue” you agree to our&nbsp;
-              <span className="inline-block"><a href="#" className="text-primary-way-100 hover:underline">
+              <span className="inline-block"><Link href="/docs/privacy-policy" className="text-primary-way-100 hover:underline">
                 Privacy Policy
-              </a>&nbsp;
+              </Link>&nbsp;
               </span>
               and&nbsp;
-              <span className="inline-block"><a href="#" className="text-primary-way-100 hover:underline">
+              <span className="inline-block"><Link href="/docs/terms-of-service" className="text-primary-way-100 hover:underline">
                 Terms of Use
-              </a></span>
+              </Link></span>
               .
             </div>
           </section>
@@ -88,22 +89,22 @@ export default function EarlyAccessPage() {
                   <div className="mt-6 space-y-6">
                     <FeatureCard
                       title="Free Access to Premium Tools"
-                      description="Unlock premium tools at no cost—boost your productivity and explore all that Waysorted has to offer, for free."
+                      description="Get free access to all premium tools and features when we launch publicly."
                       tilt="rotate-[-2deg]"
                     />
                     <FeatureCard
-                      title="500+ Free Credits"
-                      description="Start strong with free credits to explore, test, and create without limits. Refer friends & earn even more credits!"
+                      title="Unlimited Credits for Beta Users"
+                      description="Enjoy unlimited credits during the beta period to test and build without limits."
                       tilt="rotate-[2deg]"
                     />
                     <FeatureCard
                       title="Exclusive Early Adopter Badge"
-                      description="Get recognized as a founding creator, your badge will shine on the leaderboard and mark you as one of the first to join the journey."
+                      description="Receive a unique badge on your profile to show you were here from the start."
                       tilt="rotate-[-1.5deg]"
                     />
                     <FeatureCard
                       title="Community Access"
-                      description="Join an exclusive space where fellow designers connect, share insights, and get direct access to the latest updates."
+                      description="Join a private community of designers and developers building the future."
                       tilt="rotate-[1.5deg]"
                     />
                   </div>

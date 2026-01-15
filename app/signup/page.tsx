@@ -5,18 +5,12 @@ import Image from "next/image";
 import OTPInput from "@/app/signup/components/OTPInput";
 import { useUser } from "@/hooks/useUser";
 
-type Step = "choose" | "email" | "otp" ;
+type Step = "choose" | "email" | "otp";
 
 // Strictly use env-configured URLs; no fallback.
 const OTP_URI = process.env.NEXT_PUBLIC_OTP_URI as string | undefined;
-const VERIFY_URI = process.env.NEXT_PUBLIC_VERIFY_URI as string | undefined;
 
-type SendOtpResponse = {
-  message?: string;
-  request_id?: string;
-  expires_in?: number;
-  error?: string;
-};
+
 
 export default function Signup() {
   const router = useRouter();
@@ -61,18 +55,10 @@ export default function Signup() {
     setResendAt(Date.now() + seconds * 1000);
   };
 
-  const sameOrigin = (url: string) =>
-    new URL(url, window.location.href).origin === window.location.origin;
+
 
   // Keep headers minimal to satisfy CORS: only Content-Type: application/json
-  const postJSON = (url: string, body: unknown) =>
-    fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: sameOrigin(url) ? "include" : "omit",
-      cache: "no-store",
-      body: JSON.stringify(body),
-    });
+
 
   // Google
   const handleGoogleSignIn = async () => {
@@ -95,7 +81,7 @@ export default function Signup() {
     const text = await res.text();
     //eslint-disable-next-line @typescript-eslint/no-explicit-any
     let data: any = null;
-    try { data = text ? JSON.parse(text) : null; } catch {}
+    try { data = text ? JSON.parse(text) : null; } catch { }
     return { data, text };
   };
 
@@ -236,7 +222,7 @@ export default function Signup() {
       setLoading(false);
     }
   };
-  
+
 
   const maskedEmail = useMemo(() => {
     const trimmed = email.trim();

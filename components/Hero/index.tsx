@@ -7,9 +7,7 @@ import { useRouter } from 'next/navigation';
 const Hero = () => {
   const router = useRouter();
 
-  const handleFigmaClick = () => {
-    window.open("https://docs.google.com/forms/d/e/1FAIpQLSdAFf4A4aV4v1TkRBWn8DrTZMb4W-4lkMsMVy1T-LiWo2doBg/viewform?usp=header", "_blank");
-  };
+
 
   return (
     <section
@@ -58,7 +56,7 @@ const Hero = () => {
         {/* CTA buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <GlowStarButton
-            onClick={handleFigmaClick}
+            onClick={() => router.push("/get-early-access")}
             className="inline-flex border bg-secondary-db-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer force-hover"
           >
             <span className="flex items-center gap-x-2">

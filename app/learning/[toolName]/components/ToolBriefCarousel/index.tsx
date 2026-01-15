@@ -30,7 +30,7 @@ export default function ToolBriefCarousel({
   const slideRefs = React.useRef<HTMLElement[]>([])
   const rightSpacerRef = React.useRef<HTMLDivElement>(null)
 
-  const [index, setIndex] = React.useState(0)
+  // const [index, setIndex] = React.useState(0)
   const [progress, setProgress] = React.useState(0)
   const totalItems = slides.length + 1
 
@@ -77,7 +77,7 @@ export default function ToolBriefCarousel({
       const setup = () => {
         applyRightSpacer()
         gsap.set(trackEl, { x: 0 })
-        const { endShift } = measure()
+        // const { endShift } = measure()
 
         const tween = gsap.to(trackEl, {
           x: () => {
@@ -130,18 +130,16 @@ export default function ToolBriefCarousel({
             const x = -self.progress * freshEnd
             const viewportCenterX = -x + viewportW / 2
 
-            let nearest = 0
             let nearestDist = Infinity
             for (let i = 0; i < slidesEls.length; i++) {
               const s = slidesEls[i]
               const centerX = s.offsetLeft + s.offsetWidth / 2
               const dist = Math.abs(centerX - viewportCenterX)
               if (dist < nearestDist) {
-                nearest = i
+                // nearest = i
                 nearestDist = dist
               }
             }
-            setIndex(nearest)
           }
         })
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import dbConnect from "@/lib/db";
+import dbConnect from "@/lib/newsletterDb";
 import Subscriber from "@/models/subscriber";
 
 export async function POST(request: Request) {
