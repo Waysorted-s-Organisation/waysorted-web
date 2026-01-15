@@ -41,10 +41,7 @@ const sidebarData: SidebarItem[] = [
     title: "Tools Reference",
     links: ["PDF Exporter", "Palettable", "Unit Converter", "Import Tool", "Upcoming Tools"]
   },
-  {
-    title: "Design Standards",
-    links: ["Waysorted Principles", "Accessibility-WCAG", "UI/UX Best Practices", "Handoff Standards"]
-  },
+
   {
     title: "Troubleshooting & Support",
     links: ["Common Errors", "Diagnostics", "Contact Support", "Bug Reporting", "Request a Feature"]
