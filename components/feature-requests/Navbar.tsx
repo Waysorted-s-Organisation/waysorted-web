@@ -216,27 +216,27 @@ const Navbar = () => {
   }
 
   return (
-    <div className="bg-white z-50 h-[68px] w-screen border-b border-gray-200 flex justify-between items-center px-5">
+    <div className="bg-white z-50 h-[68px] w-screen border-b border-gray-100 flex justify-between items-center px-6">
       <div><img src="/Waysorted.svg" alt="logo" /></div>
 
-      <div className="flex items-center gap-1">
-        <button className="border bg-white p-1 rounded-md w-[36px] h-[36px] flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
-          <Sun size={16} />
+      <div className="flex items-center gap-2">
+        <button className="bg-white p-1 rounded-lg w-[36px] h-[36px] flex items-center justify-center cursor-pointer hover:bg-[#F9FAFB] transition-colors">
+          <Sun size={16} className="text-gray-600" />
         </button>
 
-        <div className="flex items-center hover:bg-[#F3F3F3] border rounded-md w-[241px] h-[36px] px-2">
-          <SearchIcon size={16} />
-          <Input
+        <div className="flex items-center bg-[#F3F4F6] hover:bg-[#E5E7EB] rounded-lg w-[241px] h-[36px] px-3 transition-colors">
+          <SearchIcon size={16} className="text-gray-400" />
+          <input
             type="text"
             placeholder="Search..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="border-none shadow-none bg-transparent px-1 focus:outline-none focus:ring-0 focus-visible:ring-0"
+            className="bg-transparent border-none shadow-none outline-none px-2 text-sm placeholder:text-gray-400 w-full focus:outline-none focus:ring-0"
           />
         </div>
 
-        <button className="relative border bg-white p-1 rounded-md w-[36px] h-[36px] flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors">
-          <Bell size={16} />
+        <button className="relative bg-white p-1 rounded-lg w-[36px] h-[36px] flex items-center justify-center cursor-pointer hover:bg-[#F9FAFB] transition-colors">
+          <Bell size={16} className="text-gray-600" />
           {/* Notification badge - uncomment when you want to show unread count */}
           {/* <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span> */}
         </button>
@@ -244,8 +244,8 @@ const Navbar = () => {
         {/* Main Request Dialog */}
         <Dialog open={mainOpen} onOpenChange={setMainOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-[#265BD1] text-white hover:bg-[#1F4AA9] cursor-pointer">
-              <PlusIcon size={12} /> Request a feature
+            <Button className="bg-[#265BD1] text-white hover:bg-[#1F4AA9] cursor-pointer rounded-lg px-4 h-[36px] font-medium text-sm shadow-none">
+              <PlusIcon size={14} className="mr-1" /> Request a feature
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">

@@ -1,67 +1,152 @@
-"use client"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Button } from "@/components/ui/button"
-import { Settings, FileText, HelpCircle, LogOut } from "lucide-react"
-import { useRouter } from "next/navigation"
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { useUser } from "@/hooks/useUser";
 
 export default function ProfileDropdown() {
-  const router = useRouter()
+  const [open, setOpen] = useState(false);
+  const router = useRouter();
+  const { user, refetch } = useUser();
+
+  if (!user) return null;
+
+  const getInitials = (name?: string) =>
+    (name || "User")
+      .split(" ")
+      .filter(Boolean)
+      .map((n) => n[0].toUpperCase())
+      .slice(0, 2)
+      .join("");
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+      await refetch();
+      router.push('/');
+      router.refresh();
+    } catch (e) {
+      console.error('Logout failed', e);
+    }
+  };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        {/* Trigger button (profile circle) */}
-        <Button 
-          size="icon"
-          className="rounded-md w-[36px] h-[36px] bg-[#E8EFFC] text-[#265BD1] p-0 hover:bg-[#E8EFFC] cursor-pointer"
-        >
-          RG
-        </Button>
-      </DropdownMenuTrigger>
+    <div className="relative">
+      {/* Avatar button */}
+      <button
+        className="bg-primary-way-20 text-primary-way-100 border border-primary-way-100 font-medium text-base w-10 h-10 flex items-center justify-center rounded-lg cursor-pointer"
+        title={user.name}
+        aria-label="User menu"
+        onClick={() => setOpen((o) => !o)}
+      >
+        {getInitials(user.name)}
+      </button>
 
-      <DropdownMenuContent className="w-fit-content  p-1">
-        {/* Username + Email */}
-        <DropdownMenuLabel className="flex flex-col items-start" inset={false}>
-          <div className="flex gap-2">
-
-            <div className="w-[36px] h-[36px] text-[#265BD1] bg-[#E8EFFC] rounded-md flex items-center justify-center">RG</div>
-            <div>
-              <p className="font-bold">USERNAME</p>
-              <p className="text-xs text-gray-500">guptarishabh181@gmail.com</p>
-            </div>
-          </div>
-        </DropdownMenuLabel>
-        <DropdownMenuSeparator className="" />
-
-        {/* Workspace */}
-        <div className="px-2 py-2">
-          <p className="text-xs text-gray-500 mb-1">Your Workspace &nbsp; <span className="text-[#265BD1] bg-[#E8EFFC] p-1 rounded-sm">Unlock&apos;s soon</span> </p>
+      {/* Dropdown */}
+      {open && (
+        <>
+          {/* Backdrop to close dropdown */}
+          <div 
+            className="fixed inset-0 z-40" 
+            onClick={() => setOpen(false)}
+          />
           
-          <div className="flex items-center gap-2">
-            <div className="w-[36px] h-[36px] rounded-md"> <img src="./lock.svg" alt="" /></div>
-            <div className="flex flex-col ">
-              <a href="#" className="text-sm text-[#265BD1] font-medium">Waystudio</a>
-              <p className="text-xs text-gray-500">All tools in one way!</p>
+          <div className="absolute right-0 mt-2 w-64 bg-white border border-secondary-db-5 shadow-lg rounded-2xl overflow-hidden z-50">
+            {/* Profile header */}
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-secondary-db-5">
+              <div className="w-10 h-10 rounded-lg bg-primary-way-20 border border-primary-way-100 flex items-center justify-center font-semibold text-primary-way-100">
+                {getInitials(user.name)}
+              </div>
+              <div>
+                <p className="font-semibold text-secondary-db-100 text-sm">{user.name || "User"}</p>
+                <p className="text-xs text-secondary-db-70 font-medium truncate">{user.email}</p>
+              </div>
+            </div>
 
+            {/* Workspace */}
+            <div className="px-4 py-3 border-b border-secondary-db-5">
+              <div className="flex items-center justify-between w-full mb-2">
+                  <span className="text-xs font-regular text-secondary-db-70">Your Workspace</span>
+              <span className="text-xs font-medium text-primary-way-100 bg-primary-way-10 px-2 py-0.5 rounded-md">
+                  Unlock&apos;s soon
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex items-center justify-center">
+                  <Image src="/icons/upcoming.svg" alt="Upcoming" width={40} height={40} />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm text-primary-way-100">
+                    Waystudio
+                  </p>
+                  <p className="text-xs text-secondary-db-70">All Tools in one way!</p>
+                </div>
+              </div>
+            </div>
+
+            {/* My profile section */}
+            <div className="px-4 py-2 text-xs text-secondary-db-70">My profile</div>
+            <div className="flex flex-col">
+              <MenuItem
+                icon="/icons/account-settings.svg"
+                label="Account settings"
+                onClick={() => {
+                  setOpen(false);
+                  router.push("/settings");
+                }}
+              />
+              <MenuItem
+                icon="/icons/your-requests.svg"
+                label="Your requests"
+                onClick={() => {
+                  setOpen(false);
+                  router.push("/requests?view=mine");
+                }}
+              />
+              <MenuItem
+                icon="/icons/help.svg"
+                label="Help"
+                onClick={() => {
+                  setOpen(false);
+                  router.push("/support");
+                }}
+              />
+              <MenuItem
+                icon="/icons/logout.svg"
+                label="Logout"
+                onClick={() => {
+                  setOpen(false);
+                  handleLogout();
+                }}
+              />
             </div>
           </div>
-        </div>
-        <DropdownMenuSeparator className="" />
+        </>
+      )}
+    </div>
+  );
+}
 
-        {/* Profile Options */}
-        <DropdownMenuItem className="" inset={false}>
-          <Settings className="mr-2 h-4 w-4" /> Account settings
-        </DropdownMenuItem>
-        <DropdownMenuItem className="" inset={false} onClick={() => {router.push('/yourRequest')}}>
-          <FileText className="mr-2 h-4 w-4" /> Your requests
-        </DropdownMenuItem>
-        <DropdownMenuItem className="" inset={false}>
-          <HelpCircle className="mr-2 h-4 w-4" /> Help
-        </DropdownMenuItem>
-        <DropdownMenuItem className="" inset={false}>
-          <LogOut className="mr-2 h-4 w-4 text-red-500" /> Logout
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
+function MenuItem({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: string;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className="flex items-center gap-3 px-4 py-2 text-sm text-secondary-db-100 hover:bg-primary-way-10 transition-colors text-left cursor-pointer"
+      onClick={onClick}
+    >
+      <Image src={icon} alt={label} width={18} height={18} />
+      <span>{label}</span>
+    </button>
+  );
 }

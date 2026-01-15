@@ -1,5 +1,5 @@
 "use client"
-import { useState } from "react"
+import React, { useState } from "react"
 import { useUser } from "@/hooks/useUser";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button"
@@ -44,20 +44,77 @@ interface MyRequestCardProps {
   showManageText?: boolean;
 }
 
+const getStatusStyles = (status: string) => {
+  const statusLower = status.toLowerCase();
+  
+  if (statusLower === "planned") {
+    return {
+      iconColor: "text-[#265BD1]",
+      textColor: "text-[#565A5E]",
+      hoverTextColor: "group-hover:text-[#265BD1]",
+      bgColor: "bg-white",
+    };
+  } else if (statusLower === "in progress" || statusLower === "in-progress" || statusLower === "in_progress") {
+    return {
+      iconColor: "text-[#01A04E]",
+      textColor: "text-[#565A5E]",
+      hoverTextColor: "group-hover:text-[#01A04E]",
+      bgColor: "bg-white",
+    };
+  } else if (statusLower === "released") {
+    return {
+      iconColor: "text-[#7531F9]",
+      textColor: "text-[#565A5E]",
+      hoverTextColor: "group-hover:text-[#7531F9]",
+      bgColor: "bg-white",
+    };
+  } else if (statusLower === "not done" || statusLower === "not-done" || statusLower === "not_done") {
+    return {
+      iconColor: "text-[#565A5E]",
+      textColor: "text-[#565A5E]",
+      hoverTextColor: "group-hover:text-[#565A5E]",
+      bgColor: "bg-white",
+    };
+  } else if (statusLower.includes("review") || statusLower === "under review" || statusLower === "under_review") {
+    return {
+      iconColor: "text-[#F24E1E]",
+      textColor: "text-[#F24E1E]",
+      hoverTextColor: "group-hover:text-[#F24E1E]",
+      bgColor: "bg-[#FFE8E8]",
+    };
+  }
+  
+  // Default
+  return {
+    iconColor: "text-[#265BD1]",
+    textColor: "text-[#565A5E]",
+    hoverTextColor: "group-hover:text-[#265BD1]",
+    bgColor: "bg-white",
+  };
+};
+
 const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) => {
 
   const { editMyRequest, deleteMyRequest, voteMyRequest } = useMyRequest()
   const { user } = useUser();
+  const [optimisticVotes, setOptimisticVotes] = useState<number | null>(null);
+  const [optimisticUpvoted, setOptimisticUpvoted] = useState<boolean | null>(null);
 
   // Sync votes from request prop
-  const count = request.votes || 0;
+  const count = optimisticVotes !== null ? optimisticVotes : (request.votes || 0);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userIdStr = user ? ((user as any).id || (user as any)._id)?.toString() : null;
-  const isUpvoted = userIdStr ? (request.votedBy || []).includes(userIdStr) : false;
+  const isUpvoted = optimisticUpvoted !== null ? optimisticUpvoted : (userIdStr ? (request.votedBy || []).includes(userIdStr) : false);
 
   // ✅ Edit state
   const [isEditing, setIsEditing] = useState(false)
   const [tempDesc, setTempDesc] = useState(request.description)
+
+  // Reset optimistic state when props change
+  React.useEffect(() => {
+    setOptimisticVotes(null);
+    setOptimisticUpvoted(null);
+  }, [request.votes, request.votedBy]);
 
   // Handle vote
   const handleVote = async (e: React.MouseEvent) => {
@@ -66,6 +123,15 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
       toast.error("Please login to vote");
       return;
     }
+    
+    // Optimistic update
+    const currentlyUpvoted = userIdStr ? (request.votedBy || []).includes(userIdStr) : false;
+    const newUpvoted = !currentlyUpvoted;
+    const newCount = newUpvoted ? request.votes + 1 : Math.max(0, request.votes - 1);
+    
+    setOptimisticUpvoted(newUpvoted);
+    setOptimisticVotes(newCount);
+    
     await voteMyRequest(request.id);
   };
 
@@ -79,9 +145,10 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
   };
 
   const formattedCount = String(count).padStart(2, "0")
+  const statusStyles = getStatusStyles(request.status);
 
   return (
-    <div className="flex hover:bg-[#e4e4e4] duration-200 ease-in-out rounded-sm pl-6 h-[109px] w-full border-b border-gray-200 items-center">
+    <div className="flex hover:bg-[#e4e4e4] duration-200 ease-in-out rounded-sm pl-16 h-[109px] w-full border-b border-gray-100 items-center">
       {/* Upvote Box */}
       <div
         onClick={handleVote}
@@ -107,8 +174,8 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
               <i className="fa-solid fa-square text-[6px]"></i>
               Your request
             </button>
-            <button className="text-xs text-[#F24E1E] rounded-md bg-[#FFE8E8] px-2 py-1 items-center flex gap-1">
-              <i className="fa-solid fa-square text-[6px]"></i>
+            <button className={`text-xs rounded-md px-2 py-1 items-center flex gap-1 transition-colors ${statusStyles.bgColor} ${statusStyles.textColor} ${statusStyles.hoverTextColor}`}>
+              <i className={`fa-solid fa-square text-[6px] ${statusStyles.iconColor}`}></i>
               {request.status || "Under Review"}
             </button>
           </div>
@@ -157,8 +224,8 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
                               <i className="fa-solid fa-square text-[6px]"></i>
                               Your request
                             </button>
-                            <button className="text-xs text-[#F24E1E] rounded-md bg-[#FFE8E8] px-2 py-1 items-center flex gap-1">
-                              <i className="fa-solid fa-square text-[6px]"></i>
+                            <button className={`text-xs rounded-md px-2 py-1 items-center flex gap-1 transition-colors ${statusStyles.bgColor} ${statusStyles.textColor} ${statusStyles.hoverTextColor}`}>
+                              <i className={`fa-solid fa-square text-[6px] ${statusStyles.iconColor}`}></i>
                               {request.status || "Under Review"}
                             </button>
                           </div>

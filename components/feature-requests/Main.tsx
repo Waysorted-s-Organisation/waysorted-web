@@ -38,9 +38,9 @@ const Main: React.FC = () => {
     }, [activeSort, selected]);
 
     return (
-        <div className='h-[calc(100vh-68px)] flex-1 flex flex-col z-50 px-5 pt-5'>
+        <div className='h-[calc(100vh-68px)] flex-1 flex flex-col z-50 px-6 pt-5'>
             {/* Tab Navigation */}
-            <div className='flex gap-4 border-b border-gray-200 mb-4'>
+            <div className='flex gap-4 border-b border-gray-100 mb-4'>
                 <button
                     onClick={() => setActiveTab("all")}
                     className={`pb-3 px-2 text-sm font-medium transition-colors relative ${
@@ -119,8 +119,8 @@ const Main: React.FC = () => {
                         onClick={() => filterByStatus(activeStatus === "Planned" ? null : "Planned")}
                         className={`text-sm rounded-md border px-2 py-1 items-center flex gap-1 transition-colors ${
                             activeStatus === "Planned" 
-                                ? "bg-[#E8EFFC] text-[#265BD1] border-[#265BD1]" 
-                                : "text-[#565A5E] hover:bg-[#F3F3F3] border-gray-200 bg-white"
+                                ? "bg-white text-[#265BD1] border-gray-200" 
+                                : "text-[#565A5E] hover:text-[#265BD1] border-gray-200 bg-white"
                         }`}
                     >
                         <i className="fa-solid fa-square text-[6px] text-[#265BD1]"></i>
@@ -131,8 +131,8 @@ const Main: React.FC = () => {
                         onClick={() => filterByStatus(activeStatus === "In Progress" ? null : "In Progress")}
                         className={`text-sm rounded-md border px-2 py-1 items-center flex gap-1 transition-colors ${
                             activeStatus === "In Progress" 
-                                ? "bg-[#E8EFFC] text-[#01A04E] border-[#01A04E]" 
-                                : "text-[#565A5E] hover:bg-[#F3F3F3] border-gray-200 bg-white"
+                                ? "bg-white text-[#01A04E] border-gray-200" 
+                                : "text-[#565A5E] hover:text-[#01A04E] border-gray-200 bg-white"
                         }`}
                     >
                         <i className="fa-solid fa-square text-[6px] text-[#01A04E]"></i>
@@ -143,8 +143,8 @@ const Main: React.FC = () => {
                         onClick={() => filterByStatus(activeStatus === "Released" ? null : "Released")}
                         className={`text-sm rounded-md border px-2 py-1 items-center flex gap-1 transition-colors ${
                             activeStatus === "Released" 
-                                ? "bg-[#E8EFFC] text-[#7531F9] border-[#7531F9]" 
-                                : "text-[#565A5E] hover:bg-[#F3F3F3] border-gray-200 bg-white"
+                                ? "bg-white text-[#7531F9] border-gray-200" 
+                                : "text-[#565A5E] hover:text-[#7531F9] border-gray-200 bg-white"
                         }`}
                     >
                         <i className="fa-solid fa-square text-[6px] text-[#7531F9]"></i>
@@ -155,8 +155,8 @@ const Main: React.FC = () => {
                         onClick={() => filterByStatus(activeStatus === "Not done" ? null : "Not done")}
                         className={`text-sm rounded-md border px-2 py-1 items-center flex gap-1 transition-colors ${
                             activeStatus === "Not done" 
-                                ? "bg-[#E8EFFC] text-[#565A5E] border-[#565A5E]" 
-                                : "text-[#565A5E] hover:bg-[#F3F3F3] border-gray-200 bg-white"
+                                ? "bg-white text-[#565A5E] border-gray-200" 
+                                : "text-[#565A5E] hover:text-[#8B8D8F] border-gray-200 bg-white"
                         }`}
                     >
                         <i className="fa-solid fa-square text-[6px] text-[#565A5E]"></i>

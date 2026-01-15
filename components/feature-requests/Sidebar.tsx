@@ -18,14 +18,6 @@ const Sidebar = ({ hideFeatures = false }) => {
     { id: "Waychallenge", label: "Waychallenge" },
   ];
 
-  const handleBoardClick = (boardId: string) => {
-    if (activeBoard === boardId) {
-      filterByBoard(null); // Clear filter if clicking active board
-    } else {
-      filterByBoard(boardId);
-    }
-  };
-
   return (
     <div className="bg-white h-[calc(100vh-68px)] w-[225px] z-50 border-r border-gray-200 p-5 flex flex-col justify-between ">
 
@@ -42,10 +34,23 @@ const Sidebar = ({ hideFeatures = false }) => {
           <div className="pl-27px">
             <h1 className="font-bold text-sm my-2">Features Board</h1>
             <div>
+              {/* All issues option */}
+              <p
+                onClick={() => filterByBoard(null)}
+                className={`text-xs w-full h-full py-2 px-2 rounded-sm cursor-pointer transition-colors ${
+                  !activeBoard
+                    ? "bg-[#E8EFFC] text-[#265BD1]"
+                    : "text-[#565A5E] hover:bg-[#F3F3F3]"
+                }`}
+              >
+                All issues
+              </p>
+
+              {/* Individual boards */}
               {boards.map((board) => (
                 <p
                   key={board.id}
-                  onClick={() => handleBoardClick(board.id)}
+                  onClick={() => filterByBoard(board.id)}
                   className={`text-xs w-full h-full py-2 px-2 rounded-sm cursor-pointer transition-colors ${
                     activeBoard === board.id
                       ? "bg-[#E8EFFC] text-[#265BD1]"

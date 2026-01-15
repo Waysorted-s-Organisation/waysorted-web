@@ -1,6 +1,7 @@
 "use client";
 import React, { createContext, useContext, useState, ReactNode, useMemo, useEffect, useCallback } from "react";
 import { useUser } from "@/hooks/useUser";
+import { toast } from "sonner";
 
 export interface LocalRequest {
     id: string; // Changed to string to match IFeatureRequest._id
@@ -133,11 +134,20 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
                 credentials: "include"
             });
             if (res.ok) {
-                // Refetch to get clean state including "votedBy" array correctness
-                fetchRequests("", activeBoard, activeStatus, activeSort);
+                const data = await res.json();
+                
+                // Immediately update the request in state with the response data
+                setRequests(prevRequests => 
+                    prevRequests.map(req => 
+                        req.id === id 
+                            ? { ...req, votes: data.votes, votedBy: data.votedBy || req.votedBy }
+                            : req
+                    )
+                );
             }
         } catch (error) {
             console.error("Failed to vote", error);
+            toast.error("Failed to vote");
         }
     };
 

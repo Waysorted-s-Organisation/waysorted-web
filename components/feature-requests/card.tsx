@@ -23,14 +23,59 @@ interface CardProps {
   votedBy?: string[];
 }
 
+const getStatusStyles = (status: string) => {
+  const statusLower = status.toLowerCase();
+  
+  if (statusLower === "planned") {
+    return {
+      iconColor: "text-[#265BD1]",
+      textColor: "text-[#565A5E]",
+      hoverTextColor: "group-hover:text-[#265BD1]",
+    };
+  } else if (statusLower === "in progress" || statusLower === "in-progress" || statusLower === "in_progress") {
+    return {
+      iconColor: "text-[#01A04E]",
+      textColor: "text-[#565A5E]",
+      hoverTextColor: "group-hover:text-[#01A04E]",
+    };
+  } else if (statusLower === "released") {
+    return {
+      iconColor: "text-[#7531F9]",
+      textColor: "text-[#565A5E]",
+      hoverTextColor: "group-hover:text-[#7531F9]",
+    };
+  } else if (statusLower === "not done" || statusLower === "not-done" || statusLower === "not_done") {
+    return {
+      iconColor: "text-[#565A5E]",
+      textColor: "text-[#565A5E]",
+      hoverTextColor: "group-hover:text-[#565A5E]",
+    };
+  }
+  
+  // Default
+  return {
+    iconColor: "text-[#265BD1]",
+    textColor: "text-[#565A5E]",
+    hoverTextColor: "group-hover:text-[#265BD1]",
+  };
+};
+
 const Card: React.FC<CardProps> = ({ id, title, description, details, status, votes, votedBy = [] }) => {
   const { voteRequest } = useRequests();
   const { user } = useUser();
+  const [optimisticVotes, setOptimisticVotes] = React.useState<number | null>(null);
+  const [optimisticUpvoted, setOptimisticUpvoted] = React.useState<boolean | null>(null);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const userIdStr = user ? ((user as any).id || (user as any)._id)?.toString() : null;
-  const isUpvoted = userIdStr ? votedBy.includes(userIdStr) : false;
-  const count = votes || 0;
+  const isUpvoted = optimisticUpvoted !== null ? optimisticUpvoted : (userIdStr ? votedBy.includes(userIdStr) : false);
+  const count = optimisticVotes !== null ? optimisticVotes : (votes || 0);
+
+  // Reset optimistic state when props change
+  React.useEffect(() => {
+    setOptimisticVotes(null);
+    setOptimisticUpvoted(null);
+  }, [votes, votedBy]);
 
   const handleVote = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -38,6 +83,15 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
       toast.error("Please login to vote");
       return;
     }
+    
+    // Optimistic update
+    const currentlyUpvoted = userIdStr ? votedBy.includes(userIdStr) : false;
+    const newUpvoted = !currentlyUpvoted;
+    const newCount = newUpvoted ? votes + 1 : Math.max(0, votes - 1);
+    
+    setOptimisticUpvoted(newUpvoted);
+    setOptimisticVotes(newCount);
+    
     await voteRequest(id);
   };
 
@@ -51,9 +105,10 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
   };
 
   const formattedCount: string = String(count).padStart(2, "0");
+  const statusStyles = getStatusStyles(status);
 
   return (
-    <div className="hover:bg-[#e4e4e4] rounded-sm duration-200 ease-in-out pl-6 flex h-[109px] w-full border-b border-gray-200 items-center">
+    <div className="hover:bg-[#e4e4e4] rounded-sm duration-200 ease-in-out pl-16 flex h-[109px] w-full border-b border-gray-100 items-center">
       {/* Upvote box */}
       <div
         onClick={handleVote}
@@ -74,8 +129,8 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
             <p className="text-xs text-[#565A5E]">{description}</p>
 
             <div className="flex items-center gap-2 mt-3">
-              <button className="text-xs text-[#265BD1] rounded-md bg-[#E8EFFC] px-2 py-1 items-center flex gap-1">
-                <i className="fa-solid fa-square text-[6px]"></i>
+              <button className={`text-xs rounded-md bg-white px-2 py-1 items-center flex gap-1 transition-colors ${statusStyles.textColor} ${statusStyles.hoverTextColor}`}>
+                <i className={`fa-solid fa-square text-[6px] ${statusStyles.iconColor}`}></i>
                 {status}
               </button>
             </div>
@@ -113,8 +168,8 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
                       </p>
 
                       <div className="flex items-center gap-2 mt-3">
-                        <button className="text-xs text-[#265BD1] rounded-md bg-[#E8EFFC] px-2 py-1 items-center flex gap-1">
-                          <i className="fa-solid fa-square text-[6px]"></i>
+                        <button className={`text-xs rounded-md bg-white px-2 py-1 items-center flex gap-1 transition-colors ${statusStyles.textColor} ${statusStyles.hoverTextColor}`}>
+                          <i className={`fa-solid fa-square text-[6px] ${statusStyles.iconColor}`}></i>
                           {status}
                         </button>
                       </div>

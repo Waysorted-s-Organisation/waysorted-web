@@ -38,6 +38,7 @@ export async function POST(req: NextRequest, context: any) {
 
         return NextResponse.json({
             votes: request.votes,
+            votedBy: request.votedBy,
             hasUpvoted: !hasUpvoted,
         });
     } catch (error) {

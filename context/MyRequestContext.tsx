@@ -158,13 +158,27 @@ export const MyRequestProvider: React.FC<{ children: ReactNode }> = ({ children 
 
     const voteMyRequest = async (id: string) => {
         try {
-            const res = await fetch(`/api/requests/${id}/vote`, { method: "POST" });
+            const res = await fetch(`/api/requests/${id}/vote`, { 
+                method: "POST",
+                credentials: "include"
+            });
             if (res.ok) {
-                await fetchMyRequests();
+                const data = await res.json();
+                
+                // Immediately update the request in state
+                setMyRequests(prevRequests =>
+                    prevRequests.map(req =>
+                        req.id === id
+                            ? { ...req, votes: data.votes, votedBy: data.votedBy || req.votedBy }
+                            : req
+                    )
+                );
+                
                 refetchGlobalRequest(); // Keep global list in sync
             }
         } catch (error) {
             console.error("Failed to vote", error);
+            toast.error("Failed to vote");
         }
     };
 
