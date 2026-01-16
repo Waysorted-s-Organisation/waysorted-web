@@ -17,7 +17,7 @@ const Hero = () => {
       <div id="hero-content" className="text-center">
         {/* Request a feature badge */}
         <button
-          className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-3 py-1 md:px-5 md:py-2 text-sm text-secondary-db-100 mb-4 cursor-pointer"
+          className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-3 py-1 md:px-5 md:py-2 text-sm text-secondary-db-100 mb-4 mt-16 cursor-pointer"
           onClick={() => {
             if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
               router.push('/mobile-redirect');
@@ -47,7 +47,7 @@ const Hero = () => {
         </h1>
 
         {/* Subheading */}
-        <p className="text-sm md:text-base font-semibold max-w-2xl mx-auto mb-12 leading-relaxed">
+        <p className="text-sm md:text-base font-medium max-w-2xl mx-auto mb-12 leading-relaxed">
           <span className="text-secondary-db-100">
             Built to replace them all with one unified tool suite which works across softwares.
           </span>
@@ -60,7 +60,7 @@ const Hero = () => {
             className="inline-flex border bg-secondary-db-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer force-hover"
           >
             <span className="flex items-center gap-x-2">
-              <span>Join Waitlist</span>
+              <span>Accepting Now -&gt; Join Waitlist</span>
               <Image
                 src="/icons/arrow-white.svg"
                 alt="Arrow icon"

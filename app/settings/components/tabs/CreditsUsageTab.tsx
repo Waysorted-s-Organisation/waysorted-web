@@ -1,5 +1,5 @@
 import {useUser} from "@/hooks/useUser";
-import Loading from "@/app/loading";
+import Loading from "../../loading";
 import CreditsUsageCard from "@/app/settings/components/CreditsUsageCard";
 
 export function CreditsUsageTab() {

@@ -1,6 +1,6 @@
 import BetaFeaturesCard from "../BetaFeaturesCard";
 import {useUser} from "@/hooks/useUser";
-import Loading from "@/app/loading";
+import Loading from "../../loading";
 
 export function BetaFeaturesTab() {
   const { user, loading } = useUser();

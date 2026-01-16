@@ -1,6 +1,6 @@
 import ProfileCard from "../ProfileCard";
 import {useUser} from "@/hooks/useUser";
-import Loading from "@/app/loading";
+import Loading from "../../loading";
 
 export function GeneralTab() {
   const { user, loading } = useUser();

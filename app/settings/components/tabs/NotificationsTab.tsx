@@ -1,6 +1,6 @@
 import NotificationsCard from "../NotificationsCard";
 import {useUser} from "@/hooks/useUser";
-import Loading from "@/app/loading";
+import Loading from "../../loading";
 
 export function NotificationsTab() {
   const { user, loading } = useUser();
