@@ -52,6 +52,22 @@ export default function robots(): MetadataRoute.Robots {
                 allow: '/',
                 disallow: ['/api/', '/settings', '/connected', '/allow-access'],
             },
+            {
+                userAgent: 'Twitterbot',
+                allow: '/',
+            },
+            {
+                userAgent: 'facebookexternalhit',
+                allow: '/',
+            },
+            {
+                userAgent: 'LinkedInBot',
+                allow: '/',
+            },
+            {
+                userAgent: 'Applebot-Extended',
+                allow: '/',
+            },
         ],
         sitemap: 'https://www.waysorted.com/sitemap.xml',
     }
