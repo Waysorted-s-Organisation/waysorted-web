@@ -58,7 +58,8 @@ const Hero = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <GlowStarButton
             onClick={() => router.push("/get-early-access")}
-            className="inline-flex border bg-secondary-db-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer force-hover"
+            bgColor="primary-way-100"
+            className="inline-flex border bg-primary-way-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer force-hover"
           >
             <span className="flex items-center gap-x-2">
               <span>Accepting Now -&gt; Join Waitlist</span>

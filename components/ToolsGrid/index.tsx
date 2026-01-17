@@ -46,7 +46,7 @@ export default function ToolsGrid() {
     const wordsEls = wordsRefs.current.filter(Boolean) as HTMLSpanElement[];
     const transformEl = transformRef.current;
 
-    if (iconsEls.length === 0) return;
+    if (!iconsEls.length) return;
 
     const heroContent = document.getElementById("hero-content");
 
@@ -66,7 +66,7 @@ export default function ToolsGrid() {
 
     gsap.set(wordsEls, {
       opacity: 0,
-      y: 0,
+      y: 20,
     });
 
     gsap.set(transformEl, {
@@ -149,32 +149,30 @@ export default function ToolsGrid() {
       "+=0.5" // Slight delay after icons scatter
     );
 
-    // Phase 3: reveal text word-by-word (40% of timeline)
-    const wordsTimeline = gsap.timeline({ delay: 0.5 }); // 0.5s initial pause
+    // Phase 3: reveal text word-by-word (new implementation for words animation)
+    const wordsTimeline = gsap.timeline({ delay: 0.5 });
 
-    wordsTimeline.to(wordsEls, {
-      opacity: 0.2,
-      duration: 2,
-      stagger: 0.15,
-      ease: "power3.out",
-    }, 0); // start at time 0 of this nested timeline
-
-    wordsTimeline.to(wordsEls, {
-      opacity: 1,
-      duration: 2,
-      stagger: 0.15,
-      ease: "power3.out",
-    }, 1); // start at the same time as previous tween
+    wordsTimeline.to(
+      wordsEls,
+      {
+        opacity: 1,
+        y: 0,
+        duration: 2.5,
+        stagger: 0.3,
+        ease: "power3.out",
+      },
+      0
+    );
 
     masterTimeline.add(wordsTimeline);
 
-    // ScrollTrigger with much slower scrub
+    // ScrollTrigger with master timeline
     const scrollTrigger = ScrollTrigger.create({
       trigger: section,
       start: "top 50%",
       end: "bottom 50%",
       animation: masterTimeline,
-      scrub: 4, // Slower scrub (higher number = slower)
+      scrub: 4, // Smooth scrub (higher number = slower)
       pin: true,
       markers: false,
       pinSpacing: true,

@@ -40,6 +40,7 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   title?: string;
   "aria-label"?: string;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  bgColor?: string; // New prop for background color
 };
 
 export default function GlowStarButton({
@@ -54,6 +55,7 @@ export default function GlowStarButton({
   title,
   "aria-label": ariaLabel,
   onClick,
+  bgColor = "secondary-db-100", // Default value for bgColor
   ...props
 }: Props) {
   const [hoverKey, setHoverKey] = useState(0);
@@ -122,7 +124,7 @@ export default function GlowStarButton({
   return (
     <button
       type="submit"
-      className={`btn-glow text-white ${className}`}
+      className={`btn-glow text-white ${bgColor} ${className}`} // Added bgColor with default value 
       onMouseEnter={rerollOnHover ? () => setHoverKey(k => k + 1) : undefined}
       onTouchStart={rerollOnHover ? () => setHoverKey(k => k + 1) : undefined}
       title={title}
@@ -134,28 +136,28 @@ export default function GlowStarButton({
       {dots.map((d, i) => (
         <svg
           key={i}
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            className="btn-star"
-            style={
-              {
-                "--top": `${d.top}%`,
-                "--left": `${d.left}%`,
-                "--size": `${d.size}px`,
-                "--scale": d.scale,
-                "--dx": `${d.dx}px`,
-                "--dy": `${d.dy}px`,
-                "--spin": `${d.spin}deg`,
-                "--dur": `${d.durMs}ms`,
-                "--enter-delay": `${d.enterDelay}s`,
-                "--delay": `${d.enterDelay}s`,
-                "--enter-dur": `${enterDurationSec}s`,
-                "--rot": "0deg",
-              } as React.CSSProperties
-            }
-          >
-            <circle cx="12" cy="12" r={d.radius} fill="currentColor" />
-          </svg>
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          className="btn-star"
+          style={
+            {
+              "--top": `${d.top}%`,
+              "--left": `${d.left}%`,
+              "--size": `${d.size}px`,
+              "--scale": d.scale,
+              "--dx": `${d.dx}px`,
+              "--dy": `${d.dy}px`,
+              "--spin": `${d.spin}deg`,
+              "--dur": `${d.durMs}ms`,
+              "--enter-delay": `${d.enterDelay}s`,
+              "--delay": `${d.enterDelay}s`,
+              "--enter-dur": `${enterDurationSec}s`,
+              "--rot": "0deg",
+            } as React.CSSProperties
+          }
+        >
+          <circle cx="12" cy="12" r={d.radius} fill="currentColor" />
+        </svg>
       ))}
     </button>
   );
