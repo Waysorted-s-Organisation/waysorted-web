@@ -550,15 +550,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 <div className="border-t border-primary-way-10" />
               </div>
 
-              <div className="px-3 py-3">
-                <button
-                  className="w-full rounded-xl bg-secondary-db-100 text-white px-4 py-3 font-semibold shadow-card active:scale-[0.99]"
-                  onClick={() => { router.push('/mobile-redirect'); setMobileOpen(false); setMobileProductsOpen(false); setMobileResourcesOpen(false); }}
-                >
-                  Request a feature
-                </button>
-              </div>
-
               {/* Language pill + dropdown */}
               <div className="px-3 py-4">
                 <button
@@ -581,6 +572,19 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 </div>
               </div>
             </nav>
+
+            <div
+              className="sticky bottom-0 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/70 border-t border-primary-way-10 px-4 py-3"
+              style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)' }}
+            >
+              <button
+                onClick={() => { router.push('/mobile-redirect'); setMobileOpen(false); setMobileProductsOpen(false); setMobileResourcesOpen(false); }}
+                className="w-full inline-flex items-center justify-between rounded-lg bg-primary-way-100 text-white px-4 py-3 font-medium active:scale-[0.98]"
+              >
+                <span>Request a feature</span>
+                <Image src="/icons/arrow-right-white.svg" alt="" width={18} height={18} />
+              </button>
+            </div>
 
 
 
