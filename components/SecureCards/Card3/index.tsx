@@ -51,6 +51,7 @@ const Card3 = () => {
       <Image
         src="/icons/left-cloud.svg"
         alt="Decorative cloud"
+        title="Decorative cloud"
         aria-hidden="true"
         className="vib-cloud1 relative top-20 w-16 "
         width={10}
@@ -59,6 +60,7 @@ const Card3 = () => {
       <Image
         src="/icons/right-cloud.svg"
         alt="Decorative cloud"
+        title="Decorative cloud"
         className="vib-cloud2 relative -top-5 left-28 -rotate-360 w-16"
         width={10}
         height={10}
@@ -66,6 +68,7 @@ const Card3 = () => {
       <Image
         src="/icons/left-cloud.svg"
         alt="Decorative cloud"
+        title="Decorative cloud"
         className="vib-cloud3 relative -top-6  left-74 w-16"
         width={10}
         height={10}
@@ -85,6 +88,7 @@ const Card3 = () => {
         <Image
           src="/icons/short-strip.svg"
           alt="Security strip decoration"
+          title="Security strip decoration"
           width={100}
           height={250}
           className="strip scale-120 absolute bottom-[-30px] left-[-40px] "
@@ -92,6 +96,7 @@ const Card3 = () => {
         <Image
           src="/icons/large-strip.svg"
           alt="Security strip decoration"
+          title="Security strip decoration"
           width={125}
           height={350}
           className="strip scale-120 absolute bottom-[-50px] left-[-75px] "

@@ -55,7 +55,7 @@ export default function Footer() {
         <div className="w-full">
           <Link href="/" className="block">
             <div className="relative w-24 h-8 sm:w-28 sm:h-9 md:w-36 md:h-11">
-              <Image src="/icons/logo-white.svg" alt="Waysorted Logo" fill className="object-contain" />
+              <Image src="/icons/logo-white.svg" alt="Waysorted Logo" title="Waysorted Logo" fill className="object-contain" />
             </div>
           </Link>
         </div>
@@ -106,7 +106,7 @@ export default function Footer() {
                     <div className="pt-2">
                       <button className="inline-flex items-center gap-3 bg-secondary-db-100 outline outline-1 outline-secondary-db-90 px-4 sm:px-5 py-3 sm:py-4 rounded-full opacity-60 cursor-not-allowed">
                         <span className="text-sm font-medium text-white/80">Visit Plugin</span>
-                        <Image src="/icons/arrow-white.svg" alt="Arrow Right" width={12} height={12} />
+                        <Image src="/icons/arrow-white.svg" alt="Arrow Right" title="Arrow Right" width={12} height={12} />
                       </button>
                     </div>
                   </div>
@@ -137,7 +137,7 @@ export default function Footer() {
                 onClick={() => window.open(s.link, "_blank", "noopener,noreferrer")}
                 aria-label={s.alt}
               >
-                <Image src={s.src} alt={s.alt} width={16} height={16} />
+                <Image src={s.src} alt={s.alt} title={s.alt} width={16} height={16} />
               </button>
             ))}
           </div>

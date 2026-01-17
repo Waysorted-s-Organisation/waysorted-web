@@ -10,6 +10,7 @@ export default function ImpactTop() {
         <Image
           src="/icons/impact.svg"
           alt="Waysorted impact icon showing user trust and reviews"
+          title="Waysorted impact icon showing user trust and reviews"
           width={28}
           height={28}
           className="block p-1"

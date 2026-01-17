@@ -59,6 +59,7 @@ export default function WayAICard({ className }: { className?: string }) {
             <Image
               src="/icons/way-ai-white.svg"
               alt="Way AI"
+              title="Way AI"
               width={24}
               height={24}
               className="shrink-0"

@@ -13,6 +13,7 @@ export default function SecureCards() {
         <Image
           src="/icons/secure-lock.svg"
           alt="Waysorted security lock icon for data protection"
+          title="Waysorted security lock icon for data protection"
           width={24}
           height={24}
           className="block"

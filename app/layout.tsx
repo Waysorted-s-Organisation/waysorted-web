@@ -80,8 +80,13 @@ export const metadata: Metadata = {
     "Figma plugin alternative",
     "all-in-one design solution",
     "replace multiple plugins",
+    "replace multiple plugins",
     "Figma plugin to export PDF",
     "free Figma plugin bundle",
+    // Competitor Alternatives (GEO)
+    "Magicul alternative",
+    "Convertify alternative",
+    "Figma to PDF alternative",
   ],
   authors: [{ name: "Waysorted" }],
   creator: "Waysorted",

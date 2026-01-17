@@ -12,6 +12,7 @@ export default function Coffee() {
           <Image
             src="/icons/coffee.svg"
             alt="Coffee cup icon representing quick workflow completion"
+            title="Coffee cup icon representing quick workflow completion"
             width={60}
             height={60}
             sizes="(max-width: 640px) 32px, 60px"
@@ -36,6 +37,7 @@ export default function Coffee() {
               <Image
                 src="/icons/rocket.svg"
                 alt="Rocket icon indicating fast launch and try now action"
+                title="Rocket icon indicating fast launch and try now action"
                 width={30}
                 height={30}
                 sizes="(max-width: 640px) 24px, 30px"

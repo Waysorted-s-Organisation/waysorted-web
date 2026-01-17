@@ -103,6 +103,7 @@ const Card1 = () => {
           <Image
             src="/icons/two-strip.svg"
             alt="Permission control strip decoration"
+            title="Permission control strip decoration"
             width={100}
             height={250}
             className="strip  bottom-[-50px] left-[-40px] "
@@ -114,6 +115,7 @@ const Card1 = () => {
           <Image
             src="/icons/star.svg"
             alt="star"
+            title="star"
             width={6}
             height={6}
             className="absolute stars  opacity-0 pendulum "
@@ -122,6 +124,7 @@ const Card1 = () => {
           <Image
             src="/icons/star.svg"
             alt="star"
+            title="star"
             width={8}
             height={8}
             className="absolute stars opacity-0 pendulum "
@@ -131,6 +134,7 @@ const Card1 = () => {
           <Image
             src="/icons/star.svg"
             alt="star"
+            title="star"
             width={4}
             height={4}
             className="absolute stars opacity-0 pendulum "

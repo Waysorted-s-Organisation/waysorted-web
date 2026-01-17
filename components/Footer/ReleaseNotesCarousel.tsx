@@ -51,17 +51,18 @@ export default function ReleaseNotesCarousel() {
       <div className="transition-opacity duration-300 ease-in-out">
         {/* Image Placeholder area */}
         <div className="bg-secondary-db-80 w-full h-36 sm:h-40 md:h-48 rounded-md mb-3 sm:mb-4 relative overflow-hidden">
-             {/* You can put an actual Image component here based on currentNote.image */}
-             {currentNote.image && (
-                 <Image 
-                   src={currentNote.image} 
-                   alt={currentNote.title} 
-                   fill 
-                   className="object-cover" 
-                 />
-             )}
+          {/* You can put an actual Image component here based on currentNote.image */}
+          {currentNote.image && (
+            <Image
+              src={currentNote.image}
+              alt={currentNote.title}
+              title={currentNote.title}
+              fill
+              className="object-cover"
+            />
+          )}
         </div>
-        
+
         <h4 className="text-white font-medium text-lg sm:text-xl line-clamp-1">
           {currentNote.title}
         </h4>
@@ -76,11 +77,10 @@ export default function ReleaseNotesCarousel() {
           <button
             key={idx}
             onClick={() => handleDotClick(idx)}
-            className={`h-1 rounded-full transition-all duration-300 ${
-              idx === currentIndex
+            className={`h-1 rounded-full transition-all duration-300 ${idx === currentIndex
                 ? "w-8 bg-gray-200/70"
                 : "w-6 bg-white/30 hover:bg-white/50"
-            }`}
+              }`}
             aria-label={`Go to slide ${idx + 1}`}
           />
         ))}

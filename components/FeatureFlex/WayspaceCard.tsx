@@ -15,40 +15,43 @@ export default function WayspaceCard({ className }: { className?: string }) {
       <div className="mt-5 flex gap-1 justify-between">
         <div className="flex flex-col items-center text-center" >
           <div className="w-20 h-20">
-          <Image
-            src="/icons/wayspace-1.svg"
-            height={89}
-            width={89}
-            alt="Wayspace 1"
-            className="object-contain"
-          />
+            <Image
+              src="/icons/wayspace-1.svg"
+              height={89}
+              width={89}
+              alt="Wayspace 1"
+              title="Wayspace 1"
+              className="object-contain"
+            />
           </div>
           <div className="text-sm font-regular text-[#939393]">Frames to PDF</div>
         </div>
         <div className="flex flex-col items-center text-center" >
           <div className="w-20 h-20">
-          <Image
-            src="/icons/wayspace-2.svg"
-            height={89}
-            width={89}
-            alt="Wayspace 2"
-            className="object-contain"
-          />
+            <Image
+              src="/icons/wayspace-2.svg"
+              height={89}
+              width={89}
+              alt="Wayspace 2"
+              title="Wayspace 2"
+              className="object-contain"
+            />
           </div>
           <div className="text-sm font-regular text-secondary-db-100">Palettable</div>
         </div><div className="flex flex-col items-center text-center" >
           <div className="w-20 h-20">
-          <Image
-            src="/icons/wayspace-3.svg"
-            height={89}
-            width={89}
-            alt="Wayspace 3"
-            className="object-contain"
-          />
+            <Image
+              src="/icons/wayspace-3.svg"
+              height={89}
+              width={89}
+              alt="Wayspace 3"
+              title="Wayspace 3"
+              className="object-contain"
+            />
           </div>
           <div className="text-sm font-regular text-[#939393]">Unit Convertor</div>
         </div>
-        
+
       </div>
 
       <div className="mt-auto grid grid-cols-3 gap-3 mx-auto">

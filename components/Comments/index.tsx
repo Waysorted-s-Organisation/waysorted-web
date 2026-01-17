@@ -1,5 +1,5 @@
 "use client";
- 
+
 import { useEffect, useRef } from "react";
 import Image from "next/image";
 import { useTypewriter } from "@/hooks/useTypeWriter";
@@ -20,13 +20,13 @@ const PADDING = 12;
 const BOUNCE = 0.9; // Elasticity for wall/collision
 
 
- 
+
 export default function Comments() {
   const sectionRef = useRef<HTMLDivElement | null>(null);
   const cardRefs = useRef<HTMLDivElement[]>([]);
   const typedText = useTypewriter(["searching", "hunting", "exploring"]);
   const cardsContainerRef = useRef<HTMLDivElement | null>(null); // container that cards stay inside
-  
+
   const cardStates = useRef<CardState[]>([]);
 
   // Track last mouse position for "kick" on hover
@@ -212,7 +212,7 @@ export default function Comments() {
       });
     };
   }, []);
- 
+
   return (
     <section
       ref={sectionRef}
@@ -238,7 +238,7 @@ export default function Comments() {
             </button>
           </section>
         </div>
- 
+
         {/* Cards container overlays the blue block exactly */}
         <div
           ref={cardsContainerRef}
@@ -258,6 +258,7 @@ export default function Comments() {
               <Image
                 src={`/icons/comment-card-${(idx + 1)}.svg`}
                 alt="User comment"
+                title="User comment"
                 width={CARD_WIDTH}
                 height={CARD_HEIGHT}
                 className="w-60 h-40 object-cover rounded-xl"
@@ -270,4 +271,4 @@ export default function Comments() {
     </section>
   );
 }
- 
+

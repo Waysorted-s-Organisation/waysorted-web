@@ -15,6 +15,14 @@ export const metadata: Metadata = {
     url: "https://www.waysorted.com/learning",
     type: "website",
   },
+  keywords: [
+    "Figma plugin marketplace",
+    "Figma plugin bundle",
+    "Waysorted beta",
+    "design tools collection",
+    "best Figma plugins 2024",
+    "Figma plugin alternative"
+  ],
 };
 
 export default function LearningPage() {

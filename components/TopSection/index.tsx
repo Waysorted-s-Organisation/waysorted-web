@@ -23,7 +23,7 @@ export default function TopSection() {
       {/* Buttons */}
       <div className="w-full max-w-[345px] md:max-w-none mx-auto md:flex md:justify-center overflow-hidden">
         <div className="flex gap-2 md:gap-6 overflow-x-auto md:overflow-visible pb-4 -mb-4 md:pb-0 md:mb-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] items-center">
-          
+
           {/* Way Studio Button - Updated Class */}
           <button
             className="inline-flex shrink-0 items-center gap-2 rounded-full border border-primary-way-100 bg-primary-way-10 px-4 md:px-5 py-[7px] md:py-3 text-secondary-db-100 font-semibold text-xs md:text-base cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary-way-100"
@@ -31,6 +31,7 @@ export default function TopSection() {
             <Image
               src="/icons/figma-black.svg"
               alt="Figma Icon"
+              title="Figma Icon"
               width={30}
               height={30}
               className="shrink-0"
@@ -49,6 +50,7 @@ export default function TopSection() {
             <Image
               src="/icons/webflow-icon.svg"
               alt="Webflow Icon"
+              title="Webflow Icon"
               width={30}
               height={30}
               className="shrink-0"
@@ -57,13 +59,14 @@ export default function TopSection() {
               For Webflow
             </span>
           </button>
-          
+
           {/* Canva Button */}
           <button
             className={`flex shrink-0 items-center justify-center gap-2 px-4 md:px-5 py-[7px] md:py-3 rounded-full cursor-not-allowed bg-primary-way-5`}>
             <Image
               src="/icons/canva.svg"
               alt="Canva Icon"
+              title="Canva Icon"
               width={30}
               height={30}
               className="shrink-0"
@@ -77,7 +80,7 @@ export default function TopSection() {
 
       {/* Dynamic Content */}
       <div className="w-full max-w-[345px] md:max-w-6xl mx-auto mt-6 md:mt-8">
-          <FeatureFlex />
+        <FeatureFlex />
       </div>
     </section>
   );
