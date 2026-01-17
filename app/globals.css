@@ -30,6 +30,7 @@
   --menu-bg: #f7faff;
   --tertiary-cyan-500: #24b7fd;
   --tertiary-orange-500: #ff7920;
+  --tertiary-orange-600: #ea613f;
   --tertiary-orange-100: #fff1e8;
   --tertiary-orange-dark: #3d2b21;
   --tertiary-green-500: #01a04e;
@@ -171,6 +172,7 @@
   --color-save-bg: var(--save-bg);
   --color-menu-bg: var(--menu-bg);
   --color-tertiary-orange-500: var(--tertiary-orange-500);
+  --color-tertiary-orange-600: var(--tertiary-orange-600);
   --color-tertiary-orange-100: var(--tertiary-orange-100);
   --color-tertiary-orange-dark: var(--tertiary-orange-dark);
   --color-tertiary-green-500: var(--tertiary-green-500);
@@ -338,9 +340,9 @@ html, body {
   background-size: 25px 25px; 
 }
 
-.tertiary-orange-500-bg-dots {
-  background-color: rgba(249, 119, 49, 0.1);
-  background-image: radial-gradient(#43474b80 0.25px, transparent 1px);
+.tertiary-orange-600-bg-dots {
+  background-color: #ea613f;
+  background-image: radial-gradient(#ffffff80 0.25px, transparent 1px);
   background-size: 25px 25px;
 }
 

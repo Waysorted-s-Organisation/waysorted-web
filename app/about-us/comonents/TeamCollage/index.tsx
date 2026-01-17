@@ -73,14 +73,6 @@ const Collage: React.FC<CollageProps> = ({ images }) => {
                 className="object-contain"
             />
         </div>
-        <div className="absolute w-[151px] h-[151px] -bottom-25 right-20 z-50 spin">
-            <Image
-                src="/icons/geek-sticker.svg"
-                alt="Geek Sticker"
-                fill
-                className="object-contain"
-            />
-        </div>
         <div className="absolute w-[122px] h-[56px] -bottom-10 -right-15 z-50">
             <Image
                 src="/icons/creative-sticker.svg"

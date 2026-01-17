@@ -28,7 +28,6 @@ function lerp(a: number, b: number, t: number) {
 }
 
 interface AnimatedCardProps {
-  number: string | number;
   title: string;
   description: string;
   className?: string;
@@ -40,7 +39,6 @@ interface AnimatedCardProps {
 
 // Responsive Animated Card
 function AnimatedCard({
-  number,
   title,
   description,
   className = "",
@@ -53,7 +51,7 @@ function AnimatedCard({
   const reduceMotion = useReducedMotion();
 
   // Per-card stable randomness based on content
-  const rng = useMemo(() => mulberry32(hashString(String(number) + "|" + title)), [number, title]);
+  const rng = useMemo(() => mulberry32(hashString("|" + title)), [title]);
 
   // Per-card variation factors
   const tFactor = useMemo(() => lerp(0.65, 1.35, rng()), [rng]);
@@ -89,23 +87,18 @@ function AnimatedCard({
         ref={ref}
         style={motionStyle}
         className={`
-          relative overflow-hidden rounded-2xl bg-tertiary-orange-500
-          p-4 text-white w-full max-w-full transform-gpu will-change-transform
+          relative overflow-hidden bg-white
+          p-4 text-secondary-db-100 transform-gpu will-change-transform
           flex flex-col
-          md:p-8 md:w-2xl
+          mx-auto
+          md:p-8 md:w-lg
           ${className}
         `}
       >
-        <div className="relative z-10 flex items-start gap-4 md:gap-6">
-          <div className="
-            flex h-10 w-10 md:h-12 md:w-12 flex-shrink-0 items-center justify-center
-            rounded-xl outline-1 outline:white/40 bg-white/10 backdrop-blur-sm
-          ">
-            <span className="text-xl md:text-2xl font-semibold">{number}</span>
-          </div>
+        <div className="relative z-10 flex gap-4 md:gap-6">
           <div className="flex-1 space-y-2 md:space-y-3">
             <h3 className="text-lg md:text-2xl font-semibold leading-tight">{title}</h3>
-            <p className="text-white text-xs md:text-sm font-semibold leading-relaxed">{description}</p>
+            <p className="text-secondary-db-100 text-xs md:text-sm font-semibold leading-relaxed whitespace-pre-line">{description}</p>
           </div>
         </div>
       </motion.div>
@@ -116,36 +109,33 @@ function AnimatedCard({
 export default function ValuesSection() {
   const values = [
     {
-      number: "01",
-      title: "Building an ethical and inclusive workplace",
+      title: "Building an Ethical and Inclusive Workplace",
       description:
-        "We’re building a workspace where every worker isn’t just an asset but a vital contributor to our shared vision. At Waysorted, we foster an environment that values collaboration and supports the common goal of turning digital chaos into creative clarity.",
+        "We build an ethical, inclusive workplace where every individual is valued and empowered to contribute meaningfully. Collaboration, respect, and transparency guide how we work.",
       translate: 120
     },
     {
-      number: "02",
-      title: "A Legacy of Contributors",
+      title: "A Zeal for Longevity",
       description:
-        "Our customers, employees, and community are our stakeholders, our partners in progress. We weave their insights into every decision, ensuring Waysorted remains a hub that solves the mysteries of workflow inefficiency, one step at a time.",
+        "We create reliable, long-lasting tools that go beyond trends. Waysorted focuses on sustainable design solutions that support creators today and into the future.",
       translate: 80
     },
     {
-      number: "03",
-      title: " A Zeal for Longevity",
-      description:
-        "Our mission is to deliver top-tier services that stand the test of time. While trends fade, our commitment to consistency and impact endures. We design lasting solutions, tools and platforms that guide creators beyond the moment and into a future of seamless productivity.",
-    },
-    {
-      number: "04",
       title: "Diversity of Thoughts",
       description:
-        "At Waysorted, we foster a diverse and inclusive creative environment that embraces multiple ideas, perspectives, and design approaches. Our innovative design tools and solutions empower creators, designers, and teams across the community to unlock their full potential.",
+        `Waysorted fosters a diverse creative environment that embraces multiple ideas and perspectives.\n\nOur user-centric tools empower creators and teams to unlock productivity and creativity across digital design workflows.`,
+      translate: 100
     },
+    {
+      title: "A Legacy of Contributors",
+      description: "Our users, employees, and community are the foundation of our success.\n\nTheir insights shape our decisions and help us continuously improve design workflows.",
+      translate: 100
+    }
   ];
 
   return (
-    <section className="tertiary-orange-500-bg-dots px-4 md:px-20 lg:px-32 py-8 md:py-12 orange-cursor hover:orange-cursor">
-      <h2 className="text-5xl md:text-8xl font-semibold text-center mb-8 md:mb-12 text-tertiary-orange-500">
+    <section className="tertiary-orange-600-bg-dots px-4 md:px-20 lg:px-32 py-8 md:py-12 orange-cursor hover:orange-cursor">
+      <h2 className="text-4xl md:text-7xl font-semibold text-start mb-8 md:mb-12 text-white">
         Our Values
       </h2>
 
@@ -153,7 +143,6 @@ export default function ValuesSection() {
         {values.map((value, index) => (
           <AnimatedCard
             key={index}
-            number={value.number}
             title={value.title}
             description={value.description}
             direction={index % 2 === 0 ? 1 : -1}
