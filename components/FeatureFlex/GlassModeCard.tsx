@@ -16,13 +16,14 @@ export default function GlassModeCard({ className }: { className?: string }) {
       <p className="text-secondary-db-80 text-base font-medium">
         A dynamic, Liquid glass mode that keeps you more focused.
       </p>
-        <Image
+      <Image
         src="/icons/glass-mode.png"
         alt="Glass mode"
+        title="Glass mode"
         width={480}
         height={128}
         className="md:translate-y-[26px] translate-y-[28px]"
-        />
+      />
     </div>
   );
 }

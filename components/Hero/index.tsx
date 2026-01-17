@@ -29,6 +29,7 @@ const Hero = () => {
           <Image
             src="/icons/tools.svg"
             alt="Waysorted Feature Request icon showing tools"
+            title="Waysorted Feature Request icon showing tools"
             width={16}
             height={16}
             className="mr-2"
@@ -64,6 +65,7 @@ const Hero = () => {
               <Image
                 src="/icons/arrow-white.svg"
                 alt="Arrow icon"
+                title="Arrow icon"
                 width={12}
                 height={12}
               />

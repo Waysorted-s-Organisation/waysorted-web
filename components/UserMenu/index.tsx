@@ -51,14 +51,14 @@ export default function UserMenu({ user, handleLogout }: UserMenuProps) {
           {/* Workspace */}
           <div className="px-4 py-3 border-b border-secondary-db-5">
             <div className="flex items-center justify-between w-full mb-2">
-                <span className="text-xs font-regular text-secondary-db-70">Your Workspace</span>
-            <span className="text-xs font-medium text-primary-way-100 bg-primary-way-10 px-2 py-0.5 rounded-md">
+              <span className="text-xs font-regular text-secondary-db-70">Your Workspace</span>
+              <span className="text-xs font-medium text-primary-way-100 bg-primary-way-10 px-2 py-0.5 rounded-md">
                 Unlock’s soon
               </span>
             </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center">
-                <Image src="/icons/upcoming.svg" alt="Upcoming" width={40} height={40} />
+                <Image src="/icons/upcoming.svg" alt="Upcoming" title="Upcoming" width={40} height={40} />
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-sm text-primary-way-100">
@@ -113,7 +113,7 @@ function MenuItem({
       className="flex items-center gap-3 px-4 py-2 text-sm text-secondary-db-100 hover:bg-primary-way-10 transition-colors text-left cursor-pointer"
       onClick={onClick}
     >
-      <Image src={icon} alt={label} width={18} height={18} />
+      <Image src={icon} alt={label} title={label} width={18} height={18} />
       <span>{label}</span>
     </button>
   );

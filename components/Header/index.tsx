@@ -161,23 +161,23 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
           {
             text: "Create presentation-ready PDFs in one click...",
             link: "/learning/frames-to-pdf",
-            linkText: "Click here"
+            linkText: "Try Frames to PDF"
           },
           {
             text: "Convert units & prep designs for print instantly...",
             link: "/learning/unit-converter",
-            linkText: "Click here"
+            linkText: "Use Unit Converter"
           },
           {
             text: "Import external design assets more seamlessly...",
             link: "/learning/file-importer",
-            linkText: "Click here"
+            linkText: "Start Importing"
           },
           {
             text: "Try Palettable for quick Color schemes and Contrast check...",
             link: "/learning/palettable",
-            linkText: "Click here"
-          }
+            linkText: "Check Contrast"
+          },
         ];
         const randomIndex = Math.floor(Math.random() * ctaVariations.length);
         const cta = ctaVariations[randomIndex];
@@ -194,7 +194,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               aria-label="Close banner"
             >
               <div className="bg-white/10 p-2 rounded-lg">
-                <Image src="/icons/close.svg" alt="Close" width={10} height={10} />
+                <Image src="/icons/close.svg" alt="Close" title="Close" width={10} height={10} />
               </div>
             </button>
           </div>
@@ -209,6 +209,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               <Image
                 src={logoSrc}
                 alt="WaySorted Logo"
+                title="WaySorted Logo"
                 fill
                 className="hidden md:block object-contain"
                 priority
@@ -216,6 +217,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               <Image
                 src={isSecureSection ? '/icons/logo-white.svg' : '/images/blue-logo.png'}
                 alt="WaySorted Logo"
+                title="WaySorted Logo"
                 fill
                 className="block md:hidden object-contain"
                 priority
@@ -240,6 +242,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               <Image
                 src="/icons/chevron-down.svg"
                 alt="Chevron Down"
+                title="Chevron Down"
                 width={8}
                 height={4}
                 className={`transition-transform duration-300 ${productsOpen ? 'rotate-180' : ''}`}
@@ -260,6 +263,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               <Image
                 src="/icons/chevron-down.svg"
                 alt="Chevron Down"
+                title="Chevron Down"
                 width={8}
                 height={4}
                 className={`transition-transform duration-300 ${resourcesOpen ? 'rotate-180' : ''}`}
@@ -306,7 +310,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 aria-label="Change Language"
                 ref={languageBtnRef}
               >
-                <Image src={logoLanguage} alt="Globe Icon" width={20} height={20} />
+                <Image src={logoLanguage} alt="Globe Icon" title="Globe Icon" width={20} height={20} />
               </button>
               <LanguageDropdown
                 isOpen={languageOpen}
@@ -323,6 +327,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 <Image
                   src="/icons/figma.svg"
                   alt="Figma"
+                  title="Figma"
                   width={16}
                   height={16}
                 />
@@ -366,7 +371,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               aria-controls="mobile-drawer"
               onClick={() => setMobileOpen(true)}
             >
-              <Image src="/icons/menu.svg" alt="Open menu" width={22} height={22} />
+              <Image src="/icons/menu.svg" alt="Open menu" title="Open menu" width={22} height={22} />
             </button>
           </div>
         </div>
@@ -448,7 +453,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                       >
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary-way-50/30">
                           {p.icon ? (
-                            <Image src={p.icon} alt={p.name} width={40} height={40} />
+                            <Image src={p.icon} alt={p.name} title={p.name} width={40} height={40} />
                           ) : (
                             <span className="text-lg">✨</span>
                           )}
@@ -483,6 +488,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                   <Image
                     src="/icons/chevron-down.svg"
                     alt="Toggle Resources"
+                    title="Toggle Resources"
                     width={12}
                     height={12}
                     className={`ml-1 transition-transform duration-300 ${mobileResourcesOpen ? 'rotate-180' : ''}`}
@@ -563,7 +569,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                   aria-label="Change Language"
                   aria-controls="mobile-language"
                 >
-                  <Image src={logoLanguage} alt="Language" width={16} height={16} />
+                  <Image src={logoLanguage} alt="Language" title="Language" width={16} height={16} />
                   <span className="text-secondary-db-100 text-sm">En</span>
                 </button>
                 <div id="mobile-language" className="relative mt-2">
@@ -588,7 +594,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               }}
               className="absolute left-1/2 top-4 -translate-x-1/2 z-[60] h-12 w-12 rounded-full flex items-center justify-center bg-neutral-800/70 text-white border border-white/40 ring-1 ring-white/30 shadow-2xl backdrop-blur p-0 leading-none"
             >
-              <Image src="/icons/close.svg" alt="Close menu" width={18} height={18} />
+              <Image src="/icons/close.svg" alt="Close menu" title="Close menu" width={18} height={18} />
             </button>
           )}
         </aside>

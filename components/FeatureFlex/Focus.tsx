@@ -52,7 +52,7 @@ export default function Focus({ className }: { className?: string }) {
       const scrollTop = container.scrollTop;
       const scrollHeight = container.scrollHeight;
       const sectionHeight = scrollHeight / 3;
-      const buffer = 50; 
+      const buffer = 50;
 
       if (scrollTop < buffer) {
         container.scrollTop = scrollTop + sectionHeight;
@@ -66,9 +66,9 @@ export default function Focus({ className }: { className?: string }) {
 
     const updateAnimations = () => {
       if (!container) return;
-      
+
       const containerCenter = container.getBoundingClientRect().top + container.clientHeight / 2;
-      const activationRange = 120; 
+      const activationRange = 120;
 
       cardsRef.current.forEach((card) => {
         if (!card) return;
@@ -81,10 +81,10 @@ export default function Focus({ className }: { className?: string }) {
         if (progress > 1) progress = 1;
 
         const scaleFactor = 1 - progress;
-        
-        gsap.set(card, { 
-            scale: 0.9 + (0.1 * scaleFactor), 
-            opacity: 0.7 + (0.3 * scaleFactor) 
+
+        gsap.set(card, {
+          scale: 0.9 + (0.1 * scaleFactor),
+          opacity: 0.7 + (0.3 * scaleFactor)
         });
       });
     };
@@ -159,6 +159,7 @@ export default function Focus({ className }: { className?: string }) {
                       width={40}
                       height={40}
                       alt={`${tool.name} icon`}
+                      title={`${tool.name} icon`}
                       className="object-contain"
                     />
                   </div>

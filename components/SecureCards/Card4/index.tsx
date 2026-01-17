@@ -103,6 +103,7 @@ const Card4 = () => {
           ref={stripRef}
           src="/icons/three-strip.svg"
           alt="Data encryption strip decoration"
+          title="Data encryption strip decoration"
           width={350}
           height={550}
           className="strip absolute scale-200 bottom-[60px] left-[-80px] "

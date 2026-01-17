@@ -1,161 +1,74 @@
-'use client'
+import { Metadata } from 'next'
+import { notFound } from 'next/navigation'
+import dbConnect from '@/lib/toolsdb'
+import Tool, { ITool } from '@/models/tool'
+import ClientToolPage from './ClientToolPage'
 
-import React, { useEffect, useState } from 'react'
-import Image from 'next/image'
-import { useParams, useRouter } from 'next/navigation'
-import { useBanner } from '@/context/BannerContext'
-import Header from '@/components/Header'
-import ToolBriefCarousel from './components/ToolBriefCarousel'
-import JoinCommunity from '@/components/JoinCommunity'
-import ExploreMore from './components/ExploreMore'
-import Footer from '@/components/Footer'
-import type { ITool, ISlide } from '@/models/tool'
+// Ensure Tool model is registered
+import '@/models/tool'
 
-export default function LearnMorePage() {
-  const { showBanner, setShowBanner } = useBanner()
-  const router = useRouter()
-  const params = useParams()
+interface PageProps {
+    params: Promise<{
+        toolName: string
+    }>
+}
 
-  // normalize toolName (handle potential string[] from dynamic/catch-all routes)
-  const rawToolName = params?.toolName
-  const toolName = Array.isArray(rawToolName) ? rawToolName[0] ?? '' : rawToolName ?? ''
+async function getTool(slug: string): Promise<ITool | null> {
+    await dbConnect()
+    // Adjust simple findOne to lean() if needed or use the static method if available
+    // The model exports statics, so we can use Tool.findBySlug if implemented, or just findOne
+    const tool = await Tool.findOne({ slug: slug.toLowerCase() }).lean()
+    if (!tool) return null
 
-  const [tool, setTool] = useState<ITool | null>(null)
-  const [slides, setSlides] = useState<ISlide[]>([])
-  const [allTools, setAllTools] = useState<ITool[]>([])
-  const [loading, setLoading] = useState(true)
+    // Serialize _id
+    return {
+        ...tool,
+        _id: tool._id.toString(),
+        createdAt: tool.createdAt,
+        updatedAt: tool.updatedAt
+    } as unknown as ITool
+}
 
-  useEffect(() => {
-    let mounted = true
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { toolName } = await params
+    const tool = await getTool(toolName)
 
-    async function fetchData() {
-      setLoading(true)
-      try {
-        // Fetch tools and slides in PARALLEL for faster loading
-        const [toolsRes, slidesRes] = await Promise.all([
-          fetch('/api/tools/active'),
-          toolName ? fetch(`/api/tools/${encodeURIComponent(toolName)}/slides`) : Promise.resolve(null)
-        ])
-
-        if (!mounted) return
-
-        const toolsJson = await toolsRes.json()
-        const toolsData: ITool[] = toolsJson?.data ?? []
-        setAllTools(toolsData)
-
-        // Find the tool by slug (toolName)
-        const foundTool = toolsData.find((t: ITool) => t.slug === toolName)
-        setTool(foundTool ?? null)
-
-        if (slidesRes) {
-          const slidesJson = await slidesRes.json()
-          if (!mounted) return
-          setSlides(slidesJson?.slides ?? [])
-        } else {
-          setSlides([])
+    if (!tool) {
+        return {
+            title: 'Tool Not Found',
         }
-      } catch (error) {
-        if (!mounted) return
-        console.error('Error fetching tool or slides data:', error)
-        setSlides([])
-        setTool(null)
-      } finally {
-        if (mounted) setLoading(false)
-      }
     }
 
-    if (toolName) {
-      fetchData()
-    } else {
-      // reset state if no toolName
-      setTool(null)
-      setSlides([])
-      setAllTools([])
-      setLoading(false)
+    return {
+        title: `${tool.name} - ${tool.heading}`,
+        description: tool.description,
+        keywords: [tool.name, tool.category, ...(tool.tags || [])],
+        openGraph: {
+            title: `${tool.name} - Waysorted`,
+            description: tool.shortDescription,
+            images: tool.icon || [],
+        }
+    }
+}
+
+export default async function ToolPage({ params }: PageProps) {
+    const { toolName } = await params
+    const tool = await getTool(toolName)
+
+    if (!tool) {
+        // If tool not found, we can let the client handle it or show 404
+        // Historically the client page handled "loading" then null. 
+        // For SEO, 404 is better if it truly doesn't exist.
+        // But let's pass null to client to maintain existing behavior for now if preferred, 
+        // or just notFound()
+        // Given the client code: "if (!tool && !loading) return null", it renders nothing.
+        // Let's try to pass the initial tool to the client.
     }
 
-    return () => {
-      mounted = false
-    }
-  }, [toolName])
+    // We pass the initial tool data to the client component
+    // to avoid double fetching and provide immediate content (SSR).
+    // The client component usually fetches slides too. 
+    // We can fetch slides here if we want perfect SEO for content, but metadata is step 1.
 
-  if (!tool && !loading) {
-    return null
-  }
-
-  return (
-    <div>
-      <main
-        className={`min-h-screen bg-white transition-all duration-300 ${showBanner ? 'pt-24' : 'pt-16'
-          }`}
-      >
-        <Header showBanner={showBanner} setShowBanner={setShowBanner} />
-
-        {/* Breadcrumb */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-5 my-6 sm:my-16">
-          <nav className="text-base font-medium text-secondary-db-100/50">
-            <span
-              className="cursor-pointer hover:text-secondary-db-100 hover:border-b-2 hover:border-b-primary-way-100"
-              onClick={() => router.push('/')}
-            >
-              Home
-            </span>
-            <Image
-              src="/icons/chevron-right.svg"
-              alt="Arrow Right"
-              width={5}
-              height={7}
-              className="inline-block mx-2"
-            />
-            <span
-              className="text-secondary-db-100/50 text-base font-medium hover:text-secondary-db-100 cursor-pointer hover:border-b-2 hover:border-b-primary-way-100"
-              onClick={() => router.push('/learning')}
-            >
-              Learning Hub
-            </span>
-            <Image
-              src="/icons/chevron-right.svg"
-              alt="Arrow Right"
-              width={5}
-              height={7}
-              className="inline-block mx-2"
-            />
-            <span className="text-primary-way-100 text-base font-medium cursor-pointer">
-              {tool?.name ?? toolName}
-            </span>
-          </nav>
-        </div>
-
-        {/* Heading */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-5 flex flex-col lg:flex-row lg:items-start lg:justify-between gap-8 sm:gap-16 mt-8 sm:mt-12">
-          <div className="w-full lg:max-w-3xl text-left">
-            <h1 className="text-[36px] font-semibold text-secondary-db-100 leading-tight">
-              {tool?.heading ?? ''}
-            </h1>
-            <button className="bg-secondary-db-100 text-white mt-8 py-3.5 px-8 font-semibold text-base rounded-full cursor-pointer hover:bg-secondary-db-90 transition-colors">
-              Try now for free
-            </button>
-          </div>
-
-          <div className="w-full lg:max-w-lg mt-2 lg:mt-4">
-            <p className="text-secondary-db-100 text-lg sm:text-xl font-medium leading-relaxed">
-              {tool?.tagline ?? ''}
-            </p>
-          </div>
-        </div>
-
-        {/* Carousel of ToolBriefs */}
-        <div className="my-0 sm:my-10">
-          <div className="mx-auto max-w-7xl px-5">
-            {slides.length > 0 && <ToolBriefCarousel slides={slides} />}
-            {loading && <p className="text-center">Loading slides…</p>}
-          </div>
-        </div>
-
-        <ExploreMore tools={allTools} />
-        <JoinCommunity />
-      </main>
-      <Footer />
-    </div>
-  )
+    return <ClientToolPage initialTool={tool} toolName={toolName} />
 }

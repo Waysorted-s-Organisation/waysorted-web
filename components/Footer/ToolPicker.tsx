@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import {ITool} from "@/models/tool";
+import { ITool } from "@/models/tool";
 
 type Props = {
   tools: ITool[];
@@ -117,7 +117,7 @@ export default function ToolsPicker({ tools, onVisitPlugin }: Props) {
       </div>
 
       {/* Tools – below categories on mobile, middle column on desktop */}
-      
+
 
       <div className="order-3 md:order-none md:col-span-2">
         <h3 id={panelTitleId} className="font-semibold text-white text-base sm:text-lg mb-3 sm:mb-4">
@@ -136,6 +136,7 @@ export default function ToolsPicker({ tools, onVisitPlugin }: Props) {
                   <Image
                     src={`${selectedTool.iconData}`}
                     alt={`${selectedTool.name} icon`}
+                    title={`${selectedTool.name} icon`}
                     width={48}
                     height={48}
                     className="rounded shrink-0"
@@ -155,7 +156,7 @@ export default function ToolsPicker({ tools, onVisitPlugin }: Props) {
                     className="inline-flex items-center gap-3 bg-secondary-db-100 outline outline-1 outline-secondary-db-90 px-4 sm:px-5 py-3 sm:py-4 rounded-full hover:bg-secondary-db-90 transition"
                   >
                     <span className="text-sm sm:text-[0.95rem] font-medium text-white">Visit Plugin</span>
-                    <Image src="/icons/arrow-white.svg" alt="Arrow Right" width={12} height={12} />
+                    <Image src="/icons/arrow-white.svg" alt="Arrow Right" title="Arrow Right" width={12} height={12} />
                   </button>
                 ) : (
                   <Link
@@ -163,7 +164,7 @@ export default function ToolsPicker({ tools, onVisitPlugin }: Props) {
                     className="inline-flex items-center gap-3 bg-secondary-db-100 outline outline-1 outline-secondary-db-90 px-4 sm:px-5 py-3 sm:py-4 rounded-full hover:bg-secondary-db-90 transition cursor-pointer"
                   >
                     <span className="text-sm sm:text-[0.95rem] font-medium text-white">Visit Plugin</span>
-                    <Image src="/icons/arrow-white.svg" alt="Arrow Right" width={12} height={12} />
+                    <Image src="/icons/arrow-white.svg" alt="Arrow Right" title="Arrow Right" width={12} height={12} />
                   </Link>
                 )}
               </div>

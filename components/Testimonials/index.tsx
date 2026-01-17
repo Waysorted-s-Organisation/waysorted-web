@@ -52,6 +52,7 @@ export default function Testimonials() {
                     <Image
                         src="/icons/mavens.svg"
                         alt="Mavens"
+                        title="Mavens"
                         width={30}
                         height={30}
                         className="inline block p-1"
@@ -91,15 +92,15 @@ export default function Testimonials() {
                         <button
                             key={testimonial.id}
                             onClick={() => setActiveIndex(index)}
-                            className={`relative w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl transition-all duration-500 cursor-pointer ${
-                                activeIndex === index
+                            className={`relative w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl transition-all duration-500 cursor-pointer ${activeIndex === index
                                     ? "scale-110 md:scale-100 shadow-xl -translate-y-2 md:-translate-y-5"
                                     : "scale-100 opacity-70"
-                            }`}
+                                }`}
                         >
                             <Image
                                 src={testimonial.image}
                                 alt={testimonial.author}
+                                title={testimonial.author}
                                 width={48}
                                 height={48}
                                 className="w-full h-full object-cover rounded-xl md:rounded-2xl"

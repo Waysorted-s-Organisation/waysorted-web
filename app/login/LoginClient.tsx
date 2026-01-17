@@ -221,7 +221,7 @@ export default function Login() {
       <div className="bg-white rounded-[22px] shadow-md max-w-lg w-full">
         {step === "choose" && (
           <div className="flex flex-col gap-4 px-6 sm:px-8 pt-8 pb-3 items-center">
-            <Image src="/icons/success.svg" alt="Welcome back" width={64} height={64} />
+            <Image src="/icons/success.svg" alt="Welcome back" title="Welcome back" width={64} height={64} />
             <h1 className="text-2xl font-semibold text-black text-center">Welcome back!</h1>
             <p className="text-sm text-secondary-db-70 text-center">
               Log in to continue your way of working smarter.
@@ -232,7 +232,7 @@ export default function Login() {
               disabled={loading}
               className="bg-primary-way-100 hover:bg-primary-way-90 cursor-pointer text-white w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              <Image src="/icons/google.svg" alt="Google" width={20} height={20} />
+              <Image src="/icons/google.svg" alt="Google" title="Google" width={20} height={20} />
               {loading ? "Redirecting..." : "Continue with Google"}
             </button>
 
@@ -248,7 +248,7 @@ export default function Login() {
 
         {step === "email" && (
           <div className="flex flex-col gap-4 px-6 sm:px-8 pt-8 pb-3 items-center">
-            <Image src="/icons/success.svg" alt="Welcome back" width={56} height={56} />
+            <Image src="/icons/success.svg" alt="Welcome back" title="Welcome back" width={56} height={56} />
             <h1 className="text-2xl font-semibold text-black text-center">Welcome back!</h1>
             <p className="text-sm text-secondary-db-70 text-center">
               Enter your email and we’ll send you a verification code
@@ -290,7 +290,7 @@ export default function Login() {
                 onClick={() => setStep("email")}
                 className="text-secondary-db-70 hover:text-secondary-db-100 text-sm flex items-center gap-2"
               >
-                <span className="cursor-pointer"><Image src="/icons/back.svg" alt="Back" width={13} height={11} /></span>
+                <span className="cursor-pointer"><Image src="/icons/back.svg" alt="Back" title="Back" width={13} height={11} /></span>
               </button>
             </div>
 

@@ -167,6 +167,7 @@ const Card2 = () => {
           <Image
             src="/icons/two-strip.svg"
             alt="short-strip"
+            title="short-strip"
             width={100}
             height={150}
             className="strip absolute -bottom-[10px] left-[-40px]"
@@ -177,6 +178,7 @@ const Card2 = () => {
           <Image
             src="/icons/star.svg"
             alt="star"
+            title="star"
             width={12}
             height={12}
             className="stars absolute top-[49%] left-[49%] opacity-0 scale-75"
@@ -184,6 +186,7 @@ const Card2 = () => {
           <Image
             src="/icons/star.svg"
             alt="star"
+            title="star"
             width={14}
             height={14}
             className="stars absolute top-[39%] left-[20%] opacity-0"
@@ -191,6 +194,7 @@ const Card2 = () => {
           <Image
             src="/icons/star.svg"
             alt="star"
+            title="star"
             width={14}
             height={14}
             className="stars absolute top-[62%] left-[14%] opacity-0"
@@ -198,6 +202,7 @@ const Card2 = () => {
           <Image
             src="/icons/star.svg"
             alt="star"
+            title="star"
             width={10}
             height={10}
             className="stars absolute top-[34%] left-[84%] opacity-0 scale-50"

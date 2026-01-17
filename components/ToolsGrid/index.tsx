@@ -106,30 +106,30 @@ export default function ToolsGrid() {
 
     // Phase 2: scatter icons to fixed positions (40% of timeline)
     let scatterPositions;
-      
-      if (isMobile) {
-        scatterPositions = [
-          { x: -45, y: -190 }, // top-left
-          { x: 45, y: -200 },  // bottom-left
-          { x: -45, y: 65 },  // top-right
-          { x: 45, y: 65 },   // bottom-right
-        ];
-      } else {
-        // Wide scatter for desktop
-        scatterPositions = [
-          { x: -300, y: -200 }, // top-left
-          { x: -500, y: 200 },  // bottom-left
-          { x: 500, y: -200 },  // top-right
-          { x: 300, y: 200 },   // bottom-right
-        ];
-      }
+
+    if (isMobile) {
+      scatterPositions = [
+        { x: -45, y: -190 }, // top-left
+        { x: 45, y: -200 },  // bottom-left
+        { x: -45, y: 65 },  // top-right
+        { x: 45, y: 65 },   // bottom-right
+      ];
+    } else {
+      // Wide scatter for desktop
+      scatterPositions = [
+        { x: -300, y: -200 }, // top-left
+        { x: -500, y: 200 },  // bottom-left
+        { x: 500, y: -200 },  // top-right
+        { x: 300, y: 200 },   // bottom-right
+      ];
+    }
 
     masterTimeline.to(
       iconsEls,
       {
         x: (i) => scatterPositions[i % 4].x,
         y: (i) => scatterPositions[i % 4].y,
-        scale: isMobile ? 0.4: 0.6,
+        scale: isMobile ? 0.4 : 0.6,
         rotation: (i) => (i % 2 === 0 ? -15 : 15),
         duration: 3,
         ease: "power2.inOut",
@@ -166,7 +166,7 @@ export default function ToolsGrid() {
       ease: "power3.out",
     }, 1); // start at the same time as previous tween
 
-    masterTimeline.add(wordsTimeline); 
+    masterTimeline.add(wordsTimeline);
 
     // ScrollTrigger with much slower scrub
     const scrollTrigger = ScrollTrigger.create({
@@ -217,6 +217,7 @@ export default function ToolsGrid() {
               <Image
                 src={icon.src}
                 alt={icon.alt}
+                title={icon.alt}
                 width={120}
                 height={120}
                 className="w-full h-full object-contain"
