@@ -32,6 +32,13 @@ export function useUser(auto: boolean = true) {
 
   useEffect(() => {
     if (auto) fetchUser();
+
+    // Auto-refresh when window regains focus (e.g., coming back from Figma)
+    if (auto) {
+      const handleFocus = () => fetchUser();
+      window.addEventListener("focus", handleFocus);
+      return () => window.removeEventListener("focus", handleFocus);
+    }
   }, [auto, fetchUser]);
 
   return { user, loading, error, refetch: fetchUser, setUser };
