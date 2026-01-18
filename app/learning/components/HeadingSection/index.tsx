@@ -30,7 +30,7 @@ export default function HeadingSection() {
       </div>
 
       {/* Right Side (unchanged ≥ md) */}
-      <p className="text-secondary-db-80 hidden md:block max-w-md my-4 md:my-8 text-xl font-medium">
+      <p className="text-secondary-db-80 hidden md:block max-w-md md:mt-20 text-xl font-medium">
         Quick guides and smart tips to master every feature with ease.
       </p>
     </div>
