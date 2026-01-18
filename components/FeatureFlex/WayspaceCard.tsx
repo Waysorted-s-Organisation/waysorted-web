@@ -5,6 +5,18 @@ import clsx from "clsx";
 import Image from "next/image";
 import confetti from "canvas-confetti";
 
+let confettiInstance: confetti.CreateTypes | null = null;
+
+function getConfetti() {
+  if (!confettiInstance) {
+    confettiInstance = confetti.create(undefined, {
+      resize: true,
+      useWorker: true,
+    });
+  }
+  return confettiInstance;
+}
+
 const TOOLS_DATA = [
   {
     id: 1,
@@ -81,6 +93,30 @@ export default function WayspaceCard({ className }: { className?: string }) {
     scrollRef.current.scrollLeft = scrollLeftStart.current - walk;
   };
 
+  const fireConfetti = (x: number, y: number) => {
+    const confetti = getConfetti();
+
+    confetti({
+      particleCount: 60,
+      spread: 55,
+      startVelocity: 25,
+      gravity: 1.1,
+      scalar: 0.75,
+      origin: { x, y },
+      zIndex: 9999,
+      colors: [
+        "#26ccff",
+        "#a25afd",
+        "#ff5e7e",
+        "#88ff5a",
+        "#fcff42",
+        "#ffa62d",
+        "#ff36ff",
+      ],
+    });
+  };
+
+
   const toggleFavorite = (
     id: number,
     e: React.MouseEvent<HTMLButtonElement>,
@@ -96,27 +132,7 @@ export default function WayspaceCard({ className }: { className?: string }) {
       if (prev.includes(id)) {
         return prev.filter((favId) => favId !== id);
       } else if (prev.length < 3) {
-        // Fire Confetti
-
-        confetti({
-          origin: { x, y },
-          particleCount: 60,
-          spread: 50,
-          gravity: 1.2,
-          scalar: 0.7,
-          zIndex: 9999,
-
-          colors: [
-            "#26ccff",
-            "#a25afd",
-            "#ff5e7e",
-            "#88ff5a",
-            "#fcff42",
-            "#ffa62d",
-            "#ff36ff",
-          ],
-        });
-
+        fireConfetti(x, y);
         return [...prev, id];
       }
 
