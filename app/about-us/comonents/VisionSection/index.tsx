@@ -73,11 +73,12 @@ export default function VisionSection() {
 
       ScrollTrigger.create({
         trigger: sectionRef.current,
-        start: isMobile ? "top 60%" : "top 20%",
-        end: "+=800",
+        start: isMobile ? "bottom 90%" : "top 20%",
+        end: isMobile ? "+=300" : "+=800",
         animation: masterTimeline,
         scrub: 1,
         pin: true,
+        markers: false,
         anticipatePin: 1,
         invalidateOnRefresh: true,
       });
