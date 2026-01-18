@@ -3,31 +3,36 @@ import Image from "next/image";
 
 type Props = {
   title: string;
-  description: string;
-  tilt?: string; // e.g., rotate-2, -rotate-2
+  description: React.ReactNode;
+  tilt?: string;
 };
 
 export default function FeatureCard({ title, description, tilt }: Props) {
   return (
     <div
       className={cn(
-        "relative rounded-2xl bg-white text-black px-5 sm:px-6 py-4 sm:py-5",
-        "ring-1 ring-slate-200",
+        "relative w-full rounded-2xl bg-white text-black px-5 py-5 shadow-lg border border-slate-100",
         tilt
       )}
     >
-      <div className="flex items-start gap-3">
-        <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary text-white">
+      <div className="flex items-start gap-4">
+        {/* Check Icon */}
+        <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-way-100 text-white">
           <Image
             src="/icons/check.svg"
             alt="Check"
-            width={18}
-            height={18}
+            width={14}
+            height={14}
+            className="text-white"
           />
         </span>
+        
+        {/* Text Content */}
         <div>
-          <h3 className="font-semibold text-black">{title}</h3>
-          <p className="mt-1 text-sm text-black">{description}</p>
+          <h3 className="font-semibold text-slate-900 text-base">{title}</h3>
+          <div className="mt-1 text-sm text-slate-600 leading-relaxed">
+            {description}
+          </div>
         </div>
       </div>
     </div>

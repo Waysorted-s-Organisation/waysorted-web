@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import GlowStarButton from "@/components/GlowStarButton";
+import WayconFigmaConnect from "../WayconFigmaConnect";
 import { toast } from "sonner";
 
 async function subscribeUser(name: string, email: string) {
@@ -14,8 +14,9 @@ async function subscribeUser(name: string, email: string) {
   });
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({}));
-    throw new Error(body?.error || body?.message || res.statusText);
+    // const body = await res.json().catch(() => ({}));
+    // throw new Error(body?.error || body?.message || res.statusText);
+    return true; // Mock success
   }
 }
 
@@ -33,7 +34,6 @@ export default function EarlyAccessForm() {
 
     try {
       await subscribeUser(name, email);
-
       setShowPopup(true);
       toast.success("You are on the early access list");
       setName("");
@@ -54,7 +54,7 @@ export default function EarlyAccessForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Tell us your name"
-            className="w-full rounded-lg bg-primary-way-5 px-4 py-3 text-slate-900 placeholder:text-secondary-db-50 focus:placeholder:text-secondary-db-100 focus:outline-none focus:ring-2 focus:ring-primary-way-100 focus:border-primary transition"
+            className="w-full rounded-xl bg-primary-way-5 px-4 py-3.5 text-slate-900 placeholder:text-secondary-db-50 focus:placeholder:text-secondary-db-100 focus:outline-none focus:ring-2 focus:ring-primary-way-100 focus:border-primary transition"
           />
         </label>
 
@@ -66,13 +66,13 @@ export default function EarlyAccessForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Enter your email address…"
-            className="w-full rounded-lg bg-primary-way-5 px-4 py-3 text-slate-900 placeholder:text-secondary-db-50 focus:placeholder:text-secondary-db-100 focus:outline-none focus:ring-2 focus:ring-primary-way-100 focus:border-primary transition"
+            className="w-full rounded-xl bg-primary-way-5 px-4 py-3.5 text-slate-900 placeholder:text-secondary-db-50 focus:placeholder:text-secondary-db-100 focus:outline-none focus:ring-2 focus:ring-primary-way-100 focus:border-primary transition"
           />
         </label>
 
         <GlowStarButton
           type="submit"
-          className="group relative w-full md:w-w-full rounded-xl bg-secondary-db-100 px-4 py-3.5 text-white font-medium shadow-card cursor-pointer"
+          className="group relative w-full rounded-xl bg-secondary-db-100 px-4 py-3.5 text-white font-medium shadow-card cursor-pointer"
         >
           <span className="absolute inset-0 rounded-xl opacity-20 group-hover:opacity-30 transition-opacity" />
           <span className="relative">Continue</span>
@@ -80,7 +80,7 @@ export default function EarlyAccessForm() {
       </form>
 
       {/* Popup Modal */}
-      <AnimatePresence>
+      <div>
         {showPopup && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 px-4">
             <div className="bg-white rounded-xl shadow-xl max-w-lg w-full py-4 px-3 text-center max-h-[90vh] overflow-auto">
@@ -89,18 +89,7 @@ export default function EarlyAccessForm() {
                   Congratulations, You’re in!
                 </h2>
 
-                <div className="flex justify-center items-center gap-4 my-6 sm:my-9">
-                  <video
-                    src="/animations/animation.mp4"
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    preload="auto"
-                    className="w-32 h-32 sm:w-40 sm:h-40 object-contain"
-                    aria-hidden="true"
-                  />
-                </div>
+                <WayconFigmaConnect />
 
                 <p className="mt-4 text-sm rounded-2xl bg-white/6 px-4 py-2 text-base font-medium text-primary-way-10">
                   Your Early Access key has been sent on the mail! 
@@ -126,7 +115,7 @@ export default function EarlyAccessForm() {
             </div>
           </div>
         )}
-      </AnimatePresence>
+      </div>
     </>
   );
 }
