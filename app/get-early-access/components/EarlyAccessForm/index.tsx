@@ -133,7 +133,7 @@ export default function EarlyAccessForm() {
             </div>
             <div className="bg-white py-2 px-10 text-center">
               <p className="text-base text-secondary-db-90 font-medium leading-relaxed">
-                Exclusive sneak peeks, early access, and insider news—just for you.
+                Exclusive sneak peeks, early access, and insider news, just for you.
               </p>
             </div>
 
