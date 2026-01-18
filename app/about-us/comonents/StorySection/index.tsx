@@ -5,7 +5,7 @@ export default function StorySection() {
   return (
     <section
       id="story"
-      className="gray-bg-dots text-white px-4 mx-auto sm:px-6 md:px-10 py-8 md:py-16 relative overflow-hidden"
+      className="about-bg-dots text-white px-4 mx-auto sm:px-6 md:px-10 py-8 md:py-40 relative overflow-hidden"
     >
       <div className="relative max-w-6xl mx-auto">
         {/* Adjust spinning element size */}
