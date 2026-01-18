@@ -32,7 +32,7 @@ export default function FeatureFlex() {
         <div className="flex flex-col md:flex-row gap-5">
           <Focus className="md:w-[278px] h-[420px]" />
 
-          <WayspaceCard className="md:w-[345px] h-auto h-[420px]" />
+          <WayspaceCard className="md:w-[345px] h-[420px]" />
 
           <div className="flex flex-col gap-4 md:w-[349px]">
             <LighterCard className="md:w-[349px] h-[175px]" />
