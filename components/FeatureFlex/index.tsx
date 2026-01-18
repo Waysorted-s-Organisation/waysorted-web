@@ -30,13 +30,13 @@ export default function FeatureFlex() {
 
         {/* Row 2 */}
         <div className="flex flex-col md:flex-row gap-5">
-          <Focus className="md:w-[278px] h-[420px]" />
+          <Focus className="md:w-[278px] w-[345px] h-[420px]" />
 
-          <WayspaceCard className="md:w-[345px] h-[420px]" />
+          <WayspaceCard className="md:w-[345px] w-[345px] h-[420px]" />
 
           <div className="flex flex-col gap-4 md:w-[349px]">
-            <LighterCard className="md:w-[349px] h-[175px]" />
-            <PlaySecureCard className="md:w-[349px] h-[229px]" />
+            <LighterCard className="md:w-[349px] w-[345px] h-[175px]" />
+            <PlaySecureCard className="md:w-[349px] w-[345px] h-[229px]" />
           </div>
         </div>
       </div>
