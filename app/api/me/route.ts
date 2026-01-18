@@ -35,6 +35,17 @@ export async function GET() {
     // Handle credits for admin
     const creditsRemaining = user.creditsRemaining;
 
+    // Check for active integrations (Figma)
+    // We look for any session for this user that has source='figma' or 'plugin' 
+    // and has a refresh token (meaning it's a persistent connection)
+    const figmaSession = await Session.findOne({
+      user: user._id,
+      source: { $in: ["figma", "plugin"] },
+      refreshToken: { $exists: true, $ne: null }
+    });
+
+    const isFigmaConnected = !!figmaSession;
+
     return NextResponse.json({
       user: {
         id: user._id.toString(),
@@ -45,6 +56,9 @@ export async function GET() {
         earlyAccess: user.earlyAccess,
         initials,
         creditsRemaining,
+        integrations: {
+          figma: isFigmaConnected
+        }
       },
     });
   } catch (err) {
