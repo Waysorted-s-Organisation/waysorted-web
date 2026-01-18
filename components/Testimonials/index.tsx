@@ -27,6 +27,13 @@ const testimonialsData = [
         image: "/images/dev.svg",
         position: "Product Designer, Vijayi",
     },
+    {
+        id: 3,
+        content:"“Waysorted definitely has the potential to improve designer productivity. I really liked the color contrast feature and the idea of plugging multiple tools into one platform.”",  
+        author: "Pranjul Singh",
+        image: "/icons/pranjul.svg",
+        position: "Product Designer, Hrfy.ai",
+    }
 ];
 
 export default function Testimonials() {
