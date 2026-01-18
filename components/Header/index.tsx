@@ -321,7 +321,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
 
             <GlowStarButton
               onClick={handleFigmaClick}
-              className={`hidden md:inline-flex border bg-secondary-db-100 text-white font-semibold text-sm button-shadow px-3 py-2 rounded-xl active:scale-95 transition-transform cursor-pointer ml-2`}
+              className={`hidden md:inline-flex border bg-secondary-db-100 border border-secondary-db-20 text-white font-semibold text-sm button-shadow px-3 py-1.25 md:px-5 md:py-2 rounded-xl active:scale-95 transition-transform cursor-pointer ml-2  ${isSecureSection ? 'text-white border-secondary-db-80' : 'text-secondary-db-100'}`}
             >
               <span className="flex items-center gap-x-2">
                 <Image

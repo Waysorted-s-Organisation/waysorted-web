@@ -10,7 +10,7 @@ import SecureDataGlow from "./SecureDataGlow";
 export default function FeatureFlex() {
   return (
     <section className="w-full flex justify-center py-10">
-      <div className="flex flex-col gap-5 w-full max-w-7xl px-4 md:px-0">
+      <div className="flex flex-col gap-5 w-full max-w-7xl px-4 items-center md:px-0">
         
         <div className="flex flex-col md:flex-row gap-5">
           <WayAICard className="md:w-[249px] h-[163px]" />
