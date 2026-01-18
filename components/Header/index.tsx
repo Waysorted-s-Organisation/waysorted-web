@@ -426,6 +426,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                   <Image
                     src="/icons/chevron-down.svg"
                     alt="Toggle Products"
+                    title="Toggle Products"
                     width={12}
                     height={12}
                     className={`ml-1 transition-transform duration-300 ${mobileProductsOpen ? 'rotate-180' : ''}`}

@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://www.waysorted.com"),
   alternates: {
     canonical: "/",
+    languages: {
+      'en': '/',
+      'x-default': '/',
+    },
   },
   title: {
     default: "Waysorted - Accelerate every idea with one powerful suite",
