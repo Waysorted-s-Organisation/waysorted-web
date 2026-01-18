@@ -6,7 +6,7 @@ export default function LighterCard({ className }: { className?: string }) {
   return (
     <div
       className={clsx(
-        "rounded-2xl shadow border border-gray-100 p-6 w-full bg-white flex",
+        "rounded-2xl border border-gray-100 p-6 w-full bg-white flex",
         "ripple-animated", // add custom class
         className
       )}

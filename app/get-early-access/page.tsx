@@ -12,23 +12,22 @@ const FEATURES = [
     title: "Free Access to Premium Tools",
     description: (
       <span>
-        Unlock premium tools at no cost, boost your productivity and explore all
-        that Waysorted has to offer,{" "}
-        <span className="text-primary-way-100 font-medium">for free.</span>
+        Unlock all premium tools at no cost during beta. Boost your productivity and explore everything
+        Waysorted has to offer,{" "}
+        <span className="text-primary-way-100 font-medium">completely free.</span>
       </span>
     ),
     tilt: "rotate-[-2deg]",
   },
   {
-    title: "500+ Free Credits",
+    title: "Unlimited Credits for Beta Users",
     description: (
       <span>
-        Start strong with{" "}
+        Enjoy{" "}
         <span className="text-tertiary-green-500 font-medium">
-          free credits
+          unlimited credits
         </span>{" "}
-        to explore, test, and create without limits. Refer friends & earn even
-        more credits!
+        throughout the Beta Program. Experiment, test, and work without limits.
       </span>
     ),
     tilt: "rotate-[2deg]",
@@ -37,12 +36,12 @@ const FEATURES = [
     title: "Exclusive Early Adopter Badge",
     description: (
       <span>
-        Get recognized as a{" "}
+        Stand out as a{" "}
         <span className="text-tertiary-orange-500 font-medium">
           founding creator
         </span>
-        , your badge will shine on the leaderboard and mark you as one of the
-        first to join the journey.
+        . Your badge highlights you on the leaderboard and marks your place as one of the
+        very first Beta members.
       </span>
     ),
     tilt: "rotate-[-1.5deg]",
@@ -55,8 +54,7 @@ const FEATURES = [
         <span className="text-tertiary-voilet-500 font-medium">
           exclusive space
         </span>{" "}
-        where fellow designers connect, share insights, and get direct access to
-        the latest updates.
+        for designers. Share insights, connect with others, get support, and receive early updates straight from the Waysorted team.
       </span>
     ),
     tilt: "rotate-[1.5deg]",
@@ -67,7 +65,6 @@ export default function EarlyAccessPage() {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
 
-  // Auto-slide for Mobile Carousel
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % FEATURES.length);
@@ -76,18 +73,12 @@ export default function EarlyAccessPage() {
   }, []);
 
   return (
-    // FIX: Changed min-h-screen to h-screen to force full viewport height without scroll on desktop
     <main className="bg-white h-screen overflow-hidden">
       <div className="mx-auto max-w-full h-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch h-full">
           
-          {/* ================= LEFT SECTION ================= */}
-          {/* FIX: Added flex-col and h-full to manage vertical spacing */}
           <section className="relative w-full flex flex-col h-full px-6 pt-6 pb-2 sm:px-12 sm:pt-8 lg:max-w-2xl">
             
-            {/* 1. SCROLLABLE CONTENT AREA (Logo + Form) */}
-            {/* FIX: flex-1 allows this area to grow and push the footer down */}
-            {/* Added overflow-y-auto to allow scrolling on small screens if content overflows */}
             <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
               
               {/* Header / Logo */}
@@ -183,8 +174,6 @@ export default function EarlyAccessPage() {
               </div>
             </div>
 
-            {/* 2. FOOTER AREA */}
-            {/* FIX: shrink-0 prevents it from being squashed. It sits at the bottom because the sibling above has flex-1 */}
             <div className="shrink-0 flex px-4 sm:px-22 pb-6 pt-4 text-xs justify-center text-secondary-db-50 mt-auto">
               <div>
                 By clicking “continue” you agree to our&nbsp;
@@ -210,13 +199,9 @@ export default function EarlyAccessPage() {
               </div>
             </div>
           </section>
-
-          {/* ================= RIGHT SECTION ================= */}
           <section className="hidden lg:block relative h-full bg-primary-way-10 border-l border-primary-way-20">
             <div className="h-full p-4 flex flex-col">
               
-              {/* Blue Card */}
-              {/* FIX: h-full ensures the card stretches to fill the desktop height */}
               <div className="h-full flex flex-col justify-between rounded-3xl blue-bg-dots px-8 py-5 overflow-hidden">
                 
                 {/* Header */}
@@ -234,8 +219,6 @@ export default function EarlyAccessPage() {
                   </div>
                 </div>
 
-                {/* Feature Cards Container */}
-                {/* FIX: flex-1 and justify-between distribute the cards evenly in the available space */}
                 <div className="flex-1 flex flex-col justify-between min-h-0 py-1 gap-5">
                   {FEATURES.map((feature, idx) => (
                     <FeatureCard
@@ -247,7 +230,6 @@ export default function EarlyAccessPage() {
                   ))}
                 </div>
 
-                {/* Footer Image */}
                 <div className="relative -ml-8 shrink-0 mt-4">
                   <Image
                     src="/icons/early-bird.svg"

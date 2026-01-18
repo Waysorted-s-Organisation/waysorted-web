@@ -8,7 +8,7 @@ export default function GlassModeCard({ className }: { className?: string }) {
   return (
     <div
       className={clsx(
-        "p-6 relative rounded-2xl shadow border border-gray-100 flex flex-col justify-center items-start transition-all duration-300 wayspace-cursor",
+        "p-6 relative rounded-2xl border border-gray-100 flex flex-col justify-center items-start transition-all duration-300 wayspace-cursor",
         className
       )}
     >

@@ -6,7 +6,7 @@ export default function WayspaceCard({ className }: { className?: string }) {
   return (
     <div
       className={clsx(
-        "p-6 rounded-2xl shadow border border-gray-100 flex flex-col text-left w-full",
+        "p-6 rounded-2xl border border-gray-100 flex flex-col text-left w-full",
         className
       )}
     >

@@ -249,7 +249,7 @@ export default function PlaySecureCard({ className }: { className?: string }) {
     <div
       ref={containerRef}
       className={clsx(
-        "relative p-6 rounded-2xl shadow border border-gray-100 flex flex-col justify-center items-center text-center overflow-hidden bg-white",
+        "relative p-6 rounded-2xl border border-gray-100 flex flex-col justify-center items-center text-center overflow-hidden bg-white",
         "w-full", // mobile
         className // md fixed sizes come from parent
       )}
