@@ -21,7 +21,7 @@ export default function FeatureFlex() {
 
           {/* Row 1, Col 3: Secure Data 275x163 */}
           <div
-            className="md:w-[275px] h-[163px] p-2 rounded-2xl shadow border border-gray-100
+            className="md:w-[275px] h-[163px] p-2 rounded-2xl border border-gray-100
                        flex flex-col overflow-hidden"
             aria-label="Security and encryption information"
           >

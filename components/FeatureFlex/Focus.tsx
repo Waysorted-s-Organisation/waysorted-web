@@ -102,7 +102,7 @@ export default function Focus({ className }: { className?: string }) {
   return (
     <div
       className={clsx(
-        "rounded-2xl shadow-sm border border-gray-100 bg-white flex flex-col",
+        "rounded-2xl border border-gray-100 bg-white flex flex-col",
         "w-full",
         className
       )}
@@ -118,7 +118,7 @@ export default function Focus({ className }: { className?: string }) {
             Array.from({ length: skeletonCount }).map((_, i) => (
               <li
                 key={`skeleton-${i}`}
-                className="scroll-card rounded-lg border border-gray-200 bg-white px-4 py-3 flex items-center gap-3 shadow-sm animate-pulse"
+                className="scroll-card rounded-lg border border-gray-200 bg-white px-4 py-3 flex items-center gap-3 animate-pulse"
               >
                 <div className="w-12 h-12 rounded-md bg-indigo-50 ring-1 ring-indigo-100" />
                 <div className="flex-1 space-y-2">
