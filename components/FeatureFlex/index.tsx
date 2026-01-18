@@ -12,11 +12,12 @@ export default function FeatureFlex() {
     <section className="w-full flex justify-center py-10">
       <div className="flex flex-col gap-5 w-full max-w-7xl px-4 items-center md:px-0">
         
-        <div className="flex flex-col md:flex-row gap-5">
-          <WayAICard className="md:w-[249px] h-[163px]" />
-          <GlassModeCard className="md:w-[449px] h-[163px]" />
+        {/* Row 1 */}
+        <div className="flex flex-col md:flex-row gap-5 w-full md:w-auto">
+          <WayAICard className="w-full md:w-[249px] h-[163px]" />
+          <GlassModeCard className="w-full md:w-[449px] h-[163px]" />
           <div
-            className="md:w-[275px] h-[163px] p-2 rounded-2xl border border-gray-100 flex flex-col overflow-hidden"
+            className="w-full md:w-[275px] h-[163px] p-2 rounded-2xl border border-gray-100 flex flex-col overflow-hidden"
             aria-label="Security and encryption information"
           >
             <h3 className="text-base font-medium text-secondary-db-80">
@@ -29,14 +30,15 @@ export default function FeatureFlex() {
         </div>
 
         {/* Row 2 */}
-        <div className="flex flex-col md:flex-row gap-5">
-          <Focus className="md:w-[278px] w-[345px] h-[420px]" />
+        <div className="flex flex-col md:flex-row gap-5 w-full md:w-auto">
 
-          <WayspaceCard className="md:w-[345px] w-[345px] h-[420px]" />
+          <Focus className="w-full md:w-[278px] h-[420px]" />
 
-          <div className="flex flex-col gap-4 md:w-[349px]">
-            <LighterCard className="md:w-[349px] w-[345px] h-[175px]" />
-            <PlaySecureCard className="md:w-[349px] w-[345px] h-[229px]" />
+          <WayspaceCard className="w-full md:w-[345px] h-[420px]" />
+
+          <div className="flex flex-col gap-4 w-full md:w-[349px]">
+            <LighterCard className="w-full md:w-[349px] h-[175px]" />
+            <PlaySecureCard className="w-full md:w-[349px] h-[229px]" />
           </div>
         </div>
       </div>
