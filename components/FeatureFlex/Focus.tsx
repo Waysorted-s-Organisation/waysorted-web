@@ -150,7 +150,7 @@ export default function Focus({ className }: { className?: string }) {
                   }}
                   className={clsx(
                     "scroll-card group flex items-center gap-3",
-                    "rounded-lg border border-gray-200 bg-white px-4 py-3"
+                    "rounded-lg border border-gray-200 bg-white px-1 py-1"
                   )}
                 >
                   <div className="w-12 h-12 flex items-center justify-center rounded-md bg-primary-way-10">

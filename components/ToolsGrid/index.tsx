@@ -151,6 +151,12 @@ export default function ToolsGrid() {
 
     // Phase 3: reveal text word-by-word (new implementation for words animation)
     const wordsTimeline = gsap.timeline({ delay: 0.5 });
+    // wordsTimeline.to(wordsEls, {
+    //   opacity: 0.2,
+    //   duration: 2,
+    //   stagger: 0.15,
+    //   ease: "power3.out",
+    // }, 0);
 
     wordsTimeline.to(
       wordsEls,

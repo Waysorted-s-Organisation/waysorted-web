@@ -42,47 +42,55 @@ export default function VisionSection() {
   const sectionRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (!sectionRef.current) return;
+  if (!sectionRef.current) return;
 
-    // Filter out null refs
-    const elements = elementsRef.current.filter(Boolean);
-    if (elements.length === 0) return;
+  const elements = elementsRef.current.filter(Boolean);
+  if (elements.length === 0) return;
 
-    const masterTimeline = gsap.timeline();
+  const masterTimeline = gsap.timeline();
 
-    // Initial State
-    gsap.set(elements, { opacity: 0, y: 20 });
+  gsap.set(elements, { opacity: 0, y: 20 });
 
-    // Animation: Fade in words/icons
-    masterTimeline.to(elements, {
-      opacity: 1,
-      y: 0,
-      duration: 1,
-      stagger: 0.05,
-      ease: "power3.out",
-    });
+  masterTimeline.to(elements, {
+    opacity: 1,
+    y: 0,
+    duration: 1,
+    stagger: 0.05,
+    ease: "power3.out",
+  });
 
-    // Add a dummy tween to create the "pause" at the end
-    // The timeline length is extended so scrubbing through it takes longer after the visuals are done
-    masterTimeline.to({}, { duration: 1 }); // 1 second "pause" relative to the scrub speed
+  masterTimeline.to({}, { duration: 1 });
 
-    ScrollTrigger.create({
-      trigger: sectionRef.current,
-      start: "top 20%",     // Start pinning when section is near top
-      end: "+=800",         // Pin for 800px of scroll distance
-      animation: masterTimeline,
-      scrub: 1,             // Smooth scrubbing
-      pin: true,            // Pin the section
-      markers: false,
-      anticipatePin: 1,
-      invalidateOnRefresh: true,
-    });
+  const mm = gsap.matchMedia();
 
-    return () => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
-      masterTimeline.kill();
-    };
+  mm.add(
+    {
+      isMobile: "(max-width: 425px)",
+      isDesktop: "(min-width: 768px)",
+    },
+    (context) => {
+      const { isMobile } = context.conditions!;
+
+      ScrollTrigger.create({
+        trigger: sectionRef.current,
+        start: isMobile ? "top 60%" : "top 20%",
+        end: "+=800",
+        animation: masterTimeline,
+        scrub: 1,
+        pin: true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+      });
+    }
+  );
+
+  return () => {
+    mm.revert();
+    ScrollTrigger.getAll().forEach((t) => t.kill());
+    masterTimeline.kill();
+  };
   }, []);
+
 
   return (
     <section
@@ -91,7 +99,7 @@ export default function VisionSection() {
     >
 
       {/* Vision Statement */}
-      <p className="text-4xl font-medium text-secondary-db-100 leading-relaxed max-w-3xl mx-auto">
+      <p className="text-2xl lg:text-4xl font-medium text-secondary-db-100 leading-relaxed max-w-3xl mx-auto">
         {CONTENT_ITEMS.map((item, index) => {
           if (item.type === "icon") {
             return (
@@ -100,7 +108,7 @@ export default function VisionSection() {
                 ref={(el) => {
                   elementsRef.current[index] = el;
                 }}
-                className={`inline-block mx-1 align-middle ${item.className || ""}`}
+                className={`inline-block align-middle ${item.className || ""}`}
               >
                 <Image
                   src={item.src!}

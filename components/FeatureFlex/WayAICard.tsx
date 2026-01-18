@@ -6,7 +6,7 @@ export default function WayAICard({ className }: { className?: string }) {
   return (
     <div
       className={clsx(
-        "relative w-full overflow-hidden rounded-2xl bg-white shadow border border-gray-100",
+        "relative w-full overflow-hidden rounded-2xl bg-white border border-gray-100",
         "px-5 py-6 sm:px-6 sm:py-7",
         className
       )}
