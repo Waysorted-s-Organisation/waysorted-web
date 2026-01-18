@@ -343,6 +343,19 @@ export default function DocsShell({
             {/* Content */}
             <main className="flex-1 pl-4">
               {/* data-doc-content used by TOC */}
+              <div className="prose max-w-3xl bg-primary-way-5 rounded-lg px-16 py-4 mb-6 border border-primary-way-10 mx-auto">
+                <div className="flex justify-center">
+                  <div className="text-left">
+                    <p className="text-primary-way-100 font-medium text-sm">
+                      This is a living document
+                    </p>
+                    <p className="text-secondary-db-80 font-medium text-sm">
+                      It will continue to evolve as Waysorted grows, with updates reflecting new features, improvements, and user feedback.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <div
                 data-doc-content
                 className="prose max-w-3xl space-y-6 [&_h2]:scroll-mt-32 [&_h3]:scroll-mt-32"
