@@ -3,19 +3,8 @@
 import React, { useState, useRef, useEffect, MouseEvent } from "react";
 import clsx from "clsx";
 import Image from "next/image";
+// 1. Import the default function directly
 import confetti from "canvas-confetti";
-
-let confettiInstance: confetti.CreateTypes | null = null;
-
-function getConfetti() {
-  if (!confettiInstance) {
-    confettiInstance = confetti.create(undefined, {
-      resize: true,
-      useWorker: true,
-    });
-  }
-  return confettiInstance;
-}
 
 const TOOLS_DATA = [
   {
@@ -87,22 +76,20 @@ export default function WayspaceCard({ className }: { className?: string }) {
   const doDrag = (e: MouseEvent) => {
     if (!isDown.current || !scrollRef.current) return;
     e.preventDefault();
-
     const x = e.pageX - scrollRef.current.offsetLeft;
     const walk = (x - startX.current) * 1.5;
     scrollRef.current.scrollLeft = scrollLeftStart.current - walk;
   };
 
+  // 2. Simplified Fire Logic (Correct per docs)
   const fireConfetti = (x: number, y: number) => {
-    const confetti = getConfetti();
-
     confetti({
       particleCount: 60,
       spread: 55,
       startVelocity: 25,
       gravity: 1.1,
       scalar: 0.75,
-      origin: { x, y },
+      origin: { x, y }, // x and y should be 0-1 (normalized)
       zIndex: 9999,
       colors: [
         "#26ccff",
@@ -113,18 +100,21 @@ export default function WayspaceCard({ className }: { className?: string }) {
         "#ffa62d",
         "#ff36ff",
       ],
+      // Note: useWorker and resize are not standard options here,
+      // the library handles the global canvas automatically.
     });
   };
 
-
   const toggleFavorite = (
     id: number,
-    e: React.MouseEvent<HTMLButtonElement>,
+    e: React.MouseEvent<HTMLButtonElement>
   ) => {
     e.stopPropagation();
 
     const button = e.currentTarget;
     const rect = button.getBoundingClientRect();
+    
+    // Normalize coordinates (0 to 1) required by canvas-confetti
     const x = (rect.left + rect.width / 2) / window.innerWidth;
     const y = (rect.top + rect.height / 2) / window.innerHeight;
 
@@ -135,7 +125,6 @@ export default function WayspaceCard({ className }: { className?: string }) {
         fireConfetti(x, y);
         return [...prev, id];
       }
-
       return prev;
     });
   };
@@ -146,8 +135,7 @@ export default function WayspaceCard({ className }: { className?: string }) {
     <div
       className={clsx(
         "p-6 rounded-2xl border border-primary-way-10 flex flex-col text-left w-full bg-white select-none",
-
-        className,
+        className
       )}
     >
       <h3 className="text-xl font-semibold text-gray-900">Wayspace</h3>
@@ -155,7 +143,7 @@ export default function WayspaceCard({ className }: { className?: string }) {
       <div className="mt-5 relative w-full overflow-hidden">
         <div
           ref={scrollRef}
-          className="flex overflow-x-auto cursor-grab scrollbar-hide items-start"
+          className="flex overflow-x-auto cursor-grab items-start no-scrollbar"
           onScroll={handleScroll}
           onMouseDown={startDrag}
           onMouseLeave={stopDrag}
@@ -163,12 +151,11 @@ export default function WayspaceCard({ className }: { className?: string }) {
           onMouseMove={doDrag}
           style={{
             scrollbarWidth: "none",
-
             msOverflowStyle: "none",
-
             gap: "1rem",
           }}
         >
+          
           {INFINITE_TOOLS.map((tool, index) => (
             <div
               key={`${tool.id}-${index}`}
@@ -184,25 +171,21 @@ export default function WayspaceCard({ className }: { className?: string }) {
                   className="object-contain pointer-events-none"
                 />
 
-                {/* Heart Button */}
-
                 <button
                   onClick={(e) => toggleFavorite(tool.id, e)}
                   className={clsx(
                     "absolute -top-1 -right-1 w-7 h-7 bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-200 cursor-pointer z-10",
-
                     favorites.includes(tool.id)
                       ? "opacity-100 scale-100"
-                      : "opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100",
+                      : "opacity-0 scale-75 group-hover:opacity-100 group-hover:scale-100"
                   )}
                 >
                   <svg
                     className={clsx(
                       "w-4 h-4 transition-colors",
-
                       favorites.includes(tool.id)
                         ? "fill-red-500 text-red-500"
-                        : "text-gray-300",
+                        : "text-gray-300"
                     )}
                     fill="none"
                     stroke="currentColor"
@@ -228,19 +211,17 @@ export default function WayspaceCard({ className }: { className?: string }) {
         </div>
       </div>
 
-      {/* --- Favorites Grid --- */}
-
       <div className="mt-auto grid grid-cols-3 gap-3 mx-auto w-full">
         {[0, 1, 2].map((i) => {
           const favId = favorites[i];
-
           const tool = favId ? TOOLS_DATA.find((t) => t.id === favId) : null;
 
           if (tool) {
             return (
               <div
                 key={i}
-                className="h-18 w-18 aspect-square rounded-xl bg-[#ECF2FF] flex items-center justify-center animate-[bounce_0.4s_ease] relative"
+                // Updated fixed width/height using standard Tailwind arbitrary value
+                className="h-[4.5rem] w-[4.5rem] aspect-square rounded-xl bg-[#ECF2FF] flex items-center justify-center animate-[bounce_0.4s_ease] relative"
               >
                 <div className="w-10 h-10 relative">
                   <Image
@@ -257,7 +238,8 @@ export default function WayspaceCard({ className }: { className?: string }) {
           return (
             <div
               key={i}
-              className="h-18 w-18 aspect-square rounded-xl bg-[#ECF2FF] flex items-center justify-center text-[#91adea] text-sm"
+               // Updated fixed width/height using standard Tailwind arbitrary value
+              className="h-[4.5rem] w-[4.5rem] aspect-square rounded-xl bg-[#ECF2FF] flex items-center justify-center text-[#91adea] text-sm"
             >
               {placeholderLabels[i]}
             </div>
