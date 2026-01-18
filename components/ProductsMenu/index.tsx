@@ -29,6 +29,7 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
             <Image
               src={product.icon}
               alt={product.name}
+              title={product.name}
               width={57}
               height={57}
               className=""

@@ -29,7 +29,7 @@ export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps)
             onClick={handleClick(item.link)}
           >
             <div className="flex-shrink-0 rounded-md">
-              <Image src={item.icon} alt={item.title} width={60} height={60} />
+              <Image src={item.icon} alt={item.title} title={item.title} width={60} height={60} />
             </div>
             <div className="flex flex-col justify-center">
               <p className="font-normal text-sm text-secondary-db-100 leading-none mb-1">

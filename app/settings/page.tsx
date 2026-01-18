@@ -47,7 +47,7 @@ export default function ProfilePage() {
       case "notifications":
         return <NotificationsTab />;
       case "integrations":
-        return <IntegrationsTab />;
+        return <IntegrationsTab connected={user?.integrations?.figma} />;
       case "beta":
         return <BetaFeaturesTab />;
       default:

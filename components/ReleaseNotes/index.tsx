@@ -122,7 +122,7 @@ export default function ReleaseNotes() {
                             </div>
                             {/* Icons floating mockup */}
                             <div className="absolute top-10 left-10 opacity-30">
-                                <Image src="/icons/info-1.svg" alt="Waysorted version update decorative icon" title="Waysorted version update decorative icon" width={64} height={64} />
+                                <Image src="/icons/info-1.svg" alt="Waysorted version update decorative icon" title="Version info" width={64} height={64} />
                             </div>
 
                             <h2 className="text-6xl md:text-8xl font-bold tracking-tighter relative z-10">{RELEASE_DATA[0].bannerText}</h2>

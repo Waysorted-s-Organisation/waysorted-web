@@ -8,6 +8,7 @@ export type Integration = {
   name: string;
   icon: string;              // path to icon
   status: "none" | "connected" | "coming-soon";
+  url?: string;
 };
 
 export type IntegrationsCardProps = {
@@ -94,13 +95,19 @@ export default function IntegrationsCard({ integrations, anyConnected }: Integra
                 ) : (
                   <button
                     disabled={comingSoon}
-                    onClick={() => router.push(`/allow-access`)}
+                    onClick={() => {
+                      if (intg.url) {
+                        window.open(intg.url, "_blank");
+                      } else {
+                        router.push(`/allow-access`);
+                      }
+                    }}
                     className={`rounded-md px-3 py-1.5 text-xs font-medium transition ${comingSoon
-                        ? "cursor-not-allowed bg-secondary-db-5 text-secondary-db-50"
-                        : "bg-primary-way-10 text-primary-way-100 hover:bg-primary-way-20 cursor-pointer"
+                      ? "cursor-not-allowed bg-secondary-db-5 text-secondary-db-50"
+                      : "bg-primary-way-10 text-primary-way-100 hover:bg-primary-way-20 cursor-pointer"
                       }`}
                   >
-                    {comingSoon ? "Connect" : "Connect"}
+                    Connect
                   </button>
                 )}
               </li>
