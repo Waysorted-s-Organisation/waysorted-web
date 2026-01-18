@@ -78,9 +78,9 @@ export default function NotificationsCard({ user }: Props) {
                 onClick={handleUnsubscribe}
                 disabled={isSubmitting}
                 type="button"
-                className="bg-red-50 outline outline-1 outline-red-600 rounded-lg text-sm font-medium text-red-600 p-2 cursor-pointer hover:bg-red-100 hover:outline hover:outline-1 hover:outline-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-primary-way-5 outline outline-1 outline-primary-way-100 rounded-lg text-sm font-medium text-primary-way-100 p-2 cursor-pointer hover:bg-primary-way-10 hover:outline hover:outline-1 hover:outline-primary-way-100 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? "Unsubscribing..." : "Unsubscribe"}
+                {isSubmitting ? "Unsubscribing..." : "Unsubscribe Newsletter"}
               </button>
             </div>
           </div>
@@ -116,7 +116,7 @@ export default function NotificationsCard({ user }: Props) {
 
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 ${toast.type === "success" ? "bg-green-500 text-white" : "bg-red-500 text-white"
+        <div className={`fixed bottom-4 right-4 px-4 py-3 rounded-lg shadow-lg z-50 ${toast.type === "success" ? "bg-primary-way-5 text-primary-way-100" : "bg-primary-way-5 text-primary-way-100"
           }`}>
           {toast.message}
         </div>

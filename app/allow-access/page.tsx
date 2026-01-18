@@ -19,7 +19,7 @@ function AccessContent() {
   };
 
   return (
-    <div className="error-bg-dots min-h-screen flex flex-col">
+    <div className="allow-access-bg-dots min-h-screen flex flex-col">
       <main className="flex-1 flex flex-col">
         <nav className="mx-auto px-4 py-3 w-full">
           <Link href="/" className="block flex items-center space-x-2" aria-label="Waysorted Home">
@@ -34,7 +34,7 @@ function AccessContent() {
 
         <section className="flex-1 flex items-center justify-center px-4 py-20">
           <div className="w-full max-w-lg">
-            <div className="bg-white rounded-2xl shadow-md border border-slate-100 p-8">
+            <div className="bg-white rounded-2xl border border-primary-way-10 p-8">
               <div className="flex flex-col items-center">
                 <div className="w-16 h-16 rounded-lg bg-yellow-50 flex items-center justify-center">
                   <Image src="/icons/way-access.svg" alt="Way access icon" width={59} height={59} />

@@ -6,7 +6,7 @@ import Link from "next/link";
 export default function ConnectedPage() {
 
   return (
-    <div className="error-bg-dots min-h-screen flex flex-col">
+    <div className="allow-access-bg-dots min-h-screen flex flex-col">
       <main className="flex-grow flex flex-col">
         <nav className="mx-auto px-4 py-3 w-full">
           <Link href="/" className="block flex items-center space-x-2" aria-label="Waysorted Home">

@@ -348,6 +348,12 @@ html, body {
   background-size: 25px 25px; 
 }
 
+.allow-access-bg-dots {
+  background-color: #F7F9FE; 
+  background-image: radial-gradient(#3B6DD7 0.25px, transparent 1px);
+  background-size: 25px 25px; 
+}
+
 .tertiary-orange-600-bg-dots {
   background-color: #ea613f;
   background-image: radial-gradient(#ffffff80 0.25px, transparent 1px);

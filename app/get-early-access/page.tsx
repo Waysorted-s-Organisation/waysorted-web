@@ -73,13 +73,13 @@ export default function EarlyAccessPage() {
   }, []);
 
   return (
-    <main className="bg-white h-screen overflow-hidden">
+    <main className="bg-white h-screen lg:h-screen lg:overflow-hidden">
       <div className="mx-auto max-w-full h-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch h-full">
           
           <section className="relative w-full flex flex-col h-full px-6 pt-6 pb-2 sm:px-12 sm:pt-8 lg:max-w-2xl">
             
-            <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar">
+            <div className="flex-1 flex flex-col no-scrollbar">
               
               {/* Header / Logo */}
               <div className="relative mb-6 shrink-0">
@@ -146,7 +146,7 @@ export default function EarlyAccessPage() {
                 </p>
 
                 {/* Mobile Carousel */}
-                <div className="mt-12 lg:hidden block">
+                <div className="my-12 lg:hidden block">
                   <div className="relative w-full max-w-sm mx-auto">
                     <div className="transform transition-all duration-500 ease-in-out">
                       <FeatureCard
