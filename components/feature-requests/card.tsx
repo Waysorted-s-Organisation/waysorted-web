@@ -41,7 +41,7 @@ interface CardProps {
 
 const getStatusStyles = (status: string) => {
   const statusLower = status.toLowerCase();
-  
+
   if (statusLower === "planned") {
     return {
       iconColor: "text-[#265BD1]",
@@ -78,7 +78,7 @@ const getStatusStyles = (status: string) => {
       bgColor: "bg-[#FFE8E8]",
     };
   }
-  
+
   // Default
   return {
     iconColor: "text-[#265BD1]",
@@ -96,7 +96,7 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
   const [isPublishing, setIsPublishing] = React.useState(false);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [currentStatus, setCurrentStatus] = React.useState(status);
-  
+
   // Check if user is admin
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const isAdmin = user && ((user as any).role === "admin");
@@ -119,15 +119,15 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
       toast.error("Please login to vote");
       return;
     }
-    
+
     // Optimistic update
     const currentlyUpvoted = userIdStr ? votedBy.includes(userIdStr) : false;
     const newUpvoted = !currentlyUpvoted;
     const newCount = newUpvoted ? votes + 1 : Math.max(0, votes - 1);
-    
+
     setOptimisticUpvoted(newUpvoted);
     setOptimisticVotes(newCount);
-    
+
     await voteRequest(id);
   };
 
@@ -143,7 +143,7 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
   const handlePublish = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!isAdmin) return;
-    
+
     try {
       setIsPublishing(true);
       await publishRequest(id);
@@ -159,7 +159,7 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
 
   const handleDelete = async () => {
     if (!isAdmin) return;
-    
+
     try {
       setIsDeleting(true);
       await deleteRequest(id);
@@ -175,7 +175,7 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
 
   const handleStatusChange = async (newStatus: string) => {
     if (!isAdmin) return;
-    
+
     try {
       // Map frontend status labels to backend values
       const statusMap: Record<string, string> = {
@@ -185,10 +185,10 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
         "Released": "released",
         "Not done": "not done",
       };
-      
+
       const backendStatus = statusMap[newStatus] || newStatus.toLowerCase().replace(/\s+/g, "-");
       const updated = await updateRequestStatus(id, backendStatus);
-      
+
       // Map backend response back to frontend label
       const frontendStatusMap: Record<string, string> = {
         "under_review": "Under Review",
@@ -200,7 +200,7 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
         "not done": "Not done",
         "not_done": "Not done",
       };
-      
+
       // Prefer the backend response (source of truth)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const updatedStatusRaw = (updated as any)?.status ?? backendStatus;
@@ -354,63 +354,66 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
                     </div>
                   </div>
 
-                  <div className="mr-2 cursor-pointer">
-                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="border px-1 py-1 rounded-sm flex items-center hover:text-[#265BD1] hover:bg-[#E8EFFC] gap-2 focus:outline-none focus:ring-0">
-                            <EllipsisIcon />
-                          </button>
-                        </DropdownMenuTrigger>
-                  
-                        <DropdownMenuContent className={" cursor-pointer border border-gray-200 shadow-md rounded-md mt-2 mr-5"}>
-                          <DropdownMenuItem className="px-3 pr-3 py-1 hover:bg-[#E8EFFC] rounded-md " inset={false} onClick={handleCopyLink}>
-                            Copy Link
+                  <div className="mr-2 cursor-pointer flex items-center gap-2">
+                    <button className="px-3 py-1 rounded-sm text-sm font-medium text-[#565A5E] hover:text-[#265BD1] hover:bg-[#E8EFFC] transition-colors focus:outline-none focus:ring-0">
+                      Manage Request
+                    </button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="border px-1 py-1 rounded-sm flex items-center hover:text-[#265BD1] hover:bg-[#E8EFFC] gap-2 focus:outline-none focus:ring-0">
+                          <EllipsisIcon />
+                        </button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent className={" cursor-pointer border border-gray-200 shadow-md rounded-md mt-2 mr-5"}>
+                        <DropdownMenuItem className="px-3 pr-3 py-1 hover:bg-[#E8EFFC] rounded-md " inset={false} onClick={handleCopyLink}>
+                          Copy Link
+                        </DropdownMenuItem>
+                        {isAdmin && !isPublic && (
+                          <DropdownMenuItem
+                            className="px-3 pr-3 py-1 hover:bg-[#E8EFFC] rounded-md text-[#01A04E]"
+                            inset={false}
+                            onClick={handlePublish}
+                            disabled={isPublishing}
+                          >
+                            {isPublishing ? "Publishing..." : "Publish Request"}
                           </DropdownMenuItem>
-                          {isAdmin && !isPublic && (
-                            <DropdownMenuItem 
-                              className="px-3 pr-3 py-1 hover:bg-[#E8EFFC] rounded-md text-[#01A04E]" 
-                              inset={false} 
-                              onClick={handlePublish}
-                              disabled={isPublishing}
-                            >
-                              {isPublishing ? "Publishing..." : "Publish Request"}
-                            </DropdownMenuItem>
-                          )}
-                          {isAdmin && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <DropdownMenuItem
-                                  onSelect={(e: Event) => e.preventDefault()}
-                                  className="px-3 pr-3 py-1 hover:bg-[#E8EFFC] rounded-md text-red-600"
-                                  inset={false}
+                        )}
+                        {isAdmin && (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem
+                                onSelect={(e: Event) => e.preventDefault()}
+                                className="px-3 pr-3 py-1 hover:bg-[#E8EFFC] rounded-md text-red-600"
+                                inset={false}
+                              >
+                                Delete Request
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className={"m-0 p-0"}>
+                              <AlertDialogHeader className="">
+                                <AlertDialogTitle className={"text-sm text-gray-500 p-3"}>Delete Feature Request</AlertDialogTitle>
+                                <Separator className="" />
+                                <AlertDialogDescription className={"text-black font-semibold p-3"}>
+                                  Are you sure you want to delete this request? This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <Separator className="" />
+                              <AlertDialogFooter className={"p-3"}>
+                                <AlertDialogCancel className="">Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-red-500 hover:bg-red-600 text-white"
+                                  onClick={handleDelete}
+                                  disabled={isDeleting}
                                 >
-                                  Delete Request
-                                </DropdownMenuItem>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent className={"m-0 p-0"}>
-                                <AlertDialogHeader className="">
-                                  <AlertDialogTitle className={"text-sm text-gray-500 p-3"}>Delete Feature Request</AlertDialogTitle>
-                                  <Separator className=""/>
-                                  <AlertDialogDescription className={"text-black font-semibold p-3"}>
-                                    Are you sure you want to delete this request? This action cannot be undone.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <Separator className=""/>
-                                <AlertDialogFooter className={"p-3"}>
-                                  <AlertDialogCancel className="">Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    className="bg-red-500 hover:bg-red-600 text-white"
-                                    onClick={handleDelete}
-                                    disabled={isDeleting}
-                                  >
-                                    {isDeleting ? "Deleting..." : "Delete"}
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                                  {isDeleting ? "Deleting..." : "Delete"}
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
 
                 </div>
