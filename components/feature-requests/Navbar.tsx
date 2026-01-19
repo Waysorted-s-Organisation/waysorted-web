@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Bell, PlusIcon, SearchIcon, Sun } from "lucide-react";
 import {
   Dialog,
@@ -228,7 +229,7 @@ const Navbar = () => {
       details: "Submitted from Navbar",
       status: type === "bug" ? "Bug Reported" : "Under Review",
     })
-    
+
     setMainOpen(false)
     if (type === "bug") {
       setBugDialogOpen(true)   // 🚀 open bug upload
@@ -242,7 +243,9 @@ const Navbar = () => {
 
   return (
     <div className="bg-white z-50 h-[68px] w-screen border-b border-gray-100 flex justify-between items-center px-6">
-      <div><Image src="/Waysorted.svg" alt="logo" width={140} height={40} /></div>
+      <Link href="/">
+        <Image src="/images/logo.svg" alt="WaySorted Logo" width={140} height={40} />
+      </Link>
 
       <div className="flex items-center gap-2">
         <button className="bg-white p-1 rounded-lg w-[36px] h-[36px] flex items-center justify-center cursor-pointer hover:bg-[#F9FAFB] transition-colors">
@@ -274,82 +277,82 @@ const Navbar = () => {
                 <PlusIcon size={14} className="mr-1" /> Request a feature
               </Button>
             </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader className="">
-              <DialogTitle className="text-sm text-[#565A5E]">
-                Request a feature or report a bug
-              </DialogTitle>
-            </DialogHeader>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader className="">
+                <DialogTitle className="text-sm text-[#565A5E]">
+                  Request a feature or report a bug
+                </DialogTitle>
+              </DialogHeader>
 
-            <div className="relative -mx-6 h-px">
-              <Separator className="absolute inset-x-0" />
-            </div>
+              <div className="relative -mx-6 h-px">
+                <Separator className="absolute inset-x-0" />
+              </div>
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <p className="text-sm font-medium">I would like to:</p>
-                <RadioGroup
-                  defaultValue="feature"
-                  onValueChange={setType}
-                  className="flex items-center gap-6"
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">I would like to:</p>
+                  <RadioGroup
+                    defaultValue="feature"
+                    onValueChange={setType}
+                    className="flex items-center gap-6"
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="feature" id="feature" className="" />
+                      <Label htmlFor="feature" className="">Request a feature</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="bug" id="bug" className="" />
+                      <Label htmlFor="bug" className="">Report a Bug</Label>
+                    </div>
+                  </RadioGroup>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="">Select Board</Label>
+                  <Select>
+                    <SelectTrigger className="w-full bg-[#F3F3F3]">
+                      <SelectValue placeholder="Figma Plugin" />
+                    </SelectTrigger>
+                    <SelectContent className="w-full">
+                      <SelectItem value="figma" className="">Figma Plugin</SelectItem>
+                      <SelectItem value="web" className="">Web App</SelectItem>
+                      <SelectItem value="mobile" className="">Mobile App</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="title" className="">
+                    {type === "bug" ? "Issue" : "Title"}
+                  </Label>
+                  <Input
+                    type="text"
+                    id="title"
+                    className="bg-[#F3F3F3]"
+                    value={title}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="desc" className="">Description</Label>
+                  <Textarea
+                    id="desc"
+                    className="bg-[#F3F3F3]"
+                    value={desc}
+                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDesc(e.target.value)}
+                  />
+                </div>
+
+                <Button
+                  className="bg-[#265BD1] hover:bg-blue-700 text-white"
+                  onClick={handleSubmitRequest}
                 >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="feature" id="feature" className="" />
-                    <Label htmlFor="feature" className="">Request a feature</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="bug" id="bug" className="" />
-                    <Label htmlFor="bug" className="">Report a Bug</Label>
-                  </div>
-                </RadioGroup>
+                  Submit request
+                </Button>
               </div>
-
-              <div className="space-y-2">
-                <Label className="">Select Board</Label>
-                <Select>
-                  <SelectTrigger className="w-full bg-[#F3F3F3]">
-                    <SelectValue placeholder="Figma Plugin" />
-                  </SelectTrigger>
-                  <SelectContent className="w-full">
-                    <SelectItem value="figma" className="">Figma Plugin</SelectItem>
-                    <SelectItem value="web" className="">Web App</SelectItem>
-                    <SelectItem value="mobile" className="">Mobile App</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="title" className="">
-                  {type === "bug" ? "Issue" : "Title"}
-                </Label>
-                <Input
-                  type="text"
-                  id="title"
-                  className="bg-[#F3F3F3]"
-                  value={title}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="desc" className="">Description</Label>
-                <Textarea
-                  id="desc"
-                  className="bg-[#F3F3F3]"
-                  value={desc}
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDesc(e.target.value)}
-                />
-              </div>
-
-              <Button
-                className="bg-[#265BD1] hover:bg-blue-700 text-white"
-                onClick={handleSubmitRequest}
-              >
-                Submit request
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
         )}
 
         {/* Success dialog (feature only) */}
