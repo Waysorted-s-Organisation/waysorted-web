@@ -15,9 +15,9 @@ export const team1 = [
         image: "/icons/ayush.svg",
     },
     {
-        name: "Sohit Punia",
+        name: "Ansh Bhatt",
         role: "Full Stack Developer",
-        image: "/icons/sohit.svg",
+        image: "/icons/ansh-bhatt.png",
     },
     {
         name: "Vineet Singh Negi",
