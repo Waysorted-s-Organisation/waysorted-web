@@ -29,10 +29,10 @@ const testimonialsData = [
     },
     {
         id: 3,
-        content:"“Waysorted definitely has the potential to improve designer productivity. I really liked the color contrast feature and the idea of plugging multiple tools into one platform.”",  
+        content: "“Waysorted definitely has the potential to improve designer productivity. I really liked the color contrast feature and the idea of plugging multiple tools into one platform.”",
         author: "Pranjul Singh",
         image: "/icons/pranjul.svg",
-        position: "Product Designer, Hrfy.ai",
+        position: "Freelance, Product Designer",
     }
 ];
 
@@ -100,8 +100,8 @@ export default function Testimonials() {
                             key={testimonial.id}
                             onClick={() => setActiveIndex(index)}
                             className={`relative w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl transition-all duration-500 cursor-pointer ${activeIndex === index
-                                    ? "scale-110 md:scale-100 shadow-xl -translate-y-2 md:-translate-y-5"
-                                    : "scale-100 opacity-70"
+                                ? "scale-110 md:scale-100 shadow-xl -translate-y-2 md:-translate-y-5"
+                                : "scale-100 opacity-70"
                                 }`}
                         >
                             <Image
