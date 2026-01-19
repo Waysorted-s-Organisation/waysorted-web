@@ -357,7 +357,7 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
                   <div className="mr-2 cursor-pointer flex items-center gap-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="px-3 py-1 rounded-sm text-sm font-medium text-[#565A5E] hover:text-[#265BD1] hover:bg-[#E8EFFC] transition-colors focus:outline-none focus:ring-0">
+                        <button className="px-3 py-1 rounded-sm text-sm font-medium text-[#565A5E] hover:text-[#265BD1] hover:bg-[#E8EFFC] transition-colors focus:outline-none focus:ring-0 whitespace-nowrap">
                           Manage Request
                         </button>
                       </DropdownMenuTrigger>
