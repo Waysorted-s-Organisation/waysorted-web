@@ -35,7 +35,10 @@ export async function DELETE(_req: Request, context: any) {
     await dbConnect();
     const doc = await FeatureRequest.findById(id);
     if (!doc) return NextResponse.json({ message: "Not found" }, { status: 404 });
-    if (doc.authorId !== user.id) {
+    
+    // Allow admin or author to delete
+    const isAdmin = user.role === "admin";
+    if (!isAdmin && doc.authorId !== user.id) {
       return NextResponse.json({ message: "Not allowed" }, { status: 403 });
     }
 
@@ -64,12 +67,22 @@ export async function PUT(req: Request, context: any) {
     const doc = await FeatureRequest.findById(id);
     if (!doc) return NextResponse.json({ message: "Not found" }, { status: 404 });
 
-    if (doc.authorId !== user.id) {
-      return NextResponse.json({ message: "Not allowed" }, { status: 403 });
+    const isAdmin = user.role === "admin";
+    
+    // Author can update title/description, admin can update status and publish
+    if (isAdmin) {
+      // Admin can update status and other fields
+      if (body.status) doc.status = body.status;
+      if (body.title) doc.title = body.title;
+      if (body.description !== undefined) doc.description = body.description;
+    } else {
+      // Author can only update title and description
+      if (doc.authorId !== user.id) {
+        return NextResponse.json({ message: "Not allowed" }, { status: 403 });
+      }
+      if (body.title) doc.title = body.title;
+      if (body.description !== undefined) doc.description = body.description;
     }
-
-    if (body.title) doc.title = body.title;
-    if (body.description) doc.description = body.description;
 
     await doc.save();
 

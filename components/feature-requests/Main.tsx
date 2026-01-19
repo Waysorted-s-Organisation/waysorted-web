@@ -186,6 +186,8 @@ const Main: React.FC = () => {
                                     status={req.status}
                                     votes={req.votes}
                                     votedBy={req.votedBy}
+                                    isPublic={req.isPublic}
+                                    authorId={req.authorId}
                                 />
                             ))
                         )}

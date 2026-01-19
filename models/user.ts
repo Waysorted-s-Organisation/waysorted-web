@@ -9,6 +9,7 @@ export interface IUser {
   earlyAccess: boolean;
   initials: string;
   creditsRemaining: number;
+  role?: string;
   createdAt: Date;
   updatedAt: Date;
   hasAnyNotifications?: boolean;
@@ -54,6 +55,7 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods, IUserStatics>(
     favorites: [{ type: String }],
     earlyAccess: { type: Boolean, default: true },
     creditsRemaining: { type: Number, default: 2000 },
+    role: { type: String, default: "user" },
     hasAnyNotifications: { type: Boolean, default: false },
   },
   {

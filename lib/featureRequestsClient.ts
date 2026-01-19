@@ -83,6 +83,44 @@ export async function deleteRequest(id: string) {
   return true;
 }
 
+export async function publishRequest(id: string) {
+  const res = await fetch(`/api/requests/${id}/publish`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!res.ok) {
+    let message = res.statusText;
+    try {
+      const body = await res.json();
+      message = body?.message || message;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(message || "Failed to publish");
+  }
+  return handleResponse<FeatureRequest>(res);
+}
+
+export async function updateRequestStatus(id: string, status: string) {
+  const res = await fetch(`/api/requests/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    let message = res.statusText;
+    try {
+      const body = await res.json();
+      message = body?.message || message;
+    } catch {
+      /* ignore */
+    }
+    throw new Error(message || "Failed to update status");
+  }
+  return handleResponse<FeatureRequest>(res);
+}
+
 export async function reportRequest(id: string, reason?: string) {
   const res = await fetch(`/api/requests/${id}/report`, {
     method: "POST",

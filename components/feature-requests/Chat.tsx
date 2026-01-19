@@ -30,7 +30,7 @@ const Chat: React.FC<ChatProps> = ({ requestId }) => {
     const [replyInput, setReplyInput] = useState<string>("");
     const scrollRef = useRef<HTMLDivElement>(null);
 
-    const fetchComments = React.useCallback(async () => {
+    const fetchComments = async () => {
         try {
             const res = await fetch(`/api/requests/${requestId}/comments`);
             const json = await res.json();
@@ -47,11 +47,11 @@ const Chat: React.FC<ChatProps> = ({ requestId }) => {
         } catch (err) {
             console.error("Failed to fetch comments", err);
         }
-    }, [requestId]);
+    };
 
     useEffect(() => {
         if (requestId) fetchComments();
-    }, [requestId, fetchComments]);
+    }, [requestId]);
 
     const handleSend = async (): Promise<void> => {
         if (input.trim() === "") return;
@@ -73,7 +73,7 @@ const Chat: React.FC<ChatProps> = ({ requestId }) => {
             } else {
                 toast.error("Failed to post comment");
             }
-        } catch {
+        } catch (error) {
             toast.error("Failed to post comment");
         }
     };
@@ -99,7 +99,7 @@ const Chat: React.FC<ChatProps> = ({ requestId }) => {
             } else {
                 toast.error("Failed to post reply");
             }
-        } catch {
+        } catch (error) {
             toast.error("Failed to post reply");
         }
     };
