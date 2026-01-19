@@ -58,7 +58,8 @@ export async function GET() {
         creditsRemaining,
         integrations: {
           figma: isFigmaConnected
-        }
+        },
+        role: user.role,
       },
     });
   } catch (err) {
