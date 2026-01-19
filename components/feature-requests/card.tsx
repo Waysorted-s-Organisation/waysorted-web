@@ -355,13 +355,10 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
                   </div>
 
                   <div className="mr-2 cursor-pointer flex items-center gap-2">
-                    <button className="px-3 py-1 rounded-sm text-sm font-medium text-[#565A5E] hover:text-[#265BD1] hover:bg-[#E8EFFC] transition-colors focus:outline-none focus:ring-0">
-                      Manage Request
-                    </button>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="border px-1 py-1 rounded-sm flex items-center hover:text-[#265BD1] hover:bg-[#E8EFFC] gap-2 focus:outline-none focus:ring-0">
-                          <EllipsisIcon />
+                        <button className="px-3 py-1 rounded-sm text-sm font-medium text-[#565A5E] hover:text-[#265BD1] hover:bg-[#E8EFFC] transition-colors focus:outline-none focus:ring-0">
+                          Manage Request
                         </button>
                       </DropdownMenuTrigger>
 
