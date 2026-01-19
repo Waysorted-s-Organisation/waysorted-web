@@ -27,6 +27,7 @@ export interface IFeatureRequest extends Document {
   votedBy: string[];
   reports: IReportEntry[];
   isDeleted: boolean;
+  isPublic?: boolean;
   deletedAt?: Date;
   deletedBy?: string;
   commentsCount?: number;
@@ -68,6 +69,7 @@ const FeatureRequestSchema = new Schema<IFeatureRequest>(
     votedBy: { type: [String], default: [] },
     reports: { type: [ReportSchema], default: [] },
     isDeleted: { type: Boolean, default: false },
+    isPublic: { type: Boolean, default: false },
     deletedAt: { type: Date },
     deletedBy: { type: String },
     commentsCount: { type: Number, default: 0 },

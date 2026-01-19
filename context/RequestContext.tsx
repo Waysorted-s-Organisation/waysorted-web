@@ -4,13 +4,15 @@ import { useUser } from "@/hooks/useUser";
 import { toast } from "sonner";
 
 export interface LocalRequest {
-    id: string; // Changed to string to match IFeatureRequest._id
+    id: string; // MongoDB _id as string
     title: string;
     description: string;
     status: string;
     details: string; // This corresponds to 'board' or just extra info
     votes: number;
     votedBy: string[]; // List of user IDs who voted
+    authorId?: string; // Author of the request
+    isPublic?: boolean; // Whether admin has published this request
 }
 
 interface LocalRequestContextType {
@@ -66,7 +68,9 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
     const [activeStatus, setActiveStatus] = useState<string | null>(null);
     const [activeSort, setActiveSort] = useState<string | null>("Most votes");
 
-    // Function to fetch requests from the API (excludes user's own requests)
+    const isAdmin = (user as any)?.role === "admin";
+
+    // Function to fetch requests from the API (excludes user's own requests for the global list)
     const fetchRequests = useCallback(async (query = "", board: string | null = null, status: string | null = null, sort: string | null = null) => {
         try {
             setLoading(true);
@@ -95,14 +99,23 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
                     details: req.board || req.type || "",
                     votes: req.votes || 0,
                     votedBy: req.votedBy || [],
-                    authorId: req.authorId, // Keep author info for filtering
+                    authorId: req.authorId,
+                    isPublic: req.isPublic === true,
                 }));
 
-                // Filter out user's own requests (they go in My Issues)
+                // Visibility rules:
+                // - Admins see all requests
+                // - Non-admins (including unauthenticated visitors) only see published requests
+                if (!isAdmin) {
+                    mapped = mapped.filter((req) => req.isPublic);
+                }
+
+                // Filter out current user's own requests from the global list
+                // (user's own requests are shown under "My Issues" via MyRequestContext)
                 if (user) {
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const userId = (user as any).id || (user as any)._id;
-                    mapped = mapped.filter(req => (req as any).authorId !== userId);
+                    mapped = mapped.filter((req) => req.authorId !== userId);
                 }
 
                 // Handle client-side sorting for "Random" (backend doesn't support it)

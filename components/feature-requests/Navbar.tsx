@@ -19,6 +19,8 @@ import { Separator } from "@/components/ui/separator";
 import { useMyRequest } from "@/context/MyRequestContext";
 import { useRequests } from "@/context/RequestContext";
 import ProfileDropdown from "@/components/feature-requests/ProfileDropdown";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/hooks/useUser";
 
 interface BugUploadDialogProps {
   open: boolean;
@@ -200,19 +202,42 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
 const Navbar = () => {
   const [type, setType] = useState("feature")
   const [mainOpen, setMainOpen] = useState(false)
+  const [successOpen, setSuccessOpen] = useState(false)
   const [bugDialogOpen, setBugDialogOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
 
   const { addMyRequest } = useMyRequest()
   const { searchRequests } = useRequests()
+  const { user } = useUser()
 
   const [title, setTitle] = useState("")
   const [desc, setDesc] = useState("")
+
+  const router = useRouter()
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchQuery(value)
     searchRequests(value)
+  }
+
+  const handleSubmitRequest = async () => {
+    await addMyRequest({
+      title,
+      description: desc,
+      details: "Submitted from Navbar",
+      status: type === "bug" ? "Bug Reported" : "Under Review",
+    })
+    
+    setMainOpen(false)
+    if (type === "bug") {
+      setBugDialogOpen(true)   // 🚀 open bug upload
+    } else {
+      setSuccessOpen(true)     // ✅ open success dialog
+    }
+    setTitle("")
+    setDesc("")
+    // Error handling is done in addMyRequest via toast
   }
 
   return (
@@ -241,13 +266,14 @@ const Navbar = () => {
           {/* <span className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span> */}
         </button>
 
-        {/* Main Request Dialog */}
-        <Dialog open={mainOpen} onOpenChange={setMainOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-[#265BD1] text-white hover:bg-[#1F4AA9] cursor-pointer rounded-lg px-4 h-[36px] font-medium text-sm shadow-none">
-              <PlusIcon size={14} className="mr-1" /> Request a feature
-            </Button>
-          </DialogTrigger>
+        {/* Main Request Dialog - only show for authenticated users */}
+        {user && (
+          <Dialog open={mainOpen} onOpenChange={setMainOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-[#265BD1] text-white hover:bg-[#1F4AA9] cursor-pointer rounded-lg px-4 h-[36px] font-medium text-sm shadow-none">
+                <PlusIcon size={14} className="mr-1" /> Request a feature
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader className="">
               <DialogTitle className="text-sm text-[#565A5E]">
@@ -317,24 +343,36 @@ const Navbar = () => {
 
               <Button
                 className="bg-[#265BD1] hover:bg-blue-700 text-white"
-                onClick={() => {
-                  addMyRequest({
-                    title,
-                    description: desc,
-                    details: "Submitted from Navbar",
-                    status:
-                      type === "bug" ? "Bug Reported" : "Under Review",
-                  })
-                  setMainOpen(false)
-                  if (type === "bug") {
-                    setBugDialogOpen(true)   // 🚀 open bug upload
-                  }
-                  setTitle("")
-                  setDesc("")
-                }}
+                onClick={handleSubmitRequest}
               >
                 Submit request
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+        )}
+
+        {/* Success dialog (feature only) */}
+        <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
+          <DialogContent className="max-w-[453px] h-[300px] text-center">
+            <DialogHeader className="">
+              <DialogTitle className="text-sm text-[#565A5E]">
+                Request a feature or report a bug
+              </DialogTitle>
+            </DialogHeader>
+            <div className="relative -mx-6 h-px">
+              <Separator className="absolute inset-x-0" />
+            </div>
+            <div className="flex flex-col items-center ">
+              <img
+                src="/success.svg"
+                alt="Success"
+                className="w-[59px] h-[59px]"
+              />
+              <p className="text-green-600 font-semibold text-lg">Success!</p>
+              <p className="text-gray-500">
+                Your request has been added to <b>My Requests</b>.
+              </p>
             </div>
           </DialogContent>
         </Dialog>

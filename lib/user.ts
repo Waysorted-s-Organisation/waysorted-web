@@ -11,6 +11,7 @@ export interface CurrentUser {
   earlyAccess: boolean;
   initials: string;
   creditsRemaining: number;
+  role?: string;
 }
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
@@ -45,6 +46,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
       earlyAccess: !!user.earlyAccess,
       initials,
       creditsRemaining: user.creditsRemaining ?? 0,
+      role: user.role || "user",
     };
   } catch (err) {
     console.error("getCurrentUser error:", err);
