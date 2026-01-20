@@ -1,10 +1,10 @@
 "use client";
 import Card from '@/components/feature-requests/card';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useRequests } from '@/context/RequestContext';
 import { ChevronDown } from 'lucide-react';
@@ -43,11 +43,10 @@ const Main: React.FC = () => {
             <div className='flex gap-4 border-b border-gray-100 mb-4'>
                 <button
                     onClick={() => setActiveTab("all")}
-                    className={`pb-3 px-2 text-sm font-medium transition-colors relative ${
-                        activeTab === "all"
+                    className={`pb-3 px-2 text-sm font-medium transition-colors relative ${activeTab === "all"
                             ? "text-[#265BD1]"
                             : "text-gray-600 hover:text-gray-900"
-                    }`}
+                        }`}
                 >
                     All Issues
                     {activeTab === "all" && (
@@ -56,11 +55,10 @@ const Main: React.FC = () => {
                 </button>
                 <button
                     onClick={() => setActiveTab("my-issues")}
-                    className={`pb-3 px-2 text-sm font-medium transition-colors relative ${
-                        activeTab === "my-issues"
+                    className={`pb-3 px-2 text-sm font-medium transition-colors relative ${activeTab === "my-issues"
                             ? "text-[#265BD1]"
                             : "text-gray-600 hover:text-gray-900"
-                    }`}
+                        }`}
                 >
                     My Issues
                     {activeTab === "my-issues" && (
@@ -87,23 +85,23 @@ const Main: React.FC = () => {
                                 />
                             </button>
                         </DropdownMenuTrigger>
-                  
+
                         <DropdownMenuContent className="cursor-pointer bg-white border-gray-200 shadow-md">
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                                 onClick={() => setSelected("Most votes")}
                                 className="hover:bg-[#E8EFFC]"
                                 inset={false}
                             >
                                 Most votes
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                                 onClick={() => setSelected("Recently added")}
                                 className="hover:bg-[#E8EFFC]"
                                 inset={false}
                             >
                                 Recently added
                             </DropdownMenuItem>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                                 onClick={() => setSelected("Random")}
                                 className="hover:bg-[#E8EFFC]"
                                 inset={false}
@@ -115,49 +113,45 @@ const Main: React.FC = () => {
                 </div>
 
                 <div className='flex gap-1'>
-                    <button 
+                    <button
                         onClick={() => filterByStatus(activeStatus === "Planned" ? null : "Planned")}
-                        className={`text-sm rounded-md border px-2 py-1 items-center flex gap-1 transition-colors ${
-                            activeStatus === "Planned" 
-                                ? "bg-white text-[#265BD1] border-gray-200" 
+                        className={`text-sm rounded-md border px-2 py-1 items-center flex gap-1 transition-colors ${activeStatus === "Planned"
+                                ? "bg-white text-[#265BD1] border-gray-200"
                                 : "text-[#565A5E] hover:text-[#265BD1] border-gray-200 bg-white"
-                        }`}
+                            }`}
                     >
                         <i className="fa-solid fa-square text-[6px] text-[#265BD1]"></i>
                         {' '}
                         Planned
                     </button>
-                    <button 
+                    <button
                         onClick={() => filterByStatus(activeStatus === "In Progress" ? null : "In Progress")}
-                        className={`text-sm rounded-md border px-2 py-1 items-center flex gap-1 transition-colors ${
-                            activeStatus === "In Progress" 
-                                ? "bg-white text-[#01A04E] border-gray-200" 
+                        className={`text-sm rounded-md border px-2 py-1 items-center flex gap-1 transition-colors ${activeStatus === "In Progress"
+                                ? "bg-white text-[#01A04E] border-gray-200"
                                 : "text-[#565A5E] hover:text-[#01A04E] border-gray-200 bg-white"
-                        }`}
+                            }`}
                     >
                         <i className="fa-solid fa-square text-[6px] text-[#01A04E]"></i>
                         {' '}
                         In Progress
                     </button>
-                    <button 
+                    <button
                         onClick={() => filterByStatus(activeStatus === "Released" ? null : "Released")}
-                        className={`text-sm rounded-md border px-2 py-1 items-center flex gap-1 transition-colors ${
-                            activeStatus === "Released" 
-                                ? "bg-white text-[#7531F9] border-gray-200" 
+                        className={`text-sm rounded-md border px-2 py-1 items-center flex gap-1 transition-colors ${activeStatus === "Released"
+                                ? "bg-white text-[#7531F9] border-gray-200"
                                 : "text-[#565A5E] hover:text-[#7531F9] border-gray-200 bg-white"
-                        }`}
+                            }`}
                     >
                         <i className="fa-solid fa-square text-[6px] text-[#7531F9]"></i>
                         {' '}
                         Released
                     </button>
-                    <button 
+                    <button
                         onClick={() => filterByStatus(activeStatus === "Not done" ? null : "Not done")}
-                        className={`text-sm rounded-md border px-2 py-1 items-center flex gap-1 transition-colors ${
-                            activeStatus === "Not done" 
-                                ? "bg-white text-[#565A5E] border-gray-200" 
+                        className={`text-sm rounded-md border px-2 py-1 items-center flex gap-1 transition-colors ${activeStatus === "Not done"
+                                ? "bg-white text-[#565A5E] border-gray-200"
                                 : "text-[#565A5E] hover:text-[#8B8D8F] border-gray-200 bg-white"
-                        }`}
+                            }`}
                     >
                         <i className="fa-solid fa-square text-[6px] text-[#565A5E]"></i>
                         {' '}
@@ -177,7 +171,7 @@ const Main: React.FC = () => {
                             </div>
                         ) : (
                             requests.map((req) => (
-                                <Card 
+                                <Card
                                     key={req.id}
                                     id={req.id}
                                     title={req.title}
@@ -187,7 +181,6 @@ const Main: React.FC = () => {
                                     votes={req.votes}
                                     votedBy={req.votedBy}
                                     isPublic={req.isPublic}
-                                    authorId={req.authorId}
                                 />
                             ))
                         )}
@@ -202,10 +195,10 @@ const Main: React.FC = () => {
                             </div>
                         ) : (
                             myRequests.map((req) => (
-                                <MyRequestCard 
-                                    key={req.id} 
-                                    request={req} 
-                                    showManageText={false} 
+                                <MyRequestCard
+                                    key={req.id}
+                                    request={req}
+                                    showManageText={false}
                                 />
                             ))
                         )}

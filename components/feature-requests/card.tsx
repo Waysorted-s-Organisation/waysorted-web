@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { EllipsisIcon, ChevronDown, Globe, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import { ChevronDown, Globe, Lock, CheckCircle2, AlertCircle } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useRequests } from "@/context/RequestContext";
 import { useUser } from "@/hooks/useUser";
@@ -36,7 +36,6 @@ interface CardProps {
   votes: number;
   votedBy?: string[];
   isPublic?: boolean;
-  authorId?: string;
 }
 
 const getStatusStyles = (status: string) => {
@@ -88,7 +87,7 @@ const getStatusStyles = (status: string) => {
   };
 };
 
-const Card: React.FC<CardProps> = ({ id, title, description, details, status, votes, votedBy = [], isPublic = false, authorId }) => {
+const Card: React.FC<CardProps> = ({ id, title, description, details, status, votes, votedBy = [], isPublic = false }) => {
   const { voteRequest, refetch } = useRequests();
   const { user } = useUser();
   const [optimisticVotes, setOptimisticVotes] = React.useState<number | null>(null);

@@ -20,7 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { useMyRequest } from "@/context/MyRequestContext";
 import { useRequests } from "@/context/RequestContext";
 import ProfileDropdown from "@/components/feature-requests/ProfileDropdown";
-import { useRouter } from "next/navigation";
+
 import { useUser } from "@/hooks/useUser";
 
 interface BugUploadDialogProps {
@@ -214,7 +214,7 @@ const Navbar = () => {
   const [title, setTitle] = useState("")
   const [desc, setDesc] = useState("")
 
-  const router = useRouter()
+
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
@@ -367,10 +367,11 @@ const Navbar = () => {
               <Separator className="absolute inset-x-0" />
             </div>
             <div className="flex flex-col items-center ">
-              <img
+              <Image
                 src="/success.svg"
                 alt="Success"
-                className="w-[59px] h-[59px]"
+                width={59}
+                height={59}
               />
               <p className="text-green-600 font-semibold text-lg">Success!</p>
               <p className="text-gray-500">

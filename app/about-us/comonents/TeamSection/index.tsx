@@ -116,22 +116,22 @@ export default function TeamSection() {
     return (
       <section className="bg-white px-6 pt-12 pb-40 text-center">
         <div className="flex flex-col gap-y-8 max-w-xs mx-auto">
-          {team.map((member, index) => (
+          {team.map((member: TeamMemberProps, index: number) => (
             <TeamMember
               key={index}
               name={member.name}
               role={member.role}
               image={member.image}
-              imageClassName={(member as any).imageClassName}
+              imageClassName={member.imageClassName}
             />
           ))}
-          {team1.map((member, index) => (
+          {team1.map((member: TeamMemberProps, index: number) => (
             <TeamMember
               key={index}
               name={member.name}
               role={member.role}
               image={member.image}
-              imageClassName={(member as any).imageClassName}
+              imageClassName={member.imageClassName}
             />
           ))}
           {team1.length > 0 && <JoinUsMobile />}
@@ -144,25 +144,25 @@ export default function TeamSection() {
   return (
     <section className="bg-white px-6 md:px-20 lg:px-32 pt-12 pb-40 text-center">
       <div className="grid gap-y-8 gap-x-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center max-w-6xl mx-auto">
-        {team.map((member, index) => (
+        {team.map((member: TeamMemberProps, index: number) => (
           <TeamMember
             key={index}
             name={member.name}
             role={member.role}
             image={member.image}
-            imageClassName={(member as any).imageClassName}
+            imageClassName={member.imageClassName}
           />
         ))}
         <JoinUsDesktop />
       </div>
       <div className="grid gap-y-8 gap-x-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center max-w-6xl mt-8 mx-auto">
-        {team1.map((member, index) => (
+        {team1.map((member: TeamMemberProps, index: number) => (
           <TeamMember
             key={index}
             name={member.name}
             role={member.role}
             image={member.image}
-            imageClassName={(member as any).imageClassName}
+            imageClassName={member.imageClassName}
           />
         ))}
       </div>
