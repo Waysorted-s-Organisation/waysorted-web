@@ -18,7 +18,6 @@ export const team1 = [
         name: "Ansh Bhatt",
         role: "Full Stack Developer",
         image: "/icons/ansh-bhatt.png",
-        imageClassName: "!object-contain",
     },
     {
         name: "Vineet Singh Negi",
