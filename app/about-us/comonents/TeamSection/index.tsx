@@ -25,7 +25,7 @@ const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image, imageClassNa
           alt={name}
           fill
           className={`object-cover ${imageClassName || ""}`}
-          sizes="150px"
+          sizes="276px"
           priority
         />
       </div>
