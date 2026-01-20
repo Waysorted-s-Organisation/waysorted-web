@@ -10,12 +10,13 @@ interface TeamMemberProps {
   name: string;
   role: string;
   image: string;
+  imageClassName?: string;
 }
 
 
 const JOIN_TEAM_URL = "https://docs.google.com/forms/d/e/1FAIpQLScNSYvYUyXrEM5YNHSliafQHiABC_Rar0sOPnNjRQQFaWf_aw/viewform";
 
-const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image }) => {
+const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image, imageClassName }) => {
   return (
     <div className="bg-white rounded-xl text-center">
       <div className="relative w-[276px] h-[300px] bg-dots mx-auto rounded-xl overflow-hidden mb-4">
@@ -23,7 +24,7 @@ const TeamMember: React.FC<TeamMemberProps> = ({ name, role, image }) => {
           src={image}
           alt={name}
           fill
-          className="object-cover"
+          className={`object-cover ${imageClassName || ""}`}
           sizes="150px"
           priority
         />
@@ -121,6 +122,7 @@ export default function TeamSection() {
               name={member.name}
               role={member.role}
               image={member.image}
+              imageClassName={(member as any).imageClassName}
             />
           ))}
           {team1.map((member, index) => (
@@ -129,6 +131,7 @@ export default function TeamSection() {
               name={member.name}
               role={member.role}
               image={member.image}
+              imageClassName={(member as any).imageClassName}
             />
           ))}
           {team1.length > 0 && <JoinUsMobile />}
@@ -147,6 +150,7 @@ export default function TeamSection() {
             name={member.name}
             role={member.role}
             image={member.image}
+            imageClassName={(member as any).imageClassName}
           />
         ))}
         <JoinUsDesktop />
@@ -158,6 +162,7 @@ export default function TeamSection() {
             name={member.name}
             role={member.role}
             image={member.image}
+            imageClassName={(member as any).imageClassName}
           />
         ))}
       </div>
