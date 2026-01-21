@@ -18,7 +18,7 @@ export const team1 = [
         name: "Ansh Bhatt",
         role: "Full Stack Developer",
         image: "/icons/ansh-bhatt.png",
-        imageClassName: "object-[center_15%]",
+        imageClassName: "object-top",
     },
     {
         name: "Vineet Singh Negi",
