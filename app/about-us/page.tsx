@@ -1,12 +1,12 @@
 "use client";
-import HeroSection from "./comonents/HeroSection";
-import VisionSection from "./comonents/VisionSection";
-import ValuesSection from "./comonents/ValueSection";
-import StorySection from "./comonents/StorySection";
-import TeamSection from "./comonents/TeamSection";
-import TeamCollage from "./comonents/TeamCollage";
+import HeroSection from "./components/HeroSection";
+import VisionSection from "./components/VisionSection";
+import ValuesSection from "./components/ValueSection";
+import StorySection from "./components/StorySection";
+import TeamSection from "./components/TeamSection";
+import TeamCollage from "./components/TeamCollage";
 import JoinCommunity from "@/components/JoinCommunity";
-import {useBanner } from "@/context/BannerContext";
+import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 
@@ -14,20 +14,19 @@ export default function AboutUs() {
   const { showBanner, setShowBanner } = useBanner();
   return (
     <>
-    <main
-        className={`min-h-screen bg-white transition-all duration-300 select-none ${
-          showBanner ? "pt-24" : "pt-16"
-        }`}
-        >
-    <Header showBanner={showBanner} setShowBanner={setShowBanner} />
-      <HeroSection />
-      <TeamSection />
-      <VisionSection />
-      <ValuesSection />
-      <StorySection />
-      <TeamCollage />
-      <JoinCommunity />
-      <Footer />
+      <main
+        className={`min-h-screen bg-white transition-all duration-300 select-none ${showBanner ? "pt-24" : "pt-16"
+          }`}
+      >
+        <Header showBanner={showBanner} setShowBanner={setShowBanner} />
+        <HeroSection />
+        <TeamSection />
+        <VisionSection />
+        <ValuesSection />
+        <StorySection />
+        <TeamCollage />
+        <JoinCommunity />
+        <Footer />
       </main>
     </>
   );
