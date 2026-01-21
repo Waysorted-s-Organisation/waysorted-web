@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useTransition } from "react";
-import type { IUser } from "@/models/user";
+import type { IUser } from "@/types/user";
 import { updateName, removeProfilePicture, updateProfilePicture } from "@/app/actions/profile";
 import Image from "next/image";
 

@@ -5,18 +5,16 @@ import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useRequests } from "@/context/RequestContext";
 
+import { FEATURE_CATEGORIES } from "@/lib/feature-categories";
+
 const Sidebar = ({ hideFeatures = false }) => {
   const router = useRouter();
-  const pathname = usePathname(); 
+  const pathname = usePathname();
   const { filterByBoard, activeBoard } = useRequests();
 
   const isHome = pathname === "/";
 
-  const boards = [
-    { id: "Figma Plugin", label: "Figma Plugin: Palletable" },
-    { id: "Color Contrast", label: "Palatable: Color contrast" },
-    { id: "Waychallenge", label: "Waychallenge" },
-  ];
+  const boards = FEATURE_CATEGORIES;
 
   return (
     <div className="bg-white h-[calc(100vh-68px)] w-[225px] z-50 border-r border-gray-200 p-5 flex flex-col justify-between ">
@@ -37,11 +35,10 @@ const Sidebar = ({ hideFeatures = false }) => {
               {/* All issues option */}
               <p
                 onClick={() => filterByBoard(null)}
-                className={`text-xs w-full h-full py-2 px-2 rounded-sm cursor-pointer transition-colors ${
-                  !activeBoard
+                className={`text-xs w-full h-full py-2 px-2 rounded-sm cursor-pointer transition-colors ${!activeBoard
                     ? "bg-[#E8EFFC] text-[#265BD1]"
                     : "text-[#565A5E] hover:bg-[#F3F3F3]"
-                }`}
+                  }`}
               >
                 All issues
               </p>
@@ -51,11 +48,10 @@ const Sidebar = ({ hideFeatures = false }) => {
                 <p
                   key={board.id}
                   onClick={() => filterByBoard(board.id)}
-                  className={`text-xs w-full h-full py-2 px-2 rounded-sm cursor-pointer transition-colors ${
-                    activeBoard === board.id
+                  className={`text-xs w-full h-full py-2 px-2 rounded-sm cursor-pointer transition-colors ${activeBoard === board.id
                       ? "bg-[#E8EFFC] text-[#265BD1]"
                       : "text-[#565A5E] hover:bg-[#F3F3F3]"
-                  }`}
+                    }`}
                 >
                   {board.label}
                 </p>
@@ -65,7 +61,7 @@ const Sidebar = ({ hideFeatures = false }) => {
         )}
       </div>
 
-      <Button 
+      <Button
         size="sm"
         onClick={() => router.push("/support")}
         className="bg-[#265BD1] w-fit hover:bg-[#1F4AA9] cursor-pointer"

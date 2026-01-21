@@ -1,20 +1,5 @@
 import { Schema, model, models, HydratedDocument, Model } from "mongoose";
-
-export interface IUser {
-  _id: string | { toString(): string };
-  email: string;
-  name?: string;
-  picture?: string;
-  favorites: string[];
-  earlyAccess: boolean;
-  initials: string;
-  creditsRemaining: number;
-  role?: string;
-  createdAt: Date;
-  updatedAt: Date;
-  hasAnyNotifications?: boolean;
-  notifications?: { id: string; title: string; body: string }[];
-}
+import { IUser } from "@/types/user";
 
 export interface IUserMethods {
   addFavorite(slug: string): Promise<void>;

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import type { IUser } from "@/models/user";
+import type { IUser } from "@/types/user";
 
 type Props = {
   user: IUser;

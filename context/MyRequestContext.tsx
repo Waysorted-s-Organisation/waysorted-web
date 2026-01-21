@@ -1,8 +1,9 @@
 "use client";
-import React, { createContext, useContext, useState, ReactNode, useMemo, useEffect } from "react";
+import React, { createContext, useContext, useState, ReactNode, useMemo, useEffect, useCallback } from "react";
 import { useUser } from "@/hooks/useUser";
 import { toast } from "sonner";
 import { useRequests } from "./RequestContext";
+import { FEATURE_CATEGORIES } from "@/lib/feature-categories";
 
 interface MyRequest {
     id: string; // Changed to string for MongoDB _id
@@ -33,12 +34,15 @@ export const MyRequestProvider: React.FC<{ children: ReactNode }> = ({ children 
     const { user } = useUser();
     const { refetch: refetchGlobalRequest } = useRequests();
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = (user as any)?._id || (user as any)?.id;
+
     const [files, setFiles] = useState<File[]>([]);
     const [myRequests, setMyRequests] = useState<MyRequest[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    const fetchMyRequests = async () => {
-        if (!user) return;
+    const fetchMyRequests = useCallback(async () => {
+        if (!userId) return;
         try {
             setLoading(true);
             const res = await fetch("/api/requests/mine");
@@ -69,13 +73,13 @@ export const MyRequestProvider: React.FC<{ children: ReactNode }> = ({ children 
         } finally {
             setLoading(false);
         }
-    };
+    }, [userId]);
 
     useEffect(() => {
-        if (user) {
+        if (userId) {
             fetchMyRequests();
         }
-    }, [user]);
+    }, [userId, fetchMyRequests]);
 
     // ✅ Function to add a new request via API
     const addMyRequest = async (newRequest: Partial<MyRequest>): Promise<void> => {
@@ -88,7 +92,7 @@ export const MyRequestProvider: React.FC<{ children: ReactNode }> = ({ children 
             const payload = {
                 title: newRequest.title,
                 description: newRequest.description,
-                board: newRequest.details || "Figma Plugin", // Default or map from somewhere
+                board: newRequest.details || FEATURE_CATEGORIES[0].id, // Default or map from somewhere
                 type: "feature"
             };
 
@@ -158,13 +162,13 @@ export const MyRequestProvider: React.FC<{ children: ReactNode }> = ({ children 
 
     const voteMyRequest = async (id: string) => {
         try {
-            const res = await fetch(`/api/requests/${id}/vote`, { 
+            const res = await fetch(`/api/requests/${id}/vote`, {
                 method: "POST",
                 credentials: "include"
             });
             if (res.ok) {
                 const data = await res.json();
-                
+
                 // Immediately update the request in state
                 setMyRequests(prevRequests =>
                     prevRequests.map(req =>
@@ -173,7 +177,7 @@ export const MyRequestProvider: React.FC<{ children: ReactNode }> = ({ children 
                             : req
                     )
                 );
-                
+
                 refetchGlobalRequest(); // Keep global list in sync
             }
         } catch (error) {

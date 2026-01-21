@@ -1,6 +1,6 @@
 "use client";
 import Image from "next/image";
-import type { IUser } from "@/models/user";
+import type { IUser } from "@/types/user";
 
 export interface BetaFeaturesCardProps {
   user: IUser;
@@ -29,52 +29,52 @@ export default function BetaFeaturesCard({ user, features }: BetaFeaturesCardPro
       <div className="px-6 pb-8 pt-5">
         {/* Top Panel */}
         {!earlyAccess ? (
-            <div className="relative mb-6 rounded-md bg-tertiary-vivid-blue-100 p-4 text-tertiary-vivid-blue-500">
-                <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-2">
-                    <Image
-                        src="/icons/lightning.svg"
-                        alt="Error Icon"
-                        width={16}
-                        height={16}
-                        className="object-contain"
-                    />
-                    <p className="text-sm font-medium">
-                    You don&apos;t have any active Subscription!
-                    </p>
-                </div>
-                <button
-                    type="button"
-                    className="rounded-md border border-tertiary-vivid-blue-500 bg-tertiary-vivid-blue-100 px-3 py-1.5 text-xs font-medium text-tertiary-vivid-blue-500 transition cursor-pointer"
-                >
-                    Get Early Access
-                </button>
-                </div>
+          <div className="relative mb-6 rounded-md bg-tertiary-vivid-blue-100 p-4 text-tertiary-vivid-blue-500">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Image
+                  src="/icons/lightning.svg"
+                  alt="Error Icon"
+                  width={16}
+                  height={16}
+                  className="object-contain"
+                />
+                <p className="text-sm font-medium">
+                  You don&apos;t have any active Subscription!
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rounded-md border border-tertiary-vivid-blue-500 bg-tertiary-vivid-blue-100 px-3 py-1.5 text-xs font-medium text-tertiary-vivid-blue-500 transition cursor-pointer"
+              >
+                Get Early Access
+              </button>
             </div>
+          </div>
         ) : (
           <div className="relative mb-6 rounded-md bg-tertiary-vivid-blue-100 p-4 text-tertiary-vivid-blue-500">
-                <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-2">
-                    <Image
-                        src="/icons/lightning.svg"
-                        alt="Error Icon"
-                        width={16}
-                        height={16}
-                        className="object-contain"
-                    />
-                    <p className="text-sm font-medium">
-                    You &apos;re already part of the Beta Program. Thanks for helping us shape Waysorted!
-                    </p>
-                </div>
-                <button
-                    type="button"
-                    onClick={handleClick}
-                    className="rounded-md border border-tertiary-vivid-blue-500 bg-tertiary-vivid-blue-100 px-3 py-1.5 text-xs font-medium text-tertiary-vivid-blue-500 transition cursor-pointer"
-                >
-                    Rate Us
-                </button>
-                </div>
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Image
+                  src="/icons/lightning.svg"
+                  alt="Error Icon"
+                  width={16}
+                  height={16}
+                  className="object-contain"
+                />
+                <p className="text-sm font-medium">
+                  You &apos;re already part of the Beta Program. Thanks for helping us shape Waysorted!
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleClick}
+                className="rounded-md border border-tertiary-vivid-blue-500 bg-tertiary-vivid-blue-100 px-3 py-1.5 text-xs font-medium text-tertiary-vivid-blue-500 transition cursor-pointer"
+              >
+                Rate Us
+              </button>
             </div>
+          </div>
         )}
 
         {/* Feature List */}

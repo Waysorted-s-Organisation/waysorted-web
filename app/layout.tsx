@@ -1,11 +1,10 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Hanken_Grotesk } from "next/font/google";
-import { BannerProvider } from "@/context/BannerContext";
+import { Providers } from "./providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
-import SplashGate from "@/components/SplashGate";
 import Clarity from "@/components/Clarity";
 
 const GA_TRACKING_ID = "G-KS8MVKMRYV";
@@ -292,13 +291,11 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${hanken.className} no-scrollbar`}>
-        <SplashGate minMs={4000} initialOnly>
-          <BannerProvider>
-            {children}
-            {/* <EarlyAccessPopup /> */}
-          </BannerProvider>
-        </SplashGate>
+      <body className={`${hanken.className} no-scrollbar`} suppressHydrationWarning>
+        <Providers>
+          {children}
+          {/* <EarlyAccessPopup /> */}
+        </Providers>
         <SpeedInsights />
         <Analytics />
         <Script

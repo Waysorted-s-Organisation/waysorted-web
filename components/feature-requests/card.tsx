@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { ChevronDown, Globe, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import { ChevronDown, Globe, Lock } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useRequests } from "@/context/RequestContext";
 import { useUser } from "@/hooks/useUser";
@@ -448,41 +448,7 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
                 )}
 
                 {/* Feature Details Section */}
-                <div className="mt-6 p-5 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex items-start gap-4">
-                    <div className="p-2 bg-white rounded-lg border border-gray-200">
-                      <CheckCircle2 className="h-5 w-5 text-[#265BD1]" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-sm font-semibold text-gray-800 mb-3">Feature Status</h3>
-                      <div className="flex items-center gap-2 mb-3">
-                        <button className={`text-xs rounded-md px-3 py-1.5 items-center flex gap-1.5 transition-colors font-medium ${statusStyles.bgColor} ${statusStyles.textColor} ${statusStyles.hoverTextColor}`}>
-                          <i className={`fa-solid fa-square text-[6px] ${statusStyles.iconColor}`}></i>
-                          {currentStatus}
-                        </button>
-                      </div>
-                      <p className="text-xs text-gray-600 mb-3">
-                        This feature request is currently <span className="font-medium text-gray-800">{currentStatus.toLowerCase()}</span>.
-                      </p>
-                      {!isPublic && (
-                        <div className="flex items-start gap-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
-                          <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
-                          <p className="text-xs text-yellow-800">
-                            This request is private and only visible to admins and the author.
-                          </p>
-                        </div>
-                      )}
-                      {isPublic && (
-                        <div className="flex items-start gap-2 p-2 bg-green-50 border border-green-200 rounded-md">
-                          <Globe className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
-                          <p className="text-xs text-green-800">
-                            This request is public and visible to all users.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                {/* Feature Details Section Removed as per request */}
               </div>
             </SheetDescription>
           </SheetHeader>

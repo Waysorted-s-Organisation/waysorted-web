@@ -71,6 +71,10 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
     const isAdmin = (user as any)?.role === "admin";
 
     // Function to fetch requests from the API (excludes user's own requests for the global list)
+    // Use user ID (primitive) instead of user object to prevent infinite loops if user object reference is unstable
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userId = (user as any)?._id || (user as any)?.id;
+
     const fetchRequests = useCallback(async (query = "", board: string | null = null, status: string | null = null, sort: string | null = null) => {
         try {
             setLoading(true);
@@ -78,11 +82,16 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
             const params = new URLSearchParams();
             if (query) params.set("q", query);
             if (board) params.set("board", board);
+
             const backendStatus = mapStatusToBackend(status);
             if (backendStatus) params.set("status", backendStatus);
+
             if (sort === "Most votes") {
                 params.set("sort", "votes");
+            } else if (sort === "Recently added") {
+                params.set("sort", "recent");
             }
+
             if (params.toString()) url += `?${params.toString()}`;
 
             const res = await fetch(url);
@@ -111,14 +120,11 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
                 }
 
                 // Filter out current user's own requests from the global list
-                // (user's own requests are shown under "My Issues" via MyRequestContext)
-                if (user) {
-                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                    const userId = (user as any).id || (user as any)._id;
+                if (userId && !isAdmin) {
                     mapped = mapped.filter((req) => req.authorId !== userId);
                 }
 
-                // Handle client-side sorting for "Random" (backend doesn't support it)
+                // Handle client-side sorting for "Random" (backend doesn't support it yet)
                 if (sort === "Random") {
                     mapped = [...mapped].sort(() => Math.random() - 0.5);
                 }
@@ -130,11 +136,11 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
         } finally {
             setLoading(false);
         }
-    }, [user]); // Only depend on user - mapping functions are stable
+    }, [userId, isAdmin]); // Depend on primitive userId and isAdmin boolean
 
     useEffect(() => {
         fetchRequests("", activeBoard, activeStatus, activeSort);
-    }, [activeBoard, activeStatus, activeSort, fetchRequests]); // Include fetchRequests
+    }, [activeBoard, activeStatus, activeSort, fetchRequests]);
 
     const addRequest = (title: string, description: string): void => {
         console.warn("Global addRequest called - should be handled via MyRequestContext or API");
@@ -142,17 +148,17 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
 
     const voteRequest = async (id: string) => {
         try {
-            const res = await fetch(`/api/requests/${id}/vote`, { 
+            const res = await fetch(`/api/requests/${id}/vote`, {
                 method: "POST",
                 credentials: "include"
             });
             if (res.ok) {
                 const data = await res.json();
-                
+
                 // Immediately update the request in state with the response data
-                setRequests(prevRequests => 
-                    prevRequests.map(req => 
-                        req.id === id 
+                setRequests(prevRequests =>
+                    prevRequests.map(req =>
+                        req.id === id
                             ? { ...req, votes: data.votes, votedBy: data.votedBy || req.votedBy }
                             : req
                     )
@@ -165,7 +171,7 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
     };
 
     const searchRequests = (query: string) => {
-        fetchRequests(query, activeBoard, activeStatus);
+        fetchRequests(query, activeBoard, activeStatus, activeSort);
     };
 
     const filterByBoard = (board: string | null) => {
@@ -180,6 +186,10 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
         setActiveSort(sort);
     };
 
+    const refetch = useCallback(() => {
+        fetchRequests("", activeBoard, activeStatus, activeSort);
+    }, [fetchRequests, activeBoard, activeStatus, activeSort]);
+
     const contextValue = useMemo(() => ({
         requests,
         addRequest,
@@ -192,8 +202,8 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
         sortBy,
         activeSort,
         loading,
-        refetch: () => fetchRequests("", activeBoard, activeStatus, activeSort)
-    }), [requests, loading, activeBoard, activeStatus, activeSort]);
+        refetch
+    }), [requests, activeBoard, activeStatus, activeSort, loading, refetch]);
 
     return (
         <RequestContext.Provider value={contextValue}>

@@ -22,6 +22,7 @@ import { useRequests } from "@/context/RequestContext";
 import ProfileDropdown from "@/components/feature-requests/ProfileDropdown";
 
 import { useUser } from "@/hooks/useUser";
+import { FEATURE_CATEGORIES } from "@/lib/feature-categories";
 
 interface BugUploadDialogProps {
   open: boolean;
@@ -213,6 +214,7 @@ const Navbar = () => {
 
   const [title, setTitle] = useState("")
   const [desc, setDesc] = useState("")
+  const [board, setBoard] = useState(FEATURE_CATEGORIES[0].id)
 
 
 
@@ -226,7 +228,7 @@ const Navbar = () => {
     await addMyRequest({
       title,
       description: desc,
-      details: "Submitted from Navbar",
+      details: board,
       status: type === "bug" ? "Bug Reported" : "Under Review",
     })
 
@@ -309,14 +311,16 @@ const Navbar = () => {
 
                 <div className="space-y-2">
                   <Label className="">Select Board</Label>
-                  <Select>
+                  <Select value={board} onValueChange={setBoard}>
                     <SelectTrigger className="w-full bg-[#F3F3F3]">
-                      <SelectValue placeholder="Figma Plugin" />
+                      <SelectValue placeholder="Select Board" />
                     </SelectTrigger>
                     <SelectContent className="w-full">
-                      <SelectItem value="figma" className="">Figma Plugin</SelectItem>
-                      <SelectItem value="web" className="">Web App</SelectItem>
-                      <SelectItem value="mobile" className="">Mobile App</SelectItem>
+                      {FEATURE_CATEGORIES.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id} className="">
+                          {cat.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

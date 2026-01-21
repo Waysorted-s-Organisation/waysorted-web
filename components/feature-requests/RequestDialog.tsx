@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/hooks/useUser";
+import { FEATURE_CATEGORIES } from "@/lib/feature-categories";
 import {
   Dialog,
   DialogContent,
@@ -35,7 +36,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
   const [successOpen, setSuccessOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
-  const [board, setBoard] = useState("Figma Plugin");
+  const [board, setBoard] = useState(FEATURE_CATEGORIES[0].id);
   const [files, setFiles] = useState<File[]>([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -155,9 +156,11 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
                   <SelectValue placeholder="Select board" />
                 </SelectTrigger>
                 <SelectContent className="w-full bg-white z-[60] rounded-[6px] border border-[#CFD0D1]">
-                  <SelectItem className="text-[14px]" value="Figma Plugin">Figma Plugin</SelectItem>
-                  <SelectItem className="text-[14px]" value="Web App">Web App</SelectItem>
-                  <SelectItem className="text-[14px]" value="Mobile App">Mobile App</SelectItem>
+                  {FEATURE_CATEGORIES.map((cat) => (
+                    <SelectItem key={cat.id} className="text-[14px]" value={cat.id}>
+                      {cat.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

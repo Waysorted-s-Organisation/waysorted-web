@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
-import type { IUser } from "@/models/user";
+import type { IUser } from "@/types/user";
 
 export async function GET() {
   try {

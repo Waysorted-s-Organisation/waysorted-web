@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import type { IUser } from "@/models/user";
+import type { IUser } from "@/types/user";
 
 type Props = {
   user: IUser;

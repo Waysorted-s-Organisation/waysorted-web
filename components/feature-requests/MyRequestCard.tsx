@@ -23,10 +23,12 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-import {  EllipsisIcon } from "lucide-react"
+import { EllipsisIcon } from "lucide-react"
 import { DropdownMenu, DropdownMenuItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useMyRequest } from "@/context/MyRequestContext"
 import { Separator } from "@/components/ui/separator"
+import { publishRequest } from "@/lib/featureRequestsClient"
+import { Globe } from "lucide-react"
 
 interface MyRequest {
   id: string;
@@ -37,6 +39,7 @@ interface MyRequest {
   votes: number;
   votedBy?: string[];
   date: string;
+  isPublic?: boolean;
 }
 
 interface MyRequestCardProps {
@@ -46,7 +49,7 @@ interface MyRequestCardProps {
 
 const getStatusStyles = (status: string) => {
   const statusLower = status.toLowerCase();
-  
+
   if (statusLower === "planned") {
     return {
       iconColor: "text-[#265BD1]",
@@ -83,7 +86,7 @@ const getStatusStyles = (status: string) => {
       bgColor: "bg-[#FFE8E8]",
     };
   }
-  
+
   // Default
   return {
     iconColor: "text-[#265BD1]",
@@ -95,15 +98,18 @@ const getStatusStyles = (status: string) => {
 
 const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) => {
 
-  const { editMyRequest, deleteMyRequest, voteMyRequest } = useMyRequest()
+  const { editMyRequest, deleteMyRequest, voteMyRequest, refetch } = useMyRequest()
   const { user } = useUser();
+  const isAdmin = user?.role === "admin";
+  const [isPublishing, setIsPublishing] = useState(false);
   const [optimisticVotes, setOptimisticVotes] = useState<number | null>(null);
   const [optimisticUpvoted, setOptimisticUpvoted] = useState<boolean | null>(null);
 
   // Sync votes from request prop
   const count = optimisticVotes !== null ? optimisticVotes : (request.votes || 0);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const userIdStr = user ? ((user as any).id || (user as any)._id)?.toString() : null;
+
+  const userIdStr = user?._id?.toString();
+
   const isUpvoted = optimisticUpvoted !== null ? optimisticUpvoted : (userIdStr ? (request.votedBy || []).includes(userIdStr) : false);
 
   // ✅ Edit state
@@ -123,15 +129,15 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
       toast.error("Please login to vote");
       return;
     }
-    
+
     // Optimistic update
     const currentlyUpvoted = userIdStr ? (request.votedBy || []).includes(userIdStr) : false;
     const newUpvoted = !currentlyUpvoted;
     const newCount = newUpvoted ? request.votes + 1 : Math.max(0, request.votes - 1);
-    
+
     setOptimisticUpvoted(newUpvoted);
     setOptimisticVotes(newCount);
-    
+
     await voteMyRequest(request.id);
   };
 
@@ -144,6 +150,23 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
     });
   };
 
+  const handlePublish = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isAdmin) return;
+
+    try {
+      setIsPublishing(true);
+      await publishRequest(request.id);
+      toast.success("Request published successfully!");
+      if (refetch) refetch();
+    } catch (error) {
+      toast.error("Failed to publish request");
+      console.error("Publish error:", error);
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
   const formattedCount = String(count).padStart(2, "0")
   const statusStyles = getStatusStyles(request.status);
 
@@ -153,10 +176,9 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
       <div
         onClick={handleVote}
         className={`w-[54px] h-[54px] pl cursor-pointer border rounded-md flex flex-col items-center justify-center group transition-colors duration-200
-          ${
-            isUpvoted
-              ? "border-[#265BD1] bg-[#E8EFFC]"
-              : "bg-white border-[#565A5E] hover:border-[#265BD1]"
+          ${isUpvoted
+            ? "border-[#265BD1] bg-[#E8EFFC]"
+            : "bg-white border-[#565A5E] hover:border-[#265BD1]"
           }`}
       >
         <i className={`fa-solid fa-caret-up text-xl transform transition-all duration-200 group-hover:-translate-y-1 ${isUpvoted ? "text-[#265BD1]" : "text-[#565A5E] group-hover:text-[#265BD1]"}`}></i>
@@ -195,7 +217,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
             <SheetContent className="w-[640px] sm:max-w-[750px] rounded-l-lg">
               <SheetHeader className="">
                 <SheetTitle className="mt-20 ml-5 text-sm text-[#565A5E]">
-                  {request.date}       
+                  {request.date}
                   {/* update the date and add "updated on" in front of the updated date  */}
                 </SheetTitle>
                 <SheetDescription asChild className="ml-5">
@@ -216,9 +238,8 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
                             {request.details}
                           </p>
 
-                          <div   className={`flex items-center gap-2 mt-3 transition-opacity duration-300 ${
-                                            isEditing ? "opacity-50" : "opacity-100"
-                                          }`}
+                          <div className={`flex items-center gap-2 mt-3 transition-opacity duration-300 ${isEditing ? "opacity-50" : "opacity-100"
+                            }`}
                           >
                             <button className="text-xs text-[#565A5E] rounded-md bg-[#F3F3F3] px-2 py-1 items-center flex gap-1">
                               <i className="fa-solid fa-square text-[6px]"></i>
@@ -233,58 +254,69 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
 
                         <div className="flex items-center mr-5 p-2 rounded-md  w-[36px] h-[36px]">
                           <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <button className="border px-2 py-1 rounded-sm flex items-center hover:text-[#265BD1] hover:bg-[#F3F3F3] gap-2 focus:outline-none focus:ring-0">
-                            <EllipsisIcon />
-                          </button>
-                        </DropdownMenuTrigger>
-                  
-                        <DropdownMenuContent className={"mr-2 cursor-pointer"}>
-                          <DropdownMenuItem className="px-3 py-1 hover:bg-[#E8EFFC] rounded-md" inset={false} onClick={() => setIsEditing(true)}>
-                            Edit request
-                          </DropdownMenuItem>
+                            <DropdownMenuTrigger asChild>
+                              <button className="border px-2 py-1 rounded-sm flex items-center hover:text-[#265BD1] hover:bg-[#F3F3F3] gap-2 focus:outline-none focus:ring-0">
+                                <EllipsisIcon />
+                              </button>
+                            </DropdownMenuTrigger>
 
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <DropdownMenuItem
-                                onSelect={(e: Event) => e.preventDefault()}
-                                className="px-3 py-1 hover:bg-[#E8EFFC] rounded-md"
-                                inset={false}
-                              >
-                                Delete
+                            <DropdownMenuContent className={"mr-2 cursor-pointer"}>
+                              <DropdownMenuItem className="px-3 py-1 hover:bg-[#E8EFFC] rounded-md" inset={false} onClick={() => setIsEditing(true)}>
+                                Edit request
                               </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                          
-                            <AlertDialogContent className={"m-0 p-0"}>
-                              <AlertDialogHeader className="">
-                                <AlertDialogTitle className={"text-sm text-gray-500 p-3"}>Delete Requested Feature</AlertDialogTitle>
-                                <Separator className=""/>
-                                <AlertDialogDescription className={"text-black font-semibold p-3"}>
-                                  Are you sure you want to delete this request? This will delete your
-                                  request and you have to resubmit the request
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
 
-                              <Separator className=""/>
-                          
-                              <AlertDialogFooter className={"p-3"}>
-                                <AlertDialogCancel className="">Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  className="bg-red-500 hover:bg-red-600 text-white"
-                                  onClick={() => deleteMyRequest(request.id)}
+                              <AlertDialog>
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem
+                                    onSelect={(e: Event) => e.preventDefault()}
+                                    className="px-3 py-1 hover:bg-[#E8EFFC] rounded-md"
+                                    inset={false}
+                                  >
+                                    Delete
+                                  </DropdownMenuItem>
+                                </AlertDialogTrigger>
+
+                                <AlertDialogContent className={"m-0 p-0"}>
+                                  <AlertDialogHeader className="">
+                                    <AlertDialogTitle className={"text-sm text-gray-500 p-3"}>Delete Requested Feature</AlertDialogTitle>
+                                    <Separator className="" />
+                                    <AlertDialogDescription className={"text-black font-semibold p-3"}>
+                                      Are you sure you want to delete this request? This will delete your
+                                      request and you have to resubmit the request
+                                    </AlertDialogDescription>
+                                  </AlertDialogHeader>
+
+                                  <Separator className="" />
+
+                                  <AlertDialogFooter className={"p-3"}>
+                                    <AlertDialogCancel className="">Cancel</AlertDialogCancel>
+                                    <AlertDialogAction
+                                      className="bg-red-500 hover:bg-red-600 text-white"
+                                      onClick={() => deleteMyRequest(request.id)}
+                                    >
+                                      Delete
+                                    </AlertDialogAction>
+                                  </AlertDialogFooter>
+                                </AlertDialogContent>
+                              </AlertDialog>
+
+                              <DropdownMenuItem className="px-3 py-1 hover:bg-[#E8EFFC] rounded-md" inset={false} onClick={handleCopyLink}>
+                                Copy link
+                              </DropdownMenuItem>
+
+                              {isAdmin && !request.isPublic && (
+                                <DropdownMenuItem
+                                  className="px-3 py-1 hover:bg-[#E8EFFC] rounded-md text-[#01A04E]"
+                                  inset={false}
+                                  onClick={handlePublish}
+                                  disabled={isPublishing}
                                 >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                                  {isPublishing ? "Publishing..." : "Publish Request"}
+                                </DropdownMenuItem>
+                              )}
 
-                          <DropdownMenuItem className="px-3 py-1 hover:bg-[#E8EFFC] rounded-md" inset={false} onClick={handleCopyLink}>
-                            Copy link
-                          </DropdownMenuItem>
-
-                        </DropdownMenuContent>
-                </DropdownMenu>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     </div>
@@ -329,17 +361,24 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
                       )}
                     </div>
 
-                    {/* Status and Progress Info */}
-                    <div className="flex flex-1 mt-40 items-center justify-center flex-col">
-                      <div className="text-center">
-                        <h3 className="text-md font-semibold text-gray-800 mb-2">Request Status</h3>
-                        <p className="text-sm text-gray-600">
-                          Your request is currently <span className="font-medium text-[#265BD1]">{request.status}</span>.
-                        </p>
-                        <p className="text-sm text-gray-600 mt-4">
-                          We&apos;ll notify you when the status changes!
-                        </p>
-                      </div>
+                    {/* Admin Actions (Publish) if applicable */}
+                    <div className="flex flex-1 mt-10 items-center justify-center flex-col">
+                      {/* Admin Actions (Publish) if applicable */}
+                      {!request.isPublic && isAdmin && (
+                        <div className="mt-6 w-full">
+                          <Button
+                            onClick={handlePublish}
+                            disabled={isPublishing}
+                            className="bg-[#01A04E] hover:bg-[#018A3F] text-white w-full"
+                          >
+                            <Globe className="h-4 w-4 mr-2" />
+                            {isPublishing ? "Publishing..." : "Publish Request"}
+                          </Button>
+                          <p className="text-xs text-gray-500 mt-2 text-center">
+                            Make this request public to allow others to vote.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </SheetDescription>

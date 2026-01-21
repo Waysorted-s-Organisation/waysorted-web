@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import { refreshGoogleToken } from "@/lib/token";
-import type { IUser } from "@/models/user";
+import type { IUser } from "@/types/user";
 
 interface SessionWithUser {
   _id: string;

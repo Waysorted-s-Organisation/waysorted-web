@@ -1,7 +1,7 @@
 "use client";
 
 import ReferAndEarnCard from "../ReferAndEarnCard";
-import type { IUser } from "@/models/user";
+import type { IUser } from "@/types/user";
 
 // Replace this with your actual user source/hook.
 const mockUser: IUser = {
@@ -16,11 +16,11 @@ const mockUser: IUser = {
 
 export default function ReferAndEarnTab() {
   return (
-      <ReferAndEarnCard
-        user={mockUser}
-        creditPerReferral={200}
-        maxReferrals={10}
-        friendReward={50}
-      />
+    <ReferAndEarnCard
+      user={mockUser}
+      creditPerReferral={200}
+      maxReferrals={10}
+      friendReward={50}
+    />
   );
 }
