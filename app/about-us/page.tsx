@@ -1,10 +1,10 @@
 "use client";
-import HeroSection from "./components/HeroSection";
-import VisionSection from "./components/VisionSection";
-import ValuesSection from "./components/ValueSection";
-import StorySection from "./components/StorySection";
-import TeamSection from "./components/TeamSection";
-import TeamCollage from "./components/TeamCollage";
+import HeroSection from "./sections/HeroSection";
+import VisionSection from "./sections/VisionSection";
+import ValuesSection from "./sections/ValueSection";
+import StorySection from "./sections/StorySection";
+import TeamSection from "./sections/TeamSection";
+import TeamCollage from "./sections/TeamCollage";
 import JoinCommunity from "@/components/JoinCommunity";
 import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
