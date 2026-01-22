@@ -10,6 +10,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         '/learning',
         '/about-us',
         '/support',
+        '/requests',
         '/get-early-access',
         '/docs',
         '/release-notes',

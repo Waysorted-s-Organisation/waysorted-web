@@ -122,7 +122,7 @@ export default function EarlyAccessForm() {
               <WayconFigmaConnect />
 
               <p className="my-2 text-sm rounded-2xl bg-white/10 px-4 py-2 font-medium text-primary-way-10 flex items-center gap-2 backdrop-blur-sm border border-white/5">
-                Thanks for signing up. Updates coming soon! 🐶
+                Thanks for signing up. Updates coming soon!
               </p>
             </div>
             <div className="bg-white py-2 px-10 text-center">

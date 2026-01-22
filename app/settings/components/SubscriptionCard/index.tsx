@@ -10,7 +10,7 @@ type Props = {
 export default function SubscriptionCard({ user }: Props) {
   const { earlyAccess } = user;
 
-  const startedDisplay = user.createdAt
+  const startedDisplay = earlyAccess && user.createdAt
     ? new Date(user.createdAt).toLocaleDateString(undefined, {
       year: "numeric",
       month: "long",
@@ -116,11 +116,9 @@ export default function SubscriptionCard({ user }: Props) {
             />
             <span className="text-secondary-db-100">
               <span className="font-semibold">
-                {/* {remaining} */}
-                ∞
+                {earlyAccess ? "∞" : "0"}
               </span> /
-              {/* {creditsTotal} */}
-              ∞ credits left
+              {earlyAccess ? "∞" : "0"} credits left
             </span>
           </div>
 

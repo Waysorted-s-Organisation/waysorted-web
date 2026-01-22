@@ -83,7 +83,6 @@ export const metadata: Metadata = {
     "Figma plugin alternative",
     "all-in-one design solution",
     "replace multiple plugins",
-    "replace multiple plugins",
     "Figma plugin to export PDF",
     "free Figma plugin bundle",
     // Competitor Alternatives (GEO)
@@ -130,9 +129,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  verification: {
-    google: "your-google-verification-code", // Replace with actual verification code
-  },
+
 };
 
 // JSON-LD Structured Data for Google Sitelinks and GEO/AEO
