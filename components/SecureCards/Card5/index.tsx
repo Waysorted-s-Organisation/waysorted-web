@@ -64,7 +64,7 @@ const Card5 = () => {
         <path
           d="M1 49.5L44 24.5M44 24.5V0M44 24.5L94.5 54"
           stroke="#787878"
-          stroke-dasharray="2 2"
+          strokeDasharray="2 2"
           id="motionPath"
         />
         <circle className="moving-dot" r="5" fill="#787878" />

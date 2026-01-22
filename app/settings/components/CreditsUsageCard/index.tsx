@@ -42,12 +42,10 @@ export default function CreditsUsageCard({ user }: Props) {
               />
             </span>
             <span className="text-secondary-db-90 text-xl font-semibold">
-              {/* {remaining} */}
-              ∞
+              {earlyAccess ? "∞" : "0"}
             </span>
             <span className="text-secondary-db-90 text-sm">
-              / <span className="text-xl">∞ </span>
-              {/* {total} */}
+              / <span className="text-xl">{earlyAccess ? "∞" : "0"} </span>
               {!earlyAccess && "credits left"}
               {earlyAccess && <span className="text-secondary-db-100 font-medium">Beta Access: Unlimited Credits</span>}
             </span>
@@ -56,15 +54,16 @@ export default function CreditsUsageCard({ user }: Props) {
           {!earlyAccess && (
             <button
               type="button"
+              onClick={() => window.location.href = "/get-early-access"}
               className="inline-flex items-center rounded-md bg-primary-way-10 px-4 py-1.5 text-sm font-medium text-primary-way-100 border border-primary-way-10 hover:bg-primary-way-20 cursor-pointer transition"
             >
-              Upgrade now
+              Join Waitlist
             </button>
           )}
         </div>
 
         {/* Conditional Panels */}
-        {!earlyAccess && exhausted && (
+        {!earlyAccess && (
           <div className="mt-5 rounded-md bg-error-100 p-4" role="alert">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="flex items-start gap-3">
@@ -76,7 +75,7 @@ export default function CreditsUsageCard({ user }: Props) {
                   className="object-contain"
                 />
                 <p className="text-sm text-error-500">
-                  Your credits have been exhausted. To continue, grab <a href="/get-early-access" className="font-medium underline">early access</a>{" "} and add more credits.
+                  Waysorted credits will become available once you get early access.
                 </p>
               </div>
             </div>

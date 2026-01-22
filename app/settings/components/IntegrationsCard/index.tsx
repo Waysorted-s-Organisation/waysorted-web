@@ -96,6 +96,10 @@ export default function IntegrationsCard({ integrations, anyConnected }: Integra
                   <button
                     disabled={comingSoon}
                     onClick={() => {
+                      if (intg.id === "figma") {
+                        router.push("/get-early-access");
+                        return;
+                      }
                       if (intg.url) {
                         window.open(intg.url, "_blank");
                       } else {
@@ -107,7 +111,7 @@ export default function IntegrationsCard({ integrations, anyConnected }: Integra
                       : "bg-primary-way-10 text-primary-way-100 hover:bg-primary-way-20 cursor-pointer"
                       }`}
                   >
-                    Connect
+                    {intg.id === "figma" ? "Join Waitlist" : "Connect"}
                   </button>
                 )}
               </li>

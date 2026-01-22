@@ -121,7 +121,8 @@ export const RequestProvider: React.FC<{ children: ReactNode }> = ({ children })
 
                 // Filter out current user's own requests from the global list
                 if (userId && !isAdmin) {
-                    mapped = mapped.filter((req) => req.authorId !== userId);
+                    const userIdStr = String(userId);
+                    mapped = mapped.filter((req) => String(req.authorId) !== userIdStr);
                 }
 
                 // Handle client-side sorting for "Random" (backend doesn't support it yet)

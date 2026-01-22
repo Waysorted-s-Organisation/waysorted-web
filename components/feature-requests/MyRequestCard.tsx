@@ -108,7 +108,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
   // Sync votes from request prop
   const count = optimisticVotes !== null ? optimisticVotes : (request.votes || 0);
 
-  const userIdStr = user?._id?.toString();
+  const userIdStr = user ? (user as any).id?.toString() : null;
 
   const isUpvoted = optimisticUpvoted !== null ? optimisticUpvoted : (userIdStr ? (request.votedBy || []).includes(userIdStr) : false);
 
