@@ -1,4 +1,5 @@
 export interface IUser {
+    id?: string;
     _id: string | { toString(): string };
     email: string;
     name?: string;

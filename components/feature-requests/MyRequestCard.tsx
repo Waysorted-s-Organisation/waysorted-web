@@ -26,7 +26,6 @@ import {
 import { EllipsisIcon } from "lucide-react"
 import { DropdownMenu, DropdownMenuItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useMyRequest } from "@/context/MyRequestContext"
-import { Separator } from "@/components/ui/separator"
 import { publishRequest } from "@/lib/featureRequestsClient"
 import { Globe } from "lucide-react"
 
@@ -108,7 +107,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
   // Sync votes from request prop
   const count = optimisticVotes !== null ? optimisticVotes : (request.votes || 0);
 
-  const userIdStr = user ? (user as any).id?.toString() : null;
+  const userIdStr = user?.id?.toString() || user?._id?.toString() || null;
 
   const isUpvoted = optimisticUpvoted !== null ? optimisticUpvoted : (userIdStr ? (request.votedBy || []).includes(userIdStr) : false);
 

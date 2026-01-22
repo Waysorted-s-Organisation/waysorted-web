@@ -51,7 +51,7 @@ const Chat: React.FC<ChatProps> = ({ requestId }) => {
 
     useEffect(() => {
         if (requestId) fetchComments();
-    }, [requestId]);
+    }, [requestId, fetchComments]);
 
     const handleSend = async (): Promise<void> => {
         if (input.trim() === "") return;
@@ -73,7 +73,7 @@ const Chat: React.FC<ChatProps> = ({ requestId }) => {
             } else {
                 toast.error("Failed to post comment");
             }
-        } catch (error) {
+        } catch {
             toast.error("Failed to post comment");
         }
     };
@@ -99,7 +99,7 @@ const Chat: React.FC<ChatProps> = ({ requestId }) => {
             } else {
                 toast.error("Failed to post reply");
             }
-        } catch (error) {
+        } catch {
             toast.error("Failed to post reply");
         }
     };

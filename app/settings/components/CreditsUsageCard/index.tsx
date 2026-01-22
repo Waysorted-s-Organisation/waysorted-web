@@ -15,7 +15,6 @@ export default function CreditsUsageCard({ user }: Props) {
   const remaining = Math.max(0, creditsRemaining);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const used = total - remaining;
-  const exhausted = remaining <= 0;
 
 
   return (

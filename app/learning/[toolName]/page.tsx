@@ -1,5 +1,4 @@
 import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 import dbConnect from '@/lib/toolsdb'
 import Tool, { ITool } from '@/models/tool'
 import ClientToolPage from './ClientToolPage'
