@@ -34,6 +34,7 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
   const [type, setType] = useState("feature");
   const [mainOpen, setMainOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [failedOpen, setFailedOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [desc, setDesc] = useState("");
   const [board, setBoard] = useState(FEATURE_CATEGORIES[0].id);
@@ -104,6 +105,9 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
 
     if (created) {
       setSuccessOpen(true);
+      setMainOpen(false);
+    } else {
+      setFailedOpen(true);
       setMainOpen(false);
     }
   };
@@ -298,16 +302,21 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
               Request a feature or report a bug
             </DialogTitle>
           </DialogHeader>
-          <Separator className="bg-[#CFD0D1]" />
-          <div className="flex flex-col items-center gap-[5px] py-4">
-            <div className="w-[59px] h-[59px] bg-[#E8EFFC] rounded-[15px] flex items-center justify-center">
+
+          <Separator className="bg-[#CFD0D1] absolute left-0 right-0 top-[60px]" />
+
+          <div className="flex flex-col items-center gap-[5px] pt-8 pb-4">
+            <div className="w-[59px] h-[59px] bg-[#E8EFFC] rounded-[15px] flex items-center justify-center mb-2">
               <Image src="/icons/success.svg" alt="Success" width={40} height={40} />
             </div>
-            <p className="text-[#0F8D2A] font-medium text-[16px] mt-2">Success!</p>
-            <p className="text-[14px] font-medium text-[#0D1218] text-center">
-              Your {type === "bug" ? "report" : "request"} has been added to <b>My Requests</b>.
+
+            <p className="text-[#0F8D2A] font-medium text-[16px]">Success!</p>
+
+            <p className="text-[14px] font-normal text-[#565A5E] text-center">
+              Our team will review it and take it forward.
             </p>
           </div>
+
           <div className="bg-[#E8EFFC] w-full p-3 rounded-[6px] text-[12px] font-medium text-[#0D1218] text-center">
             You can{" "}
             <button
@@ -322,12 +331,42 @@ export default function RequestDialog({ onCreate, triggerLabel = "Request a feat
             </button>{" "}
             to track the status of your request
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Failed Dialog */}
+      <Dialog open={failedOpen} onOpenChange={setFailedOpen}>
+        <DialogContent className="max-w-[453px] bg-white rounded-[12px] p-[27px] gap-4">
+          <DialogHeader className="">
+            <DialogTitle className="text-[14px] font-medium text-[#565A5E] flex justify-between items-center w-full">
+              <span>Request a feature or report a bug</span>
+            </DialogTitle>
+          </DialogHeader>
+
+          <Separator className="bg-[#CFD0D1] absolute left-0 right-0 top-[60px]" />
+
+          <div className="flex flex-col items-center gap-[5px] pt-8 pb-4">
+            <div className="w-[59px] h-[59px] bg-[#FEF3F2] rounded-[15px] flex items-center justify-center mb-2">
+              <Image src="/icons/failed.png" alt="Failed" width={40} height={40} />
+            </div>
+
+            <p className="text-[#D92D20] font-medium text-[16px]">Failed!</p>
+
+            <p className="text-[14px] font-normal text-[#565A5E] text-center">
+              Looks like something went wrong on our end.
+            </p>
+          </div>
+
           <div className="mt-2 flex justify-center">
             <Button
               className="bg-[#265BD1] hover:bg-[#1F4AA9] text-white rounded-[8px] w-full h-[36px] text-[14px] font-medium"
-              onClick={() => setSuccessOpen(false)}
+              onClick={() => {
+                setFailedOpen(false);
+                // Keep main dialog open so user can retry
+                setMainOpen(true);
+              }}
             >
-              Done
+              Try again
             </Button>
           </div>
         </DialogContent>

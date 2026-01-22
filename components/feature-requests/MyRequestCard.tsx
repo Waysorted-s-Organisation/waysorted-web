@@ -276,22 +276,21 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
                                   </DropdownMenuItem>
                                 </AlertDialogTrigger>
 
-                                <AlertDialogContent className={"m-0 p-0"}>
+                                <AlertDialogContent className="max-w-[453px] bg-white p-[27px] gap-4 rounded-[12px] overflow-hidden">
                                   <AlertDialogHeader className="">
-                                    <AlertDialogTitle className={"text-sm text-gray-500 p-3"}>Delete Requested Feature</AlertDialogTitle>
-                                    <Separator className="" />
-                                    <AlertDialogDescription className={"text-black font-semibold p-3"}>
+                                    <AlertDialogTitle className="text-[14px] font-medium text-[#565A5E]">Delete Requested Feature</AlertDialogTitle>
+                                    <AlertDialogDescription className="text-[14px] font-medium text-[#0D1218] leading-normal mt-2">
                                       Are you sure you want to delete this request? This will delete your
-                                      request and you have to resubmit the request
+                                      request and you have to resubmit request
                                     </AlertDialogDescription>
                                   </AlertDialogHeader>
 
-                                  <Separator className="" />
-
-                                  <AlertDialogFooter className={"p-3"}>
-                                    <AlertDialogCancel className="">Cancel</AlertDialogCancel>
+                                  <AlertDialogFooter className="gap-2 flex-row justify-end space-x-2">
+                                    <AlertDialogCancel className="mt-0 bg-[#F3F3F3] text-[#0D1218] hover:bg-[#E5E7EB] hover:text-black border-none h-[36px] rounded-[6px] px-4 text-[14px] font-medium">
+                                      Cancel
+                                    </AlertDialogCancel>
                                     <AlertDialogAction
-                                      className="bg-red-500 hover:bg-red-600 text-white"
+                                      className="bg-[#D92D20] hover:bg-[#B42318] text-white h-[36px] rounded-[6px] px-4 text-[14px] font-medium"
                                       onClick={() => deleteMyRequest(request.id)}
                                     >
                                       Delete

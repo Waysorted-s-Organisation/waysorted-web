@@ -98,10 +98,10 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
         </div>
 
         <div className="flex flex-col gap-4">
-          <p className="text-sm font-medium">Upload and attach files</p>
+          <p className="text-[14px] font-medium text-[#0D1218]">Upload and attach files</p>
 
           {/* Upload Box */}
-          <label className="flex flex-col w-[399px] h-[124px] bg-[#F3F3F3] items-center justify-center border-2 border-dashed border-[#CFD0D1] rounded-md p-6 text-sm cursor-pointer hover:border-blue-400 transition">
+          <label className="flex flex-col w-full h-[150px] bg-[#F5F5F5] items-center justify-center border border-dashed border-[#CFD0D1] rounded-[8px] cursor-pointer hover:border-[#265BD1] transition gap-2">
             <input
               type="file"
               multiple
@@ -109,20 +109,25 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
               className="hidden"
               onChange={handleFiles}
             />
-            <Image src="/upload.png" alt="" width={64} height={64} className="py-4" />
-            <p className="text-[#265BD1]">
-              Click to Upload <span className="text-[#565A5E]">an Image</span>
+            {/* Using a placeholder SVG or the existing png. The screenshot shows a blue line-art image icon. 
+                If we don't have the exact one, we keep existing or use a generic one. 
+                Assuming /upload.png is the intention or strictly adhering to current assets. 
+                Let's use a lucide icon if we want to be safe, or just the image. 
+                The screenshot has a blue image icon. 
+            */}
+            <Image src="/icons/image-png.svg" alt="" width={40} height={40} className="mb-1" />
+            <p className="text-[14px] font-medium">
+              <span className="text-[#265BD1]">Click to Upload</span> <span className="text-[#565A5E]">an Image</span>
             </p>
-            <span className="text-gray-400 text-xs">(Max. file size 25 MB)</span>
+            <span className="text-[#9EA0A3] text-[10px] font-medium">(Max. Files size: 25 MB)</span>
           </label>
 
           {/* Fixed height for info or uploaded files */}
-          <div className="h-[140px] w-full flex flex-col justify-center">
+          <div className="w-full">
             {files.length === 0 ? (
-              <div className="flex flex-col items-center text-xs text-gray-400">
-                <p>you can upload up to 2 photos to show what</p>
-                <p>went wrong</p>
-              </div>
+              <p className="text-[14px] font-normal text-[#565A5E] text-center px-8 leading-normal">
+                You can upload up to 2 photos to show what went wrong.
+              </p>
             ) : (
               <div className="space-y-2 w-full">
                 {uploading && (
@@ -134,20 +139,18 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
                   {files.map((file, idx) => (
                     <div
                       key={idx}
-                      className="border rounded-md p-2 flex items-start justify-between text-sm w-full"
+                      className="border rounded-md p-2 flex items-start justify-between text-sm w-full bg-white"
                     >
                       <div className="flex-col w-full items-center gap-2">
                         <div className="flex items-center gap-2 mb-2">
-                          <Image src="/upload.png" alt="" width={16} height={16} />
-                          {file.name}
+                          <Image src="/icons/image-png.svg" alt="" width={16} height={16} />
+                          <span className="truncate max-w-[200px]">{file.name}</span>
                         </div>
                         {file.size && (
-                          <p className="text-xs text-gray-400 mb-1 flex justify-between items-center">
-                            {(file.size / 1024).toFixed(2)} KB • Uploaded
-                            <span className=" text-xs text-gray-600">
-                              {progress}%
-                            </span>
-                          </p>
+                          <div className="flex justify-between items-center w-full text-xs text-gray-400 mb-1">
+                            <span>{(file.size / 1024).toFixed(2)} KB • Uploaded</span>
+                            <span className="text-gray-600">{progress}%</span>
+                          </div>
                         )}
 
                         <div className="relative w-full h-1 bg-gray-200 rounded-full overflow-hidden">
@@ -155,14 +158,14 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
                             className="absolute left-0 top-0 h-full bg-[#265BD1] transition-all duration-150"
                             style={{ width: `${progress}%` }}
                           />
-
                         </div>
                       </div>
                       <button
-                        onClick={() =>
-                          setFiles(files.filter((_, i) => i !== idx))
-                        }
-                        className="text-black text-xs ml-2"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setFiles(files.filter((_, i) => i !== idx));
+                        }}
+                        className="text-gray-400 hover:text-red-500 ml-2 p-1"
                       >
                         ✕
                       </button>
@@ -174,18 +177,19 @@ const BugUploadDialog: React.FC<BugUploadDialogProps> = ({ open, onOpenChange })
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-between mt-2 w-full">
+          <div className="flex justify-between items-center w-full pt-4">
             {files.length === 0 ? (
               <Button
+                type="button"
                 variant="outline"
-                className="w-full"
+                className="w-full h-[36px] text-[14px] font-medium text-[#0D1218] border-[#CFD0D1] rounded-[8px] hover:bg-gray-50"
                 onClick={() => onOpenChange(false)}
               >
                 Skip for now
               </Button>
             ) : (
               <Button
-                className="bg-[#265BD1] w-1/2"
+                className="bg-[#265BD1] text-white hover:bg-[#1F4AA9] w-full h-[36px] text-[14px] font-medium rounded-[8px]"
                 disabled={uploading}
                 onClick={handleSubmit}
               >
@@ -361,26 +365,36 @@ const Navbar = () => {
 
         {/* Success dialog (feature only) */}
         <Dialog open={successOpen} onOpenChange={setSuccessOpen}>
-          <DialogContent className="max-w-[453px] h-[300px] text-center">
+          <DialogContent className="max-w-[453px] bg-white rounded-[12px] p-[27px] gap-4">
             <DialogHeader className="">
-              <DialogTitle className="text-sm text-[#565A5E]">
+              <DialogTitle className="text-[14px] font-medium text-[#565A5E]">
                 Request a feature or report a bug
               </DialogTitle>
             </DialogHeader>
-            <div className="relative -mx-6 h-px">
-              <Separator className="absolute inset-x-0" />
-            </div>
-            <div className="flex flex-col items-center ">
-              <Image
-                src="/success.svg"
-                alt="Success"
-                width={59}
-                height={59}
-              />
-              <p className="text-green-600 font-semibold text-lg">Success!</p>
-              <p className="text-gray-500">
-                Your request has been added to <b>My Requests</b>.
+            <Separator className="bg-[#CFD0D1] absolute left-0 right-0 top-[60px]" />
+            <div className="flex flex-col items-center gap-[5px] pt-8 pb-4">
+              <div className="w-[59px] h-[59px] bg-[#E8EFFC] rounded-[15px] flex items-center justify-center mb-2">
+                <Image src="/icons/success.svg" alt="Success" width={40} height={40} />
+              </div>
+              <p className="text-[#0F8D2A] font-medium text-[16px]">Success!</p>
+              <p className="text-[14px] font-normal text-[#565A5E] text-center">
+                Our team will review it and take it forward.
               </p>
+            </div>
+            <div className="bg-[#E8EFFC] w-full p-3 rounded-[6px] text-[12px] font-medium text-[#0D1218] text-center">
+              You can{" "}
+              <button
+                type="button"
+                onClick={() => {
+                  setSuccessOpen(false)
+                  // router.push("/requests?view=mine") // Navbar might not have router imported, let's check
+                  window.location.href = "/requests?view=mine"
+                }}
+                className="text-[#265BD1] underline hover:text-[#1F4AA9] font-medium"
+              >
+                click here
+              </button>{" "}
+              to track the status of your request
             </div>
           </DialogContent>
         </Dialog>
