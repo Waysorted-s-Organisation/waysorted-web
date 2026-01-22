@@ -17,10 +17,10 @@ async function subscribeUser(name: string, email: string) {
 
   if (!res.ok) {
     if (res.status !== 200 && res.status !== 201) {
-       throw new Error(data.error || "Something went wrong. Please try again.");
+      throw new Error(data.error || "Something went wrong. Please try again.");
     }
   }
-  
+
   return data;
 }
 
@@ -32,7 +32,7 @@ export default function EarlyAccessForm() {
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    
+
     if (!email) {
       toast.error("Please enter your email");
       return;
@@ -90,7 +90,7 @@ export default function EarlyAccessForm() {
         >
           <span className="absolute inset-0 rounded-xl opacity-20 group-hover:opacity-30 transition-opacity" />
           <span className="relative">
-             Continue
+            Continue
           </span>
         </GlowStarButton>
       </form>
@@ -98,10 +98,10 @@ export default function EarlyAccessForm() {
       {showPopup && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/60 z-50 px-4">
           <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-3 overflow-hidden relative">
-            
+
             <div className="flex flex-col items-center gray-bg-dots pb-2 rounded-xl relative w-full">
-              
-              <button 
+
+              <button
                 onClick={() => setShowPopup(false)}
                 className="absolute top-4 right-4 p-2 rounded-md hover:bg-white/10 transition z-20 cursor-pointer"
                 aria-label="Close modal"
@@ -111,29 +111,23 @@ export default function EarlyAccessForm() {
                   alt="Close"
                   width={12}
                   height={12}
-                  className="opacity-80 hover:opacity-100" 
+                  className="opacity-80 hover:opacity-100"
                 />
               </button>
 
               <h2 className="text-xl font-semibold text-white pt-10 sm:pt-12">
-                Congratulations, You’re in!
+                Congratulations, You’re on the waitlist! 🎉
               </h2>
 
               <WayconFigmaConnect />
 
               <p className="my-2 text-sm rounded-2xl bg-white/10 px-4 py-2 font-medium text-primary-way-10 flex items-center gap-2 backdrop-blur-sm border border-white/5">
-                Your Early Access key has been sent! 
-                <Image
-                  src="/icons/rocket-1.svg"
-                  alt="Rocket"
-                  width={20}
-                  height={20}
-                />
+                Thanks for signing up. Updates coming soon! 🐶
               </p>
             </div>
             <div className="bg-white py-2 px-10 text-center">
               <p className="text-base text-secondary-db-90 font-medium leading-relaxed">
-                Exclusive sneak peeks, early access, and insider news, just for you.
+                You’re on the waitlist. We’ll share sneak peeks and reach out when early access opens.
               </p>
             </div>
 
