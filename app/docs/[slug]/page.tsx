@@ -160,7 +160,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description,
     },
     alternates: {
-      canonical: `/docs/${slug}`,
+      canonical: `https://www.waysorted.com/docs/${slug}`,
     },
   };
 }

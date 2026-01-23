@@ -82,6 +82,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
         'account-creation-and-setup',
         'profile-and-settings',
         'quick-integration-with-figma',
+        // New Resources
+        'accessibility-wcag',
+        'handoff-standards',
+        'ui-ux-best-practices',
+        'waysorted-principles',
+        'examples',
     ]
 
     // Learning pages (tools)

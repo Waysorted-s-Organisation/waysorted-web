@@ -10,15 +10,21 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ITool } from "@/models/tool";
 
-export default function LearnPage() {
+interface LearnClientProps {
+  initialTools?: ITool[];
+}
+
+export default function LearnPage({ initialTools = [] }: LearnClientProps) {
   const [isGridView, setIsGridView] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const { showBanner, setShowBanner } = useBanner();
 
-  const [tools, setTools] = useState<ITool[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [tools, setTools] = useState<ITool[]>(initialTools);
+  const [loading, setLoading] = useState(initialTools.length === 0);
 
   useEffect(() => {
+    if (initialTools.length > 0) return;
+
     async function fetchTools() {
       setLoading(true);
       try {
@@ -33,7 +39,7 @@ export default function LearnPage() {
       }
     }
     fetchTools();
-  }, []);
+  }, [initialTools.length]);
 
   const filteredTools = tools.filter((tool) =>
     tool.name.toLowerCase().includes(searchTerm.toLowerCase())

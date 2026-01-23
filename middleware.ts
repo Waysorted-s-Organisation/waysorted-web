@@ -3,8 +3,21 @@ import type { NextRequest } from "next/server";
 import { corsHeaders } from "@/lib/cors";
 
 export function middleware(request: NextRequest) {
-  // Handle CORS preflight requests
-  if (request.method === "OPTIONS") {
+  const { pathname } = request.nextUrl;
+  const hostname = request.headers.get("host") || "";
+
+  // Enforce www in production (Single-hop redirect)
+  if (
+    process.env.NODE_ENV === "production" &&
+    hostname === "waysorted.com"
+  ) {
+    const url = request.nextUrl.clone();
+    url.hostname = "www.waysorted.com";
+    return NextResponse.redirect(url, 301);
+  }
+
+  // Handle CORS preflight requests (API only)
+  if (request.method === "OPTIONS" && pathname.startsWith("/api/")) {
     return new NextResponse(null, {
       status: 200,
       headers: corsHeaders,
@@ -16,7 +29,7 @@ export function middleware(request: NextRequest) {
   const response = NextResponse.next();
 
   // Add CORS headers to all API responses
-  if (request.nextUrl.pathname.startsWith("/api/")) {
+  if (pathname.startsWith("/api/")) {
     Object.entries(corsHeaders).forEach(([key, value]) => {
       response.headers.set(key, value);
     });
@@ -25,7 +38,9 @@ export function middleware(request: NextRequest) {
   return response;
 }
 
-// Only run middleware on API routes
+// Run middleware on all paths except static files
 export const config = {
-  matcher: "/api/:path*",
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico).*)",
+  ],
 };
