@@ -107,6 +107,15 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/support/request',
+        destination: '/requests',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

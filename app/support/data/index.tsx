@@ -54,7 +54,7 @@ export const faqData: FAQItem[] = [
     answer: (
       <>
         Yes, through the{" "}
-        <Link href="/support/request" className="text-primary-way-100 hover:underline">
+        <Link href="/requests" className="text-primary-way-100 hover:underline">
           Request-a-Feature
         </Link>{" "}
         tab which encourages user input and suggestions.
