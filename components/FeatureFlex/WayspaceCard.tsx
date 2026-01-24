@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, MouseEvent } from "react";
 import clsx from "clsx";
 import Image from "next/image";
 // 1. Import the default function directly
-import confetti from "canvas-confetti";
+// 1. Import removed for dynamic loading
 
 const TOOLS_DATA = [
   {
@@ -82,7 +82,8 @@ export default function WayspaceCard({ className }: { className?: string }) {
   };
 
   // 2. Simplified Fire Logic (Correct per docs)
-  const fireConfetti = (x: number, y: number) => {
+  const fireConfetti = async (x: number, y: number) => {
+    const confetti = (await import("canvas-confetti")).default;
     confetti({
       particleCount: 60,
       spread: 55,
@@ -113,7 +114,7 @@ export default function WayspaceCard({ className }: { className?: string }) {
 
     const button = e.currentTarget;
     const rect = button.getBoundingClientRect();
-    
+
     // Normalize coordinates (0 to 1) required by canvas-confetti
     const x = (rect.left + rect.width / 2) / window.innerWidth;
     const y = (rect.top + rect.height / 2) / window.innerHeight;
@@ -155,7 +156,7 @@ export default function WayspaceCard({ className }: { className?: string }) {
             gap: "1rem",
           }}
         >
-          
+
           {INFINITE_TOOLS.map((tool, index) => (
             <div
               key={`${tool.id}-${index}`}
@@ -238,7 +239,7 @@ export default function WayspaceCard({ className }: { className?: string }) {
           return (
             <div
               key={i}
-               // Updated fixed width/height using standard Tailwind arbitrary value
+              // Updated fixed width/height using standard Tailwind arbitrary value
               className="h-[4.5rem] w-[4.5rem] aspect-square rounded-xl bg-[#ECF2FF] flex items-center justify-center text-[#91adea] text-sm"
             >
               {placeholderLabels[i]}
