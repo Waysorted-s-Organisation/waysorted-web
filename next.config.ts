@@ -21,7 +21,7 @@ const nextConfig: NextConfig = {
       {
         key: "Content-Security-Policy",
         // UPDATED: Added "worker-src 'self' blob:;" to the end of this string
-        value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googletagmanager.com https://*.google-analytics.com https://vercel.live; script-src-elem 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.google-analytics.com https://vercel.live; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob: https://*.google-analytics.com https://*.googletagmanager.com; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://vitals.vercel-insights.com https://vercel.live wss://ws-us3.pusher.com; frame-ancestors 'self'; worker-src 'self' blob:;",
+        value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googletagmanager.com https://*.google-analytics.com https://vercel.live https://*.clarity.ms https://c.bing.com https://static.cloudflareinsights.com; script-src-elem 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.google-analytics.com https://vercel.live https://*.clarity.ms https://c.bing.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob: https://*.google-analytics.com https://*.googletagmanager.com https://*.clarity.ms https://c.bing.com; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://analytics.google.com https://stats.g.doubleclick.net https://*.googletagmanager.com https://vitals.vercel-insights.com https://vercel.live wss://ws-us3.pusher.com https://*.clarity.ms https://c.bing.com; frame-ancestors 'self'; worker-src 'self' blob:;",
       },
       {
         key: "X-Robots-Tag",
@@ -81,6 +81,13 @@ const nextConfig: NextConfig = {
           { key: "Cache-Control", value: "public, max-age=3600, stale-while-revalidate=86400" },
         ],
       },
+      {
+        // Ensure HTML pages are revalidated on new deployments
+        source: "/((?!_next|api|icons|images|fonts).*)",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=0, must-revalidate" },
+        ],
+      },
     ];
   },
 
@@ -105,7 +112,66 @@ const nextConfig: NextConfig = {
 
   // Experimental features for better performance
   experimental: {
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', 'framer-motion', 'gsap'],
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      'framer-motion',
+      'gsap',
+      'animejs',
+      'canvas-confetti',
+      'date-fns',
+      'lodash'
+    ],
+  },
+
+  // Webpack optimizations for better bundle size
+  webpack: (config, { isServer }) => {
+    // Enable tree shaking
+    config.optimization = {
+      ...config.optimization,
+      usedExports: true,
+      sideEffects: false,
+    };
+
+    // Optimize splitting
+    if (!isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          // Separate framework code (React, Next.js)
+          framework: {
+            name: 'framework',
+            chunks: 'all',
+            test: /[\\/]node_modules[\\/](react|react-dom|scheduler|next)[\\/]/,
+            priority: 40,
+            enforce: true,
+          },
+          // Separate large dependencies
+          lib: {
+            test: /[\\/]node_modules[\\/]/,
+            name(module: { context: string }) {
+              const packageNameMatch = /[\\/]node_modules[\\/](.*?)([\\/]|$)/.exec(module.context);
+              const packageName = packageNameMatch ? packageNameMatch[1] : '';
+              return `lib-${packageName.replace('@', '')}`;
+            },
+            priority: 30,
+            minChunks: 1,
+            reuseExistingChunk: true,
+          },
+          // Common shared code
+          commons: {
+            name: 'commons',
+            minChunks: 2,
+            priority: 20,
+          },
+        },
+      };
+    }
+
+    return config;
   },
   async redirects() {
     return [
