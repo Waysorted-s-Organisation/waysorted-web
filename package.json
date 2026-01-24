@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "make-admin": "ts-node --compiler-options '{\"module\":\"commonjs\"}' scripts/make-admin.ts"
+    "lint": "next lint"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.15",
@@ -58,11 +57,9 @@
     "@types/nodemailer": "^7.0.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "dotenv": "^17.2.3",
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
     "tailwindcss": "^4",
-    "ts-node": "^10.9.2",
     "typescript": "5.9.2"
   }
 }
