@@ -173,6 +173,15 @@ const nextConfig: NextConfig = {
 
     return config;
   },
+  async redirects() {
+    return [
+      {
+        source: '/support/request',
+        destination: '/requests',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
