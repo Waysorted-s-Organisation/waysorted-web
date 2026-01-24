@@ -35,6 +35,7 @@ export default function TopSection() {
               width={30}
               height={30}
               className="shrink-0"
+              priority
             />
             <span className="font-semibold flex items-center gap-2">
               For Figma

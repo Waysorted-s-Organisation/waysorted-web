@@ -124,6 +124,55 @@ const nextConfig: NextConfig = {
       'lodash'
     ],
   },
+
+  // Webpack optimizations for better bundle size
+  webpack: (config, { isServer }) => {
+    // Enable tree shaking
+    config.optimization = {
+      ...config.optimization,
+      usedExports: true,
+      sideEffects: false,
+    };
+
+    // Optimize splitting
+    if (!isServer) {
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          default: false,
+          vendors: false,
+          // Separate framework code (React, Next.js)
+          framework: {
+            name: 'framework',
+            chunks: 'all',
+            test: /[\\/]node_modules[\\/](react|react-dom|scheduler|next)[\\/]/,
+            priority: 40,
+            enforce: true,
+          },
+          // Separate large dependencies
+          lib: {
+            test: /[\\/]node_modules[\\/]/,
+            name(module: { context: string }) {
+              const packageNameMatch = /[\\/]node_modules[\\/](.*?)([\\/]|$)/.exec(module.context);
+              const packageName = packageNameMatch ? packageNameMatch[1] : '';
+              return `lib-${packageName.replace('@', '')}`;
+            },
+            priority: 30,
+            minChunks: 1,
+            reuseExistingChunk: true,
+          },
+          // Common shared code
+          commons: {
+            name: 'commons',
+            minChunks: 2,
+            priority: 20,
+          },
+        },
+      };
+    }
+
+    return config;
+  },
 };
 
 export default nextConfig;
