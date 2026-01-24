@@ -220,6 +220,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 title="WaySorted Logo"
                 fill
                 className="block md:hidden object-contain"
+                sizes="(max-width: 768px) 150px, 200px"
                 priority
               />
             </div>

@@ -39,7 +39,7 @@ export default function SequentialLogoLoader({
   // Defaults
   const resolvedIconPx = iconPx ?? Math.round(tileSizePx * 0.5);
   // Default mobile to 100px tile if not set, or smaller relative to desktop
-  const resolvedMobileTilePx = mobileTileSizePx ?? 100; 
+  const resolvedMobileTilePx = mobileTileSizePx ?? 100;
   const resolvedMobileIconPx = mobileIconPx ?? Math.round(resolvedMobileTilePx * 0.5);
 
   React.useEffect(() => {
@@ -116,9 +116,9 @@ function IconTile({
     <div
       className={[
         "rounded-2xl flex items-center justify-center",
-        "transition-all duration-500 ease-out",
+        "transition-[background-color,color,opacity,filter] duration-500 ease-out",
         bgClass ?? "bg-gray-100",
-        isActive? activeClass : "grayscale opacity-50",
+        isActive ? activeClass : "grayscale opacity-50",
         "w-[var(--mob-tile-size)] h-[var(--mob-tile-size)] md:w-[var(--tile-size)] md:h-[var(--tile-size)]",
       ].join(" ")}
     >

@@ -82,7 +82,7 @@ export default function Testimonials() {
 
             {/* Main Testimonial */}
             <div className="py-12">
-                <div className="bg-white py-8 md:py-11 px-4 md:px-6 max-w-3xl mx-auto flex flex-col items-center justify-center rounded-2xl outline outline-4 md:outline-10 outline-tertiary-orange-500/6 transition-all duration-500">
+                <div className="bg-white py-8 md:py-11 px-4 md:px-6 max-w-3xl mx-auto flex flex-col items-center justify-center rounded-2xl outline outline-4 md:outline-10 outline-tertiary-orange-500/6">
                     <p className="text-secondary-db-100 p-2 md:p-4 text-center text-lg md:text-xl font-medium leading-relaxed">
                         {activeTestimonial.content}
                     </p>
@@ -99,7 +99,7 @@ export default function Testimonials() {
                         <button
                             key={testimonial.id}
                             onClick={() => setActiveIndex(index)}
-                            className={`relative w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl transition-all duration-500 cursor-pointer ${activeIndex === index
+                            className={`relative w-12 h-12 md:w-16 md:h-16 rounded-xl md:rounded-2xl transition-[transform,opacity,box-shadow] duration-500 cursor-pointer ${activeIndex === index
                                 ? "scale-110 md:scale-100 shadow-xl -translate-y-2 md:-translate-y-5"
                                 : "scale-100 opacity-70"
                                 }`}

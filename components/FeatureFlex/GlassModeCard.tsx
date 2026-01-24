@@ -23,6 +23,7 @@ export default function GlassModeCard({ className }: { className?: string }) {
         width={480}
         height={128}
         className="md:translate-y-[26px] translate-y-[28px]"
+        sizes="(max-width: 768px) 100vw, 480px"
       />
     </div>
   );
