@@ -141,8 +141,14 @@ export async function GET(req: NextRequest, context: any) {
     );
   }
 
+  // Match both "unit-converter" and "unit-convertor" for legacy compatibility
+  // Also matches exact slug
+  const searchRegex = slug === 'unit-converter'
+    ? /^(unit-convert(e|o)r)$/i
+    : new RegExp(`^${slug}$`, 'i');
+
   const slides = await Slide.find({
-    toolName: { $regex: `^${slug}$`, $options: "i" }
+    toolName: { $regex: searchRegex }
   }).sort({ order: 1, createdAt: 1 }).lean();
 
   return NextResponse.json(
