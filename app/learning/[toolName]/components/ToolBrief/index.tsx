@@ -35,12 +35,12 @@ export default function ToolBrief({
       {/* Always horizontal layout, both sides 50% */}
       <div className="flex flex-row h-full">
         {/* Left: image, rounded on left only */}
-        <div className="relative w-1/2 h-full bg-tool-brief rounded-l-3xl sm:rounded-l-4xl overflow-hidden">
+        <div className="relative w-1/2 h-full bg-tool-brief rounded-l-3xl sm:rounded-l-4xl overflow-hidden p-2 sm:p-4 lg:p-6">
           <Image
             src={image}
             alt={imageAlt}
             fill
-            className="object-cover"
+            className="object-contain"
             priority={priority}
             loading={priority ? undefined : "lazy"}
           />
