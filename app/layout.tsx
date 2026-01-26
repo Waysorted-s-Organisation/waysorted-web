@@ -129,12 +129,7 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  other: {
-    'geo.region': 'IN-DL',
-    'geo.placename': 'New Delhi',
-    'geo.position': '28.5369;77.2104',
-    'ICBM': '28.5369, 77.2104',
-  }
+
 };
 
 // JSON-LD Structured Data for Google Sitelinks and GEO/AEO
@@ -195,9 +190,9 @@ const jsonLd = {
       "@type": "SoftwareApplication",
       "@id": "https://www.waysorted.com/#software",
       name: "Waysorted",
-      applicationCategory: "DesignApplication, ProductivityApplication",
-      operatingSystem: "Web, Figma, macOS, Windows",
-      description: "Waysorted is a unified Figma plugin suite and creative workflow platform. It consolidates multiple design tools—like PDF Exporters, Color Palette Generators, and Unit Converters—into a single, secure, local-first workspace to accelerate designer productivity and eliminate tool juggling.",
+      applicationCategory: "DesignApplication",
+      operatingSystem: "Web, Figma",
+      description: "A unified creative workflow suite for designers to replace multiple plugins with one platform.",
       featureList: [
         "PDF Exporter - Export Figma frames to PDF with zero latency",
         "Palettable - Color palette generator with instant contrast checking",
@@ -285,10 +280,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />
-        <link rel="preconnect" href="https://www.clarity.ms" />
-        <link rel="preconnect" href="https://c.bing.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-        <meta name="theme-color" content="#265BD1" />
 
         <Clarity />
         <script
@@ -305,9 +297,9 @@ export default function RootLayout({
         <Analytics />
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
-          strategy="lazyOnload"
+          strategy="afterInteractive"
         />
-        <Script id="google-analytics" strategy="lazyOnload">
+        <Script id="google-analytics" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
