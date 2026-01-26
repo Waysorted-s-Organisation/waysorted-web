@@ -202,12 +202,50 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
     },
   };
 
+  // FAQPage JSON-LD for Answer Engine Optimization (AEO)
+  const faqJsonLd = slug === 'faqs' ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "What is Waysorted?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Waysorted unifies essential design tools into one place, so you spend less time switching between plugins and tabs. It helps teams work faster, stay focused, and avoid unnecessary costs."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Is Waysorted secure?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, with secure integrations, data processing under Privacy Policy, and no third-party sharing without consent. It uses a local-first architecture where possible."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How does Waysorted integrate with Figma?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Waysorted brings essential tools together in one unified suite within Figma. This reduces compatibility issues, performance strain, and the cost of managing multiple subscriptions."
+        }
+      }
+    ]
+  } : null;
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {faqJsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+        />
+      )}
       <Comp />
     </>
   );

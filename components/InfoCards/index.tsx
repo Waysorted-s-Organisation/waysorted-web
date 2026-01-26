@@ -1,6 +1,6 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import { motion, useAnimation, useMotionValue, animate } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, useAnimation, useMotionValue, animate, useInView } from "framer-motion";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "gsap";
 
@@ -8,12 +8,16 @@ import { gsap } from "gsap";
 export function SegmentedProgressBar() {
   const controls = useAnimation();
   const [progress, setProgress] = useState<number>(0);
+  const containerRef = useRef(null);
+  const isInView = useInView(containerRef, { amount: 0.5 });
 
   const totalBars = 15;
   const targetPercent = 72;
   const activeBars = Math.round((targetPercent / 100) * totalBars);
 
   useEffect(() => {
+    if (!isInView) return;
+
     let isMounted = true;
 
     const runAnimation = async () => {
@@ -21,8 +25,8 @@ export function SegmentedProgressBar() {
 
       // 1. Reset State
       setProgress(0);
-      await controls.start({ 
-        opacity: 0.2, 
+      await controls.start({
+        opacity: 0.2,
         transition: { duration: 0.5 } // Fade out smoothly before resetting
       });
 
@@ -31,7 +35,7 @@ export function SegmentedProgressBar() {
       // We use a small promise-based delay loop for the counter to sync loosely with bars
       const countDuration = 1000; // 1 second to count up
       const stepTime = countDuration / targetPercent;
-      
+
       const counterInterval = setInterval(() => {
         if (!isMounted) return;
         count += 1;
@@ -52,7 +56,7 @@ export function SegmentedProgressBar() {
       // 4. Hold the finished state, then restart
       if (isMounted) {
         setTimeout(() => {
-          runAnimation();
+          if (isMounted) runAnimation();
         }, 3000); // Hold for 3 seconds before looping
       }
     };
@@ -62,10 +66,10 @@ export function SegmentedProgressBar() {
     return () => {
       isMounted = false;
     };
-  }, [controls, activeBars, targetPercent]);
+  }, [controls, activeBars, targetPercent, isInView]);
 
   return (
-    <div className="flex items-center gap-4">
+    <div ref={containerRef} className="flex items-center gap-4">
       {/* Percentage Display */}
       <span className="w-14 text-3xl font-bold text-black">{progress}%</span>
 
@@ -98,6 +102,9 @@ const ArcBars: React.FC<ArcBarsProps> = ({ percentage, targetNumber }) => {
   const centerY = 150;
   const innerRadius = 100;
 
+  const containerRef = useRef(null);
+  const isInView = useInView(containerRef, { amount: 0.5 });
+
   // Replaced hover state with an automatic "active" toggle
   const [isActive, setIsActive] = useState(false);
 
@@ -107,6 +114,10 @@ const ArcBars: React.FC<ArcBarsProps> = ({ percentage, targetNumber }) => {
 
   // Cycle the "active" state automatically
   useEffect(() => {
+    if (!isInView) {
+      setIsActive(false);
+      return;
+    }
     // Start active immediately
     setIsActive(true);
 
@@ -115,7 +126,7 @@ const ArcBars: React.FC<ArcBarsProps> = ({ percentage, targetNumber }) => {
     }, 3000); // Toggle every 3 seconds (3s ON, 3s OFF)
 
     return () => clearInterval(interval);
-  }, []);
+  }, [isInView]);
 
   // Update number display
   useEffect(() => {
@@ -135,7 +146,7 @@ const ArcBars: React.FC<ArcBarsProps> = ({ percentage, targetNumber }) => {
   }, [isActive, targetNumber, count]);
 
   return (
-    <div className="absolute -top-[25%] left-1/2 transform -translate-x-1/2">
+    <div ref={containerRef} className="absolute -top-[25%] left-1/2 transform -translate-x-1/2">
       <motion.svg className="w-72 h-72" viewBox="0 0 300 300">
         {/* Center number */}
         <motion.text
@@ -159,8 +170,8 @@ const ArcBars: React.FC<ArcBarsProps> = ({ percentage, targetNumber }) => {
           const delay = isActive
             ? i * 0.04
             : i < barsLit
-            ? (barsLit - 1 - i) * 0.04
-            : 0;
+              ? (barsLit - 1 - i) * 0.04
+              : 0;
 
           return (
             <g
@@ -192,10 +203,12 @@ interface CardProps {
 }
 
 const InfoCard: React.FC<CardProps> = ({ title, description, idx }) => {
+  const cardRef = useRef(null);
+  const isInView = useInView(cardRef, { amount: 0.3 });
+
   // GSAP Animation for the Network Graph (Index 1)
-  // This was already automatic, keeping logic intact
   useGSAP(() => {
-    if (idx !== 1) return; // Only run GSAP for the second card
+    if (idx !== 1 || !isInView) return; // Only run GSAP for the second card when in view
 
     gsap.registerPlugin();
     const tl = gsap.timeline({ repeat: -1, ease: "linear" });
@@ -246,7 +259,7 @@ const InfoCard: React.FC<CardProps> = ({ title, description, idx }) => {
         keyframes: [
           { scaleX: 0.6, duration: 1 },
           { scaleX: 0.6, duration: 1 },
-          { scaleX: 1, duration: 1},
+          { scaleX: 1, duration: 1 },
         ],
       },
       "<"
@@ -279,17 +292,21 @@ const InfoCard: React.FC<CardProps> = ({ title, description, idx }) => {
       { scale: 1, opacity: 1, duration: 1.5 },
       8.6
     );
-  }, [idx]);
+
+    return () => {
+      tl.kill();
+    };
+  }, { scope: cardRef, dependencies: [isInView] });
 
   return (
-    <div className="w-[306px] h-[255px] border border-secondary-db-5 rounded-xl flex flex-col bg-white p-2">
+    <div ref={cardRef} className="w-[306px] h-[255px] border border-secondary-db-5 rounded-xl flex flex-col bg-white p-2">
       {/* Visual Section */}
       {idx === 0 && (
         <div className="h-[140.32px] rounded-t-xl flex items-center justify-center bg-[#FF7920]/5">
           <SegmentedProgressBar />
         </div>
       )}
-      
+
       {idx === 1 && (
         <div className="h-[140.32px] relative rounded-t-xl flex items-center justify-center bg-[#F8F5FF]">
           <div className="flex flex-col gap-4 items-center">
