@@ -42,7 +42,8 @@ export default function ToolBrief({
             fill
             className="object-contain"
             priority={priority}
-            loading={priority ? undefined : "lazy"}
+            loading={priority ? "eager" : "lazy"}
+            sizes="(max-width: 640px) 50vw, 350px"
           />
         </div>
         {/* Right: content, rounded on right only */}
