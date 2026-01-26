@@ -31,28 +31,44 @@ const Collage: React.FC<CollageProps> = ({ images }) => {
         </div>
       </div>
 
-      {/* Image 2 - Top Center */}
+      {/* Image 2 - Top Center (Dark Room) */}
       <div className="absolute top-0 left-1/2 transform -translate-x-1/2  bg-[#E7E7E7] button-shadow border-white border-[5px] overflow-visible z-20">
         <div className="relative">
           <Image
-            src={images[1]}
+            src={images[3]}
             alt="Collage Image 2"
-            width={320}
-            height={217}
+            width={282}
+            height={400}
             className="rounded-lg object-cover"
           />
-          <div className="absolute w-[140px] h-[70px] top-14 -left-24 z-50">
+          <div className="absolute w-[120px] h-[55px] -bottom-5 -right-15 z-40">
             <Image
-              src="/icons/build-sticker.svg"
-              alt="Build Sticker"
+              src="/icons/powerful-sticker.svg"
+              alt="Powerful Sticker"
               fill
               className="object-contain"
             />
           </div>
-          <div className="absolute w-[120px] h-[52px] -top-8 -left-10 z-50">
+          <div className="absolute w-[145px] h-[86px] -top-7 -right-15 z-40">
             <Image
-              src="/icons/waydev-sticker.svg"
-              alt="Waydev Sticker"
+              src="/icons/bug-sticker.svg"
+              alt="Bug Sticker"
+              fill
+              className="object-contain"
+            />
+          </div>
+          <div className="absolute w-[120px] h-[55px] top-10 -left-16 z-50">
+            <Image
+              src="/icons/ambitious-sticker.svg"
+              alt="Ambitious Sticker"
+              fill
+              className="object-contain"
+            />
+          </div>
+          <div className="absolute w-[122px] h-[56px] -bottom-10 -left-10 z-50">
+            <Image
+              src="/icons/creative-sticker.svg"
+              alt="Creative Sticker"
               fill
               className="object-contain"
             />
@@ -89,44 +105,28 @@ const Collage: React.FC<CollageProps> = ({ images }) => {
         </div>
       </div>
 
-      {/* Image 4 - Middle Right */}
+      {/* Image 4 - Middle Right (Laptop) */}
       <div className="absolute top-[45%] -right-4 transform -translate-y-1/2  bg-[#E7E7E7] button-shadow border-white border-[5px] overflow-visible z-10">
         <div className="relative">
           <Image
-            src={images[3]}
+            src={images[1]}
             alt="Collage Image 4"
-            width={282}
-            height={400}
+            width={320}
+            height={217}
             className="rounded-lg object-cover"
           />
-          <div className="absolute w-[120px] h-[55px] -bottom-5 -right-15 z-40">
+          <div className="absolute w-[140px] h-[70px] top-14 -left-24 z-50">
             <Image
-              src="/icons/powerful-sticker.svg"
-              alt="Powerful Sticker"
+              src="/icons/build-sticker.svg"
+              alt="Build Sticker"
               fill
               className="object-contain"
             />
           </div>
-          <div className="absolute w-[145px] h-[86px] -top-7 -right-15 z-40">
+          <div className="absolute w-[120px] h-[52px] -top-8 -left-10 z-50">
             <Image
-              src="/icons/bug-sticker.svg"
-              alt="Bug Sticker"
-              fill
-              className="object-contain"
-            />
-          </div>
-          <div className="absolute w-[120px] h-[55px] top-10 -left-16 z-50">
-            <Image
-              src="/icons/ambitious-sticker.svg"
-              alt="Ambitious Sticker"
-              fill
-              className="object-contain"
-            />
-          </div>
-          <div className="absolute w-[122px] h-[56px] -bottom-10 -left-10 z-50">
-            <Image
-              src="/icons/creative-sticker.svg"
-              alt="Creative Sticker"
+              src="/icons/waydev-sticker.svg"
+              alt="Waydev Sticker"
               fill
               className="object-contain"
             />
