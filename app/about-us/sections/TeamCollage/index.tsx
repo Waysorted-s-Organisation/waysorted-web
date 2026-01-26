@@ -155,10 +155,10 @@ const Collage: React.FC<CollageProps> = ({ images }) => {
 
 export default function TeamCollage() {
   const images = [
-    "/icons/collage-2.jpg",
-    "/icons/collage-4.jpg",
-    "/icons/collage-1.jpg",
-    "/icons/collage-3.jpg",
+    "/icons/collage-final-1.png",
+    "/icons/collage-final-2.png",
+    "/icons/collage-final-3.png",
+    "/icons/collage-final-4.jpg",
   ];
 
   return (
