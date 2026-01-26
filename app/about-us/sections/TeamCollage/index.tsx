@@ -57,30 +57,6 @@ const Collage: React.FC<CollageProps> = ({ images }) => {
               className="object-contain"
             />
           </div>
-          <div className="absolute w-[120px] h-[55px] top-13 -right-20 z-50">
-            <Image
-              src="/icons/ambitious-sticker.svg"
-              alt="Ambitious Sticker"
-              fill
-              className="object-contain"
-            />
-          </div>
-          <div className="absolute w-[63px] h-[96px] -bottom-20 left-5 z-50">
-            <Image
-              src="/icons/joy-sticker.svg"
-              alt="Joy Sticker"
-              fill
-              className="object-contain"
-            />
-          </div>
-          <div className="absolute w-[122px] h-[56px] -bottom-10 -right-15 z-50">
-            <Image
-              src="/icons/creative-sticker.svg"
-              alt="Creative Sticker"
-              fill
-              className="object-contain"
-            />
-          </div>
         </div>
       </div>
 
@@ -90,8 +66,8 @@ const Collage: React.FC<CollageProps> = ({ images }) => {
           <Image
             src={images[2]}
             alt="Collage Image 3"
-            width={304}
-            height={193}
+            width={340}
+            height={230}
             className="rounded-lg object-cover"
           />
           <div className="absolute w-[122px] h-[56px] -bottom-10 -left-10 z-50">
@@ -102,10 +78,10 @@ const Collage: React.FC<CollageProps> = ({ images }) => {
               className="object-contain"
             />
           </div>
-          <div className="absolute w-[61px] h-[62px] -bottom-0 -left-6 z-40">
+          <div className="absolute w-[137px] h-[87px] -bottom-5 -right-16 z-40">
             <Image
-              src="/icons/flag-sticker.svg"
-              alt="Flag Sticker"
+              src="/icons/sorted-sticker.svg"
+              alt="Sorted Sticker"
               fill
               className="object-contain"
             />
@@ -120,17 +96,9 @@ const Collage: React.FC<CollageProps> = ({ images }) => {
             src={images[3]}
             alt="Collage Image 4"
             width={282}
-            height={263}
+            height={400}
             className="rounded-lg object-cover"
           />
-          <div className="absolute w-[137px] h-[87px] -bottom-15 -left-15 z-40">
-            <Image
-              src="/icons/sorted-sticker.svg"
-              alt="Sorted Sticker"
-              fill
-              className="object-contain"
-            />
-          </div>
           <div className="absolute w-[120px] h-[55px] -bottom-5 -right-15 z-40">
             <Image
               src="/icons/powerful-sticker.svg"
@@ -147,6 +115,22 @@ const Collage: React.FC<CollageProps> = ({ images }) => {
               className="object-contain"
             />
           </div>
+          <div className="absolute w-[120px] h-[55px] top-10 -left-16 z-50">
+            <Image
+              src="/icons/ambitious-sticker.svg"
+              alt="Ambitious Sticker"
+              fill
+              className="object-contain"
+            />
+          </div>
+          <div className="absolute w-[122px] h-[56px] -bottom-10 -left-10 z-50">
+            <Image
+              src="/icons/creative-sticker.svg"
+              alt="Creative Sticker"
+              fill
+              className="object-contain"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -157,8 +141,8 @@ export default function TeamCollage() {
   const images = [
     "/icons/collage-final-1.png",
     "/icons/collage-final-2.png",
-    "/icons/collage-final-3.png",
     "/icons/collage-final-4.jpg",
+    "/icons/collage-final-3.png",
   ];
 
   return (
