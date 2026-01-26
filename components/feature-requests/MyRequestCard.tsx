@@ -28,6 +28,8 @@ import { DropdownMenu, DropdownMenuItem, DropdownMenuContent, DropdownMenuTrigge
 import { useMyRequest } from "@/context/MyRequestContext"
 import { publishRequest } from "@/lib/featureRequestsClient"
 import { Globe } from "lucide-react"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCaretUp, faSquare } from "@fortawesome/free-solid-svg-icons";
 
 interface MyRequest {
   id: string;
@@ -180,7 +182,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
             : "bg-white border-[#565A5E] hover:border-[#265BD1]"
           }`}
       >
-        <i className={`fa-solid fa-caret-up text-xl transform transition-all duration-200 group-hover:-translate-y-1 ${isUpvoted ? "text-[#265BD1]" : "text-[#565A5E] group-hover:text-[#265BD1]"}`}></i>
+        <FontAwesomeIcon icon={faCaretUp} className={`text-xl transform transition-all duration-200 group-hover:-translate-y-1 ${isUpvoted ? "text-[#265BD1]" : "text-[#565A5E] group-hover:text-[#265BD1]"}`} />
         <p className="text-black">{formattedCount}</p>
       </div>
 
@@ -192,11 +194,11 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
 
           <div className="flex items-center gap-2 mt-3">
             <button className="text-xs text-[#565A5E] rounded-md bg-[#F3F3F3] px-2 py-1 items-center flex gap-1">
-              <i className="fa-solid fa-square text-[6px]"></i>
+              <FontAwesomeIcon icon={faSquare} className="text-[6px]" />
               Your request
             </button>
             <button className={`text-xs rounded-md px-2 py-1 items-center flex gap-1 transition-colors ${statusStyles.bgColor} ${statusStyles.textColor} ${statusStyles.hoverTextColor}`}>
-              <i className={`fa-solid fa-square text-[6px] ${statusStyles.iconColor}`}></i>
+              <FontAwesomeIcon icon={faSquare} className={`text-[6px] ${statusStyles.iconColor}`} />
               {request.status || "Under Review"}
             </button>
           </div>
@@ -224,7 +226,7 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
                     {/* Top Card Inside Sheet */}
                     <div className="flex h-[109px] w-full items-center">
                       <div className="w-[54px] h-[54px] bg-[#F3F3F3] border border-[#565A5E] rounded-md flex flex-col items-center justify-center group">
-                        <i className="fa-solid fa-caret-up text-xl text-[#565A5E] transform transition-transform duration-200 group-hover:-translate-y-1"></i>
+                        <FontAwesomeIcon icon={faCaretUp} className="text-xl text-[#565A5E] transform transition-transform duration-200 group-hover:-translate-y-1" />
                         <p className="text-black">{formattedCount}</p>
                       </div>
 
@@ -241,11 +243,11 @@ const MyRequestCard = ({ request, showManageText = false }: MyRequestCardProps) 
                             }`}
                           >
                             <button className="text-xs text-[#565A5E] rounded-md bg-[#F3F3F3] px-2 py-1 items-center flex gap-1">
-                              <i className="fa-solid fa-square text-[6px]"></i>
+                              <FontAwesomeIcon icon={faSquare} className="text-[6px]" />
                               Your request
                             </button>
                             <button className={`text-xs rounded-md px-2 py-1 items-center flex gap-1 transition-colors ${statusStyles.bgColor} ${statusStyles.textColor} ${statusStyles.hoverTextColor}`}>
-                              <i className={`fa-solid fa-square text-[6px] ${statusStyles.iconColor}`}></i>
+                              <FontAwesomeIcon icon={faSquare} className={`text-[6px] ${statusStyles.iconColor}`} />
                               {request.status || "Under Review"}
                             </button>
                           </div>

@@ -26,6 +26,8 @@ import { useRequests } from "@/context/RequestContext";
 import { useUser } from "@/hooks/useUser";
 import { toast } from "sonner";
 import { publishRequest, deleteRequest, updateRequestStatus } from "@/lib/featureRequestsClient";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCaretUp, faSquare } from "@fortawesome/free-solid-svg-icons";
 
 interface CardProps {
   id: string;
@@ -224,7 +226,7 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
         className={`w-[54px] h-[54px] cursor-pointer border rounded-md flex flex-col items-center justify-center group transition-colors
         ${isUpvoted ? "border-[#265BD1] bg-[#E8EFFC]" : "border-[#565A5E] bg-white hover:border-[#265BD1]"}`}
       >
-        <i className={`fa-solid fa-caret-up text-xl transition-colors group-hover:-translate-y-1 ${isUpvoted ? "text-[#265BD1]" : "text-[#565A5E] group-hover:text-[#265BD1]"}`}></i>
+        <FontAwesomeIcon icon={faCaretUp} className={`text-xl transition-colors group-hover:-translate-y-1 ${isUpvoted ? "text-[#265BD1]" : "text-[#565A5E] group-hover:text-[#265BD1]"}`} />
         <p className="text-black">{formattedCount}</p>
       </div>
 
@@ -247,7 +249,7 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <button className={`text-xs rounded-md px-2 py-1 items-center flex gap-1 transition-colors ${statusStyles.bgColor} ${statusStyles.textColor} ${statusStyles.hoverTextColor} cursor-pointer`}>
-                      <i className={`fa-solid fa-square text-[6px] ${statusStyles.iconColor}`}></i>
+                      <FontAwesomeIcon icon={faSquare} className={`text-[6px] ${statusStyles.iconColor}`} />
                       {currentStatus}
                       <ChevronDown size={12} className="ml-1" />
                     </button>
@@ -272,7 +274,7 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
                 </DropdownMenu>
               ) : (
                 <button className={`text-xs rounded-md px-2 py-1 items-center flex gap-1 transition-colors ${statusStyles.bgColor} ${statusStyles.textColor} ${statusStyles.hoverTextColor}`}>
-                  <i className={`fa-solid fa-square text-[6px] ${statusStyles.iconColor}`}></i>
+                  <FontAwesomeIcon icon={faSquare} className={`text-[6px] ${statusStyles.iconColor}`} />
                   {currentStatus}
                 </button>
               )}
@@ -297,7 +299,7 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
                 <div className="flex h-[109px] w-full items-center">
 
                   <div className="w-[54px] h-[54px] bg-[#F3F3F3] border border-[#565A5E] rounded-md flex flex-col items-center justify-center group">
-                    <i className="fa-solid fa-caret-up text-xl text-[#565A5E] transform transition-transform duration-200 group-hover:-translate-y-1"></i>
+                    <FontAwesomeIcon icon={faCaretUp} className="text-xl text-[#565A5E] transform transition-transform duration-200 group-hover:-translate-y-1" />
                     <p className="text-black">{formattedCount}</p>
                   </div>
 
@@ -320,7 +322,7 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <button className={`text-xs rounded-md px-2 py-1 items-center flex gap-1 transition-colors ${statusStyles.bgColor} ${statusStyles.textColor} ${statusStyles.hoverTextColor} cursor-pointer`}>
-                                <i className={`fa-solid fa-square text-[6px] ${statusStyles.iconColor}`}></i>
+                                <FontAwesomeIcon icon={faSquare} className={`text-[6px] ${statusStyles.iconColor}`} />
                                 {currentStatus}
                                 <ChevronDown size={12} className="ml-1" />
                               </button>
@@ -345,7 +347,7 @@ const Card: React.FC<CardProps> = ({ id, title, description, details, status, vo
                           </DropdownMenu>
                         ) : (
                           <button className={`text-xs rounded-md px-2 py-1 items-center flex gap-1 transition-colors ${statusStyles.bgColor} ${statusStyles.textColor} ${statusStyles.hoverTextColor}`}>
-                            <i className={`fa-solid fa-square text-[6px] ${statusStyles.iconColor}`}></i>
+                            <FontAwesomeIcon icon={faSquare} className={`text-[6px] ${statusStyles.iconColor}`} />
                             {currentStatus}
                           </button>
                         )}

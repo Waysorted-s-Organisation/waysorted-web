@@ -11,6 +11,8 @@
   "dependencies": {
     "@floating-ui/react": "^0.27.15",
     "@fortawesome/fontawesome-free": "^7.1.0",
+    "@fortawesome/free-solid-svg-icons": "^7.1.0",
+    "@fortawesome/react-fontawesome": "^3.1.1",
     "@gsap/react": "^2.1.2",
     "@microsoft/clarity": "^1.0.2",
     "@radix-ui/react-alert-dialog": "^1.1.15",

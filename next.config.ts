@@ -125,14 +125,16 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Webpack optimizations for better bundle size
   webpack: (config, { isServer }) => {
-    // Enable tree shaking
+    // Next.js handles these automatically in production; 
+    // manually setting them here conflicts with internal caching in Next.js 15.
+    /*
     config.optimization = {
       ...config.optimization,
       usedExports: true,
       sideEffects: false,
     };
+    */
 
     // Optimize splitting
     if (!isServer) {

@@ -13,6 +13,8 @@ import { useMyRequest } from '@/context/MyRequestContext';
 import MyRequestCard from './MyRequestCard';
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUser } from '@/hooks/useUser';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSquare } from "@fortawesome/free-solid-svg-icons";
 
 type TabOption = "all" | "my-issues";
 
@@ -114,7 +116,7 @@ const Main: React.FC = () => {
                             : "text-[#565A5E] hover:text-[#265BD1] border-gray-200 bg-white"
                             }`}
                     >
-                        <i className="fa-solid fa-square text-[6px] text-[#265BD1]"></i>
+                        <FontAwesomeIcon icon={faSquare} className="text-[6px] text-[#265BD1]" />
                         {' '}
                         Planned
                     </button>
@@ -125,7 +127,7 @@ const Main: React.FC = () => {
                             : "text-[#565A5E] hover:text-[#01A04E] border-gray-200 bg-white"
                             }`}
                     >
-                        <i className="fa-solid fa-square text-[6px] text-[#01A04E]"></i>
+                        <FontAwesomeIcon icon={faSquare} className="text-[6px] text-[#01A04E]" />
                         {' '}
                         In Progress
                     </button>
@@ -136,7 +138,7 @@ const Main: React.FC = () => {
                             : "text-[#565A5E] hover:text-[#7531F9] border-gray-200 bg-white"
                             }`}
                     >
-                        <i className="fa-solid fa-square text-[6px] text-[#7531F9]"></i>
+                        <FontAwesomeIcon icon={faSquare} className="text-[6px] text-[#7531F9]" />
                         {' '}
                         Released
                     </button>
@@ -147,7 +149,7 @@ const Main: React.FC = () => {
                             : "text-[#565A5E] hover:text-[#8B8D8F] border-gray-200 bg-white"
                             }`}
                     >
-                        <i className="fa-solid fa-square text-[6px] text-[#565A5E]"></i>
+                        <FontAwesomeIcon icon={faSquare} className="text-[6px] text-[#565A5E]" />
                         {' '}
                         Not done
                     </button>
