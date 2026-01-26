@@ -85,7 +85,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
         // New Resources
         'accessibility-wcag',
         'handoff-standards',
-        'ui-ux-best-practices',
         'waysorted-principles',
         'examples',
     ]

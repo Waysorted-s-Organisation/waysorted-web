@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Request a feature to Waysorted",
+    title: "Feature Requests & Roadmap",
     description:
-        "Have an idea or suggestion? Suggest a feature or improvement, your feedback drives our roadmap.",
+        "Have an idea? Suggest a feature, vote on improvements, and help shape the Waysorted roadmap.",
     keywords: [
         "Waysorted feature request",
         "suggest a feature",
@@ -12,9 +12,9 @@ export const metadata: Metadata = {
         "waysorted ideas",
     ],
     openGraph: {
-        title: "Request a feature to Waysorted",
+        title: "Feature Requests & Roadmap",
         description:
-            "Have an idea or suggestion? Suggest a feature or improvement, your feedback drives our roadmap.",
+            "Have an idea? Suggest a feature, vote on improvements, and help shape the Waysorted roadmap.",
     },
 };
 

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Waysorted Support - Contact Us & FAQs",
-    description: "Need help? Contact Waysorted support, view FAQs, or get in touch with our team.",
+    title: "Help Center & FAQs",
+    description: "Need help? Contact our support team, view frequently asked questions, or get in touch for assistance.",
     keywords: [
         "Waysorted support",
         "contact us",
@@ -11,8 +11,8 @@ export const metadata: Metadata = {
         "customer service",
     ],
     openGraph: {
-        title: "Waysorted Support - Contact Us & FAQs",
-        description: "Need help? Contact Waysorted support, view FAQs, or get in touch with our team.",
+        title: "Help Center & FAQs",
+        description: "Need help? Contact our support team, view frequently asked questions, or get in touch for assistance.",
     },
 };
 

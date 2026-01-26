@@ -53,7 +53,6 @@ import BetaFeatures from "./content/beta-features";
 // New imports from dev branch
 import AccessibilityWcag from "./content/accessibility-wcag";
 import HandoffStandards from "./content/handoff-standards";
-import UiUxBestPractices from "./content/ui-ux-best-practices";
 import WaysortedPrinciples from "./content/waysorted-principles";
 import Examples from "./content/examples";
 
@@ -111,7 +110,6 @@ const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
   // New mappings from dev branch
   "accessibility-wcag": AccessibilityWcag,
   "handoff-standards": HandoffStandards,
-  "ui-ux-best-practices": UiUxBestPractices,
   "waysorted-principles": WaysortedPrinciples,
   "examples": Examples,
 };
