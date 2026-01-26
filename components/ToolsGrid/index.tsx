@@ -225,7 +225,7 @@ export default function ToolsGrid() {
                 width={120}
                 height={120}
                 className="w-full h-full object-contain"
-                priority
+                sizes="(max-width: 768px) 40vw, 120px"
               />
             </div>
           ))}

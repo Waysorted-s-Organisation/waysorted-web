@@ -2,13 +2,14 @@
 import { useEffect, useState } from "react";
 // import FloatingButton from '@/components/FloatingButton'
 import dynamic from 'next/dynamic';
-import Hero from '@/components/Hero/index'
-import TopSection from '@/components/TopSection/index'
-import ToolsGrid from '@/components/ToolsGrid/index'
 import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
+// Statically import Hero as it's the LCP section
+import Hero from '@/components/Hero/index'
 
 // Dynamic Imports for Below-the-Fold components
+const ToolsGrid = dynamic(() => import('@/components/ToolsGrid/index'), { ssr: false });
+const TopSection = dynamic(() => import('@/components/TopSection/index'), { ssr: false });
 const ImpactTop = dynamic(() => import('@/components/ImpactTop'), { ssr: false });
 const InfoCards = dynamic(() => import('@/components/InfoCards').then(mod => mod.InfoCards), { ssr: false });
 const GetStarted = dynamic(() => import('@/components/GetStarted'), { ssr: false });

@@ -16,6 +16,11 @@ export default function ScrollProvider({
   const wheelTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
+    // Disable Lenis on mobile/tablets to use native momentum scrolling
+    // and save battery/CPU resources.
+    const isMobile = window.matchMedia("(max-width: 1024px)").matches;
+    if (isMobile) return;
+
     const lenis = new Lenis({
       duration,
       easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
