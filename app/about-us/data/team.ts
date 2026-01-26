@@ -1,17 +1,17 @@
 export const teams = [
     {
         name: "Rishabh Gupta",
-        role: "CEO and Co-founder",
+        role: "CEO and Co-Founder",
         image: "/icons/rishabh.jpg",
     },
     {
         name: "Sudhanshu Singh",
-        role: "CIO and co-founder",
+        role: "CPO and Co-Founder",
         image: "/icons/sudhanshu.jpg",
     },
     {
         name: "Aviral Garg",
-        role: "CTO and Co-founder",
+        role: "CTO and Co-Founder",
         image: "/icons/aviral.jpg",
     },
 ];
