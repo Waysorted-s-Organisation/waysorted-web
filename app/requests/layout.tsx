@@ -52,10 +52,12 @@ export const metadata: Metadata = {
 };
 
 
+import RequestsShell from "./RequestsShell";
+
 export default function RequestsLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    return <>{children}</>;
+    return <RequestsShell>{children}</RequestsShell>;
 }
