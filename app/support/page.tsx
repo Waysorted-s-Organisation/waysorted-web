@@ -97,7 +97,7 @@ export default function SupportPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
       <main
-        className={`min-h-screen bg-white transition-all duration-300 select-none ${showBanner ? "pt-24" : "pt-16"
+        className={`min-h-screen bg-white transition-all duration-300 ${showBanner ? "pt-24" : "pt-16"
           } `}
       >
         <Header showBanner={showBanner} setShowBanner={setShowBanner} />
@@ -112,7 +112,7 @@ export default function SupportPage() {
                 alt="Support"
                 width={30}
                 height={30}
-                className="inline block p-1"
+                className="inline-block p-1"
               />
               <span className="pl-1 pr-2 inline text-secondary-db-100">Support</span>
             </span>
@@ -133,7 +133,7 @@ export default function SupportPage() {
                   Whether you have questions, need support, or just want to say hello,
                   we&apos;re here to help!
                 </p>
-                <div className="text-left mt-6 md:mt-90">
+                <div className="text-left mt-6 md:mt-24">
                   <p className="text-left font-normal text-sm sm:text-base">Support Mail</p>
                   <a
                     href="mailto:info@waysorted.com"
@@ -162,7 +162,7 @@ export default function SupportPage() {
                 alt="FAQs"
                 width={30}
                 height={30}
-                className="inline block p-1"
+                className="inline-block p-1"
               />
               <span className="pl-1 pr-2 py-1 inline text-secondary-db-100">FAQs</span>
             </span>

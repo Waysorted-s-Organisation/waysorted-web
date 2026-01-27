@@ -179,8 +179,15 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
             linkText: "Check Contrast"
           },
         ];
-        const randomIndex = Math.floor(Math.random() * ctaVariations.length);
-        const cta = ctaVariations[randomIndex];
+
+        // Seeded/Stable random choice to avoid hydration mismatch
+        const [ctaIndex, setCtaIndex] = useState<number | null>(null);
+        useEffect(() => {
+          setCtaIndex(Math.floor(Math.random() * ctaVariations.length));
+        }, []);
+
+        if (ctaIndex === null) return null;
+        const cta = ctaVariations[ctaIndex];
 
         return (
           <div className="w-full bg-primary-way-100 text-white text-center py-2 text-sm relative">

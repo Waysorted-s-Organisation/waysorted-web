@@ -23,11 +23,10 @@ export default function FAQ() {
               aria-label="Toggle FAQ"
               aria-expanded={openIndex === index}
               aria-controls={`faq-panel-${index}`}
-              className={`relative flex items-center justify-between w-full py-3 px-4 md:py-4 md:px-8 focus:outline-none cursor-pointer space-x-4 md:space-x-6 ${
-                openIndex !== index
+              className={`relative flex items-center justify-between w-full py-3 px-4 md:py-4 md:px-8 focus:outline-none cursor-pointer space-x-4 md:space-x-6 ${openIndex !== index
                   ? "hover:bg-tertiary-voilet-100 hover:outline-none hover:rounded-lg md:hover:rounded-xl"
                   : ""
-              }`}
+                }`}
             >
               {/* Question */}
               <span className="text-base md:text-xl font-regular text-secondary-db-100 text-left">
@@ -36,18 +35,16 @@ export default function FAQ() {
 
               {/* Icon */}
               <div
-                className={`absolute right-4 md:right-5 transition-colors p-2 md:p-3 ${
-                  openIndex === index ? "hover:bg-tertiary-voilet-100 rounded-full" : ""
-                }`}
+                className={`absolute right-4 md:right-5 transition-colors p-2 md:p-3 ${openIndex === index ? "hover:bg-tertiary-voilet-100 rounded-full" : ""
+                  }`}
               >
                 <Image
                   src="/icons/chevron-down.svg"
                   alt="Chevron Down"
                   width={13}
                   height={6}
-                  className={`transition-transform duration-300 ${
-                    openIndex === index ? "rotate-180" : ""
-                  }`}
+                  className={`transition-transform duration-300 ${openIndex === index ? "rotate-180" : ""
+                    }`}
                 />
               </div>
             </button>
@@ -55,17 +52,16 @@ export default function FAQ() {
             {/* Answer */}
             <div
               id={`faq-panel-${index}`}
-              className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${
-                openIndex === index
+              className={`overflow-hidden transition-[max-height,opacity] duration-300 ease-in-out ${openIndex === index
                   ? "max-h-60 md:max-h-40 opacity-100"
                   : "max-h-0 opacity-0"
-              }`}
+                }`}
             >
               {/* Keep horizontal padding constant to avoid left-slide */}
               <div className="px-4 md:px-8 pb-3 md:pb-4">
-                <p className="text-secondary-db-100 text-sm md:text-base font-regular text-left leading-relaxed">
+                <div className="text-secondary-db-100 text-sm md:text-base font-regular text-left leading-relaxed">
                   {faq.answer}
-                </p>
+                </div>
               </div>
             </div>
           </div>
