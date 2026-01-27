@@ -5,8 +5,7 @@ import Slide from "@/models/slide";
 export const runtime = "nodejs";
 
 // Cache slides for 1 hour - data doesn't change frequently
-// Cache slides for 0 seconds (disable cache) during active development
-export const revalidate = 0;
+export const revalidate = 3600;
 
 //eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function GET(req: NextRequest, context: any) {
@@ -33,9 +32,11 @@ export async function GET(req: NextRequest, context: any) {
     { slides },
     {
       headers: {
-        "Cache-Control": "no-store, max-age=0",
+        "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
       },
     }
   );
 }
+
+
 
