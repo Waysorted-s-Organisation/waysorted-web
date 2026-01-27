@@ -360,6 +360,12 @@ html, body {
   background-size: 25px 25px;
 }
 
+.bio-bg-dots{
+  background-color: #f3f3f3;
+  background-image: radial-gradient(#3B6DD7 0.25px, transparent 1px);
+  background-size: 25px 25px;
+}
+
 .blue-bg-dots {
   background-color: #265bd1;
   background-image: radial-gradient(#ffffff80 0.25px, transparent 1px);
