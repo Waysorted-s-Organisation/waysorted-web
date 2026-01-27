@@ -1,12 +1,32 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import SequentialLogoLoader, { IconDef } from "@/components/SequentialLoader";
 import { InfinityIcon } from "@/components/icons/InfinityIcon";
 import { GridIcon } from "@/components/icons/GridIcon";
 import { BoltIcon } from "@/components/icons/BoltIcon";
 import { CheckIcon } from "@/components/icons/CheckIcon";
 
-export default function Loading() {
+export default function SessionLoader() {
+  const [show, setShow] = useState(true);
+
+  useEffect(() => {
+    const hasSeenLoader = sessionStorage.getItem("waysorted-intro-shown");
+
+    if (hasSeenLoader) {
+      setShow(false);
+    } else {
+      const timer = setTimeout(() => {
+        setShow(false);
+        sessionStorage.setItem("waysorted-intro-shown", "true");
+      }, 2000);
+
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
+  if (!show) return null;
+
   const icons: IconDef[] = [
     { id: "infinity", Icon: InfinityIcon, activeClass: "text-[#24B7FD]", bgClass: "bg-[#E9F7FE]" },
     { id: "grid", Icon: GridIcon, activeClass: "text-[#7531F9]", bgClass: "bg-[#F1EAFE]" },
@@ -15,14 +35,14 @@ export default function Loading() {
   ];
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center select-none">
+    <div className="fixed inset-0 z-50 flex min-h-screen w-full items-center justify-center bg-white select-none">
       <SequentialLogoLoader
         icons={icons}
-        estimatedMs={4000}
-        tileSizePx={188}  // tile is exactly 188x188 px
-        iconPx={96}       // tweak to taste (about ~50% of tile)
-        mobileTileSizePx={140} // Smaller tiles for mobile
-        mobileIconPx={72}  
+        estimatedMs={2000}
+        tileSizePx={188}
+        iconPx={96}
+        mobileTileSizePx={140}
+        mobileIconPx={72}
       />
     </div>
   );
