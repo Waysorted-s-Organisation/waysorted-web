@@ -4,27 +4,27 @@
     "name": "Palettable",
     "description": "Create color palettes with variations and accessibility ch...",
     "icon": "/icons/palettable.svg",
-    "href": "learning/palettable"
+    "href": "/learning/palettable"
   },
   {
     "id": 2,
     "name": "Frames to PDF",
     "description": "Turn your designs into share-ready PDFs in seconds.",
     "icon": "/icons/frames-to-pdf.svg",
-    "href": "learning/frames-to-pdf"
+    "href": "/learning/frames-to-pdf"
   },
   {
     "id": 3,
     "name": "Unit Converter",
     "description": "Effortlessly convert design dimensions between units.",
     "icon": "/icons/unit-converter.svg",
-    "href": "learning/unit-converter"
+    "href": "/learning/unit-converter"
   },
   {
     "id": 4,
     "name": "File Importer",
     "description": "Import files effortlessly with smart font handling and previews.",
     "icon": "/icons/file-importer.svg",
-    "href": "learning/file-importer"
+    "href": "/learning/file-importer"
   }
 ]

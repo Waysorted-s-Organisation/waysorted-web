@@ -9,6 +9,11 @@ export default function ToolCard({ tool }: { tool: ITool }) {
   const isDisabled = tool.disabled === true;
   const badge = tool.badge;
 
+  const onCardClick = () => {
+    if (isDisabled) return;
+    router.push(`/learning/${tool.slug}`);
+  };
+
   const onLearnMore = (e?: React.MouseEvent<HTMLAnchorElement>) => {
     if (isDisabled) {
       e?.preventDefault();
@@ -20,9 +25,12 @@ export default function ToolCard({ tool }: { tool: ITool }) {
 
   return (
     <div
-      className={`bg-white rounded-2xl border border-secondary-db-5 p-3 sm:p-4 relative outline-none ${
-        isDisabled ? "opacity-70 cursor-not-allowed" : "hover:bg-primary-way-5"
-      }`}
+      onClick={onCardClick}
+      role={isDisabled ? undefined : "link"}
+      tabIndex={isDisabled ? -1 : 0}
+      onKeyDown={(e) => { if (e.key === 'Enter' && !isDisabled) onCardClick(); }}
+      className={`bg-white rounded-2xl border border-secondary-db-5 p-3 sm:p-4 relative outline-none ${isDisabled ? "opacity-70 cursor-not-allowed" : "hover:bg-primary-way-5 cursor-pointer"
+        }`}
     >
       <div className="flex items-center justify-between mb-2 relative">
         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-200 relative overflow-hidden">
@@ -58,11 +66,10 @@ export default function ToolCard({ tool }: { tool: ITool }) {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Open in Figma"
-        className={`hidden sm:inline text-xs select-none ${
-          isDisabled
+        className={`hidden sm:inline text-xs select-none ${isDisabled
             ? "pointer-events-none opacity-70 text-secondary-db-80"
             : "text-secondary-db-80 hover:text-primary-way-100"
-        }`}
+          }`}
       >
         <svg
           width="12"
@@ -99,11 +106,10 @@ export default function ToolCard({ tool }: { tool: ITool }) {
         }
         aria-disabled={isDisabled}
         tabIndex={isDisabled ? -1 : 0}
-        className={`mt-3 sm:mt-4 text-sm font-medium flex items-center ${
-          isDisabled
+        className={`mt-3 sm:mt-4 text-sm font-medium flex items-center ${isDisabled
             ? "text-secondary-db-40 cursor-not-allowed pointer-events-none"
             : "text-secondary-db-100 hover:text-primary-way-100"
-        }`}
+          }`}
       >
         Learn more
         <span className="relative ml-1 w-3 h-2">

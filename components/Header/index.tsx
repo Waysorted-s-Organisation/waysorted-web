@@ -38,6 +38,34 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
   // New: header mode when secure sections touch the header
   const [isSecureSection, setIsSecureSection] = useState(false);
 
+  // Banner CTA variations - picked randomly on mount to avoid hydration mismatch
+  const ctaVariations = [
+    {
+      text: "Create presentation-ready PDFs in one click...",
+      link: "/learning/frames-to-pdf",
+      linkText: "Try Frames to PDF"
+    },
+    {
+      text: "Convert units & prep designs for print instantly...",
+      link: "/learning/unit-converter",
+      linkText: "Use Unit Converter"
+    },
+    {
+      text: "Import external design assets more seamlessly...",
+      link: "/learning/file-importer",
+      linkText: "Start Importing"
+    },
+    {
+      text: "Try Palettable for quick Color schemes and Contrast check...",
+      link: "/learning/palettable",
+      linkText: "Check Contrast"
+    },
+  ];
+  const [ctaIndex, setCtaIndex] = useState<number | null>(null);
+  useEffect(() => {
+    setCtaIndex(Math.floor(Math.random() * ctaVariations.length));
+  }, [ctaVariations.length]);
+
   async function handleLogout() {
     try {
       await fetch('/api/auth/logout', {
@@ -155,40 +183,8 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
       ref={headerRef}
       className={`w-full fixed top-0 z-40 ${isSecureSection ? 'bg-secondary-db-100' : 'bg-white border-b border-gray-200'}`}
     >
-      {showBanner && (() => {
-        // Random CTA variations - dice effect
-        const ctaVariations = [
-          {
-            text: "Create presentation-ready PDFs in one click...",
-            link: "/learning/frames-to-pdf",
-            linkText: "Try Frames to PDF"
-          },
-          {
-            text: "Convert units & prep designs for print instantly...",
-            link: "/learning/unit-converter",
-            linkText: "Use Unit Converter"
-          },
-          {
-            text: "Import external design assets more seamlessly...",
-            link: "/learning/file-importer",
-            linkText: "Start Importing"
-          },
-          {
-            text: "Try Palettable for quick Color schemes and Contrast check...",
-            link: "/learning/palettable",
-            linkText: "Check Contrast"
-          },
-        ];
-
-        // Seeded/Stable random choice to avoid hydration mismatch
-        const [ctaIndex, setCtaIndex] = useState<number | null>(null);
-        useEffect(() => {
-          setCtaIndex(Math.floor(Math.random() * ctaVariations.length));
-        }, []);
-
-        if (ctaIndex === null) return null;
+      {showBanner && ctaIndex !== null && (() => {
         const cta = ctaVariations[ctaIndex];
-
         return (
           <div className="w-full bg-primary-way-100 text-white text-center py-2 text-sm relative">
             {cta.text}{' '}
