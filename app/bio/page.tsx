@@ -1,8 +1,61 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Waysorted - Accelerate every idea with one powerful suite',
+  description: 'Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.',
+  keywords: ['design tools', 'figma plugin', 'productivity', 'waysorted', 'design workflow', 'color palette', 'unit converter', 'file importer', 'frames to pdf'],
+  authors: [{ name: 'Waysorted', url: 'https://www.waysorted.com' }],
+  creator: 'Waysorted Infotech Pvt Ltd',
+  publisher: 'Waysorted',
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+    },
+  },
+  alternates: {
+    canonical: 'https://www.waysorted.com/bio',
+  },
+  openGraph: {
+    title: 'Waysorted - Accelerate every idea with one powerful suite',
+    description: 'Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.',
+    url: 'https://www.waysorted.com/bio',
+    siteName: 'Waysorted',
+    locale: 'en_IN',
+    images: [
+      {
+        url: 'https://www.waysorted.com/og-bio.png',
+        width: 1200,
+        height: 630,
+        alt: 'Waysorted - Accelerate every idea with one powerful suite',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Waysorted - Accelerate every idea with one powerful suite',
+    description: 'Discover one unified tool suite which works across softwares.',
+    images: ['https://www.waysorted.com/og-bio.png'],
+    creator: '@Waysorted',
+    site: '@Waysorted',
+  },
+  other: {
+    'geo.region': 'IN',
+    'geo.placename': 'India',
+    'geo.position': '20.5937;78.9629',
+    'ICBM': '20.5937, 78.9629',
+  },
+};
+
 
 export default function Bio() {
+
   const links = [
     {
       icon: '/icons/figma-logo-black.svg',
