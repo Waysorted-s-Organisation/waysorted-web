@@ -155,7 +155,7 @@ export default function Focus({ className }: { className?: string }) {
                 >
                   <div className="w-12 h-12 flex items-center justify-center rounded-md bg-primary-way-10">
                     <Image
-                      src={tool.iconData || "/icons/tool-fallback.svg"}
+                      src={tool.icon || tool.iconData || "/icons/tool-fallback.svg"}
                       width={40}
                       height={40}
                       alt={`${tool.name} icon`}
