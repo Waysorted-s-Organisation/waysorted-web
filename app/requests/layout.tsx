@@ -1,63 +1,22 @@
-import type { Metadata } from "next";
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: "Feature Requests & Roadmap - Waysorted",
-    description:
-        "Have an idea? Suggest a feature, vote on improvements, and help shape the Waysorted roadmap.",
-    keywords: [
-        "Waysorted feature request",
-        "suggest a feature",
-        "roadmap",
-        "feedback",
-        "waysorted ideas",
-        "figma plugin",
-        "design tools",
-    ],
-    authors: [{ name: 'Waysorted', url: 'https://www.waysorted.com' }],
-    creator: 'Waysorted Infotech Pvt Ltd',
-    publisher: 'Waysorted',
-    robots: {
-        index: true,
-        follow: true,
-        googleBot: {
-            index: true,
-            follow: true,
-        },
+    title: "Feature Requests - Shape Waysorted's Future",
+    description: "Have an idea for a new tool or improvement? Submit feature requests, vote on existing ideas, and help us build the future of Waysorted.",
+    openGraph: {
+        title: "Feature Requests - Shape Waysorted's Future",
+        description: "Submit feature requests, vote on existing ideas, and help us build the future of Waysorted.",
+        url: "https://www.waysorted.com/requests",
     },
     alternates: {
-        canonical: 'https://www.waysorted.com/requests',
-    },
-    openGraph: {
-        title: "Feature Requests & Roadmap - Waysorted",
-        description:
-            "Have an idea? Suggest a feature, vote on improvements, and help shape the Waysorted roadmap.",
-        url: 'https://www.waysorted.com/requests',
-        siteName: 'Waysorted',
-        locale: 'en_IN',
-        type: 'website',
-    },
-    twitter: {
-        card: 'summary_large_image',
-        title: "Feature Requests & Roadmap - Waysorted",
-        description: "Suggest a feature, vote on improvements, and help shape the Waysorted roadmap.",
-        creator: '@Waysorted',
-        site: '@Waysorted',
-    },
-    other: {
-        'geo.region': 'IN',
-        'geo.placename': 'India',
-        'geo.position': '20.5937;78.9629',
-        'ICBM': '20.5937, 78.9629',
-    },
+        canonical: "https://www.waysorted.com/requests",
+    }
 };
-
-
-import RequestsShell from "./RequestsShell";
 
 export default function RequestsLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    return <RequestsShell>{children}</RequestsShell>;
+    return <>{children}</>;
 }

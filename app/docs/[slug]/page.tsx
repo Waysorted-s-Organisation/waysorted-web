@@ -116,19 +116,80 @@ const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
 
 // pSEO: Dynamic metadata for each doc page
 const META_MAP: Record<string, { title: string; description: string }> = {
+  // General / Getting Started
   "getting-started": { title: "Getting Started with Waysorted", description: "Learn how to get started with Waysorted - the unified Figma plugin suite. Quick setup guide for designers." },
-  "account-creation-and-setup": { title: "Create Your Waysorted Account", description: "Step-by-step guide to creating and setting up your Waysorted account for Figma plugin access." },
-  "frames-to-pdf": { title: "Frames to PDF - Export Figma to PDF", description: "Export Figma frames to high-quality PDF with zero latency using Frames to PDF. Merge, reorder, and compress PDFs securely." },
-  "palettable": { title: "Palettable - Color Palette Generator", description: "Generate beautiful color palettes with instant contrast checking. Waysorted's Palettable tool documentation." },
-  "unit-converter": { title: "Unit Converter - px to rem, em, pt", description: "Convert between design units instantly. Real-time px, rem, em, pt conversion in Figma with Waysorted." },
-  "file-importer": { title: "File Importer - Import Assets to Figma", description: "Fast asset import into Figma with Waysorted's File Importer. Supports images, SVGs, and more with smart detection." },
-  "faqs": { title: "Waysorted FAQs - Frequently Asked Questions", description: "Find answers to common questions about Waysorted Figma plugins, billing, features, and troubleshooting." },
   "what-is-waysorted": { title: "What is Waysorted?", description: "Discover Waysorted - a unified creative workflow suite replacing multiple Figma plugins with one platform." },
+  "account-creation-and-setup": { title: "Create Your Account Coverage", description: "Step-by-step guide to creating and setting up your Waysorted account for full Figma plugin access." },
   "quick-integration-with-figma": { title: "Quick Figma Integration Guide", description: "Integrate Waysorted with Figma in minutes. Step-by-step installation and setup instructions." },
-  "privacy-policy": { title: "Privacy Policy", description: "Waysorted's privacy policy. Learn how we protect your data with local-first architecture and encryption." },
-  "terms-of-service": { title: "Terms of Service", description: "Waysorted terms of service agreement. Read our usage terms and conditions." },
-  "bug-reporting": { title: "Report a Bug", description: "How to report bugs and issues with Waysorted plugins. Help us improve your design workflow." },
-  "contact-support": { title: "Contact Support", description: "Get help from Waysorted support team. Contact options and response times." },
+  "accessing-waysorted-in-figma": { title: "Accessing Waysorted in Figma", description: "How to open and launch Waysorted tools directly within your Figma canvas." },
+  "faqs": { title: "Waysorted FAQs", description: "Find answers to common questions about Waysorted Figma plugins, billing, features, and troubleshooting." },
+
+  // Plugin Suite
+  "introduction": { title: "Introduction to the Suite", description: "An overview of the Waysorted plugin ecosystem and how the tools work together." },
+  "main-ui": { title: "Navigating the Main UI", description: "Guide to the Waysorted interface. How to switch tools, access settings, and manage your workflow." },
+  "wayspace": { title: "Wayspace - Your Creative Workspace", description: "Learn about Wayspace, the central hub for your Waysorted assets and configurations." },
+  "waychallenge": { title: "Waychallenge - Daily Design Challenges", description: "Participate in Waychallenge to sharpen your design skills directly within Figma." },
+  "other-features": { title: "Other Features & Utilities", description: "Explore additional utility features included in the Waysorted suite to boost productivity." },
+
+  // Plugins and Marketplace
+  "searching-and-browsing-plugins": { title: "Search and Browse Plugins", description: "How to find and activate new tools within the Waysorted marketplace." },
+  "creator-guidelines": { title: "Creator Guidelines", description: "Guidelines for developers and creators building tools for the Waysorted ecosystem." },
+  "ratings-and-reviews": { title: "Ratings and Reviews", description: "How to rate plugins and read reviews from other designers in the community." },
+
+  // Account and Workspace
+  "account-and-workspace": { title: "Account & Workspace Management", description: "Managing your personal account and team workspace settings in Waysorted." },
+  "profile-and-settings": { title: "Profile and Settings", description: "Configure your user profile, preferences, and workspace options." },
+  "account-settings-navigation": { title: "Navigating Account Settings", description: "A tour of the account settings menu and where to find key configurations." },
+  "profile-and-settings-overview": { title: "Profile Settings Overview", description: "Detailed breakdown of all available profile customization options." },
+  "profile-photo": { title: "Managing Your Profile Photo", description: "How to upload, change, or remove your profile picture in Waysorted." },
+  "linked-accounts-and-integrations": { title: "Linked Accounts", description: "Manage third-party integrations and linked accounts connected to Waysorted." },
+  "notifications-preferences": { title: "Notification Preferences", description: "Customize your email and in-app notification settings." },
+  "beta-features": { title: "Beta Features Access", description: "How to enable and test experimental features in the Waysorted beta program." },
+
+  // Tools Reference
+  "frames-to-pdf": { title: "Frames to PDF Tool", description: "Export formatted Figma frames to PDF instantly. Merge, reorder, and compress PDFs." },
+  "palettable": { title: "Palettable Color Tool", description: "Generate accessible color palettes and check contrast ratios directly in Figma." },
+  "unit-converter": { title: "Unit Converter Tool", description: "Convert pixels to rem, em, or pt instantly within your design workflow." },
+  "file-importer": { title: "File Importer Tool", description: "Import various file formats into Figma with smart processing and organization." },
+  "upcoming-tools": { title: "Upcoming Tools Roadmap", description: "See what new tools and features are coming soon to the Waysorted suite." },
+
+  // Troubleshooting & Support
+  "common-errors": { title: "Common Errors & Fixes", description: "Troubleshooting guide for common issues encountered when using Waysorted plugins." },
+  "diagnostics": { title: "Running Diagnostics", description: "How to run diagnostic tests to help support debug issues with your installation." },
+  "contact-support": { title: "Contact Support", description: "Get help from the Waysorted team. Support channels and response times." },
+  "bug-reporting": { title: "Report a Bug", description: "Submit bug reports to help us improve the stability of Waysorted tools." },
+  "request-a-feature": { title: "Request a Feature", description: "Have an idea? Submit feature suggestions for the Waysorted roadmap." },
+
+  // Legal
+  "privacy-policy": { title: "Privacy Policy", description: "Waysorted's privacy policy. Data protection, encryption, and user rights." },
+  "terms-of-service": { title: "Terms of Service", description: "Terms and conditions for using the Waysorted platform and plugins." },
+
+  // Integrations
+  "figma-sync": { title: "Figma Sync Integration", description: "How Waysorted syncs data seamlessly with your Figma files and teams." },
+  "backup-and-recovery": { title: "Backup & Recovery", description: "Understanding how your data is backed up and how to recover it if needed." },
+  "third-party-integrations": { title: "Third-Party Integrations", description: "Connecting Waysorted with other tools in your design stack." },
+
+  // Credits
+  "overview": { title: "Credits System Overview", description: "Understanding the Waysorted credits system for usage-based tools." },
+  "earning-credits": { title: "Earning Credits", description: "How to earn free credits through referrals, challenges, and usage." },
+  "using-credits": { title: "Using Credits", description: "Where and how to spend your credits on premium tool features." },
+  "managing-credits": { title: "Managing Your Balance", description: "Check your credit balance and view transaction history." },
+  "credits-and-usage": { title: "Credits & Usage Guide", description: "Comprehensive guide to credit consumption rates for different tools." },
+
+  // API & Developer
+  "developer-focused-guide": { title: "Developer Guide", description: "Technical documentation for developers building on the Waysorted platform." },
+  "overview-and-authentication": { title: "API Authentication", description: "How to authenticate requests to the Waysorted API securely." },
+  "rate-limits": { title: "API Rate Limits", description: "Understanding API rate limits and quotas for developer accounts." },
+  "webhooks": { title: "Webhooks Reference", description: "Listen to real-time events from Waysorted using webhooks." },
+
+  // New Resources
+  "all-in-one-tools": { title: "All-in-One Tools Concept", description: "Why we bundled multiple tools into one suite and the benefits for designers." },
+  "supported-platforms": { title: "Supported Platforms", description: "List of supported operating systems and Figma versions for Waysorted." },
+  "whats-coming-next": { title: "What's Coming Next", description: "Sneak peek at the future roadmap and vision for Waysorted." },
+  "accessibility-wcag": { title: "Accessibility & WCAG", description: "How Waysorted helps you design for accessibility and WCAG compliance." },
+  "handoff-standards": { title: "Design Handoff Standards", description: "Best practices for preparing your designs for developer handoff." },
+  "waysorted-principles": { title: "Our Design Principles", description: "The core philosophies that drive the design and development of Waysorted." },
+  "examples": { title: "Usage Examples", description: "Real-world examples and case studies of Waysorted in action." },
 };
 
 function formatSlugToTitle(slug: string): string {
