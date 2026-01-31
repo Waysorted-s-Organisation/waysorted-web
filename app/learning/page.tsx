@@ -45,8 +45,10 @@ function getBadgePriority(tool: ITool) {
 async function getTools() {
   try {
     await dbConnect();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const all = await Tool.find().lean() as any[];
+    // Select only needed fields for the grid to optimize performance (exclude iconData and slides)
+    const all = await Tool.find({})
+      .select('name slug heading description shortDescription icon isAI badge disabled isActive category tagline tags version')
+      .lean() as any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
 
     // Sort by badge priority, then by name as tiebreaker
     all.sort((a, b) => {
