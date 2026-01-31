@@ -45,10 +45,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
         'request-a-feature',
         'ratings-and-reviews',
         // Tools Reference
-        'pdf-exporter',
+        'frames-to-pdf',
         'palettable',
         'unit-converter',
-        'import-tool',
+        'file-importer',
         'upcoming-tools',
         // FAQs
         'faqs',
@@ -92,9 +92,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
     // Learning pages (tools)
     const learningPages = [
         'palettable',
-        'pdf-exporter',
+        'frames-to-pdf',
         'unit-converter',
-        'import-tool',
+        'file-importer',
     ]
 
     const currentDate = new Date()

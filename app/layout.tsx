@@ -45,6 +45,8 @@ export const metadata: Metadata = {
     "Figma plugin",
     "Figma plugin bundle",
     "Figma plugin marketplace",
+    "Frames to PDF",
+    "File Importer",
     "PDF exporter Figma",
     "Palettable color palette",
     "unit converter plugin",
@@ -282,6 +284,12 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
+
+        {/* GEO Optimization Meta Tags */}
+        <meta name="geo.region" content="IN-DL" />
+        <meta name="geo.placename" content="New Delhi" />
+        <meta name="geo.position" content="28.5355;77.2090" />
+        <meta name="ICBM" content="28.5355, 77.2090" />
 
         <Clarity />
         <script

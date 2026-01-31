@@ -39,7 +39,7 @@ const sidebarData: SidebarItem[] = [
   },
   {
     title: "Tools Reference",
-    links: ["PDF Exporter", "Palettable", "Unit Converter", "Import Tool", "Upcoming Tools"]
+    links: ["Frames to PDF", "Palettable", "Unit Converter", "File Importer", "Upcoming Tools"]
   },
 
   {

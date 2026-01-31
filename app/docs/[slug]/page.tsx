@@ -10,7 +10,7 @@ import DeveloperFocusedGuide from "./content/developer-focused-guide";
 import Diagnostics from "./content/diagnostics";
 import EarningCredits from "./content/earning-credits";
 import FAQs from "./content/faqs";
-import ImportTool from "./content/import-tool";
+import ImportTool from "./content/file-importer";
 import ManagingCredits from "./content/managing-credits";
 import OverviewAndAuthentication from "./content/overview-and-authentication";
 import Palettable from "./content/palettable";
@@ -25,7 +25,7 @@ import SearchingAndBrowsingPlugins from "./content/searching-and-browsing-plugin
 import CreatorGuidelines from "./content/creator-guidelines";
 import RequestAFeature from "./content/request-a-feature";
 import RatingsAndReviews from "./content/ratings-and-reviews";
-import PdfExporter from "./content/pdf-exporter";
+import PdfExporter from "./content/frames-to-pdf";
 import PrivacyPolicy from "./content/privacy-policy";
 import TermsOfService from "./content/terms-of-service";
 import FigmaSync from "./content/figma-sync";
@@ -67,7 +67,7 @@ const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
   "diagnostics": Diagnostics,
   "earning-credits": EarningCredits,
   "faqs": FAQs,
-  "import-tool": ImportTool,
+  "file-importer": ImportTool,
   "managing-credits": ManagingCredits,
   "overview-and-authentication": OverviewAndAuthentication,
   "palettable": Palettable,
@@ -82,7 +82,7 @@ const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
   "creator-guidelines": CreatorGuidelines,
   "request-a-feature": RequestAFeature,
   "ratings-and-reviews": RatingsAndReviews,
-  "pdf-exporter": PdfExporter,
+  "frames-to-pdf": PdfExporter,
   "privacy-policy": PrivacyPolicy,
   "terms-of-service": TermsOfService,
   "figma-sync": FigmaSync,
@@ -118,10 +118,10 @@ const CONTENT_MAP: Record<string, React.ComponentType<any>> = {
 const META_MAP: Record<string, { title: string; description: string }> = {
   "getting-started": { title: "Getting Started with Waysorted", description: "Learn how to get started with Waysorted - the unified Figma plugin suite. Quick setup guide for designers." },
   "account-creation-and-setup": { title: "Create Your Waysorted Account", description: "Step-by-step guide to creating and setting up your Waysorted account for Figma plugin access." },
-  "pdf-exporter": { title: "PDF Exporter Tool - Export Figma to PDF", description: "Export Figma frames to high-quality PDF with zero latency. Complete guide to Waysorted's PDF Exporter tool." },
+  "frames-to-pdf": { title: "Frames to PDF - Export Figma to PDF", description: "Export Figma frames to high-quality PDF with zero latency using Frames to PDF. Merge, reorder, and compress PDFs securely." },
   "palettable": { title: "Palettable - Color Palette Generator", description: "Generate beautiful color palettes with instant contrast checking. Waysorted's Palettable tool documentation." },
   "unit-converter": { title: "Unit Converter - px to rem, em, pt", description: "Convert between design units instantly. Real-time px, rem, em, pt conversion in Figma with Waysorted." },
-  "import-tool": { title: "Import Tool - Import Assets to Figma", description: "Fast asset import into Figma with Waysorted's Import Tool. Supports images, SVGs, and more." },
+  "file-importer": { title: "File Importer - Import Assets to Figma", description: "Fast asset import into Figma with Waysorted's File Importer. Supports images, SVGs, and more with smart detection." },
   "faqs": { title: "Waysorted FAQs - Frequently Asked Questions", description: "Find answers to common questions about Waysorted Figma plugins, billing, features, and troubleshooting." },
   "what-is-waysorted": { title: "What is Waysorted?", description: "Discover Waysorted - a unified creative workflow suite replacing multiple Figma plugins with one platform." },
   "quick-integration-with-figma": { title: "Quick Figma Integration Guide", description: "Integrate Waysorted with Figma in minutes. Step-by-step installation and setup instructions." },
