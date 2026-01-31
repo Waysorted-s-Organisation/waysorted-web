@@ -134,7 +134,7 @@ export default function ToolsPicker({ tools, onVisitPlugin }: Props) {
               <div className="flex items-start gap-3 sm:gap-4 mb-4">
                 {selectedTool && (
                   <Image
-                    src={selectedTool.iconData || selectedTool.icon}
+                    src={selectedTool.icon || selectedTool.iconData || ""}
                     alt={`${selectedTool.name} icon`}
                     title={`${selectedTool.name} icon`}
                     width={48}
