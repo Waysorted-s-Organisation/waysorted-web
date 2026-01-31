@@ -166,7 +166,7 @@ export default function DocsShell({
           </div>
 
           <h1 className="text-2xl font-medium text-white mb-10 leading-snug">
-            Way&apos;s UI delivers its best experience on desktop.
+            Please view on desktop for the best experience
           </h1>
 
           <button

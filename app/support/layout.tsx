@@ -1,19 +1,16 @@
-import type { Metadata } from "next";
+import { Metadata } from 'next';
 
 export const metadata: Metadata = {
-    title: "Help Center & FAQs",
-    description: "Need help? Contact our support team, view frequently asked questions, or get in touch for assistance.",
-    keywords: [
-        "Waysorted support",
-        "contact us",
-        "help center",
-        "FAQs",
-        "customer service",
-    ],
+    title: "Contact Waysorted Support",
+    description: "Get in touch with the Waysorted team for support, questions, or feedback. We're here to help you get the most out of your design workflow.",
     openGraph: {
-        title: "Help Center & FAQs",
-        description: "Need help? Contact our support team, view frequently asked questions, or get in touch for assistance.",
+        title: "Contact Waysorted Support",
+        description: "Get in touch with the Waysorted team for support, questions, or feedback.",
+        url: "https://www.waysorted.com/support",
     },
+    alternates: {
+        canonical: "https://www.waysorted.com/support",
+    }
 };
 
 export default function SupportLayout({
