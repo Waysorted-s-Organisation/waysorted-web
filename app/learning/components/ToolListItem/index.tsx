@@ -21,16 +21,15 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
 
   return (
     <div
-      className={`group bg-white border border-secondary-db-5 rounded-xl p-3 sm:p-4 flex items-center justify-between gap-3 outline-none ${
-        isDisabled ? "opacity-70 cursor-not-allowed" : "hover:bg-primary-way-5"
-      }`}
+      className={`group bg-white border border-secondary-db-5 rounded-xl p-3 sm:p-4 flex items-center justify-between gap-3 outline-none ${isDisabled ? "opacity-70 cursor-not-allowed" : "hover:bg-primary-way-5"
+        }`}
     >
       {/* Container: Flex-1 on mobile allows wrapping, sm:flex-none keeps desktop rigid */}
       <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1 sm:flex-none">
         {/* Icon */}
         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-200 overflow-hidden shrink-0">
           <Image
-            src={`${tool.iconData}`}
+            src={tool.icon || tool.iconData || ""}
             alt={tool.name}
             width={60}
             height={60}
@@ -43,7 +42,7 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
           {/* Title Row */}
           <h2 className="font-medium text-base sm:text-xl text-secondary-db-100 flex items-center gap-2">
             <span className="truncate">{tool.name}</span>
-            
+
             {tool.isAI && (
               <Image
                 src={"/icons/ai-logo.svg"}
@@ -86,11 +85,10 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Open in Figma"
-            className={`hidden sm:inline text-xs select-none mt-1 ${
-              isDisabled
+            className={`hidden sm:inline text-xs select-none mt-1 ${isDisabled
                 ? "pointer-events-none opacity-70 text-secondary-db-80"
                 : "text-secondary-db-80 hover:text-primary-way-100"
-            }`}
+              }`}
           >
             <svg
               width="12"
@@ -131,11 +129,10 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
         }
         aria-disabled={isDisabled}
         tabIndex={isDisabled ? -1 : 0}
-        className={`text-sm font-medium items-center flex shrink-0 ${
-          isDisabled
+        className={`text-sm font-medium items-center flex shrink-0 ${isDisabled
             ? "text-secondary-db-40 cursor-not-allowed pointer-events-none"
             : "text-secondary-db-100 hover:text-primary-way-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-way-100 rounded"
-        }`}
+          }`}
       >
         <span className="hidden sm:inline">Learn more</span>
         <span className="relative ml-1 w-3 h-2">

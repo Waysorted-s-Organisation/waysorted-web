@@ -35,7 +35,7 @@ export default function ToolCard({ tool }: { tool: ITool }) {
       <div className="flex items-center justify-between mb-2 relative">
         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-200 relative overflow-hidden">
           <Image
-            src={`${tool.iconData || tool.icon}`}
+            src={tool.icon || tool.iconData || ""}
             alt={tool.name}
             width={60}
             height={60}
