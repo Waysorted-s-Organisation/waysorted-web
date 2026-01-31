@@ -211,7 +211,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     openGraph: {
       title,
       description,
-      url: `https://www.waysorted.com/docs/${slug}`,
+      url: `https://www.waysorted.com/document-hub/${slug}`,
       type: "article",
     },
     twitter: {
@@ -219,7 +219,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description,
     },
     alternates: {
-      canonical: `https://www.waysorted.com/docs/${slug}`,
+      canonical: `https://www.waysorted.com/document-hub/${slug}`,
     },
   };
 }
@@ -243,7 +243,7 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
     "@type": "TechArticle",
     headline: title,
     description: description,
-    url: `https://www.waysorted.com/docs/${slug}`,
+    url: `https://www.waysorted.com/document-hub/${slug}`,
     author: {
       "@type": "Organization",
       name: "Waysorted",
@@ -259,7 +259,7 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
     },
     mainEntityOfPage: {
       "@type": "WebPage",
-      "@id": `https://www.waysorted.com/docs/${slug}`,
+      "@id": `https://www.waysorted.com/document-hub/${slug}`,
     },
   };
 

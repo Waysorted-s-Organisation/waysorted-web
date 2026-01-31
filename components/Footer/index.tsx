@@ -179,9 +179,9 @@ export default function Footer() {
                 <h5 className="font-semibold mb-2 sm:mb-3 text-white">Company</h5>
                 <ul className="space-y-2 text-secondary-db-40">
                   <li><Link href="/about-us" className="hover:text-white">About Us</Link></li>
-                  <li><Link href="/docs" className="hover:text-white">Docs</Link></li>
+                  <li><Link href="/document-hub" className="hover:text-white">Document Hub</Link></li>
                   <li><Link href="/support" className="hover:text-white">Contact Us</Link></li>
-                  <li><Link href="/docs/privacy-policy" className="hover:text-white">Security</Link></li>
+                  <li><Link href="/document-hub/privacy-policy" className="hover:text-white">Security</Link></li>
                 </ul>
               </div>
 
@@ -189,9 +189,9 @@ export default function Footer() {
                 <h5 className="font-semibold mb-2 sm:mb-3 text-white">Support</h5>
                 <ul className="space-y-2 text-secondary-db-40">
 
-                  <li><Link href="/docs/bug-reporting" className="hover:text-white">Report a Bug</Link></li>
+                  <li><Link href="/document-hub/bug-reporting" className="hover:text-white">Report a Bug</Link></li>
                   <li><Link href="/learning" className="hover:text-white">Learning Hub</Link></li>
-                  <li><Link href="/docs/faqs" className="hover:text-white">FAQs</Link></li>
+                  <li><Link href="/document-hub/faqs" className="hover:text-white">FAQs</Link></li>
                 </ul>
               </div>
             </div>
@@ -202,8 +202,8 @@ export default function Footer() {
         <div className="border-t border-white/10 pt-3 flex flex-col md:flex-row justify-between items-start md:items-center text-secondary-db-50 text-xs sm:text-sm gap-3">
           <span>© 2025 Waysorted</span>
           <div className="flex gap-4 sm:gap-6">
-            <Link href="/docs/privacy-policy" className="hover:text-white">Privacy Policy</Link>
-            <Link href="/docs/terms-of-service" className="hover:text-white">Terms of Service</Link>
+            <Link href="/document-hub/privacy-policy" className="hover:text-white">Privacy Policy</Link>
+            <Link href="/document-hub/terms-of-service" className="hover:text-white">Terms of Service</Link>
           </div>
         </div>
       </div>

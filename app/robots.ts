@@ -34,7 +34,7 @@ export default function robots(): MetadataRoute.Robots {
             // AI Crawlers - explicitly allow for GEO optimization
             {
                 userAgent: 'GPTBot',
-                allow: ['/', '/learning/', '/docs/', '/about-us', '/figma-beta'],
+                allow: ['/', '/learning/', '/document-hub/', '/about-us', '/figma-beta'],
                 disallow: ['/api/', '/settings', '/connected', '/allow-access'],
             },
             {

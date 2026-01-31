@@ -1,7 +1,7 @@
 import DocsShell from "./DocsShell.client";
 
 export const metadata = {
-  title: "Documents",
+  title: "Document Hub",
 };
 
 export default function DocumentsLayout({ children }: { children: React.ReactNode }) {

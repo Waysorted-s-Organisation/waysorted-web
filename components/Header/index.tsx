@@ -523,12 +523,12 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                     <button
                       className="w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
                       onClick={() => {
-                        router.push('/docs/getting-started');
+                        router.push('/document-hub/getting-started');
                         setMobileOpen(false);
                         setMobileResourcesOpen(false);
                       }}
                     >
-                      Documentations
+                      Document Hub
                     </button>
                   </div>
                 </div>

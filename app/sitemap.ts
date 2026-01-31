@@ -108,9 +108,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
             // Homepage gets 1.0, first 5 sitelink-eligible pages get 0.9, rest 0.8
             priority: path === '' ? 1 : (index <= 5 ? 0.9 : 0.8),
         })),
-        // Documentation pages
+        // Document Hub pages
         ...docPages.map((slug) => ({
-            url: `${baseUrl}/docs/${slug}`,
+            url: `${baseUrl}/document-hub/${slug}`,
             lastModified: currentDate,
             changeFrequency: 'monthly' as const,
             priority: 0.6,

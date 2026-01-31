@@ -22,7 +22,7 @@ export default function PrivacyPolicy() {
                 This Privacy Policy applies to all visitors, users, and others who access or use the Service, including individuals acting on behalf of a company or other legal entity.
             </p>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
-                Unless otherwise defined in this Privacy Policy, capitalized terms used herein shall have the same meanings as defined in our <Link href="/docs/terms-of-service" className="text-primary-way-100 hover:underline">Terms and Conditions</Link>. This Privacy Policy, together with the Terms and Conditions, constitutes a legally binding agreement between you and Waysorted Infotech Pvt. Ltd.
+                Unless otherwise defined in this Privacy Policy, capitalized terms used herein shall have the same meanings as defined in our <Link href="/document-hub/terms-of-service" className="text-primary-way-100 hover:underline">Terms and Conditions</Link>. This Privacy Policy, together with the Terms and Conditions, constitutes a legally binding agreement between you and Waysorted Infotech Pvt. Ltd.
             </p>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
                 Waysorted Infotech Pvt. Ltd. is incorporated and operates from India. We are committed to protecting your privacy and handling your personal data in a lawful, transparent, and secure manner, in accordance with applicable data protection and privacy laws, including:

@@ -35,7 +35,7 @@ export default function ToolCard({ tool }: { tool: ITool }) {
       <div className="flex items-center justify-between mb-2 relative">
         <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-200 relative overflow-hidden">
           <Image
-            src={`${tool.iconData}`}
+            src={tool.icon || tool.iconData || ""}
             alt={tool.name}
             width={60}
             height={60}
@@ -67,8 +67,8 @@ export default function ToolCard({ tool }: { tool: ITool }) {
         rel="noopener noreferrer"
         aria-label="Open in Figma"
         className={`hidden sm:inline text-xs select-none ${isDisabled
-            ? "pointer-events-none opacity-70 text-secondary-db-80"
-            : "text-secondary-db-80 hover:text-primary-way-100"
+          ? "pointer-events-none opacity-70 text-secondary-db-80"
+          : "text-secondary-db-80 hover:text-primary-way-100"
           }`}
       >
         <svg
@@ -107,8 +107,8 @@ export default function ToolCard({ tool }: { tool: ITool }) {
         aria-disabled={isDisabled}
         tabIndex={isDisabled ? -1 : 0}
         className={`mt-3 sm:mt-4 text-sm font-medium flex items-center ${isDisabled
-            ? "text-secondary-db-40 cursor-not-allowed pointer-events-none"
-            : "text-secondary-db-100 hover:text-primary-way-100"
+          ? "text-secondary-db-40 cursor-not-allowed pointer-events-none"
+          : "text-secondary-db-100 hover:text-primary-way-100"
           }`}
       >
         Learn more

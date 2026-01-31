@@ -19,7 +19,7 @@ export default function TermsOfService() {
                 If you are accessing or using the Service on behalf of a legal entity, you represent and warrant that you have the authority to bind such entity to these Terms, and in such case, references to &quot;You&quot; or &quot;User&quot; shall refer to that entity.
             </p>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
-                These Terms should be read together with our <Link href="/docs/privacy-policy" className="text-primary-way-100 hover:underline">Privacy Policy</Link>, which explains how we collect, use, and protect your personal data. The Privacy Policy is incorporated into these Terms by reference.
+                Please review our <Link href="/document-hub/privacy-policy" className="text-primary-way-100 hover:underline">Privacy Policy</Link>, which also governs your use of the Service, to understand our practices.
             </p>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
                 Waysorted Infotech Pvt. Ltd. reserves the right to update or modify these Terms at any time in accordance with the section titled &quot;Changes to the Terms&quot;.

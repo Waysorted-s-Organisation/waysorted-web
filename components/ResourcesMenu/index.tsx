@@ -15,7 +15,7 @@ export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps)
 
   const menuItems = [
     { title: 'Learning Hub', link: 'learning', desc: 'Quick tips and tutorials to get you started fast.', icon: '/icons/learning.svg' },
-    { title: 'Documentation', link: 'docs/getting-started', desc: 'Everything you need, explained in detail.', icon: '/icons/documentation.svg' },
+    { title: 'Document Hub', link: 'document-hub/getting-started', desc: 'Everything you need, explained in detail.', icon: '/icons/documentation.svg' },
     { title: 'Release Notes', link: 'notes', desc: 'Discover What\'s new & Enhancements.', icon: '/icons/release-notes.svg' }
   ];
 
