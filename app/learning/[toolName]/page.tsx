@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         openGraph: {
             title: `${tool.name} - Waysorted`,
             description: tool.shortDescription,
-            images: tool.icon || [],
+            images: tool.icon || tool.iconData || [],
         }
     }
 }
