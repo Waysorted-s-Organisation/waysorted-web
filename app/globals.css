@@ -14,7 +14,6 @@
   --primary-way-20: #D1DFF9;
   --primary-way-10: #E8EFFC;
   --primary-way-5: #F7F9FE;
-  --secondary-db-200: #181817;
   --secondary-db-100: #0D1218;
   --secondary-db-90: #282C32;
   --secondary-db-80: #43474B;
@@ -31,7 +30,6 @@
   --menu-bg: #f7faff;
   --tertiary-cyan-500: #24b7fd;
   --tertiary-orange-500: #ff7920;
-  --tertiary-orange-600: #ea613f;
   --tertiary-orange-100: #fff1e8;
   --tertiary-orange-dark: #3d2b21;
   --tertiary-green-500: #01a04e;
@@ -131,7 +129,6 @@
   --color-ring: hsl(var(--ring));
 
   --color-shadow-color: var(--shadow-color);
-  --color-secondary-db-200: var(--secondary-db-200);
   --color-secondary-db-100: var(--secondary-db-100);
   --color-secondary-db-90: var(--secondary-db-90);
   --color-secondary-db-80: var(--secondary-db-80);
@@ -174,7 +171,6 @@
   --color-save-bg: var(--save-bg);
   --color-menu-bg: var(--menu-bg);
   --color-tertiary-orange-500: var(--tertiary-orange-500);
-  --color-tertiary-orange-600: var(--tertiary-orange-600);
   --color-tertiary-orange-100: var(--tertiary-orange-100);
   --color-tertiary-orange-dark: var(--tertiary-orange-dark);
   --color-tertiary-green-500: var(--tertiary-green-500);
@@ -330,12 +326,6 @@ html, body {
   background-size: 25px 25px;
 }
 
-.about-bg-dots {
-  background-color: #181817;
-  background-image: radial-gradient(#797b7f80 0.25px, transparent 1px);
-  background-size: 25px 25px;
-}
-
 .bg-float-dots {
   background-color: #ffffff;
   background-image: radial-gradient(#aeb0b2 0.25px, transparent 1px);
@@ -348,21 +338,9 @@ html, body {
   background-size: 25px 25px; 
 }
 
-.allow-access-bg-dots {
-  background-color: #F7F9FE; 
-  background-image: radial-gradient(#3B6DD7 0.25px, transparent 1px);
-  background-size: 25px 25px; 
-}
-
-.tertiary-orange-600-bg-dots {
-  background-color: #ea613f;
-  background-image: radial-gradient(#ffffff80 0.25px, transparent 1px);
-  background-size: 25px 25px;
-}
-
-.bio-bg-dots{
-  background-color: #f3f3f3;
-  background-image: radial-gradient(#3B6DD7 0.25px, transparent 1px);
+.tertiary-orange-500-bg-dots {
+  background-color: rgba(249, 119, 49, 0.1);
+  background-image: radial-gradient(#43474b80 0.25px, transparent 1px);
   background-size: 25px 25px;
 }
 
@@ -734,8 +712,7 @@ html, body {
 /* On hover/focus: entrance, then floating loop.
    IMPORTANT: use --enter-delay if provided, else fallback to --delay. */
 .btn-glow:hover .btn-star,
-.btn-glow:focus-visible .btn-star,
-.btn-glow.force-hover .btn-star {
+.btn-glow:focus-visible .btn-star {
   opacity: 1;
   animation:
     starEnter var(--enter-dur, .45s) cubic-bezier(.2,.8,.2,1) var(--enter-delay, var(--delay, 0s)) forwards,
@@ -747,8 +724,7 @@ html, body {
 }
  
 .btn-glow:hover .btn-star::before,
-.btn-glow:focus-visible .btn-star::before,
-.btn-glow.force-hover .btn-star::before {
+.btn-glow:focus-visible .btn-star::before {
   opacity: 1;
   transform: scale(1);
   filter: blur(12px);
@@ -798,8 +774,7 @@ html, body {
 /* Reduced motion: no movement, keep a visible glow */
 @media (prefers-reduced-motion: reduce) {
   .btn-glow:hover .btn-star,
-  .btn-glow:focus-visible .btn-star,
-  .btn-glow.force-hover .btn-star {
+  .btn-glow:focus-visible .btn-star {
     animation: none !important;
     opacity: 1;
     transform: translate(-50%, -50%) scale(var(--scale, 1)) rotate(var(--rot, 0deg));

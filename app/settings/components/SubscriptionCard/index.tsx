@@ -118,17 +118,15 @@ export default function SubscriptionCard({ user }: Props) {
               <span className="font-semibold">
                 {earlyAccess ? "∞" : "0"}
               </span> /
-              {earlyAccess ? "∞" : "0"} credits left
+              {earlyAccess ? " ∞" : " 0"} credits left
             </span>
           </div>
 
-          {!earlyAccess &&
-            <button
-              type="button"
-              className="inline-flex items-center rounded-md bg-primary-way-10 px-4 py-1.5 text-xs font-medium text-primary-way-100 border border-primary-way-20 hover:bg-primary-way-20 transition cursor-pointer"
-            >
-              Upgrade now
-            </button>}
+          {earlyAccess && (
+            <span className="inline-flex items-center rounded-md bg-secondary-db-5 px-4 py-1.5 text-xs font-medium text-secondary-db-70 border border-secondary-db-10">
+              Upgraded
+            </span>
+          )}
         </div>
       </div>
     </section>

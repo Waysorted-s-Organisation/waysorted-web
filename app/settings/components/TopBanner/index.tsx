@@ -19,16 +19,15 @@ export default function TopBanner({ earlyAccess }: TopBannerProps) {
                   title="Info"
               >
                   <Image
-                      src="/icons/info-icon.svg"
+                      src="/icons/bolt-blue.svg"
                       alt="Info"
                       fill
                       className="object-contain"
                       sizes="20px"
                   />
               </span>
-              <p className="text-sm text-primary-way-100">
-                  Secure your early access and enjoy a head start with extra features,
-                  priority support, and special rewards.
+              <p className="text-sm font-medium text-primary-way-100">
+                  You don&apos;t have any active Subscription!
               </p>
           </div>
 
@@ -37,7 +36,7 @@ export default function TopBanner({ earlyAccess }: TopBannerProps) {
                   onClick={() => router.push("/get-early-access")}
                   className="bg-primary-way-10 outline outline-1 outline-primary-way-100 rounded-lg text-sm font-medium text-primary-way-100 p-2 cursor-pointer hover:bg-primary-way-30 hover:outline hover:outline-1 hover:outline-primary-way-100"
               >
-                  Get early access
+                  Get Early Access
               </button>
           </div>
       </div>

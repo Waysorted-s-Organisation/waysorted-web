@@ -59,21 +59,27 @@ export default function CreditsUsageCard({ user }: Props) {
               Join Waitlist
             </button>
           )}
+
+          {earlyAccess && (
+            <span className="inline-flex items-center rounded-md bg-secondary-db-5 px-4 py-1.5 text-xs font-medium text-secondary-db-70 border border-secondary-db-10">
+              Upgraded
+            </span>
+          )}
         </div>
 
         {/* Conditional Panels */}
         {!earlyAccess && (
-          <div className="mt-5 rounded-md bg-error-100 p-4" role="alert">
+          <div className="mt-5 rounded-md bg-tertiary-orange-100 p-4" role="alert">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="flex items-start gap-3">
                 <Image
-                  src="/icons/info-red.svg"
-                  alt="Error Icon"
+                  src="/icons/info-orange.svg"
+                  alt="Warning Icon"
                   width={16}
                   height={16}
                   className="object-contain"
                 />
-                <p className="text-sm text-error-500">
+                <p className="text-sm text-tertiary-orange-500">
                   Waysorted credits will become available once you get early access.
                 </p>
               </div>
