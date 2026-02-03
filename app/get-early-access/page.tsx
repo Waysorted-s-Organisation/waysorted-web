@@ -76,11 +76,11 @@ export default function EarlyAccessPage() {
     <main className="bg-white h-screen lg:h-screen lg:overflow-hidden">
       <div className="mx-auto max-w-full h-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 items-stretch h-full">
-          
+
           <section className="relative w-full flex flex-col h-full px-6 pt-6 pb-2 sm:px-12 sm:pt-8 lg:max-w-2xl">
-            
+
             <div className="flex-1 flex flex-col no-scrollbar">
-              
+
               {/* Header / Logo */}
               <div className="relative mb-6 shrink-0">
                 <div className="flex justify-between items-start">
@@ -141,9 +141,6 @@ export default function EarlyAccessPage() {
                   <EarlyAccessForm />
                 </div>
 
-                <p className="mt-4 text-xs font-regular text-secondary-db-100 text-center lg:text-left">
-                  We&apos;ll send you an Early Access Key!
-                </p>
 
                 {/* Mobile Carousel */}
                 <div className="my-12 lg:hidden block">
@@ -201,9 +198,9 @@ export default function EarlyAccessPage() {
           </section>
           <section className="hidden lg:block relative h-full bg-primary-way-10 border-l border-primary-way-20">
             <div className="h-full p-4 flex flex-col">
-              
+
               <div className="h-full flex flex-col justify-between rounded-3xl blue-bg-dots px-8 py-5 overflow-hidden">
-                
+
                 {/* Header */}
                 <div className="flex items-start justify-between shrink-0 mb-4">
                   <h2 className="text-white text-2xl font-regular w-1/2">

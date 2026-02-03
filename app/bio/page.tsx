@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     locale: 'en_IN',
     images: [
       {
-        url: 'https://www.waysorted.com/og-bio.png',
+        url: '/images/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Waysorted - Accelerate every idea with one powerful suite',
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Waysorted - Accelerate every idea with one powerful suite',
     description: 'Discover one unified tool suite which works across softwares.',
-    images: ['https://www.waysorted.com/og-bio.png'],
+    images: ['/images/og-image.png'],
     creator: '@Waysorted',
     site: '@Waysorted',
   },
