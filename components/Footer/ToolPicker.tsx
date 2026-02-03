@@ -25,10 +25,14 @@ export default function ToolsPicker({ tools, onVisitPlugin }: Props) {
   );
 
   const categories = useMemo(() => {
-    const set = new Set<string>();
-    for (const t of visibleTools) set.add(t.category);
-    return Array.from(set).sort();
-  }, [visibleTools]);
+    // Fixed categories as requested
+    const desiredCategories = ['color', 'export', 'import', 'utility'];
+    // Filter to ensure we only show categories that actually have tools (optional, but good UX)
+    // OR just return the fixed list if the user wants to enforce seeing them even if empty (though that breaks the logic below)
+    // Let's stick to the fixed list but we should make sure matching is case-insensitive if needed.
+    // Assuming tool.category is lowercase or we normalize it.
+    return desiredCategories;
+  }, []);
 
   const [selectedCategory, setSelectedCategory] = useState<string>(() => categories[0] ?? "");
   useEffect(() => {
@@ -38,7 +42,7 @@ export default function ToolsPicker({ tools, onVisitPlugin }: Props) {
   }, [categories, selectedCategory]);
 
   const toolsInCategory = useMemo(
-    () => visibleTools.filter((t) => t.category === selectedCategory),
+    () => visibleTools.filter((t) => t.category.toLowerCase() === selectedCategory.toLowerCase()),
     [visibleTools, selectedCategory]
   );
 
