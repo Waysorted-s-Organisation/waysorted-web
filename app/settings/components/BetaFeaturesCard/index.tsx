@@ -34,7 +34,7 @@ export default function BetaFeaturesCard({ user, features }: BetaFeaturesCardPro
               <div className="flex items-center gap-2">
                 <Image
                   src="/icons/lightning.svg"
-                  alt="Error Icon"
+                  alt="Info Icon"
                   width={16}
                   height={16}
                   className="object-contain"
@@ -45,7 +45,8 @@ export default function BetaFeaturesCard({ user, features }: BetaFeaturesCardPro
               </div>
               <button
                 type="button"
-                className="rounded-md border border-tertiary-vivid-blue-500 bg-tertiary-vivid-blue-100 px-3 py-1.5 text-xs font-medium text-tertiary-vivid-blue-500 transition cursor-pointer"
+                onClick={() => window.location.href = "/get-early-access"}
+                className="rounded-md border border-tertiary-vivid-blue-500 bg-tertiary-vivid-blue-100 px-3 py-1.5 text-xs font-medium text-tertiary-vivid-blue-500 transition cursor-pointer hover:bg-tertiary-vivid-blue-500 hover:text-white"
               >
                 Get Early Access
               </button>
@@ -57,21 +58,21 @@ export default function BetaFeaturesCard({ user, features }: BetaFeaturesCardPro
               <div className="flex items-center gap-2">
                 <Image
                   src="/icons/lightning.svg"
-                  alt="Error Icon"
+                  alt="Info Icon"
                   width={16}
                   height={16}
                   className="object-contain"
                 />
                 <p className="text-sm font-medium">
-                  You &apos;re already part of the Beta Program. Thanks for helping us shape Waysorted!
+                  You&apos;re already part of the Beta Program. Thanks for helping us shape Waysorted!
                 </p>
               </div>
               <button
                 type="button"
                 onClick={handleClick}
-                className="rounded-md border border-tertiary-vivid-blue-500 bg-tertiary-vivid-blue-100 px-3 py-1.5 text-xs font-medium text-tertiary-vivid-blue-500 transition cursor-pointer"
+                className="rounded-md border border-tertiary-vivid-blue-500 bg-tertiary-vivid-blue-500 px-3 py-1.5 text-xs font-medium text-white transition cursor-pointer hover:bg-tertiary-vivid-blue-100 hover:text-tertiary-vivid-blue-500"
               >
-                Rate Us
+                Rate us
               </button>
             </div>
           </div>
