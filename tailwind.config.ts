@@ -28,10 +28,35 @@ const config = {
                 primary: {
                     DEFAULT: "hsl(var(--primary))",
                     foreground: "hsl(var(--primary-foreground))",
+                    way: {
+                        100: "var(--primary-way-100)",
+                        90: "var(--primary-way-90)",
+                        80: "var(--primary-way-80)",
+                        70: "var(--primary-way-70)",
+                        60: "var(--primary-way-60)",
+                        50: "var(--primary-way-50)",
+                        40: "var(--primary-way-40)",
+                        30: "var(--primary-way-30)",
+                        20: "var(--primary-way-20)",
+                        10: "var(--primary-way-10)",
+                        5: "var(--primary-way-5)",
+                    }
                 },
                 secondary: {
                     DEFAULT: "hsl(var(--secondary))",
                     foreground: "hsl(var(--secondary-foreground))",
+                    db: {
+                        100: "var(--secondary-db-100)",
+                        90: "var(--secondary-db-90)",
+                        80: "var(--secondary-db-80)",
+                        70: "var(--secondary-db-70)",
+                        60: "var(--secondary-db-60)",
+                        50: "var(--secondary-db-50)",
+                        40: "var(--secondary-db-40)",
+                        30: "var(--secondary-db-30)",
+                        20: "var(--secondary-db-20)",
+                        5: "var(--secondary-db-5)",
+                    }
                 },
                 destructive: {
                     DEFAULT: "hsl(var(--destructive))",

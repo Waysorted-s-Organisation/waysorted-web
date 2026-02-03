@@ -163,35 +163,41 @@ export default function Footer() {
             </p>
           </div>
 
-          <div className="col-span-1 lg:col-span-5 lg:col-start-8">
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-8 sm:gap-12 text-sm">
+          <div className="col-span-1 lg:col-span-7 lg:col-start-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 text-sm">
               <div>
-                <h5 className="font-semibold mb-2 sm:mb-3 text-white">Get Started</h5>
+                <h5 className="font-semibold mb-2 sm:mb-3 text-white">Accessibility Tools</h5>
                 <ul className="space-y-2 text-secondary-db-40">
-                  {/* <li><Link href="/get-early-access" className="hover:text-white">Early Access</Link></li> */}
-                  <li><Link href="/learning" className="hover:text-white">Explore Tools</Link></li>
-                  {/* <li><Link href="/settings" className="hover:text-white">Free Credits</Link></li> */}
-                  <li><Link href="/login" className="hover:text-white">Sign in</Link></li>
+                  <li><Link href="/tools?category=accessibility" className="hover:text-white">Contrast Checker</Link></li>
+                  <li><Link href="/tools?category=accessibility" className="hover:text-white">Screen Reader</Link></li>
+                  <li><Link href="/tools?category=accessibility" className="hover:text-white">Alt Text Gen</Link></li>
                 </ul>
               </div>
 
               <div>
-                <h5 className="font-semibold mb-2 sm:mb-3 text-white">Company</h5>
+                <h5 className="font-semibold mb-2 sm:mb-3 text-white">Design Tools</h5>
                 <ul className="space-y-2 text-secondary-db-40">
-                  <li><Link href="/about-us" className="hover:text-white">About Us</Link></li>
-                  <li><Link href="/document-hub" className="hover:text-white">Document Hub</Link></li>
-                  <li><Link href="/support" className="hover:text-white">Contact Us</Link></li>
-                  <li><Link href="/document-hub/privacy-policy" className="hover:text-white">Security</Link></li>
+                  <li><Link href="/tools?category=design" className="hover:text-white">Color Palette</Link></li>
+                  <li><Link href="/tools?category=design" className="hover:text-white">Gradient Gen</Link></li>
+                  <li><Link href="/tools?category=design" className="hover:text-white">Font Pairings</Link></li>
                 </ul>
               </div>
 
               <div>
-                <h5 className="font-semibold mb-2 sm:mb-3 text-white">Support</h5>
+                <h5 className="font-semibold mb-2 sm:mb-3 text-white">Utility Tools</h5>
                 <ul className="space-y-2 text-secondary-db-40">
+                  <li><Link href="/tools?category=utility" className="hover:text-white">Image Compressor</Link></li>
+                  <li><Link href="/tools?category=utility" className="hover:text-white">PDF Converter</Link></li>
+                  <li><Link href="/tools?category=utility" className="hover:text-white">JSON Formatter</Link></li>
+                </ul>
+              </div>
 
-                  <li><Link href="/document-hub/bug-reporting" className="hover:text-white">Report a Bug</Link></li>
-                  <li><Link href="/learning" className="hover:text-white">Learning Hub</Link></li>
-                  <li><Link href="/document-hub/faqs" className="hover:text-white">FAQs</Link></li>
+              <div>
+                <h5 className="font-semibold mb-2 sm:mb-3 text-white">Way AI</h5>
+                <ul className="space-y-2 text-secondary-db-40">
+                  <li><Link href="/tools?category=ai" className="hover:text-white">AI Color Gen</Link></li>
+                  <li><Link href="/tools?category=ai" className="hover:text-white">Design Assistant</Link></li>
+                  <li><Link href="/tools?category=ai" className="hover:text-white">Code Helper</Link></li>
                 </ul>
               </div>
             </div>
