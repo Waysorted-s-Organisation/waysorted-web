@@ -26,7 +26,7 @@ export default function ToolsPicker({ tools, onVisitPlugin }: Props) {
 
   const categories = useMemo(() => {
     // Fixed categories as requested
-    const desiredCategories = ['color', 'export', 'import', 'utility'];
+    const desiredCategories = ['Accessibility Tools', 'Design Tools', 'Utility Tools', 'Way AI'];
     // Filter to ensure we only show categories that actually have tools (optional, but good UX)
     // OR just return the fixed list if the user wants to enforce seeing them even if empty (though that breaks the logic below)
     // Let's stick to the fixed list but we should make sure matching is case-insensitive if needed.
@@ -42,7 +42,13 @@ export default function ToolsPicker({ tools, onVisitPlugin }: Props) {
   }, [categories, selectedCategory]);
 
   const toolsInCategory = useMemo(
-    () => visibleTools.filter((t) => t.category.toLowerCase() === selectedCategory.toLowerCase()),
+    () => visibleTools.filter((t) => {
+      const cat = t.category.toLowerCase();
+      const sel = selectedCategory.toLowerCase();
+      // Allow matching if the tool category is part of the selected category (e.g. "accessibility" in "Accessibility Tools")
+      // or exact match
+      return sel.includes(cat) || cat === sel || (cat === 'ai' && sel.includes('ai'));
+    }),
     [visibleTools, selectedCategory]
   );
 
