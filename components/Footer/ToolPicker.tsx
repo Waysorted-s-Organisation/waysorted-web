@@ -44,10 +44,25 @@ export default function ToolsPicker({ tools, onVisitPlugin }: Props) {
   const toolsInCategory = useMemo(
     () => visibleTools.filter((t) => {
       const cat = t.category.toLowerCase();
-      const sel = selectedCategory.toLowerCase();
-      // Allow matching if the tool category is part of the selected category (e.g. "accessibility" in "Accessibility Tools")
-      // or exact match
-      return sel.includes(cat) || cat === sel || (cat === 'ai' && sel.includes('ai'));
+      const tags = t.tags || [];
+
+      switch (selectedCategory) {
+        case 'Way AI':
+          return t.isAI;
+        case 'Accessibility Tools':
+          // Check category or tags for accessibility
+          return cat === 'accessibility' || tags.includes('accessibility');
+        case 'Design Tools':
+          // Map color, typography, image-editing to Design
+          // Exclude AI tools if they should only appear in Way AI (or keep them if duplication is desired, let's exclude for cleaner distinct categories for now, or include? User said "Way AI" is a category, implies AI tools go there. Palettable is not AI, goes to Design.)
+          // Let's exclude AI from Design/Utility to avoid clutter, unless specific request.
+          return !t.isAI && ['color', 'image-editing', 'typography', 'design', 'ui', 'ux'].includes(cat);
+        case 'Utility Tools':
+          // Map export, import, utility to Utility
+          return !t.isAI && ['utility', 'export', 'import', 'productivity', 'converter'].includes(cat);
+        default:
+          return false;
+      }
     }),
     [visibleTools, selectedCategory]
   );
