@@ -37,6 +37,15 @@ export async function GET(req: NextRequest) {
       sortOption = { votes: -1, createdAt: -1 };
     }
 
+    // Check if user is admin
+    const user = await getCurrentUser();
+    const isAdmin = user?.role === "admin";
+
+    // Non-admin users (including unauthenticated) should only see public requests
+    if (!isAdmin) {
+      query.isPublic = true;
+    }
+
     const data = await FeatureRequest.find(query).sort(sortOption);
     return NextResponse.json({ data });
   } catch (err) {
