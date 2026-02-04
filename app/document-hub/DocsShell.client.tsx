@@ -41,7 +41,6 @@ const sidebarData: SidebarItem[] = [
     title: "Tools Reference",
     links: ["Frames to PDF", "Palettable", "Unit Converter", "File Importer", "Upcoming Tools"]
   },
-
   {
     title: "Troubleshooting & Support",
     links: ["Common Errors", "Diagnostics", "Contact Support", "Bug Reporting", "Request a Feature"]
@@ -79,9 +78,10 @@ export default function DocsShell({
   const { showBanner, setShowBanner } = useBanner();
   const router = useRouter();
   const pathname = usePathname();
-
   const [openSection, setOpenSection] = useState<string | null>("General");
   const [activeLink, setActiveLink] = useState<string | null>(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
 
   const toggleSection = (title: string) => {
     setOpenSection((prev) => (prev === title ? null : title));
@@ -117,6 +117,11 @@ export default function DocsShell({
     }
   }, [pathname]);
 
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsMobileSearchOpen(false);
+  }, [pathname]);
+
   const filteredSidebarData = useMemo(() => {
     if (!searchTerm.trim()) return sidebarData;
 
@@ -124,20 +129,15 @@ export default function DocsShell({
 
     return sidebarData
       .map((section) => {
-        // Check if section title matches
         const titleMatches = section.title.toLowerCase().includes(lowerTerm);
-
-        // Filter links that match
         const matchingLinks = section.links.filter((link) =>
           link.toLowerCase().includes(lowerTerm)
         );
 
-        // If title matches, keep all links. If not, keep only matching links.
         if (titleMatches) {
           return section;
         }
 
-        // If title doesn't match but we have matching links, return section with those links
         if (matchingLinks.length > 0) {
           return {
             ...section,
@@ -145,7 +145,6 @@ export default function DocsShell({
           };
         }
 
-        // No match
         return null;
       })
       .filter(Boolean) as SidebarItem[];
@@ -153,39 +152,203 @@ export default function DocsShell({
 
   return (
     <>
-      <div className="lg:hidden fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-center blue-bg-dots">
-        <div className="relative z-10 flex flex-col items-center max-w-md mx-auto">
-          <div className="mb-8 rounded-2xl bg-primary-way-100 backdrop-blur-sm border border-white/20 shadow-lg">
-            <Image
-              src="/icons/desktop.svg"
-              alt="Desktop Experience"
-              width={62}
-              height={62}
-              className="w-16 h-16"
-            />
+      <div className="lg:hidden min-h-screen bg-white flex flex-col">
+        <Header showBanner={showBanner} setShowBanner={setShowBanner} />
+
+        <main className={`flex-1 transition-all duration-300 px-5 ${showBanner ? "pt-24" : "pt-16"}`}>
+          
+          {!isMobileSearchOpen && (
+            <div className="mt-6 mb-4">
+              <nav className="text-sm font-medium text-secondary-db-100/50 mb-4">
+                <span onClick={() => router.push("/")} className="cursor-pointer">Home</span>
+                <Image
+                  src="/icons/chevron-right.svg"
+                  alt="Arrow Right"
+                  width={4}
+                  height={4}
+                  className="inline-block mx-2"
+                />
+                <span className="text-primary-way-100 border-b-2 border-primary-way-10 pb-0.5">Documents</span>
+              </nav>
+              
+              <div className="flex items-center gap-2 mb-2">
+                 <div className="bg-black rounded-md p-1">
+                    <Image
+                      src="/icons/waydocs.svg"
+                      alt="WayDocs"
+                      width={16}
+                      height={16}
+                      className="invert" 
+                    />
+                 </div>
+                 <span className="font-medium text-sm text-secondary-db-100">WayDocs</span>
+              </div>
+              <h1 className="text-3xl font-semibold text-secondary-db-100">Document Hub</h1>
+            </div>
+          )}
+
+          <div className="relative mb-8">
+            {!isMobileSearchOpen ? (
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                  className="flex-1 flex items-center justify-between px-4 py-3 bg-white rounded-lg text-secondary-db-100 font-medium"
+                >
+                  <span className="truncate">{openSection || "Select Section"}</span>
+                  <Image
+                    src={isMobileMenuOpen ? "/icons/arrow-up-blue.svg" : "/icons/arrow-down-blue.svg"}
+                    alt="Toggle"
+                    width={12}
+                    height={12}
+                    className="mr-1"
+                  />
+                </button>
+
+                <button 
+                  onClick={() => setIsMobileSearchOpen(true)}
+                  className="flex items-center justify-center px-4 py-3 bg-secondary-db-5 rounded-lg text-secondary-db-100 border border-transparent"
+                >
+                   <span className="mr-2 text-sm font-medium">Search</span>
+                   <Image src="/icons/search.svg" alt="Search" width={16} height={16} />
+                </button>
+              </div>
+            ) : (
+               <div className="relative w-full top-3">
+                <input
+                  type="text"
+                  placeholder="Search Topic"
+                  autoFocus
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full rounded-lg pl-10 pr-10 py-3 text-secondary-db-100 transition-all"
+                />
+                <Image
+                  src="/icons/search.svg"
+                  alt="Search"
+                  width={16}
+                  height={16}
+                  className="absolute left-3 top-3.5"
+                />
+                <button 
+                  onClick={() => {
+                      setIsMobileSearchOpen(false);
+                      setSearchTerm("");
+                  }}
+                  className="absolute right-3 top-2 text-2xl text-secondary-db-60 leading-none"
+                >
+                  &times;
+                </button>
+              </div>
+            )}
+
+            {/* Mobile Menu Overlay */}
+            {isMobileMenuOpen && !isMobileSearchOpen && (
+              <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-5">
+                {/* 1. Backdrop */}
+                <div 
+                  className="absolute inset-0 bg-black/5 backdrop-blur-sm"
+                  onClick={() => setIsMobileMenuOpen(false)} 
+                />
+
+                {/* 2. The Menu Card */}
+                <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[70vh]">
+                  <div className="overflow-y-auto py-2">
+                    {sidebarData.map((item) => {
+                      const isActive = openSection === item.title;
+                      return (
+                        <div key={item.title} className="border-b border-secondary-db-5 last:border-0">
+                          <button
+                            onClick={() => toggleSection(item.title)}
+                            className={`w-full flex items-center text-xs justify-between px-4 py-2 text-left font-semibold transition-colors ${
+                              isActive ? "bg-primary-way-100 text-white" : "text-secondary-db-100 hover:bg-secondary-db-5"
+                            }`}
+                          >
+                            {item.title}
+                            <Image
+                              src={isActive ? "/icons/arrow-up-white.svg" : "/icons/arrow-down-blue.svg"}
+                              alt="Toggle"
+                              width={14}
+                              height={14}
+                            />
+                          </button>
+                          
+                          {/* Nested Links */}
+                          <div className={`bg-primary-way-5 overflow-hidden transition-all duration-300 ${isActive ? "max-h-[500px]" : "max-h-0"}`}>
+                            {item.links.map(link => (
+                              <Link 
+                                key={link} 
+                                href={`/document-hub/${slugify(link)}`}
+                                onClick={() => setIsMobileMenuOpen(false)}
+                                className={`block px-8 py-3 text-xs border-l-4 transition-all ${
+                                  activeLink === link 
+                                    ? "text-primary-way-100 font-normal border-primary-way-100 bg-primary-way-10" 
+                                    : "text-secondary-db-80 border-transparent hover:bg-primary-way-10"
+                                }`}
+                              >
+                                {link}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 3. Floating Close Button (Matches Image) */}
+                <button 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="relative mt-8 group"
+                >
+                  <div className="bg-neutral-800/70 text-white border border-white/40 ring-1 ring-white/30 shadow-2xl backdrop-blur p-0 leading-none p-4 rounded-full transition-transform active:scale-95">
+                    <Image 
+                        src="/icons/close.svg" 
+                        alt="Close" 
+                        width={18} 
+                        height={18} 
+                        className="brightness-200"
+                    />
+                  </div>
+                </button>
+              </div>
+            )}
+
+            {isMobileSearchOpen && searchTerm && (
+               <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl overflow-hidden max-h-[60vh] overflow-y-auto z-50">
+                  {filteredSidebarData.length === 0 ? (
+                    <p className="p-4 text-sm text-secondary-db-60">No results found.</p>
+                  ) : (
+                    filteredSidebarData.map(section => (
+                      <div key={section.title} className="p-2">
+                         <div className="text-xs font-semibold text-secondary-db-50 uppercase px-2 mb-1">{section.title}</div>
+                         {section.links.map(link => (
+                           <Link
+                             key={link}
+                             href={`/document-hub/${slugify(link)}`}
+                             onClick={() => setIsMobileSearchOpen(false)}
+                             className="block px-2 py-2 text-xs text-secondary-db-100 hover:bg-secondary-db-5 rounded-md"
+                           >
+                             {link}
+                           </Link>
+                         ))}
+                      </div>
+                    ))
+                  )}
+               </div>
+            )}
           </div>
-
-          <h1 className="text-2xl font-medium text-white mb-10 leading-snug">
-            Please view on desktop for the best experience
-          </h1>
-
-          <button
-            onClick={() => router.push("/")}
-            className="flex items-center justify-center gap-2 bg-secondary-db-100 text-white px-6 py-3.5 rounded-lg font-semibold text-sm"
-          >
-            <Image
-              src="/icons/white-back-icon.svg"
-              alt="Arrow Right"
-              width={16}
-              height={16}
-              className="inline-block"
-            />
-            <span>Go back to home page</span>
-          </button>
+          <div className={`transition-opacity duration-200 ${(isMobileMenuOpen || isMobileSearchOpen) ? 'opacity-30 pointer-events-none' : 'opacity-100'}`}>
+             <div className="prose prose-sm max-w-none text-secondary-db-80">
+                {children}
+             </div>
+          </div>
+        </main>
+        
+        <div className="mt-12">
+            <Footer />
         </div>
       </div>
 
-      {/* Desktop View (Hidden on screens smaller than lg) */}
       <div className="hidden lg:block min-h-screen bg-white">
         <main
           className={`min-h-screen bg-white transition-all duration-300 pb-45 ${showBanner ? "pt-24" : "pt-16"
@@ -239,9 +402,7 @@ export default function DocsShell({
             </div>
           </div>
 
-          {/* Three-column layout: Sidebar / Content / TOC */}
           <div className="max-w-7xl mx-auto px-5 py-12 flex gap-8 items-stretch">
-            {/* Sidebar */}
             <aside className="w-72 px-4 pb-4 flex flex-col shrink-0">
               <div className="relative w-72 mb-6">
                 <input
@@ -340,9 +501,7 @@ export default function DocsShell({
               </nav>
             </aside>
 
-            {/* Content */}
             <main className="flex-1 pl-4">
-              {/* data-doc-content used by TOC */}
               <div className="prose max-w-3xl bg-primary-way-5 rounded-lg px-16 py-4 mb-6 border border-primary-way-10 mx-auto">
                 <div className="flex justify-center">
                   <div className="text-left">
