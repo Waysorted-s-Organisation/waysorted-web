@@ -54,7 +54,7 @@ export default function SubscriptionCard({ user }: Props) {
                   height={16}
                   className="object-contain"
                 />
-                <p className="text-sm font-medium">
+                <p className="text-sm text-error-500 font-medium">
                   You don&apos;t have any active Subscription!
                 </p>
               </div>

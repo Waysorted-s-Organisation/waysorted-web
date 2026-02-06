@@ -69,7 +69,7 @@ export default function CreditsUsageCard({ user }: Props) {
 
         {/* Conditional Panels */}
         {!earlyAccess && (
-          <div className="mt-5 rounded-md bg-tertiary-orange-100 p-4" role="alert">
+          <div className="mt-5 rounded-md bg-error-100 p-4" role="alert">
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="flex items-start gap-3">
                 <Image
@@ -79,7 +79,7 @@ export default function CreditsUsageCard({ user }: Props) {
                   height={16}
                   className="object-contain"
                 />
-                <p className="text-sm text-tertiary-orange-500">
+                <p className="text-sm text-error-500">
                   Waysorted credits will become available once you get early access.
                 </p>
               </div>

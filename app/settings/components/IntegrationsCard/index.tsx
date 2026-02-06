@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 export type Integration = {
   id: string;
   name: string;
-  icon: string;              // path to icon
+  icon: string;
   status: "none" | "connected" | "coming-soon";
   url?: string;
 };

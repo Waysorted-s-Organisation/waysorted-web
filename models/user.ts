@@ -38,7 +38,7 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods, IUserStatics>(
     name: { type: String, trim: true },
     picture: { type: String },
     favorites: [{ type: String }],
-    earlyAccess: { type: Boolean, default: true },
+    earlyAccess: { type: Boolean, default: false },
     creditsRemaining: { type: Number, default: 2000 },
     role: { type: String, default: "user" },
     hasAnyNotifications: { type: Boolean, default: false },
