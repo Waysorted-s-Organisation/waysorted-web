@@ -196,7 +196,7 @@ export default function DocsShell({
                 >
                   <span className="truncate">{openSection || "Select Section"}</span>
                   <Image
-                    src={isMobileMenuOpen ? "/icons/arrow-up-blue.svg" : "/icons/arrow-down-blue.svg"}
+                    src={isMobileMenuOpen ? "" : "/icons/arrow-down-blue.svg"}
                     alt="Toggle"
                     width={12}
                     height={12}
@@ -220,7 +220,7 @@ export default function DocsShell({
                   autoFocus
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full rounded-lg pl-10 pr-10 py-3 text-secondary-db-100 transition-all"
+                  className="w-full rounded-lg pl-10 pr-10 py-3 text-secondary-db-100 bg-primary-way-10 outline-none transition-all"
                 />
                 <Image
                   src="/icons/search.svg"
@@ -246,21 +246,21 @@ export default function DocsShell({
               <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-5">
                 {/* 1. Backdrop */}
                 <div 
-                  className="absolute inset-0 bg-black/5 backdrop-blur-sm"
+                  className="absolute inset-0 bg-black/5"
                   onClick={() => setIsMobileMenuOpen(false)} 
                 />
 
                 {/* 2. The Menu Card */}
                 <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[70vh]">
-                  <div className="overflow-y-auto py-2">
+                  <div className="overflow-y-auto py-2 px-1.5">
                     {sidebarData.map((item) => {
                       const isActive = openSection === item.title;
                       return (
                         <div key={item.title} className="border-b border-secondary-db-5 last:border-0">
                           <button
                             onClick={() => toggleSection(item.title)}
-                            className={`w-full flex items-center text-xs justify-between px-4 py-2 text-left font-semibold transition-colors ${
-                              isActive ? "bg-primary-way-100 text-white" : "text-secondary-db-100 hover:bg-secondary-db-5"
+                            className={`w-full flex items-center text-base rounded-t-md justify-between px-4 py-1 text-left font-regular transition-colors ${
+                              isActive ? "bg-primary-way-100 text-white" : "text-secondary-db-80 hover:bg-secondary-db-5"
                             }`}
                           >
                             {item.title}
@@ -273,21 +273,23 @@ export default function DocsShell({
                           </button>
                           
                           {/* Nested Links */}
-                          <div className={`bg-primary-way-5 overflow-hidden transition-all duration-300 ${isActive ? "max-h-[500px]" : "max-h-0"}`}>
+                          <div className={`bg-primary-way-10 overflow-hidden transition-all duration-300 ease-in-out ${isActive ? "max-h-[500px] px-4 py-2" : "max-h-0"}`}>
+                            <div className={`${isActive ? "border-l-2 border-primary-way-100" : ""}`}>
                             {item.links.map(link => (
                               <Link 
                                 key={link} 
                                 href={`/document-hub/${slugify(link)}`}
                                 onClick={() => setIsMobileMenuOpen(false)}
-                                className={`block px-8 py-3 text-xs border-l-4 transition-all ${
+                                className={`block px-2 py-0.5 text-sm font-regular transition-all ${
                                   activeLink === link 
-                                    ? "text-primary-way-100 font-normal border-primary-way-100 bg-primary-way-10" 
+                                    ? "text-primary-way-100 font-normal bg-primary-way-10" 
                                     : "text-secondary-db-80 border-transparent hover:bg-primary-way-10"
                                 }`}
                               >
                                 {link}
                               </Link>
                             ))}
+                            </div>
                           </div>
                         </div>
                       );
@@ -298,9 +300,9 @@ export default function DocsShell({
                 {/* 3. Floating Close Button (Matches Image) */}
                 <button 
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="relative mt-8 group"
+                  className="relative mt-12 group"
                 >
-                  <div className="bg-neutral-800/70 text-white border border-white/40 ring-1 ring-white/30 shadow-2xl backdrop-blur p-0 leading-none p-4 rounded-full transition-transform active:scale-95">
+                  <div className="bg-neutral-800/70 text-white border border-white/40 ring-1 ring-white/50 shadow-2xl backdrop-blur p-0 leading-none p-4 rounded-full transition-transform active:scale-95">
                     <Image 
                         src="/icons/close.svg" 
                         alt="Close" 
@@ -314,19 +316,19 @@ export default function DocsShell({
             )}
 
             {isMobileSearchOpen && searchTerm && (
-               <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-xl overflow-hidden max-h-[60vh] overflow-y-auto z-50">
+               <div className="absolute top-full left-0 right-0 mt-4 bg-white rounded-xl shadow-xl overflow-hidden max-h-[60vh] overflow-y-auto z-50">
                   {filteredSidebarData.length === 0 ? (
                     <p className="p-4 text-sm text-secondary-db-60">No results found.</p>
                   ) : (
                     filteredSidebarData.map(section => (
                       <div key={section.title} className="p-2">
-                         <div className="text-xs font-semibold text-secondary-db-50 uppercase px-2 mb-1">{section.title}</div>
+                         <div className="text-sm font-regular text-secondary-db-50 uppercase px-2 mb-1">{section.title}</div>
                          {section.links.map(link => (
                            <Link
                              key={link}
                              href={`/document-hub/${slugify(link)}`}
                              onClick={() => setIsMobileSearchOpen(false)}
-                             className="block px-2 py-2 text-xs text-secondary-db-100 hover:bg-secondary-db-5 rounded-md"
+                             className="block px-2 py-2 text-sm text-secondary-db-100 hover:bg-secondary-db-5 rounded-md"
                            >
                              {link}
                            </Link>
