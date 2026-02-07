@@ -73,7 +73,7 @@ export default function CreditsUsageCard({ user }: Props) {
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div className="flex items-start gap-3">
                 <Image
-                  src="/icons/info-orange.svg"
+                  src="/icons/info-red.svg"
                   alt="Warning Icon"
                   width={16}
                   height={16}
