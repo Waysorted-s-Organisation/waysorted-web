@@ -2,6 +2,16 @@ import DocsShell from "./DocsShell.client";
 
 export const metadata = {
   title: "Document Hub",
+  openGraph: {
+    images: [
+      {
+        url: "/images/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Waysorted - Accelerate every idea with one powerful suite",
+      },
+    ],
+  },
 };
 
 export default function DocumentsLayout({ children }: { children: React.ReactNode }) {

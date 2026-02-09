@@ -15,6 +15,14 @@ export const metadata: Metadata = {
     openGraph: {
         title: "Explore Beta release tools | Waysorted",
         description: "Discover the tools included in the current Waysorted Beta release. Built to improve speed, focus, and productivity.",
+        images: [
+            {
+                url: "/images/og-image.png",
+                width: 1200,
+                height: 630,
+                alt: "Waysorted - Accelerate every idea with one powerful suite",
+            },
+        ],
     },
 };
 

@@ -7,6 +7,14 @@ export const metadata: Metadata = {
         title: "Release Notes - Waysorted Updates",
         description: "Stay up to date with the latest features, improvements, and bug fixes for the Waysorted suite.",
         url: "https://www.waysorted.com/release-notes",
+        images: [
+            {
+                url: "/images/og-image.png",
+                width: 1200,
+                height: 630,
+                alt: "Waysorted - Accelerate every idea with one powerful suite",
+            },
+        ],
     },
     alternates: {
         canonical: "https://www.waysorted.com/release-notes",

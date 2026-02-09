@@ -8,6 +8,16 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://www.waysorted.com",
   },
+  openGraph: {
+    images: [
+      {
+        url: "/images/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Waysorted - Accelerate every idea with one powerful suite",
+      },
+    ],
+  },
 };
 
 export default function Page() {

@@ -13,6 +13,14 @@ export const metadata: Metadata = {
     openGraph: {
         title: "Try Waysorted Beta for Figma",
         description: "Use Waysorted inside Figma to work smarter with bundled, use-case-based plugins.",
+        images: [
+            {
+                url: "/images/og-image.png",
+                width: 1200,
+                height: 630,
+                alt: "Waysorted - Accelerate every idea with one powerful suite",
+            },
+        ],
     },
 };
 

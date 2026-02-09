@@ -16,6 +16,14 @@ export const metadata: Metadata = {
     openGraph: {
         title: "Sign Up for Waysorted",
         description: "Create your Waysorted account and start using the unified tool suite for designers.",
+        images: [
+            {
+                url: "/images/og-image.png",
+                width: 1200,
+                height: 630,
+                alt: "Waysorted - Accelerate every idea with one powerful suite",
+            },
+        ],
     },
 };
 

@@ -7,6 +7,14 @@ export const metadata: Metadata = {
         title: "Contact Waysorted Support",
         description: "Get in touch with the Waysorted team for support, questions, or feedback.",
         url: "https://www.waysorted.com/support",
+        images: [
+            {
+                url: "/images/og-image.png",
+                width: 1200,
+                height: 630,
+                alt: "Waysorted - Accelerate every idea with one powerful suite",
+            },
+        ],
     },
     alternates: {
         canonical: "https://www.waysorted.com/support",

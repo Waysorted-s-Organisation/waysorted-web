@@ -18,6 +18,14 @@ export const metadata: Metadata = {
       "Sign in to continue building faster with your curated Waysorted tool stack.",
     url: "https://www.waysorted.com/login",
     type: "website",
+    images: [
+      {
+        url: "/images/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Waysorted - Accelerate every idea with one powerful suite",
+      },
+    ],
   },
 };
 

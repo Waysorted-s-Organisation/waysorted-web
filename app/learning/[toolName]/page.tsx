@@ -45,7 +45,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         openGraph: {
             title: `${tool.name} - Waysorted`,
             description: tool.shortDescription,
-            images: tool.icon || tool.iconData || [],
+            images: tool.icon || tool.iconData || [
+                {
+                    url: "/images/og-image.png",
+                    width: 1200,
+                    height: 630,
+                    alt: "Waysorted - Accelerate every idea with one powerful suite",
+                },
+            ],
         }
     }
 }

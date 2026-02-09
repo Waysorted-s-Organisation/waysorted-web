@@ -7,6 +7,14 @@ export const metadata: Metadata = {
         title: "About Waysorted - Our Mission & Team",
         description: "Meet the team building the future of efficient creative workflows.",
         url: "https://www.waysorted.com/about-us",
+        images: [
+            {
+                url: "/images/og-image.png",
+                width: 1200,
+                height: 630,
+                alt: "Waysorted - Accelerate every idea with one powerful suite",
+            },
+        ],
     },
     alternates: {
         canonical: "https://www.waysorted.com/about-us",
