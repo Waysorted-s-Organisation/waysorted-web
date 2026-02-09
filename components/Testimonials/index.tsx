@@ -40,7 +40,6 @@ export default function Testimonials() {
     const [activeIndex, setActiveIndex] = useState(0);
     const activeTestimonial = testimonialsData[activeIndex];
 
-    // Auto slide every 4 seconds
     useEffect(() => {
         const interval = setInterval(() => {
             setActiveIndex((prevIndex) =>
@@ -82,13 +81,15 @@ export default function Testimonials() {
 
             {/* Main Testimonial */}
             <div className="py-12">
-                <div className="bg-white py-8 md:py-11 px-4 md:px-6 max-w-3xl mx-auto flex flex-col items-center justify-center rounded-2xl outline outline-4 md:outline-10 outline-tertiary-orange-500/6">
+                <div className="bg-white py-8 md:py-11 px-4 md:px-6 max-w-3xl mx-auto flex flex-col items-center justify-center rounded-2xl outline outline-4 md:outline-10 outline-tertiary-orange-500/6 transition-all duration-300 min-h-[300px] md:min-h-[280px]">
                     <p className="text-secondary-db-100 p-2 md:p-4 text-center text-lg md:text-xl font-medium leading-relaxed">
                         {activeTestimonial.content}
                     </p>
-                    <p className="text-secondary-db-100 mt-6 py-1 px-1.5 text-center text-sm font-medium bg-secondary-db-5 rounded-3xl">
-                        {activeTestimonial.position}
-                    </p>
+                    <div className="mt-auto">
+                        <p className="text-secondary-db-100 mt-6 py-1 px-1.5 text-center text-sm font-medium bg-secondary-db-5 rounded-3xl">
+                            {activeTestimonial.position}
+                        </p>
+                    </div>
                 </div>
             </div>
 
@@ -113,13 +114,12 @@ export default function Testimonials() {
                                 className="w-full h-full object-cover rounded-xl md:rounded-2xl"
                             />
                             {activeIndex === index && (
-                                <span className="absolute left-1/2  w-2 h-2 transform -translate-x-1/2 translate-y-2 bg-tertiary-orange-500 rounded-full"></span>
+                                <span className="absolute left-1/2 bottom-0 w-2 h-2 transform -translate-x-1/2 translate-y-4 bg-tertiary-orange-500 rounded-full"></span>
                             )}
                         </button>
                     ))}
                 </div>
-                {/* Position Below */}
-                <p className="text-base text-secondary-db-100 mt-8 text-center font-semibold">
+                <p className="text-base text-secondary-db-100 mt-12 text-center font-semibold">
                     - {activeTestimonial.author}
                 </p>
             </div>
