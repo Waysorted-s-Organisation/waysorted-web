@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import OTPInput from "@/app/signup/components/OTPInput";
 import { useUser } from "@/hooks/useUser";
@@ -14,7 +14,9 @@ const OTP_URI = process.env.NEXT_PUBLIC_OTP_URI as string | undefined;
 
 export default function Signup() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useUser();
+  const redirect = searchParams.get("redirect") || "/";
 
   const [step, setStep] = useState<Step>("choose");
   const [loading, setLoading] = useState(false);
@@ -28,8 +30,11 @@ export default function Signup() {
   const [requestId, setRequestId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) router.replace("/");
-  }, [user, router]);
+    if (user) {
+      const redirectTo = searchParams.get("redirect") || "/";
+      router.replace(redirectTo);
+    }
+  }, [user, router, searchParams]);
 
   // resend timer (UI throttle)
   const [resendAt, setResendAt] = useState<number>(0);
@@ -215,7 +220,7 @@ export default function Signup() {
       }
 
       // Session cookie is now set; /api/me will return the user
-      router.replace("/");
+      router.replace(redirect);
     } catch {
       setError("Verification failed. Please try again.");
     } finally {

@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { useMyRequest } from "@/context/MyRequestContext";
 import { useRequests } from "@/context/RequestContext";
 import ProfileDropdown from "@/components/feature-requests/ProfileDropdown";
+import { useRouter, usePathname } from "next/navigation";
 
 import { useUser } from "@/hooks/useUser";
 import { FEATURE_CATEGORIES } from "@/lib/feature-categories";
@@ -219,7 +220,17 @@ const Navbar = () => {
   const [title, setTitle] = useState("")
   const [desc, setDesc] = useState("")
   const [board, setBoard] = useState(FEATURE_CATEGORIES[0].id)
+  const router = useRouter();
+  const pathname = usePathname();
 
+  const handleOpenRequest = () => {
+    if (!user) {
+      router.push(`/signup?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    setMainOpen(true);
+  };
 
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -276,10 +287,11 @@ const Navbar = () => {
         </button>
 
         {/* Main Request Dialog - only show for authenticated users */}
-        {user && (
           <Dialog open={mainOpen} onOpenChange={setMainOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-[#265BD1] text-white hover:bg-[#1F4AA9] cursor-pointer rounded-lg px-4 h-[36px] font-medium text-sm shadow-none">
+              <Button
+              onClick={handleOpenRequest}
+              className="bg-[#265BD1] text-white hover:bg-[#1F4AA9] cursor-pointer rounded-lg px-4 h-[36px] font-medium text-sm shadow-none">
                 <PlusIcon size={14} className="mr-1" /> Request a feature
               </Button>
             </DialogTrigger>
@@ -361,7 +373,6 @@ const Navbar = () => {
               </div>
             </DialogContent>
           </Dialog>
-        )}
 
         {/* Success dialog (feature only) */}
         <Dialog open={successOpen} onOpenChange={setSuccessOpen}>

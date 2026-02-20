@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import OTPInput from "@/app/login/components/OTPInput";
 import { useUser } from "@/hooks/useUser";
@@ -15,7 +15,10 @@ if (!VERIFY_URI) throw new Error("VERIFY_URI not set");
 
 export default function Login() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useUser();
+
+  const redirect = searchParams.get("redirect") || "/";
 
   const [step, setStep] = useState<Step>("choose");
   const [loading, setLoading] = useState(false);
@@ -28,8 +31,10 @@ export default function Login() {
   const [requestId, setRequestId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (user) router.replace("/");
-  }, [user, router]);
+    if (user) {
+      router.replace(redirect);
+    }
+  }, [user, router, redirect]);
 
   // resend timer
   const [resendAt, setResendAt] = useState<number>(0);
@@ -59,7 +64,7 @@ export default function Login() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/start");
+      const res = await fetch(`/api/auth/start?redirect=${encodeURIComponent(redirect)}`);
       const data = await res.json();
       if (data?.authUrl) {
         window.location.href = data.authUrl;
@@ -199,7 +204,7 @@ export default function Login() {
         return;
       }
 
-      router.replace("/");
+      router.replace(redirect);
     } catch {
       setError("Verification failed. Please try again.");
     } finally {
@@ -333,7 +338,7 @@ export default function Login() {
               Don’t have an account?{" "}
               <span
                 className="text-primary-way-100 underline cursor-pointer"
-                onClick={() => router.push("/signup")}
+                onClick={() => router.push(`/signup?redirect=${encodeURIComponent(redirect)}`)}
               >
                 Sign up
               </span>
