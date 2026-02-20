@@ -29,6 +29,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LoginPage() {
-  return <LoginClient />;
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ redirect?: string }>;
+}) {
+  const params = await searchParams;
+  const redirect = params?.redirect || "/";
+
+  return <LoginClient redirect={redirect} />;
 }

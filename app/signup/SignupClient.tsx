@@ -2,39 +2,36 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import OTPInput from "@/app/login/components/OTPInput";
+import OTPInput from "@/app/signup/components/OTPInput";
 import { useUser } from "@/hooks/useUser";
 
 type Step = "choose" | "email" | "otp";
 
-const OTP_URI = process.env.NEXT_PUBLIC_OTP_URI;
-if (!OTP_URI) throw new Error("OTP_URI not set");
+// Strictly use env-configured URLs; no fallback.
+const OTP_URI = process.env.NEXT_PUBLIC_OTP_URI as string | undefined;
 
-const VERIFY_URI = process.env.NEXT_PUBLIC_VERIFY_URI;
-if (!VERIFY_URI) throw new Error("VERIFY_URI not set");
-
-export default function Login({ redirect }: { redirect: string }) {
+export default function SignupClient({ redirect }: { redirect: string }) {
   const router = useRouter();
   const { user } = useUser();
-
 
   const [step, setStep] = useState<Step>("choose");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
 
-  // request_id returned from send OTP, required for verify
+  // request_id returned by OTP_URI; required by VERIFY_URI
   const [requestId, setRequestId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
-      router.replace(redirect);
+        router.replace(redirect);
     }
-  }, [user, router, redirect]);
+    }, [user, router, redirect]);
 
-  // resend timer
+  // resend timer (UI throttle)
   const [resendAt, setResendAt] = useState<number>(0);
   const [now, setNow] = useState<number>(Date.now());
   useEffect(() => {
@@ -58,17 +55,20 @@ export default function Login({ redirect }: { redirect: string }) {
     setResendAt(Date.now() + seconds * 1000);
   };
 
+
+
+  // Keep headers minimal to satisfy CORS: only Content-Type: application/json
+
+
+  // Google
   const handleGoogleSignIn = async () => {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch(`/api/auth/start?redirect=${encodeURIComponent(redirect)}`);
+      const res = await fetch("/api/auth/start", { credentials: "include" });
       const data = await res.json();
-      if (data?.authUrl) {
-        window.location.href = data.authUrl;
-      } else {
-        setError("Unable to start Google sign-in. Please try again.");
-      }
+      if (data?.authUrl) window.location.href = data.authUrl;
+      else setError("Unable to start Google sign-in. Please try again.");
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -76,52 +76,60 @@ export default function Login({ redirect }: { redirect: string }) {
     }
   };
 
-  const goEmailStep = () => {
-    setError(null);
-    setStep("email");
+  // helper (optional)
+  const parseResponse = async (res: Response) => {
+    const text = await res.text();
+    //eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let data: any = null;
+    try { data = text ? JSON.parse(text) : null; } catch { }
+    return { data, text };
   };
 
-  const sendOtp = async () => {
+  const handleSendOtp = async () => {
     setError(null);
-    const trimmed = email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim();
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
       return setError("Please enter a valid email address.");
     }
 
     setLoading(true);
     try {
-      // 1) Provider send
-      const res = await fetch(OTP_URI!, {
+      // 1) Send OTP to provider
+      const sendRes = await fetch(OTP_URI!, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: trimmed }),
+        body: JSON.stringify(trimmedName ? { email: trimmedEmail, name: trimmedName } : { email: trimmedEmail }),
       });
-      const { data, text } = await (async () => {
-        const t = await res.text(); let d = null; try { d = t ? JSON.parse(t) : null; } catch { }
-        return { data: d, text: t };
-      })();
+      const { data: sendData, text: sendText } = await parseResponse(sendRes);
 
-      if (!res.ok) {
-        setError(data?.message || text || "Failed to send verification code.");
+      if (!sendRes.ok) {
+        setError(sendData?.message || sendData?.error || sendText || "Failed to send verification code.");
         return;
       }
 
-      const reqId: string | undefined = data?.request_id;
-      const expiresIn: number | undefined = data?.expires_in;
+      const reqId: string | undefined = sendData?.request_id;
+      const expiresIn: number | undefined = sendData?.expires_in;
       if (!reqId) {
         setError("Server did not return request_id. Please try again.");
         return;
       }
 
-      // 2) Save mapping on your server
+      // 2) Persist mapping on your server (request_id -> email, name)
       await fetch("/api/auth/otp-request", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ request_id: reqId, email: trimmed, expires_in: expiresIn }),
+        body: JSON.stringify({
+          request_id: reqId,
+          email: trimmedEmail,
+          name: trimmedName || undefined,
+          expires_in: expiresIn,
+        }),
       });
 
-      // 3) Advance
+      // 3) Move to OTP step
       setRequestId(reqId);
       setStep("otp");
       startResendCountdown(60);
@@ -132,28 +140,29 @@ export default function Login({ redirect }: { redirect: string }) {
     }
   };
 
-  const resendOtp = async () => {
+  const handleResend = async () => {
     if (remainingSeconds > 0) return;
     setError(null);
     setLoading(true);
     try {
-      // 1) Provider resend (new request_id)
-      const res = await fetch(OTP_URI!, {
+      const trimmedName = name.trim();
+      const trimmedEmail = email.trim();
+
+      // 1) Resend via provider (returns a NEW request_id)
+      const resendRes = await fetch(OTP_URI!, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify(trimmedName ? { email: trimmedEmail, name: trimmedName } : { email: trimmedEmail }),
       });
-      const text = await res.text();
-      //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let data: any = null; try { data = text ? JSON.parse(text) : null; } catch { }
+      const { data: resendData, text: resendText } = await parseResponse(resendRes);
 
-      if (!res.ok) {
-        setError(data?.message || text || "Failed to resend code.");
+      if (!resendRes.ok) {
+        setError(resendData?.message || resendData?.error || resendText || "Failed to resend code.");
         return;
       }
 
-      const newReqId: string | undefined = data?.request_id;
-      const expiresIn: number | undefined = data?.expires_in;
+      const newReqId: string | undefined = resendData?.request_id;
+      const expiresIn: number | undefined = resendData?.expires_in;
       if (!newReqId) {
         setError("Server did not return request_id on resend. Please try again.");
         return;
@@ -164,10 +173,15 @@ export default function Login({ redirect }: { redirect: string }) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ request_id: newReqId, email: email.trim(), expires_in: expiresIn }),
+        body: JSON.stringify({
+          request_id: newReqId,
+          email: trimmedEmail,
+          name: trimmedName || undefined,
+          expires_in: expiresIn,
+        }),
       });
 
-      // 3) Update state
+      // 3) Update state and timer
       setRequestId(newReqId);
       startResendCountdown(60);
     } catch {
@@ -177,7 +191,7 @@ export default function Login({ redirect }: { redirect: string }) {
     }
   };
 
-  const verifyOtp = async () => {
+  const handleVerify = async () => {
     setError(null);
     const code = otp.trim();
     if (!/^\d{6}$/.test(code)) return setError("Please enter the 6-digit code.");
@@ -185,7 +199,7 @@ export default function Login({ redirect }: { redirect: string }) {
 
     setLoading(true);
     try {
-      // Verify against YOUR API (sets session cookie, returns user)
+      // IMPORTANT: verify against YOUR API so it can upsert user + set session cookie
       const res = await fetch("/api/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -193,15 +207,14 @@ export default function Login({ redirect }: { redirect: string }) {
         cache: "no-store",
         body: JSON.stringify({ request_id: requestId, otp: code }),
       });
-      const text = await res.text();
-      //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let data: any = null; try { data = text ? JSON.parse(text) : null; } catch { }
+      const { data, text } = await parseResponse(res);
 
       if (!res.ok || data?.ok === false) {
         setError(data?.message || text || "Invalid or expired code. Please try again.");
         return;
       }
 
+      // Session cookie is now set; /api/me will return the user
       router.replace(redirect);
     } catch {
       setError("Verification failed. Please try again.");
@@ -209,6 +222,7 @@ export default function Login({ redirect }: { redirect: string }) {
       setLoading(false);
     }
   };
+
 
   const maskedEmail = useMemo(() => {
     const trimmed = email.trim();
@@ -221,67 +235,85 @@ export default function Login({ redirect }: { redirect: string }) {
 
   return (
     <div className="min-h-screen blue-bg-dots flex justify-center items-center p-4 select-none">
-      <div className="bg-white rounded-[22px] shadow-md max-w-lg w-full">
+      <div className="bg-white rounded-[22px] shadow-md max-w-lg w-full lg:w-115">
         {step === "choose" && (
-          <div className="flex flex-col gap-4 px-6 sm:px-8 pt-8 pb-3 items-center">
-            <Image src="/icons/success.svg" alt="Welcome back" title="Welcome back" width={64} height={64} />
-            <h1 className="text-2xl font-semibold text-black text-center">Welcome back!</h1>
-            <p className="text-sm text-secondary-db-70 text-center">
-              Log in to continue your way of working smarter.
+          <div className="flex flex-col px-6 sm:px-8 pt-8 pb-3 items-center">
+            <Image src="/icons/success.svg" alt="Create account" width={64} height={64} />
+            <h1 className="text-xl font-medium text-secondary-db-100 text-center">Create an account</h1>
+            <p className="text-sm text-secondary-db-60 text-center pb-5">
+              Get started in minutes. Stay sorted forever
             </p>
 
             <button
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="bg-primary-way-100 hover:bg-primary-way-90 cursor-pointer text-white w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2"
+              className="bg-primary-way-100 hover:bg-primary-way-90 cursor-pointer text-white w-full lg:w-sm py-3 rounded-lg transition-all duration-200 disabled:opacity-60 flex items-center justify-center gap-2"
             >
-              <Image src="/icons/google.svg" alt="Google" title="Google" width={20} height={20} />
+              <Image src="/icons/google.svg" alt="Google" width={20} height={20} />
               {loading ? "Redirecting..." : "Continue with Google"}
             </button>
-
+            <div className="my-1" />
             <button
-              onClick={goEmailStep}
+              onClick={() => setStep("email")}
               disabled={loading}
-              className="bg-secondary-db-5 text-secondary-db-100 cursor-pointer w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60"
+              className="bg-secondary-db-5 text-secondary-db-100 cursor-pointer w-full lg:w-sm py-3 rounded-lg transition-all duration-200 disabled:opacity-60"
             >
               Continue with Email
             </button>
+
+            <p className="text-xs text-secondary-db-70 pt-4 pb-2 items-center text-center">
+              Creating an account means you agree to our{" "}
+              <span className="text-primary-way-100 underline cursor-pointer">Terms</span> and{" "}
+              <span className="text-primary-way-100 underline cursor-pointer">Privacy Policy</span>.
+            </p>
           </div>
         )}
 
         {step === "email" && (
-          <div className="flex flex-col gap-4 px-6 sm:px-8 pt-8 pb-3 items-center">
-            <Image src="/icons/success.svg" alt="Welcome back" title="Welcome back" width={56} height={56} />
-            <h1 className="text-2xl font-semibold text-black text-center">Welcome back!</h1>
+          <div className="flex flex-col gap-5 px-6 sm:px-8 pt-8 pb-3">
+            <h1 className="text-2xl font-semibold text-black text-center">Create an account</h1>
             <p className="text-sm text-secondary-db-70 text-center">
               Enter your email and we’ll send you a verification code
             </p>
 
-            <div className="w-full relative">
-              <label
-                className="absolute -top-2 left-3 px-1 bg-white text-xs text-secondary-db-70"
-                htmlFor="email"
-              >
-                Email
+            <div className="relative">
+              <label className="absolute -top-2 left-3 px-1 bg-white text-xs text-secondary-db-70" htmlFor="name">
+                Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-4 py-3 rounded-lg border border-secondary-db-20 bg-white outline-none focus:ring-2 focus:ring-primary-way-100"
+              />
+              <p className="text-xs text-secondary-db-70 mt-1">Your name will be used to personalize the email</p>
+            </div>
+
+            <div className="relative">
+              <label className="absolute -top-2 left-3 px-1 bg-white text-xs text-secondary-db-70" htmlFor="email">
+                Email Address
               </label>
               <input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Enter your email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-lg border border-secondary-db-20 cursor-pointer bg-white outline-none focus:ring-2 focus:ring-primary-way-100"
+                className="w-full px-4 py-3 rounded-lg border border-secondary-db-20 bg-white outline-none focus:bg-white focus:ring-2 focus:ring-primary-way-100"
               />
+              <p className="text-xs text-secondary-db-70 mt-1">Enter a valid email address to receive the OTP</p>
             </div>
 
-            {error && <p className="text-xs text-red-500 w-full">{error}</p>}
+            {error && <p className="text-xs text-red-500">{error}</p>}
 
             <button
-              onClick={sendOtp}
+              onClick={handleSendOtp}
               disabled={loading || !validateEmail(email)}
-              className="bg-primary-way-100 hover:bg-primary-way-90 text-white w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60"
+              className="bg-primary-way-100 hover:bg-primary-way-90 cursor-pointer text-white w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60"
             >
-              {loading ? "Sending code..." : "Continue"}
+              {loading ? "Sending code..." : "Send OTP"}
             </button>
           </div>
         )}
@@ -290,14 +322,17 @@ export default function Login({ redirect }: { redirect: string }) {
           <div className="flex flex-col gap-5 px-6 sm:px-8 pt-6 pb-4">
             <div className="w-full">
               <button
-                onClick={() => setStep("email")}
+                onClick={() => {
+                  setError(null);
+                  setStep("email");
+                }}
                 className="text-secondary-db-70 hover:text-secondary-db-100 text-sm flex items-center gap-2"
               >
-                <span className="cursor-pointer"><Image src="/icons/back.svg" alt="Back" title="Back" width={13} height={11} /></span>
+                <span className="cursor-pointer"><Image src="/icons/back.svg" alt="Back" width={13} height={11} /></span>
               </button>
             </div>
 
-            <h2 className="text-2xl font-semibold text-black text-center">OTP Verification</h2>
+            <h2 className="text-2xl font-semibold text-black text-center">Verify OTP</h2>
             <p className="text-sm text-secondary-db-70 text-center">
               We’ve sent a verification code to {maskedEmail || "your email"}.
               <br />
@@ -313,15 +348,15 @@ export default function Login({ redirect }: { redirect: string }) {
             {error && <p className="text-xs text-red-500 text-center">{error}</p>}
 
             <button
-              onClick={verifyOtp}
+              onClick={handleVerify}
               disabled={loading || otp.length !== 6 || !requestId}
               className="bg-primary-way-100 hover:bg-primary-way-90 text-white w-full py-3 rounded-lg transition-all duration-200 disabled:opacity-60"
             >
-              {loading ? "Verifying..." : "Verify"}
+              {loading ? "Verifying..." : "Verify OTP"}
             </button>
 
             <button
-              onClick={resendOtp}
+              onClick={handleResend}
               disabled={remainingSeconds > 0 || loading}
               className="text-sm text-primary-way-100 disabled:text-secondary-db-40"
             >
@@ -333,12 +368,9 @@ export default function Login({ redirect }: { redirect: string }) {
         <div className="border-t border-secondary-db-5 w-full text-center py-4">
           {(step === "choose" || step === "email") && (
             <p className="text-sm text-secondary-db-70">
-              Don’t have an account?{" "}
-              <span
-                className="text-primary-way-100 underline cursor-pointer"
-                onClick={() => router.push(`/signup?redirect=${encodeURIComponent(redirect)}`)}
-              >
-                Sign up
+              Already have an account?{" "}
+              <span className="text-primary-way-100 underline cursor-pointer" onClick={() => router.push(`/login?redirect=${encodeURIComponent(redirect)}`)}>
+                Log in
               </span>
             </p>
           )}
