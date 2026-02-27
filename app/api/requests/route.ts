@@ -3,9 +3,111 @@ import dbConnect from "@/lib/db";
 import { saveAttachmentsFromFormData, parseString, type SavedAttachment } from "@/lib/attachments";
 import FeatureRequest from "@/models/featureRequest";
 import { getCurrentUser } from "@/lib/user";
+import Session from "@/models/session";
+import { refreshGoogleToken } from "@/lib/token";
+import type { IUser } from "@/types/user";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+type SessionWithUser = {
+  _id: string;
+  sessionId: string;
+  accessToken?: string;
+  refreshToken?: string;
+  accessTokenExpiresAt?: number;
+  user?: IUser | null;
+};
+
+function toCurrentUser(user: IUser) {
+  const initials =
+    user.name
+      ?.split(/\s+/)
+      .map((s: string) => s[0]?.toUpperCase())
+      .slice(0, 2)
+      .join("") || user.email.slice(0, 2).toUpperCase();
+
+  return {
+    id: typeof user._id === "string" ? user._id : user._id.toString(),
+    name: user.name ?? null,
+    email: user.email,
+    picture: user.picture ?? null,
+    favorites: user.favorites ?? [],
+    earlyAccess: !!user.earlyAccess,
+    initials,
+    creditsRemaining: user.creditsRemaining ?? 0,
+    role: user.role || "user",
+  };
+}
+
+async function getCurrentUserFromRequest(req: NextRequest) {
+  // Primary path for website usage.
+  const cookieUser = await getCurrentUser();
+  if (cookieUser) return cookieUser;
+
+  // Plugin path: bearer access token.
+  const authHeader = req.headers.get("authorization") || "";
+  const bearerToken = authHeader.startsWith("Bearer ")
+    ? authHeader.slice("Bearer ".length).trim()
+    : "";
+
+  // Plugin fallback path: explicit sessionId passed as query/header.
+  const querySessionId = req.nextUrl.searchParams.get("sessionId")?.trim() || "";
+  const headerSessionId = req.headers.get("x-session-id")?.trim() || "";
+  const sessionId = querySessionId || headerSessionId;
+
+  if (!bearerToken && !sessionId) {
+    return null;
+  }
+
+  await dbConnect();
+
+  let session = null as SessionWithUser | null;
+
+  if (bearerToken) {
+    session = (await Session.findOne({ accessToken: bearerToken })
+      .populate<{ user: IUser }>("user")
+      .lean()) as SessionWithUser | null;
+  }
+
+  if (!session && sessionId) {
+    session = (await Session.findOne({ sessionId })
+      .populate<{ user: IUser }>("user")
+      .lean()) as SessionWithUser | null;
+  }
+
+  if (!session || !session.user) {
+    return null;
+  }
+
+  // Keep bearer-token auth resilient to near-expiry tokens.
+  if (bearerToken && session.accessTokenExpiresAt && Date.now() > session.accessTokenExpiresAt - 60000) {
+    if (!session.refreshToken) {
+      return null;
+    }
+
+    try {
+      const refreshedTokens = await refreshGoogleToken(session.refreshToken);
+      const newAccessToken = refreshedTokens.access_token;
+      const newAccessTokenExpiresAt = Date.now() + refreshedTokens.expires_in * 1000;
+
+      const updateFields: Record<string, unknown> = {
+        accessToken: newAccessToken,
+        accessTokenExpiresAt: newAccessTokenExpiresAt,
+      };
+      if (refreshedTokens.refresh_token) {
+        updateFields.refreshToken = refreshedTokens.refresh_token;
+      }
+
+      await Session.updateOne({ _id: session._id }, { $set: updateFields });
+    } catch (refreshError) {
+      console.error("Failed to refresh token for /api/requests:", refreshError);
+      return null;
+    }
+  }
+
+  return toCurrentUser(session.user);
+}
 
 function buildQuery(searchParams: URLSearchParams) {
   const query: Record<string, unknown> = { isDeleted: false };
@@ -38,7 +140,7 @@ export async function GET(req: NextRequest) {
     }
 
     // Check if user is admin
-    const user = await getCurrentUser();
+    const user = await getCurrentUserFromRequest(req);
     const isAdmin = user?.role === "admin";
 
     // Non-admin users (including unauthenticated) should only see public requests
@@ -100,7 +202,7 @@ async function parseCreatePayload(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getCurrentUser();
+    const user = await getCurrentUserFromRequest(req);
     console.log("[POST /api/requests] user:", user ? user.email : "null");
     if (!user) {
       return NextResponse.json({ message: "Unauthorized - please log in again" }, { status: 401 });
