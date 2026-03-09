@@ -2,7 +2,6 @@ import "./globals.css";
 import type { Metadata } from "next";
 import { Hanken_Grotesk } from "next/font/google";
 import { Providers } from "./providers";
-import SessionLoader from "@/components/SessionLoader";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import Script from "next/script";
@@ -299,7 +298,7 @@ export default function RootLayout({
       </head>
       <body className={`${hanken.className} no-scrollbar`} suppressHydrationWarning>
         <Providers>
-          <SessionLoader />
+          {/* Global session loader intentionally disabled. */}
           {children}
           {/* <EarlyAccessPopup /> */}
         </Providers>

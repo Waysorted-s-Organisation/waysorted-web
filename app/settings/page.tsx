@@ -12,7 +12,6 @@ import { IntegrationsTab } from "./components/tabs/IntegrationsTab";
 import { BetaFeaturesTab } from "./components/tabs/BetaFeaturesTab";
 import ReferAndEarnTab from "./components/tabs/ReferAndEarnTab";
 import TopBanner from "./components/TopBanner";
-import SessionLoader from "@/components/SessionLoader";
 
 type TabKey =
   | "general"
@@ -29,7 +28,8 @@ export default function ProfilePage() {
 
   const { user, loading } = useUser();
 
-  if (loading) return <SessionLoader />;
+  // Session loader intentionally disabled.
+  if (loading) return null;
   if (!user) return <div>Please log in to access settings.</div>;
 
   const tab = tabParam || "general";
