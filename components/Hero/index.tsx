@@ -2,13 +2,14 @@
 
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
+import GlowStarButton from '@/components/GlowStarButton';
 
 const Hero = () => {
   const router = useRouter();
 
-
-
-  return (
+  const handleFigmaClick = () => {
+    window.open("https://www.figma.com/community/plugin/1532842109377504268/waysorted", "_blank");
+  }; return (
     <section
       id="hero"
       className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-8"
@@ -54,8 +55,23 @@ const Hero = () => {
           </span>
         </p>
 
-        {/* CTA buttons removed */}
+        {/* CTA buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <GlowStarButton
+            onClick={handleFigmaClick}
+            className="inline-flex items-center gap-x-2 border bg-secondary-db-100 border-secondary-db-20 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer force-hover"
+          >
+            <span className="flex items-center gap-x-2">
+              <Image
+                src="/icons/figma.svg"
+                alt="Figma"
+                title="Figma"
+                width={20}
+                height={20}
+              />
+              <span>Waysorted for Figma</span>
+            </span>
+          </GlowStarButton>
         </div>
       </div>
     </section >
