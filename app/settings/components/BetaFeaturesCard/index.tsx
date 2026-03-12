@@ -43,13 +43,7 @@ export default function BetaFeaturesCard({ user, features }: BetaFeaturesCardPro
                   You don&apos;t have any active Subscription!
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => window.location.href = "/get-early-access"}
-                className="rounded-md border border-tertiary-vivid-blue-500 bg-tertiary-vivid-blue-100 px-3 py-1.5 text-xs font-medium text-tertiary-vivid-blue-500 transition cursor-pointer hover:bg-tertiary-vivid-blue-500 hover:text-white"
-              >
-                Get Early Access
-              </button>
+
             </div>
           </div>
         ) : (

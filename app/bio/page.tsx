@@ -72,11 +72,7 @@ export default function Bio() {
       text: 'Waysorted.com (Getting Started)',
       link: 'https://waysorted.com',
     },
-    {
-      icon: '/icons/way-logo-black.svg',
-      text: 'Early Access Open Now (Join Now)',
-      link: 'https://waysorted.com/get-early-access',
-    },
+
     {
       icon: '/icons/way-logo-black.svg',
       text: 'Request Feature (Vote. Discuss. Influence.)',

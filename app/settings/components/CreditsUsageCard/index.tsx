@@ -50,15 +50,7 @@ export default function CreditsUsageCard({ user }: Props) {
             </span>
           </div>
 
-          {!earlyAccess && (
-            <button
-              type="button"
-              onClick={() => window.location.href = "/get-early-access"}
-              className="inline-flex items-center rounded-md bg-primary-way-10 px-4 py-1.5 text-sm font-medium text-primary-way-100 border border-primary-way-10 hover:bg-primary-way-20 cursor-pointer transition"
-            >
-              Join Waitlist
-            </button>
-          )}
+
 
           {earlyAccess && (
             <span className="inline-flex items-center rounded-md bg-secondary-db-5 px-4 py-1.5 text-xs font-medium text-secondary-db-70 border border-secondary-db-10">
@@ -68,24 +60,7 @@ export default function CreditsUsageCard({ user }: Props) {
         </div>
 
         {/* Conditional Panels */}
-        {!earlyAccess && (
-          <div className="mt-5 rounded-md bg-error-100 p-4" role="alert">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-start gap-3">
-                <Image
-                  src="/icons/info-red.svg"
-                  alt="Warning Icon"
-                  width={16}
-                  height={16}
-                  className="object-contain"
-                />
-                <p className="text-sm text-error-500">
-                  Waysorted credits will become available once you get early access.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+
 
         {(earlyAccess) && (
           <div className="mt-5 flex flex-col space-y-6 rounded-md border border-blue-100 bg-primary-way-10 p-4">

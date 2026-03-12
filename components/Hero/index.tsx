@@ -1,7 +1,6 @@
 'use client';
 
 import Image from "next/image";
-import GlowStarButton from "@/components/GlowStarButton";
 import { useRouter } from 'next/navigation';
 
 const Hero = () => {
@@ -55,25 +54,8 @@ const Hero = () => {
           </span>
         </p>
 
-        {/* CTA buttons */}
+        {/* CTA buttons removed */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <GlowStarButton
-            onClick={() => router.push("/get-early-access")}
-            bgColor="primary-way-100"
-            className="inline-flex border bg-primary-way-100 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer force-hover"
-          >
-            <span className="flex items-center gap-x-2">
-              <span>Accepting Now -&gt; Join Waitlist</span>
-              <Image
-                src="/icons/arrow-white.svg"
-                alt="Arrow icon"
-                title="Arrow icon"
-                width={12}
-                height={12}
-                priority
-              />
-            </span>
-          </GlowStarButton>
         </div>
       </div>
     </section >
