@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { v4 as uuid } from "uuid";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
-export { OPTIONS } from "@/lib/cors";
+import { corsHeaders, OPTIONS } from "@/lib/cors";
+export { OPTIONS };
 
 export async function GET(request: Request) {
   try {
@@ -12,7 +13,6 @@ export async function GET(request: Request) {
     if (!clientId) throw new Error("Missing GOOGLE_CLIENT_ID");
     if (!redirectUri) throw new Error("Missing OAUTH_REDIRECT_URI");
 
-    // Get the source parameter to track where the auth request came from
     const url = new URL(request.url);
     const source = url.searchParams.get("source") || "web";
 
@@ -21,24 +21,25 @@ export async function GET(request: Request) {
     const sessionId = uuid();
     await Session.create({ sessionId, createdAt: new Date(), source });
 
-    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams(
-      {
-        client_id: clientId,
-        redirect_uri: redirectUri,
-        response_type: "code",
-        scope: "openid email profile",
-        state: sessionId,
-        access_type: "offline",
-        prompt: "consent",
-      }
-    ).toString()}`;
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      response_type: "code",
+      scope: "openid email profile",
+      state: sessionId,
+      access_type: "offline",
+      prompt: "consent",
+    }).toString()}`;
 
-    return NextResponse.json({ sessionId, authUrl });
+    return NextResponse.json(
+      { sessionId, authUrl },
+      { headers: corsHeaders }
+    );
   } catch (error: unknown) {
     console.error("Error in /api/auth/start:", error);
     return NextResponse.json(
       { error: (error as Error).message || "start_failed" },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }

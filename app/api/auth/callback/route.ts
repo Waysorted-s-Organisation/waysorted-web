@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import User from "@/models/user";
 import Session from "@/models/session";
 import Subscriber from "@/models/subscriber";
+import { corsHeaders } from "@/lib/cors";
 
 export async function GET(request: Request) {
   const urlObj = new URL(request.url);
@@ -13,36 +14,25 @@ export async function GET(request: Request) {
 
   if (!code || !state) {
     return NextResponse.redirect(
-      new URL(
-        `/signup?error=${encodeURIComponent("missing_code_or_state")}`,
-        request.url
-      )
+      new URL(`/signup?error=${encodeURIComponent("missing_code_or_state")}`, request.url)
     );
   }
 
   try {
-    if (!process.env.GOOGLE_CLIENT_ID)
-      throw new Error("Missing GOOGLE_CLIENT_ID");
-    if (!process.env.GOOGLE_CLIENT_SECRET)
-      throw new Error("Missing GOOGLE_CLIENT_SECRET");
-    if (!process.env.OAUTH_REDIRECT_URI)
-      throw new Error("Missing OAUTH_REDIRECT_URI");
+    if (!process.env.GOOGLE_CLIENT_ID) throw new Error("Missing GOOGLE_CLIENT_ID");
+    if (!process.env.GOOGLE_CLIENT_SECRET) throw new Error("Missing GOOGLE_CLIENT_SECRET");
+    if (!process.env.OAUTH_REDIRECT_URI) throw new Error("Missing OAUTH_REDIRECT_URI");
 
     await dbConnect();
 
     const existingSession = await Session.findOne({ sessionId: state });
     if (!existingSession) {
       return NextResponse.redirect(
-        new URL(
-          `/signup?error=${encodeURIComponent("invalid_state")}`,
-          request.url
-        )
+        new URL(`/signup?error=${encodeURIComponent("invalid_state")}`, request.url)
       );
     }
 
-    // Determine redirect path based on session source (set during /api/auth/start)
-    // If source is "figma" or "plugin", redirect to /connected page after successful auth
-    // Otherwise, use the next parameter or default to "/"
+    // Determine redirect path based on session source
     let redirectPath = "/";
     const sessionSource = existingSession.source;
     if (sessionSource === "figma" || sessionSource === "plugin") {
@@ -64,7 +54,6 @@ export async function GET(request: Request) {
     );
 
     const { access_token, refresh_token, expires_in, id_token } = tokenRes.data;
-
     const accessTokenExpiresAt = Date.now() + expires_in * 1000;
 
     const { data: googleUser } = await axios.get(
@@ -89,8 +78,8 @@ export async function GET(request: Request) {
         {
           email: googleUser.email,
           name: googleUser.name,
-          status: 'active',
-          source: 'google-oauth'
+          status: "active",
+          source: "google-oauth",
         },
         { upsert: true, setDefaultsOnInsert: true }
       );
@@ -103,7 +92,6 @@ export async function GET(request: Request) {
       {
         $set: {
           accessToken: access_token,
-          // refresh_token may be missing on subsequent consents; only store if provided
           refreshToken: refresh_token || existingSession.refreshToken,
           accessTokenExpiresAt,
           idToken: id_token,
@@ -116,6 +104,11 @@ export async function GET(request: Request) {
 
     const finalUrl = new URL(redirectPath, urlObj.origin);
     const response = NextResponse.redirect(finalUrl);
+
+    // Add CORS headers to redirect response (needed if Figma follows the redirect)
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
 
     response.cookies.set("sessionId", state, {
       httpOnly: true,
@@ -133,10 +126,7 @@ export async function GET(request: Request) {
       console.error("OAuth callback error:", err);
     }
     return NextResponse.redirect(
-      new URL(
-        `/signup?error=${encodeURIComponent("oauth_failed")}`,
-        request.url
-      )
+      new URL(`/signup?error=${encodeURIComponent("oauth_failed")}`, request.url)
     );
   }
 }
