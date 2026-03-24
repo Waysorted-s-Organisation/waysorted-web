@@ -17,7 +17,7 @@ const Hero = () => {
       <div id="hero-content" className="text-center">
         {/* Request a feature badge */}
         <button
-          className="relative inline-flex items-center bg-white border border-secondary-db-20 rounded-full px-3 py-1 md:px-5 md:py-2 text-sm text-secondary-db-100 mb-4 mt-16 cursor-pointer"
+          className="relative border-white hover:border-[#E9EEFA] cursor-pointer border-2 inline-flex items-center gap-3 bg-white hover:bg-[#265BD1]/4 rounded-2xl px-2 py-2 md:px-2 md:py-2 text-sm font-medium shadow-[0_4px_16.4px_rgba(0,0,0,0.05)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)] transition-shadow"
           onClick={() => {
             if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
               router.push('/mobile-redirect');
@@ -26,19 +26,19 @@ const Hero = () => {
             }
           }}
         >
-          <Image
-            src="/icons/tools.svg"
-            alt="Waysorted Feature Request icon showing tools"
-            title="Waysorted Feature Request icon showing tools"
-            width={16}
-            height={16}
-            className="mr-2"
-            priority
-          />
-          Request a feature
-          <span className="text-primary-way-100 font-medium pl-1.5 hover:underline">
-            Learn More
+          <span className="bg-primary-way-100 text-white rounded-2xl px-3 py-1 text-sm font-semibold">
+            Request
           </span>
+          <span className="text-secondary-db-100">
+            Tell us what you need in your workflow
+          </span>
+          <Image
+            src="/icons/request-arrow.svg"
+            alt="arrow" 
+            width={12}
+            height={6}
+            className="w-3 h-4 flex-shrink-0"
+          />
         </button>
 
         {/* Main heading */}
