@@ -79,10 +79,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
     }
   }
 
-  const handleFigmaClick = () => {
-    window.open("https://www.figma.com/community/plugin/1532842109377504268/waysorted", "_blank");
-  };
-
   // Close menus on route change (back/forward)
   useEffect(() => {
     const closeAll = () => {
@@ -322,32 +318,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 buttonRef={languageBtnRef}
               />
             </div>
-
-            <GlowStarButton
-              onClick={handleFigmaClick}
-              className={`hidden md:inline-flex border bg-secondary-db-100 border border-secondary-db-20 text-white font-semibold text-sm button-shadow px-3 py-1.25 md:px-5 md:py-2 rounded-xl active:scale-95 transition-transform cursor-pointer ml-2  ${isSecureSection ? 'text-white border-secondary-db-80' : 'text-secondary-db-100'}`}
-            >
-              <span className="flex items-center gap-x-2">
-                <Image
-                  src="/icons/figma.svg"
-                  alt="Figma"
-                  title="Figma"
-                  width={16}
-                  height={16}
-                />
-                <span>Waysorted for Figma</span>
-              </span>
-            </GlowStarButton>
-
-            {/* <GlowingStarButton
-              className={`hidden md:flex bg-secondary-db-100 shadow-glow font-medium text-sm md:text-base text-white px-4 md:px-5 py-2 rounded-lg items-center active:scale-95 transition-colors duration-100 cursor-pointer ${isSecureSection ? 'border border-secondary-db-80' : ''}`}
-              title="Get Early Access"
-              aria-label="Get Early Access"
-              onClick={() => router.push('/get-early-access')}
-              disabled={!!user?.earlyAccess}
-            >
-              <span>Get Early Access</span>
-            </GlowingStarButton> */}
 
             {/* Auth buttons: desktop only */}
             {!loading && !user && (
