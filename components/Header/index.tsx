@@ -320,7 +320,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
             </div>
 
             {/* Auth buttons: desktop only */}
-            {!loading && !user && (
+            {!user ? (
               <button
                 className={`md:inline-flex md:font-medium text-sm md:text-base border border-secondary-db-20 rounded-lg px-3 py-1.25 md:px-5 md:py-2 cursor-pointer transition-colors active:scale-95 ${isSecureSection ? 'text-white border-secondary-db-80' : 'text-secondary-db-100'}`}
                 title="Sign Up"
@@ -329,9 +329,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               >
                 Sign Up
               </button>
-            )}
-
-            {user && (
+            ) : (
               <div className="hidden md:block">
                 <UserMenu user={user} handleLogout={handleLogout} />
               </div>
