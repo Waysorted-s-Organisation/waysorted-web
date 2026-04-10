@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     // Find session by accessToken
     let session = (await Session.findOne({ accessToken: token })
-      .populate<{ user: IUser }>("user", "name email picture favorites")
+      .populate<{ user: IUser }>("user", "name email picture favorites figmaAccessToken")
       .lean()) as SessionWithUser | null;
 
     if (!session) {
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
 
         // Reload session with new token
         session = (await Session.findOne({ _id: session._id })
-          .populate<{ user: IUser }>("user", "name email picture favorites")
+          .populate<{ user: IUser }>("user", "name email picture favorites figmaAccessToken")
           .lean()) as SessionWithUser | null;
       } catch (refreshError) {
         console.error("Failed to refresh Google token:", refreshError);
@@ -83,7 +83,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid session" }, { status: 401 });
     }
 
-    return NextResponse.json(session.user);
+    const responseUser = {
+      ...session.user,
+      hasFigmaLinked: !!session.user.figmaAccessToken,
+    };
+    
+    // Do not send access token to the client
+    delete responseUser.figmaAccessToken;
+
+    return NextResponse.json(responseUser);
   } catch (error) {
     console.error("Error in /api/user/profile:", error);
     return NextResponse.json(

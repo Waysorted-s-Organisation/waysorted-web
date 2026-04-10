@@ -13,4 +13,10 @@ export interface IUser {
     updatedAt: Date;
     hasAnyNotifications?: boolean;
     notifications?: { id: string; title: string; body: string }[];
+    figmaUserId?: string;
+    figmaAccessToken?: string;
+    figmaRefreshToken?: string;
+    integrations?: {
+        figma: boolean;
+    };
 }

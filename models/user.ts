@@ -16,6 +16,7 @@ export interface IUserMethods {
     creditsRemaining: number;
     hasAnyNotifications: boolean;
     notifications: { id: string; title: string; body: string }[];
+    hasFigmaLinked: boolean;
   };
 }
 
@@ -42,6 +43,9 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods, IUserStatics>(
     creditsRemaining: { type: Number, default: 2000 },
     role: { type: String, default: "user" },
     hasAnyNotifications: { type: Boolean, default: false },
+    figmaUserId: { type: String },
+    figmaAccessToken: { type: String },
+    figmaRefreshToken: { type: String },
   },
   {
     timestamps: true,
@@ -102,6 +106,7 @@ UserSchema.methods.toPublic = function () {
     creditsRemaining: this.creditsRemaining,
     hasAnyNotifications: this.hasAnyNotifications || false,
     notifications: this.notifications || [],
+    hasFigmaLinked: !!this.figmaAccessToken,
   };
 };
 

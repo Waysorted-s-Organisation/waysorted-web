@@ -1,7 +1,7 @@
 "use client";
 
-import { BannerProvider } from "@/context/BannerContext";
-import { UserProvider } from "@/context/UserContext";
+import { BannerProvider } from "../context/BannerContext";
+import { UserProvider } from "../context/UserContext";
 import { ReactNode } from "react";
 
 export function Providers({ children }: { children: ReactNode }) {

@@ -3,24 +3,20 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react";
 import type { IUser } from "@/types/user";
 
-export interface User extends IUser {
-    integrations?: {
-        figma: boolean;
-    };
-}
+// The context uses the unified IUser type which now includes integrations.
 
 interface UserContextType {
-    user: User | null;
+    user: IUser | null;
     loading: boolean;
     error: string | null;
     refetch: () => Promise<void>;
-    setUser: React.Dispatch<React.SetStateAction<User | null>>;
+    setUser: React.Dispatch<React.SetStateAction<IUser | null>>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [user, setUser] = useState<User | null>(null);
+export function UserProvider({ children }: { children: ReactNode }) {
+    const [user, setUser] = useState<IUser | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -54,7 +50,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             {children}
         </UserContext.Provider>
     );
-};
+}
 
 export function useUserContext() {
     const context = useContext(UserContext);
