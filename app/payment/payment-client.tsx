@@ -5,14 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-declare global {
-  interface Window {
-    Razorpay?: new (options: RazorpayCheckoutOptions) => {
-      open: () => void;
-    };
-  }
-}
-
 type RazorpaySuccessResponse = {
   razorpay_payment_id: string;
   razorpay_order_id: string;
@@ -21,12 +13,13 @@ type RazorpaySuccessResponse = {
 
 type RazorpayCheckoutOptions = {
   key: string;
-  amount: number;
-  currency: string;
+  amount?: number;
+  currency?: string;
   name: string;
   description?: string;
   image?: string;
-  order_id: string;
+  order_id?: string;
+  subscription_id?: string;
   prefill?: {
     name?: string;
     email?: string;
@@ -78,12 +71,20 @@ const DEFAULT_FORM = {
 
 let razorpayScriptPromise: Promise<void> | null = null;
 
+function getRazorpayConstructor() {
+  return (window as Window & {
+    Razorpay?: new (options: RazorpayCheckoutOptions) => {
+      open: () => void;
+    };
+  }).Razorpay;
+}
+
 function loadRazorpayScript() {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("Razorpay checkout can only open in the browser."));
   }
 
-  if (window.Razorpay) {
+  if (getRazorpayConstructor()) {
     return Promise.resolve();
   }
 
@@ -164,11 +165,12 @@ export default function PaymentClient() {
       setState("opening");
       setMessage("Opening Razorpay checkout...");
 
-      if (!window.Razorpay) {
+      const Razorpay = getRazorpayConstructor();
+      if (!Razorpay) {
         throw new Error("Razorpay checkout did not initialize correctly.");
       }
 
-      const razorpay = new window.Razorpay({
+      const razorpay = new Razorpay({
         key: orderPayload.key,
         amount: orderPayload.amount,
         currency: orderPayload.currency,

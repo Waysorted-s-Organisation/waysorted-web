@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { corsHeaders } from "@/lib/cors";
+import { buildCorsHeaders } from "@/lib/cors";
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -18,9 +18,13 @@ export function middleware(request: NextRequest) {
 
   // Handle CORS preflight requests (API only)
   if (request.method === "OPTIONS" && pathname.startsWith("/api/")) {
+    const headers = buildCorsHeaders(request);
+    if (!headers) {
+      return new NextResponse(null, { status: 403 });
+    }
     return new NextResponse(null, {
       status: 200,
-      headers: corsHeaders,
+      headers,
     });
   }
 
@@ -28,9 +32,9 @@ export function middleware(request: NextRequest) {
   // but add CORS headers to the response
   const response = NextResponse.next();
 
-  // Add CORS headers to all API responses
   if (pathname.startsWith("/api/")) {
-    Object.entries(corsHeaders).forEach(([key, value]) => {
+    const corsHeaders = buildCorsHeaders(request);
+    Object.entries(corsHeaders || {}).forEach(([key, value]) => {
       response.headers.set(key, value);
     });
   }

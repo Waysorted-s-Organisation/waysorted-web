@@ -9,6 +9,26 @@ export interface IUser {
     initials: string;
     creditsRemaining: number;
     role?: string;
+    billing?: {
+        wallet: {
+            availableCredits: number;
+            heldCredits: number;
+            spendableCredits: number;
+        };
+        subscription: {
+            planCode: string | null;
+            status: string;
+            renewsAt: string | null;
+            willCancelAt: string | null;
+            cancelAtCycleEnd: boolean;
+        };
+        capabilities: {
+            customizablePresets: boolean;
+            canPurchaseTopups: boolean;
+            canPurchaseStarterPack: boolean;
+        };
+        pricingVersion: string;
+    };
     createdAt: Date;
     updatedAt: Date;
     hasAnyNotifications?: boolean;

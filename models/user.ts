@@ -39,7 +39,7 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods, IUserStatics>(
     picture: { type: String },
     favorites: [{ type: String }],
     earlyAccess: { type: Boolean, default: false },
-    creditsRemaining: { type: Number, default: 2000 },
+    creditsRemaining: { type: Number, default: 0 },
     role: { type: String, default: "user" },
     hasAnyNotifications: { type: Boolean, default: false },
   },
@@ -111,7 +111,7 @@ UserSchema.pre("save", function (next) {
     if (this.earlyAccess) {
       this.creditsRemaining = 20000;
     } else {
-      this.creditsRemaining = 2000;
+      this.creditsRemaining = 0;
     }
   }
   next();
