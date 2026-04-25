@@ -146,9 +146,11 @@ function loadRazorpayScript() {
 }
 
 function minorUnitMultiplier(currency: string) {
-  if (currency === "JPY") return 1;
-  if (currency === "KWD") return 1000;
-  return 100;
+  const digits = new Intl.NumberFormat(undefined, {
+    style: "currency",
+    currency,
+  }).resolvedOptions().maximumFractionDigits ?? 2;
+  return 10 ** digits;
 }
 
 function formatCurrency(amountSubunits: number, currency = "INR") {

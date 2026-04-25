@@ -132,6 +132,26 @@ const COUNTRY_NAMES: Record<string, string> = {
   ID: "Indonesia",
   CO: "Colombia",
   CL: "Chile",
+  AL: "Albania",
+  BA: "Bosnia and Herzegovina",
+  BG: "Bulgaria",
+  BY: "Belarus",
+  CZ: "Czechia",
+  EE: "Estonia",
+  HR: "Croatia",
+  HU: "Hungary",
+  LT: "Lithuania",
+  LV: "Latvia",
+  MD: "Moldova",
+  ME: "Montenegro",
+  MK: "North Macedonia",
+  PL: "Poland",
+  RO: "Romania",
+  RS: "Serbia",
+  RU: "Russia",
+  SI: "Slovenia",
+  SK: "Slovakia",
+  UA: "Ukraine",
 };
 
 const COUNTRY_CURRENCY: Record<string, string> = {
@@ -156,22 +176,42 @@ const COUNTRY_CURRENCY: Record<string, string> = {
   IE: "EUR",
   LU: "EUR",
   JP: "JPY",
-  KR: "USD",
+  KR: "KRW",
   HK: "HKD",
   QA: "QAR",
   KW: "KWD",
   MY: "MYR",
   TH: "THB",
-  VN: "USD",
+  VN: "VND",
   MX: "MXN",
   BR: "BRL",
   TR: "TRY",
   ZA: "ZAR",
   PH: "PHP",
-  ID: "USD",
-  CO: "USD",
-  CL: "USD",
+  ID: "IDR",
+  CO: "COP",
+  CL: "CLP",
   IN: "INR",
+  AL: "ALL",
+  BA: "BAM",
+  BG: "BGN",
+  BY: "BYN",
+  CZ: "CZK",
+  EE: "EUR",
+  HR: "EUR",
+  HU: "HUF",
+  LT: "EUR",
+  LV: "EUR",
+  MD: "MDL",
+  ME: "EUR",
+  MK: "MKD",
+  PL: "PLN",
+  RO: "RON",
+  RS: "RSD",
+  RU: "RUB",
+  SI: "EUR",
+  SK: "EUR",
+  UA: "UAH",
 };
 
 const CURRENCY_PER_INR: Record<string, number> = {
@@ -192,17 +232,32 @@ const CURRENCY_PER_INR: Record<string, number> = {
   QAR: 0.044,
   KWD: 0.0037,
   JPY: 1.86,
+  KRW: 16.6,
   MYR: 0.057,
   THB: 0.44,
+  VND: 306,
   MXN: 0.21,
   BRL: 0.067,
   TRY: 0.39,
   ZAR: 0.22,
   PHP: 0.68,
+  IDR: 194,
+  COP: 47.5,
+  CLP: 11.4,
+  ALL: 1.04,
+  BAM: 0.021,
+  BGN: 0.022,
+  BYN: 0.039,
+  CZK: 0.26,
+  HUF: 4.3,
+  MDL: 0.21,
+  MKD: 0.68,
+  PLN: 0.044,
+  RON: 0.055,
+  RSD: 1.29,
+  RUB: 0.96,
+  UAH: 0.5,
 };
-
-const ZERO_DECIMAL_CURRENCIES = new Set(["JPY"]);
-const THREE_DECIMAL_CURRENCIES = new Set(["KWD"]);
 
 const PRICE_MATRIX_INR: Record<string, Record<PricingTier, number>> = {
   starter_149: { tier_1: 499, tier_2: 249, tier_3: 149 },
@@ -319,9 +374,11 @@ export function createPricingContext(input: {
 }
 
 export function minorUnitMultiplier(currency: string) {
-  if (ZERO_DECIMAL_CURRENCIES.has(currency)) return 1;
-  if (THREE_DECIMAL_CURRENCIES.has(currency)) return 1000;
-  return 100;
+  const digits = new Intl.NumberFormat("en", {
+    style: "currency",
+    currency,
+  }).resolvedOptions().maximumFractionDigits ?? 2;
+  return 10 ** digits;
 }
 
 function roundDisplayAmount(value: number, currency: string) {
