@@ -132,12 +132,12 @@ export async function createRazorpaySubscription(input: {
   });
 }
 
-export async function cancelRazorpaySubscription(subscriptionId: string) {
+export async function cancelRazorpaySubscription(subscriptionId: string, cancelAtCycleEnd = true) {
   return razorpayRequest<RazorpaySubscription>({
     method: "POST",
     path: `/v1/subscriptions/${subscriptionId}/cancel`,
     body: {
-      cancel_at_cycle_end: 1,
+      cancel_at_cycle_end: cancelAtCycleEnd ? 1 : 0,
     },
   });
 }

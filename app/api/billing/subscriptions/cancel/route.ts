@@ -27,11 +27,23 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    await cancelRazorpaySubscription(subscription.providerSubscriptionId);
+    const hasCurrentCycle = Boolean(subscription.currentPeriodStart || subscription.currentPeriodEnd);
+    const cancelAtCycleEnd = hasCurrentCycle && subscription.status !== "payment_pending";
+
+    try {
+      await cancelRazorpaySubscription(subscription.providerSubscriptionId, cancelAtCycleEnd);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "";
+      if (!cancelAtCycleEnd || !/no billing cycle/i.test(message)) {
+        throw error;
+      }
+      await cancelRazorpaySubscription(subscription.providerSubscriptionId, false);
+    }
+
     const latest = await fetchRazorpaySubscription(subscription.providerSubscriptionId);
 
-    subscription.status = "cancel_scheduled";
-    subscription.cancelAtCycleEnd = true;
+    subscription.status = cancelAtCycleEnd ? "cancel_scheduled" : "cancelled";
+    subscription.cancelAtCycleEnd = cancelAtCycleEnd;
     subscription.currentPeriodStart =
       typeof latest.current_start === "number" ? new Date(latest.current_start * 1000) : subscription.currentPeriodStart;
     subscription.currentPeriodEnd =
@@ -43,16 +55,16 @@ export async function POST(request: NextRequest) {
     await updateBillingSubscriptionState({
       userId: String(auth.user._id),
       planCode: subscription.planCode,
-      status: "cancel_scheduled",
+      status: cancelAtCycleEnd ? "cancel_scheduled" : "cancelled",
       currentPeriodStart: subscription.currentPeriodStart,
       currentPeriodEnd: subscription.currentPeriodEnd,
       renewsAt: subscription.nextChargeAt || subscription.currentPeriodEnd || null,
-      cancelAtCycleEnd: true,
+      cancelAtCycleEnd,
     });
 
     return NextResponse.json({
       ok: true,
-      status: "cancel_scheduled",
+      status: cancelAtCycleEnd ? "cancel_scheduled" : "cancelled",
       willCancelAt: subscription.currentPeriodEnd,
       currentPeriodEnd: subscription.currentPeriodEnd,
     });
