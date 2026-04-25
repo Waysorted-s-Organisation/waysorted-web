@@ -13,7 +13,7 @@ export interface IBillingProduct {
   creditsGranted: number;
   bonusCredits: number;
   billingCycle: "one_time" | "yearly";
-  currency: "INR";
+  currency: string;
   active: boolean;
   version: string;
   providerPlanId?: string | null;
@@ -39,7 +39,7 @@ const BillingProductSchema = new Schema<IBillingProduct, BillingProductModel>(
     creditsGranted: { type: Number, required: true, min: 0 },
     bonusCredits: { type: Number, default: 0, min: 0 },
     billingCycle: { type: String, required: true, enum: ["one_time", "yearly"] },
-    currency: { type: String, required: true, default: "INR", enum: ["INR"] },
+    currency: { type: String, required: true, default: "INR" },
     active: { type: Boolean, default: true },
     version: { type: String, required: true, default: "v1" },
     providerPlanId: { type: String, default: null },

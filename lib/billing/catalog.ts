@@ -153,11 +153,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
   },
   {
     code: "sub_year_1599",
-    name: "Yearly 1599",
+    name: "Yearly 1",
     kind: "subscription",
     eligibility: "everyone",
-    priceInr: 1599,
-    amountPaise: 159900,
+    priceInr: 1499,
+    amountPaise: 149900,
     creditsGranted: 2400,
     bonusCredits: 0,
     billingCycle: "yearly",
@@ -167,7 +167,7 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
   },
   {
     code: "sub_year_3499",
-    name: "Yearly 3499",
+    name: "Yearly 2",
     kind: "subscription",
     eligibility: "everyone",
     priceInr: 3499,
@@ -181,7 +181,7 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
   },
   {
     code: "sub_year_7499",
-    name: "Yearly 7499",
+    name: "Yearly 3",
     kind: "subscription",
     eligibility: "everyone",
     priceInr: 7499,

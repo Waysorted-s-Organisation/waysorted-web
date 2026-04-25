@@ -40,13 +40,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid subscription product." }, { status: 400 });
     }
 
-    const snapshot = await buildBillingSnapshot(auth.user);
+    const snapshot = await buildBillingSnapshot(auth.user, request);
+    const pricedProduct = snapshot.catalog.find((item) => item.code === product.code);
+    if (!pricedProduct) {
+      return NextResponse.json({ error: "Product is not currently eligible for this user." }, { status: 403 });
+    }
     const existingSubscription = await findCurrentSubscription(String(auth.user._id));
     if (existingSubscription && ["active", "cancel_scheduled", "payment_pending"].includes(existingSubscription.status)) {
       return NextResponse.json({
         subscriptionId: existingSubscription.providerSubscriptionId,
         key: getRazorpayConfig().publicKeyId,
-        product,
+        product: pricedProduct,
         status: existingSubscription.status,
       });
     }
@@ -57,14 +61,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Billing product not synced." }, { status: 500 });
     }
 
-    if (!productDoc.providerPlanId) {
+    const planKey = `${pricedProduct.currency}:${pricedProduct.amountPaise}:${snapshot.pricing.tier}`;
+    const providerPlans = ((productDoc.metadata?.providerPlans || {}) as Record<string, string>);
+    let providerPlanId = providerPlans[planKey];
+
+    if (!providerPlanId) {
       const plan = await createRazorpayPlan({
         code: product.code,
-        amountPaise: product.amountPaise,
-        name: product.name,
+        amountPaise: pricedProduct.amountPaise,
+        currency: pricedProduct.currency,
+        name: `${product.name} ${snapshot.pricing.tier.toUpperCase()} ${pricedProduct.currency}`,
         description: `${product.creditsGranted} yearly credits for ${product.name}`,
       });
-      productDoc.providerPlanId = plan.id;
+      providerPlanId = plan.id;
+      productDoc.providerPlanId ||= plan.id;
+      productDoc.metadata = {
+        ...(productDoc.metadata || {}),
+        providerPlans: {
+          ...providerPlans,
+          [planKey]: plan.id,
+        },
+      };
+      productDoc.markModified("metadata");
       await productDoc.save();
     }
 
@@ -74,22 +92,28 @@ export async function POST(request: NextRequest) {
       (await createPurchaseRecord({
         userId: String(auth.user._id),
         productCode: product.code,
+        pricedProduct,
+        pricing: snapshot.pricing,
         checkoutSource: body.source?.trim() || "billing_page",
         idempotencyKey,
         notes: {
           authType: auth.authType,
           pricingVersion: snapshot.pricingVersion,
+          pricing: snapshot.pricing,
         },
       }));
 
     const subscription = await createRazorpaySubscription({
-      planId: productDoc.providerPlanId,
+      planId: providerPlanId,
       notes: {
         userId: String(auth.user._id),
         email: auth.user.email,
         productCode: product.code,
         purchaseId: String(purchase._id),
         pricingVersion: snapshot.pricingVersion,
+        pricingTier: snapshot.pricing.tier,
+        pricingCountry: snapshot.pricing.country,
+        currency: pricedProduct.currency,
       },
     });
 
@@ -100,9 +124,12 @@ export async function POST(request: NextRequest) {
     await ensureSubscriptionRecord({
       userId: String(auth.user._id),
       planCode: product.code,
-      providerPlanId: productDoc.providerPlanId,
+      providerPlanId,
       providerSubscriptionId: subscription.id,
-      metadata: { purchaseId: String(purchase._id) },
+      metadata: { purchaseId: String(purchase._id), pricing: snapshot.pricing },
+      pricing: snapshot.pricing,
+      amountSubunits: pricedProduct.amountPaise,
+      basePriceInr: pricedProduct.basePriceInr,
     });
 
     await updateBillingSubscriptionState({
@@ -116,7 +143,7 @@ export async function POST(request: NextRequest) {
       purchaseId: String(purchase._id),
       subscriptionId: subscription.id,
       key: getRazorpayConfig().publicKeyId,
-      product,
+      product: pricedProduct,
     });
   } catch (error) {
     console.error("POST /api/billing/subscriptions/create error:", error);

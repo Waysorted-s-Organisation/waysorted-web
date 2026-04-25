@@ -43,7 +43,13 @@ type CatalogProduct = {
   creditsGranted: number;
   bonusCredits: number;
   billingCycle: "one_time" | "yearly";
-  currency: "INR";
+  currency: string;
+  basePriceInr?: number;
+  displayAmount?: number;
+  pricingCountry?: string;
+  pricingCountryName?: string;
+  pricingTier?: "tier_1" | "tier_2" | "tier_3";
+  pricingRiskFlags?: string[];
 };
 
 type BillingSnapshot = {
@@ -72,6 +78,15 @@ type BillingSnapshot = {
     };
     catalog: CatalogProduct[];
     pricingVersion: string;
+    pricing: {
+      country: string;
+      countryName: string;
+      tier: "tier_1" | "tier_2" | "tier_3";
+      currency: string;
+      riskFlags: string[];
+      locked: boolean;
+      source: string;
+    };
   };
 };
 
@@ -130,11 +145,17 @@ function loadRazorpayScript() {
   return razorpayScriptPromise;
 }
 
-function formatCurrency(amountPaise: number, currency = "INR") {
-  return new Intl.NumberFormat("en-IN", {
+function minorUnitMultiplier(currency: string) {
+  if (currency === "JPY") return 1;
+  if (currency === "KWD") return 1000;
+  return 100;
+}
+
+function formatCurrency(amountSubunits: number, currency = "INR") {
+  return new Intl.NumberFormat(undefined, {
     style: "currency",
     currency,
-  }).format(amountPaise / 100);
+  }).format(amountSubunits / minorUnitMultiplier(currency));
 }
 
 function formatDate(value?: string | null) {
@@ -443,7 +464,7 @@ export default function BillingClient({
                     </div>
                     <div className="mt-2 text-lg font-semibold">{product.name}</div>
                     <div className="mt-1 text-sm text-[#6b7280]">
-                      {formatCurrency(product.amountPaise)} for {totalCredits} credits
+                      {formatCurrency(product.amountPaise, product.currency)} for {totalCredits} credits
                     </div>
                     {product.bonusCredits > 0 ? (
                       <div className="mt-2 text-xs text-[#265BD1]">
@@ -459,6 +480,11 @@ export default function BillingClient({
           <section className="rounded-3xl border border-[#dbe3f1] bg-white p-6 shadow-sm">
             <h2 className="text-lg font-semibold">Subscription Status</h2>
             <div className="mt-4 space-y-2 text-sm text-[#374151]">
+              <div>
+                Pricing: {snapshot?.billing.pricing.countryName || "NA"} /{" "}
+                {snapshot?.billing.pricing.tier?.replace("_", " ") || "NA"} /{" "}
+                {snapshot?.billing.pricing.currency || "NA"}
+              </div>
               <div>Status: {snapshot?.billing.subscription.status || "NA"}</div>
               <div>Plan: {snapshot?.billing.subscription.planCode || "NA"}</div>
               <div>Renews: {formatDate(snapshot?.billing.subscription.renewsAt)}</div>
@@ -519,7 +545,9 @@ export default function BillingClient({
               </div>
               <div>
                 <div className="text-xs uppercase tracking-[0.14em] text-[#6b7280]">Amount</div>
-                <div className="mt-1 font-medium">{formatCurrency(selectedProduct.amountPaise)}</div>
+                <div className="mt-1 font-medium">
+                  {formatCurrency(selectedProduct.amountPaise, selectedProduct.currency)}
+                </div>
               </div>
               <div>
                 <div className="text-xs uppercase tracking-[0.14em] text-[#6b7280]">Credits</div>

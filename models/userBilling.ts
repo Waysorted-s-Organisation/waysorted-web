@@ -21,6 +21,12 @@ export interface IUserBilling {
   lifetimeSpentCredits: number;
   lifetimeRefundedCredits: number;
   pricingVersion: string;
+  pricingCountry?: string | null;
+  pricingTier?: string | null;
+  pricingCurrency?: string | null;
+  pricingLockedAt?: Date | null;
+  pricingLockReason?: string | null;
+  pricingRiskFlags: string[];
   firstSuccessfulPurchaseAt?: Date | null;
   subscriptionStatus: BillingSubscriptionStatus;
   subscriptionPlanCode?: string | null;
@@ -45,6 +51,12 @@ const UserBillingSchema = new Schema<IUserBilling, UserBillingModel>(
     lifetimeSpentCredits: { type: Number, required: true, default: 0 },
     lifetimeRefundedCredits: { type: Number, required: true, default: 0 },
     pricingVersion: { type: String, required: true, default: "v1" },
+    pricingCountry: { type: String, default: null, index: true },
+    pricingTier: { type: String, default: null, index: true },
+    pricingCurrency: { type: String, default: null },
+    pricingLockedAt: { type: Date, default: null },
+    pricingLockReason: { type: String, default: null },
+    pricingRiskFlags: [{ type: String }],
     firstSuccessfulPurchaseAt: { type: Date, default: null },
     subscriptionStatus: {
       type: String,

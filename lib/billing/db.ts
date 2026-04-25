@@ -1,9 +1,11 @@
 import mongoose, { ClientSession, HydratedDocument } from "mongoose";
+import type { NextRequest } from "next/server";
 import dbConnect from "@/lib/db";
 import BillingProduct from "@/models/billingProduct";
 import CreditLedger, { type ICreditLedger } from "@/models/creditLedger";
 import Purchase, { type IPurchase } from "@/models/purchase";
 import Refund from "@/models/refund";
+import Session from "@/models/session";
 import StarterGrant from "@/models/starterGrant";
 import type { ISubscription } from "@/models/subscription";
 import Subscription from "@/models/subscription";
@@ -21,6 +23,17 @@ import {
 import { createSignedToken } from "@/lib/billing/crypto";
 import { getProcessorCallbackSecret } from "@/lib/billing/env";
 import { buildStarterSignalHashes } from "@/lib/billing/request-signals";
+import {
+  applyRegionalPrice,
+  createPricingContext,
+  getCountryTier,
+  getCountryFromRequest,
+  getCurrencyForCountry,
+  normalizeCountry,
+  getTierRank,
+  type PricingContext,
+  type RegionalPricedProduct,
+} from "@/lib/billing/regional-pricing";
 
 export type BillingSnapshot = {
   wallet: {
@@ -45,7 +58,8 @@ export type BillingSnapshot = {
     canPurchaseStarterPack: boolean;
   };
   pricingVersion: string;
-  catalog: ReturnType<typeof getVisibleCatalog>;
+  pricing: PricingContext;
+  catalog: RegionalPricedProduct[];
 };
 
 type PurchaseDocument = HydratedDocument<IPurchase>;
@@ -111,11 +125,86 @@ export async function ensureUserBilling(
     availableCredits: typeof user.creditsRemaining === "number" ? user.creditsRemaining : 0,
     heldCredits: 0,
     pricingVersion: BILLING_PRICING_VERSION,
+    pricingRiskFlags: [],
     subscriptionStatus: "inactive",
     cancelAtCycleEnd: false,
   });
   await billing.save({ session });
   return billing;
+}
+
+export async function resolveUserPricingContext(
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  request?: NextRequest | null,
+  session?: ClientSession,
+) {
+  const billing = await ensureUserBilling(user, session);
+  const detectedCountry = getCountryFromRequest(request);
+  const recentSession = await Session.findOne({
+    user: user._id,
+    countryCode: { $exists: true, $ne: null },
+  })
+    .sort({ completedAt: -1, createdAt: -1 })
+    .lean<{ countryCode?: string | null; pricingTierAtAuth?: string | null } | null>()
+    .session(session || null);
+  const authCountry = recentSession?.countryCode || null;
+  const authTier = authCountry ? getCountryTier(authCountry) : null;
+  const lockedContext = createPricingContext({
+    detectedCountry,
+    lockedCountry: billing.pricingCountry,
+    lockedTier: billing.pricingTier,
+    lockedCurrency: billing.pricingCurrency,
+  });
+  const detectedTier = detectedCountry ? getCountryTier(detectedCountry) : null;
+  const currentLockedTier = billing.pricingTier as PricingContext["tier"] | null;
+  const detectedOrDefaultCountry =
+    authCountry &&
+    authTier &&
+    detectedTier &&
+    getTierRank(authTier) > getTierRank(detectedTier)
+      ? authCountry
+      : detectedCountry;
+  const detectedOrDefaultTier = detectedOrDefaultCountry ? getCountryTier(detectedOrDefaultCountry) : null;
+  const shouldUpgrade =
+    detectedOrDefaultCountry &&
+    detectedOrDefaultTier &&
+    currentLockedTier &&
+    getTierRank(detectedOrDefaultTier) > getTierRank(currentLockedTier);
+
+  const shouldLock =
+    !billing.pricingCountry ||
+    !billing.pricingTier ||
+    shouldUpgrade;
+
+  if (shouldLock) {
+    const countryToLock =
+      (!billing.pricingCountry || shouldUpgrade) && detectedOrDefaultCountry
+        ? detectedOrDefaultCountry
+        : lockedContext.country;
+    const tierToLock =
+      (!billing.pricingTier || shouldUpgrade) && detectedOrDefaultTier
+        ? detectedOrDefaultTier
+        : lockedContext.tier;
+    billing.pricingCountry = countryToLock;
+    billing.pricingTier = tierToLock;
+    billing.pricingCurrency = getCurrencyForCountry(countryToLock);
+    billing.pricingLockedAt ||= new Date();
+    billing.pricingLockReason = shouldUpgrade ? "higher_tier_detection" : "initial_detection";
+  }
+
+  const riskFlags = [...lockedContext.riskFlags];
+  if (authCountry && detectedCountry && authCountry !== normalizeCountry(detectedCountry)) {
+    riskFlags.push("auth_country_differs_from_checkout_country");
+  }
+  billing.pricingRiskFlags = Array.from(new Set(riskFlags));
+  await billing.save({ session });
+
+  return createPricingContext({
+    detectedCountry,
+    lockedCountry: billing.pricingCountry,
+    lockedTier: billing.pricingTier,
+    lockedCurrency: billing.pricingCurrency,
+  });
 }
 
 export async function updateLegacyUserCredits(
@@ -145,9 +234,10 @@ export async function appendCreditLedger(input: LedgerInput, session?: ClientSes
   return ledger;
 }
 
-export async function buildBillingSnapshot(user: IUser): Promise<BillingSnapshot> {
+export async function buildBillingSnapshot(user: IUser, request?: NextRequest | null): Promise<BillingSnapshot> {
   await syncCatalogProducts();
   const billing = await ensureUserBilling(user);
+  const pricing = await resolveUserPricingContext(user, request);
   const hasActiveSubscription = isSubscriptionActive(
     billing.subscriptionStatus,
     billing.subscriptionRenewsAt || billing.subscriptionEndAt || null,
@@ -177,13 +267,18 @@ export async function buildBillingSnapshot(user: IUser): Promise<BillingSnapshot
       canPurchaseStarterPack: isNewUser,
     },
     pricingVersion: billing.pricingVersion,
-    catalog: getVisibleCatalog({ isNewUser, hasActiveSubscription }),
+    pricing,
+    catalog: getVisibleCatalog({ isNewUser, hasActiveSubscription }).map((product) =>
+      applyRegionalPrice(product, pricing),
+    ),
   };
 }
 
 export async function createPurchaseRecord(input: {
   userId: string;
   productCode: string;
+  pricedProduct?: RegionalPricedProduct;
+  pricing?: PricingContext;
   checkoutSource?: string | null;
   idempotencyKey: string;
   notes?: Record<string, unknown>;
@@ -193,6 +288,7 @@ export async function createPurchaseRecord(input: {
     throw new Error("Invalid product code.");
   }
 
+  const pricedProduct = input.pricedProduct || product;
   const receipt = `ws_${product.code}_${Date.now()}`;
 
   return Purchase.create({
@@ -200,8 +296,13 @@ export async function createPurchaseRecord(input: {
     productCode: product.code,
     kind: product.kind,
     status: "created",
-    amountPaise: product.amountPaise,
-    currency: "INR",
+    amountPaise: pricedProduct.amountPaise,
+    currency: pricedProduct.currency,
+    basePriceInr: "basePriceInr" in pricedProduct ? pricedProduct.basePriceInr : product.priceInr,
+    pricingCountry: input.pricing?.country || null,
+    pricingTier: input.pricing?.tier || null,
+    pricingCurrency: input.pricing?.currency || pricedProduct.currency,
+    pricingRiskFlags: input.pricing?.riskFlags || [],
     creditsGranted: product.creditsGranted,
     bonusCredits: product.bonusCredits,
     receipt,
@@ -317,6 +418,9 @@ export async function ensureSubscriptionRecord(input: {
   planCode: string;
   providerPlanId: string;
   providerSubscriptionId: string;
+  pricing?: PricingContext | null;
+  amountSubunits?: number | null;
+  basePriceInr?: number | null;
   metadata?: Record<string, unknown>;
   session?: ClientSession;
 }) {
@@ -338,6 +442,11 @@ export async function ensureSubscriptionRecord(input: {
     status: "payment_pending",
     providerPlanId: input.providerPlanId,
     providerSubscriptionId: input.providerSubscriptionId,
+    pricingCountry: input.pricing?.country || null,
+    pricingTier: input.pricing?.tier || null,
+    pricingCurrency: input.pricing?.currency || null,
+    amountSubunits: input.amountSubunits ?? null,
+    basePriceInr: input.basePriceInr ?? null,
     metadata: input.metadata || {},
   });
   await subscription.save({ session: input.session });

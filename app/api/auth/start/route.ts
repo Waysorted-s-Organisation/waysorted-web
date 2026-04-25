@@ -3,6 +3,7 @@ import { v4 as uuid } from "uuid";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import { extractRequestSignals } from "@/lib/billing/request-signals";
+import { getCountryFromRequest, getCountryTier, normalizeCountry } from "@/lib/billing/regional-pricing";
 import { OPTIONS, withCors } from "@/lib/cors";
 export { OPTIONS };
 
@@ -21,6 +22,7 @@ export async function GET(request: NextRequest) {
 
     const sessionId = uuid();
     const signals = extractRequestSignals(request);
+    const countryCode = normalizeCountry(getCountryFromRequest(request));
     await Session.create({
       sessionId,
       createdAt: new Date(),
@@ -29,6 +31,8 @@ export async function GET(request: NextRequest) {
       ipPrefix: signals.ipPrefix,
       userAgent: signals.userAgent,
       deviceId: signals.deviceId,
+      countryCode,
+      pricingTierAtAuth: getCountryTier(countryCode),
     });
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({

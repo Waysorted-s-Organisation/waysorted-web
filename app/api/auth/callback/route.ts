@@ -6,6 +6,7 @@ import Session from "@/models/session";
 import Subscriber from "@/models/subscriber";
 import { ensureStarterGrant } from "@/lib/billing/db";
 import { extractRequestSignals } from "@/lib/billing/request-signals";
+import { getCountryFromRequest, getCountryTier, normalizeCountry } from "@/lib/billing/regional-pricing";
 import { withCors } from "@/lib/cors";
 
 export async function GET(request: NextRequest) {
@@ -63,6 +64,7 @@ export async function GET(request: NextRequest) {
       { headers: { Authorization: `Bearer ${access_token}` } }
     );
     const callbackSignals = extractRequestSignals(request);
+    const callbackCountry = normalizeCountry(getCountryFromRequest(request) || existingSession.countryCode);
 
     const existingUser = await User.findOne({ email: googleUser.email });
     const createdNewUser = !existingUser;
@@ -109,6 +111,8 @@ export async function GET(request: NextRequest) {
           ipPrefix: callbackSignals.ipPrefix || existingSession.ipPrefix || null,
           userAgent: callbackSignals.userAgent || existingSession.userAgent || null,
           deviceId: existingSession.deviceId || callbackSignals.deviceId || null,
+          countryCode: callbackCountry,
+          pricingTierAtAuth: getCountryTier(callbackCountry),
         },
       }
     );

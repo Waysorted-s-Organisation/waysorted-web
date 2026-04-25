@@ -64,6 +64,7 @@ export type RazorpaySubscription = {
 
 export async function createRazorpayOrder(input: {
   amountPaise: number;
+  currency?: string;
   receipt: string;
   notes: Record<string, string>;
 }) {
@@ -72,7 +73,7 @@ export async function createRazorpayOrder(input: {
     path: "/v1/orders",
     body: {
       amount: input.amountPaise,
-      currency: "INR",
+      currency: input.currency || "INR",
       receipt: input.receipt,
       notes: input.notes,
     },
@@ -88,6 +89,7 @@ export async function fetchRazorpayPayment(paymentId: string) {
 export async function createRazorpayPlan(input: {
   code: string;
   amountPaise: number;
+  currency?: string;
   name: string;
   description: string;
 }) {
@@ -100,11 +102,12 @@ export async function createRazorpayPlan(input: {
       item: {
         name: input.name,
         amount: input.amountPaise,
-        currency: "INR",
+        currency: input.currency || "INR",
         description: input.description,
       },
       notes: {
         productCode: input.code,
+        currency: input.currency || "INR",
       },
     },
   });

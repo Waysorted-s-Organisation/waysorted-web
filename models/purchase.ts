@@ -17,7 +17,12 @@ export interface IPurchase {
   kind: PurchaseKind;
   status: PurchaseStatus;
   amountPaise: number;
-  currency: "INR";
+  currency: string;
+  basePriceInr?: number | null;
+  pricingCountry?: string | null;
+  pricingTier?: string | null;
+  pricingCurrency?: string | null;
+  pricingRiskFlags?: string[];
   creditsGranted: number;
   bonusCredits: number;
   razorpayOrderId?: string | null;
@@ -50,7 +55,12 @@ const PurchaseSchema = new Schema<IPurchase, PurchaseModel>(
       enum: ["created", "pending", "captured", "failed", "cancelled", "refunded", "partially_refunded"],
     },
     amountPaise: { type: Number, required: true, min: 100 },
-    currency: { type: String, required: true, default: "INR", enum: ["INR"] },
+    currency: { type: String, required: true, default: "INR" },
+    basePriceInr: { type: Number, default: null, min: 0 },
+    pricingCountry: { type: String, default: null, index: true },
+    pricingTier: { type: String, default: null, index: true },
+    pricingCurrency: { type: String, default: null },
+    pricingRiskFlags: [{ type: String }],
     creditsGranted: { type: Number, required: true, min: 0 },
     bonusCredits: { type: Number, required: true, default: 0, min: 0 },
     razorpayOrderId: { type: String, default: null, index: true },

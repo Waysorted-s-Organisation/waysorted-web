@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import Session from "@/models/session";
 import type { IUser } from "@/types/user";
 import { buildBillingSnapshot } from "@/lib/billing/db";
 import dbConnect from "@/lib/db";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const sessionId = cookieStore.get("sessionId")?.value;
@@ -25,7 +25,7 @@ export async function GET() {
 
     const user = session.user;
 
-    const billing = await buildBillingSnapshot(user);
+    const billing = await buildBillingSnapshot(user, request);
 
     const initials =
       user.name

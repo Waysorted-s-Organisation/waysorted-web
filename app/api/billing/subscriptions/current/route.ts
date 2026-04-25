@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
 
     const [subscription, snapshot] = await Promise.all([
       findCurrentSubscription(String(auth.user._id)),
-      buildBillingSnapshot(auth.user),
+      buildBillingSnapshot(auth.user, request),
     ]);
 
     return NextResponse.json({

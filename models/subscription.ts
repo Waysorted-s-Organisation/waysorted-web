@@ -16,6 +16,11 @@ export interface ISubscription {
   status: SubscriptionStatus;
   providerPlanId?: string | null;
   providerSubscriptionId: string;
+  pricingCountry?: string | null;
+  pricingTier?: string | null;
+  pricingCurrency?: string | null;
+  amountSubunits?: number | null;
+  basePriceInr?: number | null;
   currentPeriodStart?: Date | null;
   currentPeriodEnd?: Date | null;
   nextChargeAt?: Date | null;
@@ -43,6 +48,11 @@ const SubscriptionSchema = new Schema<ISubscription, SubscriptionModel>(
     },
     providerPlanId: { type: String, default: null },
     providerSubscriptionId: { type: String, required: true, unique: true, index: true },
+    pricingCountry: { type: String, default: null, index: true },
+    pricingTier: { type: String, default: null, index: true },
+    pricingCurrency: { type: String, default: null },
+    amountSubunits: { type: Number, default: null, min: 0 },
+    basePriceInr: { type: Number, default: null, min: 0 },
     currentPeriodStart: { type: Date, default: null },
     currentPeriodEnd: { type: Date, default: null },
     nextChargeAt: { type: Date, default: null },

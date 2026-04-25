@@ -31,8 +31,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid one-time product." }, { status: 400 });
     }
 
-    const snapshot = await buildBillingSnapshot(auth.user);
-    const allowed = snapshot.catalog.some((item) => item.code === product.code);
+    const snapshot = await buildBillingSnapshot(auth.user, request);
+    const pricedProduct = snapshot.catalog.find((item) => item.code === product.code);
+    const allowed = Boolean(pricedProduct);
     if (!allowed) {
       return NextResponse.json({ error: "Product is not currently eligible for this user." }, { status: 403 });
     }
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
         amount: existingPurchase.amountPaise,
         currency: existingPurchase.currency,
         key: getRazorpayConfig().publicKeyId,
-        product,
+        product: pricedProduct || product,
       });
     }
 
@@ -54,21 +55,27 @@ export async function POST(request: NextRequest) {
       (await createPurchaseRecord({
         userId: String(auth.user._id),
         productCode: product.code,
+        pricedProduct,
+        pricing: snapshot.pricing,
         checkoutSource: body.source?.trim() || "billing_page",
         idempotencyKey,
         notes: {
           authType: auth.authType,
+          pricing: snapshot.pricing,
         },
       }));
 
     const order = await createRazorpayOrder({
       amountPaise: purchase.amountPaise,
+      currency: purchase.currency,
       receipt: purchase.receipt,
       notes: {
         purchaseId: String(purchase._id),
         userId: String(auth.user._id),
         productCode: purchase.productCode,
         kind: purchase.kind,
+        pricingTier: purchase.pricingTier || snapshot.pricing.tier,
+        pricingCountry: purchase.pricingCountry || snapshot.pricing.country,
       },
     });
 
@@ -82,7 +89,7 @@ export async function POST(request: NextRequest) {
       amount: order.amount,
       currency: order.currency,
       key: getRazorpayConfig().publicKeyId,
-      product,
+      product: pricedProduct || product,
     });
   } catch (error) {
     console.error("POST /api/billing/checkout/order error:", error);

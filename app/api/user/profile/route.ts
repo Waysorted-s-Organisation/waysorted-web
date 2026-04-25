@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
 
-    const billing = await buildBillingSnapshot(auth.user);
+    const billing = await buildBillingSnapshot(auth.user, request);
 
     return NextResponse.json({
       id: String(auth.user._id),

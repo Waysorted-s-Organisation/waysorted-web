@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const snapshot = await buildBillingSnapshot(auth.user);
+    const snapshot = await buildBillingSnapshot(auth.user, request);
 
     return NextResponse.json({
       id: String(auth.user._id),
