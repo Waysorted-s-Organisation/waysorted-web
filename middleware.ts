@@ -2,7 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { buildCorsHeaders } from "@/lib/cors";
 
-const HIDDEN_BILLING_PATHS = new Set(["/pricing", "/billing", "/payment"]);
+const HIDDEN_BILLING_PATHS = new Set([
+  "/pricing",
+  "/billing",
+  "/payment",
+  "/api/billing/public-catalog",
+]);
 const BILLING_TEST_COOKIE = "ws_billing_preview";
 
 function isHiddenBillingPath(pathname: string) {
