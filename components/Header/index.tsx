@@ -276,13 +276,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
 
             <button
               className={`flex items-center pr-3 font-medium text-sm cursor-pointer ${textColor}`}
-              onClick={() => router.push('/pricing')}
-            >
-              Pricing
-            </button>
-
-            <button
-              className={`flex items-center pr-3 font-medium text-sm cursor-pointer ${textColor}`}
               onClick={() => router.push('/about-us')}
             >
               About Us
@@ -510,15 +503,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 <div className="mt-3 px-3">
                   <div className="border-t border-primary-way-10" />
                 </div>
-              </div>
-              <div className="px-3">
-                <button
-                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
-                  onClick={() => { router.push('/pricing') }}
-                >
-                  <span className="font-medium">Pricing</span>
-                </button>
-                <div className="border-t border-primary-way-10" />
               </div>
               <div className="px-3">
                 <button

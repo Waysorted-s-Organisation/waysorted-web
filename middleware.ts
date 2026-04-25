@@ -2,6 +2,70 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { buildCorsHeaders } from "@/lib/cors";
 
+const HIDDEN_BILLING_PATHS = new Set(["/pricing", "/billing", "/payment"]);
+const BILLING_TEST_COOKIE = "ws_billing_preview";
+
+function isHiddenBillingPath(pathname: string) {
+  return HIDDEN_BILLING_PATHS.has(pathname);
+}
+
+function guardHiddenBillingRoutes(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
+  if (process.env.NODE_ENV !== "production" || !isHiddenBillingPath(pathname)) {
+    return null;
+  }
+
+  const configuredToken = process.env.BILLING_TEST_ACCESS_TOKEN?.trim();
+  const bridgeToken = searchParams.get("bridge");
+  const isBridgeCheckout = Boolean(bridgeToken) && (pathname === "/billing" || pathname === "/payment");
+
+  if (isBridgeCheckout) {
+    const response = NextResponse.next();
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    return response;
+  }
+
+  if (!configuredToken) {
+    return new NextResponse("Not Found", {
+      status: 404,
+      headers: {
+        "X-Robots-Tag": "noindex, nofollow, noarchive",
+      },
+    });
+  }
+
+  const accessToken = searchParams.get("billingAccess")?.trim();
+  const cookieToken = request.cookies.get(BILLING_TEST_COOKIE)?.value;
+
+  if (cookieToken === configuredToken) {
+    const response = NextResponse.next();
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    return response;
+  }
+
+  if (accessToken === configuredToken) {
+    const url = request.nextUrl.clone();
+    url.searchParams.delete("billingAccess");
+    const response = NextResponse.redirect(url, 307);
+    response.cookies.set(BILLING_TEST_COOKIE, configuredToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 6,
+    });
+    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    return response;
+  }
+
+  return new NextResponse("Not Found", {
+    status: 404,
+    headers: {
+      "X-Robots-Tag": "noindex, nofollow, noarchive",
+    },
+  });
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get("host") || "";
@@ -14,6 +78,11 @@ export function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.hostname = "www.waysorted.com";
     return NextResponse.redirect(url, 301);
+  }
+
+  const billingGuardResponse = guardHiddenBillingRoutes(request);
+  if (billingGuardResponse) {
+    return billingGuardResponse;
   }
 
   // Handle CORS preflight requests (API only)
