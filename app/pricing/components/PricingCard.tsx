@@ -1,46 +1,38 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import GlowStarButton from "@/components/GlowStarButton";
-import type { PlanId } from "@/types/payment";
 
 interface PricingCardProps {
-  planId: PlanId;
   planName: string;
   description: string;
-  inr: number;
-  credits: number;
-  bonusCredits: number;
+  amountLabel: string;
+  cycleLabel: string;
+  creditsLabel: string;
   ctaLabel: string;
   discountTag: string;
   iconSrc: string;
   featured?: boolean;
   features: string[];
+  onSelect: () => void;
 }
 
 export default function PricingCard({
-  planId,
   planName,
   description,
-  inr,
-  credits,
-  bonusCredits,
+  amountLabel,
+  cycleLabel,
+  creditsLabel,
   ctaLabel,
   discountTag,
   iconSrc,
   featured = false,
   features,
+  onSelect,
 }: PricingCardProps) {
-  const router = useRouter();
-
-  const onGoToPayment = () => {
-    router.push(`/payment?plan=${encodeURIComponent(planId)}&billing=monthly`);
-  };
-
   return (
     <article
-      className={`rounded-[22px] border p-5 md:p-6 flex flex-col min-h-[478px] transition-all ${
+      className={`flex min-h-[478px] flex-col rounded-[22px] border p-5 transition-all md:p-6 ${
         featured
           ? "border-[#356DFF] bg-[#356DFF] text-white"
           : "border-[#E7EDF7] bg-white text-secondary-db-100"
@@ -53,7 +45,13 @@ export default function PricingCard({
               featured ? "bg-white/20" : "bg-[#EDF2FF]"
             }`}
           >
-            <Image src={iconSrc} alt={`${planName} icon`} width={12} height={12} className="h-3 w-3 object-contain" />
+            <Image
+              src={iconSrc}
+              alt={`${planName} icon`}
+              width={12}
+              height={12}
+              className="h-3 w-3 object-contain"
+            />
           </span>
           <p className="text-[40px] font-semibold leading-none tracking-[-0.03em]">{planName}</p>
         </div>
@@ -67,30 +65,26 @@ export default function PricingCard({
       </div>
 
       <p
-        className={`mt-2 text-[12px] leading-snug max-w-[250px] ${
+        className={`mt-2 max-w-[250px] text-[12px] leading-snug ${
           featured ? "text-white/95" : "text-[#606A7C]"
         }`}
       >
         {description}
       </p>
 
-      <div className="mt-2.5">
-        <p className={`text-[22px] font-medium leading-none ${featured ? "text-white/65 line-through" : "text-[#A3ABB9] line-through"}`}>
-          ₹{Math.round(inr * 1.14)}
-        </p>
-      </div>
-
-      <div className="mt-1.5 flex items-end">
-        <p className="text-[49px] font-semibold leading-none tracking-[-0.03em]">₹{inr}</p>
-        <span className={`mb-1 ml-1 text-[26px] ${featured ? "text-white/85" : "text-[#606A7C]"}`}>/monthly</span>
+      <div className="mt-8 flex items-end">
+        <p className="text-[49px] font-semibold leading-none tracking-[-0.03em]">{amountLabel}</p>
+        <span className={`mb-1 ml-1 text-[22px] ${featured ? "text-white/85" : "text-[#606A7C]"}`}>
+          /{cycleLabel}
+        </span>
       </div>
 
       <GlowStarButton
-        onClick={onGoToPayment}
-        className={`mt-5 inline-flex w-full items-center justify-center border text-[13px] font-semibold px-4 py-[10px] rounded-[10px] active:scale-95 transition-transform cursor-pointer ${
+        onClick={onSelect}
+        className={`mt-5 inline-flex w-full cursor-pointer items-center justify-center rounded-[10px] border px-4 py-[10px] text-[13px] font-semibold transition-transform active:scale-95 ${
           featured
-            ? "force-hover bg-white !text-[#2557DE] border-white"
-            : "bg-[#EDF2FF] !text-[#2E56CC] border-[#DCE5FF]"
+            ? "force-hover border-white bg-white !text-[#2557DE]"
+            : "border-[#DCE5FF] bg-[#EDF2FF] !text-[#2E56CC]"
         }`}
       >
         <span>{ctaLabel}</span>
@@ -104,13 +98,17 @@ export default function PricingCard({
         }`}
       >
         <p className="flex items-center gap-2 text-[15px] font-semibold leading-tight">
-          <span className={`inline-flex h-4 w-4 rounded-full border ${featured ? "border-white/60" : "border-[#6D89DA]"} items-center justify-center text-[11px]`}>
-            ⏱
+          <span
+            className={`inline-flex h-4 w-4 items-center justify-center rounded-full border text-[11px] ${
+              featured ? "border-white/60" : "border-[#6D89DA]"
+            }`}
+          >
+            C
           </span>
-          {credits.toLocaleString()} credits/month
+          {creditsLabel}
         </p>
         <p className={`mt-1 text-[11px] ${featured ? "text-white/80" : "text-[#6A7387]"}`}>
-          Plus {bonusCredits} bonus credits for new users
+          Credits are granted only after Razorpay webhook confirmation.
         </p>
       </div>
 

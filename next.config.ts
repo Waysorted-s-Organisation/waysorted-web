@@ -19,9 +19,21 @@ const nextConfig: NextConfig = {
         value: "strict-origin-when-cross-origin",
       },
       {
+        key: "Strict-Transport-Security",
+        value: "max-age=63072000; includeSubDomains; preload",
+      },
+      {
+        key: "Permissions-Policy",
+        value: "camera=(), microphone=(), geolocation=(), browsing-topics=()",
+      },
+      {
+        key: "Cross-Origin-Resource-Policy",
+        value: "same-site",
+      },
+      {
         key: "Content-Security-Policy",
         // UPDATED: Added Azure OTP sender URL to connect-src
-        value: "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googletagmanager.com https://*.google-analytics.com https://vercel.live https://*.clarity.ms https://c.bing.com https://static.cloudflareinsights.com; script-src-elem 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.google-analytics.com https://vercel.live https://*.clarity.ms https://c.bing.com https://static.cloudflareinsights.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob: https://*.google-analytics.com https://*.googletagmanager.com https://*.clarity.ms https://c.bing.com; connect-src 'self' https://otp-sender-web-dev-1759297487.azurewebsites.net https://*.google-analytics.com https://*.analytics.google.com https://analytics.google.com https://stats.g.doubleclick.net https://*.googletagmanager.com https://vitals.vercel-insights.com https://vercel.live wss://ws-us3.pusher.com https://*.clarity.ms https://c.bing.com; frame-ancestors 'self'; worker-src 'self' blob:;",
+        value: "default-src 'self'; script-src 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.google-analytics.com https://vercel.live https://*.clarity.ms https://c.bing.com https://static.cloudflareinsights.com https://checkout.razorpay.com; script-src-elem 'self' 'unsafe-inline' https://*.googletagmanager.com https://*.google-analytics.com https://vercel.live https://*.clarity.ms https://c.bing.com https://static.cloudflareinsights.com https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob: https://*.google-analytics.com https://*.googletagmanager.com https://*.clarity.ms https://c.bing.com https://*.razorpay.com; connect-src 'self' https://otp-sender-web-dev-1759297487.azurewebsites.net https://*.google-analytics.com https://*.analytics.google.com https://analytics.google.com https://stats.g.doubleclick.net https://*.googletagmanager.com https://vitals.vercel-insights.com https://vercel.live wss://ws-us3.pusher.com https://*.clarity.ms https://c.bing.com https://api.razorpay.com https://checkout.razorpay.com https://lumberjack.razorpay.com; frame-src 'self' https://api.razorpay.com https://checkout.razorpay.com; frame-ancestors 'self'; worker-src 'self' blob:;",
       },
       {
         key: "X-Robots-Tag",
@@ -39,12 +51,23 @@ const nextConfig: NextConfig = {
         // Match all API routes
         source: "/api/:path*",
         headers: [
-          { key: "Access-Control-Allow-Origin", value: "*" },
-          { key: "Access-Control-Allow-Methods", value: "GET, POST, PUT, DELETE, OPTIONS" },
-          { key: "Access-Control-Allow-Headers", value: "Content-Type, Authorization" },
-          { key: "Access-Control-Allow-Credentials", value: "true" },
-          { key: "Access-Control-Max-Age", value: "86400" },
           ...securityHeaders,
+        ],
+      },
+      {
+        source: "/billing",
+        headers: [
+          { key: "Cache-Control", value: "private, no-store, max-age=0" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+        ],
+      },
+      {
+        source: "/payment",
+        headers: [
+          { key: "Cache-Control", value: "private, no-store, max-age=0" },
+          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
         ],
       },
       {

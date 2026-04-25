@@ -1,10 +1,11 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import type { IUser } from "@/types/user";
+import { buildBillingSnapshot } from "@/lib/billing/db";
+import dbConnect from "@/lib/db";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const sessionId = cookieStore.get("sessionId")?.value;
@@ -24,16 +25,14 @@ export async function GET() {
 
     const user = session.user;
 
-    // Compute initials dynamically
+    const billing = await buildBillingSnapshot(user, request);
+
     const initials =
       user.name
         ?.split(/\s+/)
         .map((s) => s[0]?.toUpperCase())
         .slice(0, 2)
         .join("") || user.email.slice(0, 2).toUpperCase();
-
-    // Handle credits for admin
-    const creditsRemaining = user.creditsRemaining;
 
     // Check for active integrations (Figma)
     // We look for any session for this user that has source='figma' or 'plugin' 
@@ -53,13 +52,14 @@ export async function GET() {
         email: user.email,
         picture: user.picture,
         favorites: user.favorites || [],
-        earlyAccess: user.earlyAccess,
+        earlyAccess: billing.capabilities.customizablePresets || Boolean(user.earlyAccess),
         initials,
-        creditsRemaining,
+        creditsRemaining: billing.wallet.availableCredits,
         integrations: {
           figma: isFigmaConnected
         },
         role: user.role,
+        billing,
       },
     });
   } catch (err) {

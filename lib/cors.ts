@@ -1,49 +1,69 @@
 import { NextRequest, NextResponse } from "next/server";
 
-/**
- * CORS headers for cross-origin requests (e.g., from Figma plugins)
- * Exportable for use in individual route handlers
- */
-export const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Session-Id",
-  // "Access-Control-Allow-Credentials": "true",
-  "Access-Control-Max-Age": "86400", // Cache preflight for 24 hours
-};
+const DEFAULT_ALLOWED_ORIGINS = [
+  "https://www.waysorted.com",
+  "https://waysorted.com",
+  "https://www.figma.com",
+  "https://figma.com",
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "null",
+];
 
-/**
- * OPTIONS handler for preflight requests
- * Export this from route files that need CORS support
- */
-export async function OPTIONS() {
+function getAllowedOrigins() {
+  const configured = process.env.ALLOWED_API_ORIGINS?.split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+
+  return new Set([...(configured || []), ...DEFAULT_ALLOWED_ORIGINS]);
+}
+
+export function resolveCorsOrigin(req: NextRequest) {
+  const origin = req.headers.get("origin")?.trim();
+  if (!origin) return null;
+  return getAllowedOrigins().has(origin) ? origin : null;
+}
+
+export function buildCorsHeaders(req: NextRequest) {
+  const origin = resolveCorsOrigin(req);
+  if (!origin) return null;
+
+  return {
+    "Access-Control-Allow-Origin": origin,
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers":
+      "Content-Type, Authorization, X-Session-Id, X-Waysorted-Device-Id, X-Waysorted-Callback-Signature, X-Waysorted-Processor-Token",
+    "Access-Control-Max-Age": "86400",
+    Vary: "Origin",
+  } as const;
+}
+
+export async function OPTIONS(req: NextRequest) {
+  const headers = buildCorsHeaders(req);
+  if (!headers) {
+    return new NextResponse(null, { status: 403 });
+  }
+
   return new NextResponse(null, {
     status: 200,
-    headers: corsHeaders,
+    headers,
   });
 }
 
-/**
- * CORS middleware for API routes
- * Sets appropriate CORS headers for cross-origin requests
- */
 export function cors(req: NextRequest): NextResponse | null {
-  const headers = new Headers();
-  Object.entries(corsHeaders).forEach(([key, value]) => {
-    headers.set(key, value);
-  });
+  const headers = buildCorsHeaders(req);
 
   if (req.method === "OPTIONS") {
-    return new NextResponse(null, { status: 200, headers });
+    return headers ? new NextResponse(null, { status: 200, headers }) : new NextResponse(null, { status: 403 });
   }
   return null;
 }
 
-/**
- * Apply CORS headers to a response
- */
-export function withCors(response: NextResponse): NextResponse {
-  Object.entries(corsHeaders).forEach(([key, value]) => {
+export function withCors(req: NextRequest, response: NextResponse): NextResponse {
+  const headers = buildCorsHeaders(req);
+  if (!headers) return response;
+
+  Object.entries(headers).forEach(([key, value]) => {
     response.headers.set(key, value);
   });
   return response;

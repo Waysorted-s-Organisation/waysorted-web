@@ -1,11 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuid } from "uuid";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
-import { corsHeaders, OPTIONS } from "@/lib/cors";
+import { extractRequestSignals } from "@/lib/billing/request-signals";
+import { getCountryFromRequest, getCountryTier, normalizeCountry } from "@/lib/billing/regional-pricing";
+import { OPTIONS, withCors } from "@/lib/cors";
 export { OPTIONS };
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const clientId = process.env.GOOGLE_CLIENT_ID;
     const redirectUri = process.env.OAUTH_REDIRECT_URI;
@@ -19,7 +21,19 @@ export async function GET(request: Request) {
     await dbConnect();
 
     const sessionId = uuid();
-    await Session.create({ sessionId, createdAt: new Date(), source });
+    const signals = extractRequestSignals(request);
+    const countryCode = normalizeCountry(getCountryFromRequest(request));
+    await Session.create({
+      sessionId,
+      createdAt: new Date(),
+      source,
+      ipAddress: signals.ipAddress,
+      ipPrefix: signals.ipPrefix,
+      userAgent: signals.userAgent,
+      deviceId: signals.deviceId,
+      countryCode,
+      pricingTierAtAuth: getCountryTier(countryCode),
+    });
 
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?${new URLSearchParams({
       client_id: clientId,
@@ -31,15 +45,12 @@ export async function GET(request: Request) {
       prompt: "consent",
     }).toString()}`;
 
-    return NextResponse.json(
-      { sessionId, authUrl },
-      { headers: corsHeaders }
-    );
+    return withCors(request, NextResponse.json({ sessionId, authUrl }));
   } catch (error: unknown) {
     console.error("Error in /api/auth/start:", error);
-    return NextResponse.json(
-      { error: (error as Error).message || "start_failed" },
-      { status: 500, headers: corsHeaders }
+    return withCors(
+      request,
+      NextResponse.json({ error: (error as Error).message || "start_failed" }, { status: 500 }),
     );
   }
 }

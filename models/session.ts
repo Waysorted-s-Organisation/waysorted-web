@@ -12,6 +12,12 @@ export interface ISession {
   completedAt?: Date;
   createdAt?: Date;
   source?: string; // Track where the auth request came from (e.g., "figma", "plugin", "web")
+  ipAddress?: string | null;
+  ipPrefix?: string | null;
+  userAgent?: string | null;
+  deviceId?: string | null;
+  countryCode?: string | null;
+  pricingTierAtAuth?: string | null;
 }
 
 export type SessionModel = Model<ISession>;
@@ -28,6 +34,12 @@ const SessionSchema = new Schema<ISession>(
     completedAt: Date,
     createdAt: { type: Date, default: Date.now },
     source: String,
+    ipAddress: { type: String, default: null },
+    ipPrefix: { type: String, default: null },
+    userAgent: { type: String, default: null },
+    deviceId: { type: String, default: null },
+    countryCode: { type: String, default: null, index: true },
+    pricingTierAtAuth: { type: String, default: null },
   },
   { versionKey: false }
 );

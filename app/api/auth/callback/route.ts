@@ -1,12 +1,15 @@
 import axios from "axios";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import User from "@/models/user";
 import Session from "@/models/session";
 import Subscriber from "@/models/subscriber";
-import { corsHeaders } from "@/lib/cors";
+import { ensureStarterGrant } from "@/lib/billing/db";
+import { extractRequestSignals } from "@/lib/billing/request-signals";
+import { getCountryFromRequest, getCountryTier, normalizeCountry } from "@/lib/billing/regional-pricing";
+import { withCors } from "@/lib/cors";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const urlObj = new URL(request.url);
   const code = urlObj.searchParams.get("code");
   const state = urlObj.searchParams.get("state");
@@ -60,16 +63,22 @@ export async function GET(request: Request) {
       "https://www.googleapis.com/oauth2/v3/userinfo",
       { headers: { Authorization: `Bearer ${access_token}` } }
     );
+    const callbackSignals = extractRequestSignals(request);
+    const callbackCountry = normalizeCountry(getCountryFromRequest(request) || existingSession.countryCode);
 
-    const user = await User.findOneAndUpdate(
-      { email: googleUser.email },
-      {
+    const existingUser = await User.findOne({ email: googleUser.email });
+    const createdNewUser = !existingUser;
+    const user =
+      existingUser ||
+      new User({
         email: googleUser.email,
         name: googleUser.name,
         picture: googleUser.picture,
-      },
-      { new: true, upsert: true, setDefaultsOnInsert: true }
-    );
+      });
+
+    user.name = googleUser.name;
+    user.picture = googleUser.picture;
+    await user.save();
 
     // Auto-subscribe to newsletter
     try {
@@ -98,17 +107,32 @@ export async function GET(request: Request) {
           user: user._id,
           completed: true,
           completedAt: new Date(),
+          ipAddress: callbackSignals.ipAddress || existingSession.ipAddress || null,
+          ipPrefix: callbackSignals.ipPrefix || existingSession.ipPrefix || null,
+          userAgent: callbackSignals.userAgent || existingSession.userAgent || null,
+          deviceId: existingSession.deviceId || callbackSignals.deviceId || null,
+          countryCode: callbackCountry,
+          pricingTierAtAuth: getCountryTier(callbackCountry),
         },
       }
     );
+
+    if (createdNewUser) {
+      await ensureStarterGrant({
+        user,
+        source: existingSession.source || "web",
+        googleSub: typeof googleUser.sub === "string" ? googleUser.sub : null,
+        ipPrefix: callbackSignals.ipPrefix || existingSession.ipPrefix || null,
+        userAgent: callbackSignals.userAgent || existingSession.userAgent || null,
+        deviceId: existingSession.deviceId || callbackSignals.deviceId || null,
+      });
+    }
 
     const finalUrl = new URL(redirectPath, urlObj.origin);
     const response = NextResponse.redirect(finalUrl);
 
     // Add CORS headers to redirect response (needed if Figma follows the redirect)
-    Object.entries(corsHeaders).forEach(([key, value]) => {
-      response.headers.set(key, value);
-    });
+    withCors(request, response);
 
     response.cookies.set("sessionId", state, {
       httpOnly: true,
