@@ -250,10 +250,15 @@ export function getCountryFromRequest(request?: NextRequest | null) {
   return (
     request.headers.get("x-vercel-ip-country") ||
     request.headers.get("cf-ipcountry") ||
-    request.headers.get("x-country-code") ||
-    request.headers.get("x-geo-country") ||
     null
   );
+}
+
+export function withPricingRiskFlags(pricing: PricingContext, riskFlags: string[]): PricingContext {
+  return {
+    ...pricing,
+    riskFlags: Array.from(new Set([...pricing.riskFlags, ...riskFlags])),
+  };
 }
 
 export function createPricingContext(input: {

@@ -33,6 +33,7 @@ import {
   getTierRank,
   type PricingContext,
   type RegionalPricedProduct,
+  withPricingRiskFlags,
 } from "@/lib/billing/regional-pricing";
 
 export type BillingSnapshot = {
@@ -199,12 +200,12 @@ export async function resolveUserPricingContext(
   billing.pricingRiskFlags = Array.from(new Set(riskFlags));
   await billing.save({ session });
 
-  return createPricingContext({
+  return withPricingRiskFlags(createPricingContext({
     detectedCountry,
     lockedCountry: billing.pricingCountry,
     lockedTier: billing.pricingTier,
     lockedCurrency: billing.pricingCurrency,
-  });
+  }), billing.pricingRiskFlags);
 }
 
 export async function updateLegacyUserCredits(
