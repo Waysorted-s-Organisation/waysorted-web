@@ -8,6 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         '',
         '/figma-beta',
         '/learning',
+        '/pricing',
         '/about-us',
         '/support',
         '/requests',
