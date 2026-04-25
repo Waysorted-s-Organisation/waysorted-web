@@ -70,6 +70,7 @@ export async function POST(request: NextRequest) {
         code: product.code,
         amountPaise: pricedProduct.amountPaise,
         currency: pricedProduct.currency,
+        period: product.billingCycle === "monthly" ? "monthly" : "yearly",
         name: `${product.name} ${snapshot.pricing.tier.toUpperCase()} ${pricedProduct.currency}`,
         description: `${product.creditsGranted} yearly credits for ${product.name}`,
       });

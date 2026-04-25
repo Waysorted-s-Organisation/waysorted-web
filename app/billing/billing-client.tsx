@@ -42,7 +42,7 @@ type CatalogProduct = {
   amountPaise: number;
   creditsGranted: number;
   bonusCredits: number;
-  billingCycle: "one_time" | "yearly";
+  billingCycle: "one_time" | "monthly" | "yearly";
   currency: string;
   basePriceInr?: number;
   displayAmount?: number;

@@ -90,6 +90,7 @@ export async function createRazorpayPlan(input: {
   code: string;
   amountPaise: number;
   currency?: string;
+  period: "monthly" | "yearly";
   name: string;
   description: string;
 }) {
@@ -97,7 +98,7 @@ export async function createRazorpayPlan(input: {
     method: "POST",
     path: "/v1/plans",
     body: {
-      period: "yearly",
+      period: input.period,
       interval: 1,
       item: {
         name: input.name,
