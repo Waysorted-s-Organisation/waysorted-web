@@ -2,7 +2,7 @@ import type { NextRequest } from "next/server";
 import type { CatalogProduct } from "@/lib/billing/catalog";
 
 export type PricingTier = "tier_1" | "tier_2" | "tier_3";
-export const PRICING_COUNTRY_COOKIE = "ws_pricing_country";
+export const LEGACY_PRICING_COUNTRY_COOKIE = "ws_pricing_country";
 
 export type PricingContext = {
   country: string;
@@ -306,13 +306,9 @@ export function getTierRank(tier: PricingTier) {
 
 export function getCountryFromRequest(request?: NextRequest | null) {
   if (!request) return null;
-  const cookieCountry = request.cookies.get(PRICING_COUNTRY_COOKIE)?.value;
-  if (cookieCountry) {
-    return cookieCountry;
-  }
   return (
-    request.headers.get("x-vercel-ip-country") ||
     request.headers.get("cf-ipcountry") ||
+    request.headers.get("x-vercel-ip-country") ||
     null
   );
 }

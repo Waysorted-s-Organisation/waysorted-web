@@ -146,14 +146,7 @@ export default function PricingClient({
     async function loadPricing() {
       setPricingError(null);
       try {
-        let response = await fetch("/api/billing/catalog", {
-          cache: "no-store",
-          credentials: "include",
-        });
-
-        if (response.status === 401) {
-          response = await fetch("/api/billing/public-catalog", { cache: "no-store" });
-        }
+        const response = await fetch("/api/billing/public-catalog", { cache: "no-store" });
 
         const payload = (await response.json()) as PricingPayload | { error?: string };
         if (!response.ok || !("catalog" in payload)) {

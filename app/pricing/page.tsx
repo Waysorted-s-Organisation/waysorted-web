@@ -25,26 +25,20 @@ async function loadInitialPricing(): Promise<{
       .getAll()
       .map(({ name, value }) => `${name}=${value}`)
       .join("; ");
-    const forwardedCountry = headerStore.get("x-vercel-ip-country") || headerStore.get("cf-ipcountry") || "";
+    const forwardedCountry = headerStore.get("cf-ipcountry") || headerStore.get("x-vercel-ip-country") || "";
     const requestHeaders: Record<string, string> = {
       "x-vercel-ip-country": forwardedCountry,
+      "cf-ipcountry": forwardedCountry,
     };
 
     if (cookieHeader) {
       requestHeaders.cookie = cookieHeader;
     }
 
-    let response = await fetch(`${baseUrl}/api/billing/catalog`, {
+    const response = await fetch(`${baseUrl}/api/billing/public-catalog`, {
       headers: requestHeaders,
       cache: "no-store",
     });
-
-    if (response.status === 401) {
-      response = await fetch(`${baseUrl}/api/billing/public-catalog`, {
-        headers: requestHeaders,
-        cache: "no-store",
-      });
-    }
 
     const payload = (await response.json()) as PricingPayload | { error?: string };
     if (!response.ok || !("catalog" in payload)) {

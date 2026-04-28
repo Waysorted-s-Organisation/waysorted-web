@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { buildCorsHeaders } from "@/lib/cors";
-import { PRICING_COUNTRY_COOKIE, normalizeCountry } from "@/lib/billing/regional-pricing";
+import { LEGACY_PRICING_COUNTRY_COOKIE } from "@/lib/billing/regional-pricing";
 
 const HIDDEN_BILLING_PATHS = new Set([
   "/pricing",
@@ -11,33 +11,10 @@ const HIDDEN_BILLING_PATHS = new Set([
 ]);
 const BILLING_TEST_COOKIE = "ws_billing_preview";
 
-function readDetectedCountry(request: NextRequest) {
-  const detected =
-    request.headers.get("x-vercel-ip-country") ||
-    request.headers.get("cf-ipcountry") ||
-    request.cookies.get(PRICING_COUNTRY_COOKIE)?.value ||
-    null;
-  return detected ? normalizeCountry(detected) : null;
-}
-
-function attachPricingCountryCookie(request: NextRequest, response: NextResponse) {
-  const detectedCountry = readDetectedCountry(request);
-  if (!detectedCountry) {
-    return response;
+function clearLegacyPricingCountryCookie(request: NextRequest, response: NextResponse) {
+  if (request.cookies.has(LEGACY_PRICING_COUNTRY_COOKIE)) {
+    response.cookies.delete(LEGACY_PRICING_COUNTRY_COOKIE);
   }
-
-  const existingCountry = request.cookies.get(PRICING_COUNTRY_COOKIE)?.value;
-  if (existingCountry === detectedCountry) {
-    return response;
-  }
-
-  response.cookies.set(PRICING_COUNTRY_COOKIE, detectedCountry, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 30,
-  });
   return response;
 }
 
@@ -59,7 +36,7 @@ function guardHiddenBillingRoutes(request: NextRequest) {
     const response = NextResponse.next();
     response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
     response.headers.set("Cache-Control", "private, no-store, max-age=0");
-    return attachPricingCountryCookie(request, response);
+    return clearLegacyPricingCountryCookie(request, response);
   }
 
   if (!configuredToken) {
@@ -79,7 +56,7 @@ function guardHiddenBillingRoutes(request: NextRequest) {
     const response = NextResponse.next();
     response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
     response.headers.set("Cache-Control", "private, no-store, max-age=0");
-    return attachPricingCountryCookie(request, response);
+    return clearLegacyPricingCountryCookie(request, response);
   }
 
   if (accessToken === configuredToken) {
@@ -95,7 +72,7 @@ function guardHiddenBillingRoutes(request: NextRequest) {
     });
     response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
     response.headers.set("Cache-Control", "private, no-store, max-age=0");
-    return attachPricingCountryCookie(request, response);
+    return clearLegacyPricingCountryCookie(request, response);
   }
 
   return new NextResponse("Not Found", {
@@ -149,7 +126,7 @@ export function middleware(request: NextRequest) {
     });
   }
 
-  return attachPricingCountryCookie(request, response);
+  return clearLegacyPricingCountryCookie(request, response);
 }
 
 // Run middleware on all paths except static files

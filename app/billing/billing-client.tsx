@@ -420,112 +420,60 @@ export default function BillingClient({
   }
 
   return (
-    <main className="min-h-screen bg-[#f6f8fc] px-4 py-10 text-[#111827] sm:px-6">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+    <main className="min-h-screen bg-[#F5F7FC] px-4 py-8 text-secondary-db-100 sm:px-6">
+      <div className="mx-auto max-w-[880px]">
+        <div className="mb-5 flex items-center justify-between gap-4">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.18em] text-[#265BD1]">
-              Internal Billing Route
-            </div>
-            <h1 className="mt-2 text-3xl font-semibold">Waysorted Billing</h1>
-            <p className="mt-2 max-w-2xl text-sm text-[#4b5563]">
-              Payments, subscriptions, credits, and cancellation are all backend-authoritative. This
-              route is intended to be opened directly or via plugin checkout redirect.
-            </p>
+            <h1 className="text-2xl font-semibold">Billing</h1>
+            <p className="mt-1 text-sm text-[#687184]">Choose a plan or top up credits.</p>
           </div>
-
-          <div className="rounded-2xl border border-[#dbe3f1] bg-white px-4 py-3 shadow-sm">
-            <div className="text-xs uppercase tracking-[0.14em] text-[#6b7280]">Wallet</div>
-            <div className="mt-1 text-2xl font-semibold">
-              {snapshot?.billing.wallet.availableCredits ?? "--"}
-            </div>
-            <div className="text-sm text-[#6b7280]">
-              Held: {snapshot?.billing.wallet.heldCredits ?? "--"}
-            </div>
+          <div className="rounded-xl border border-[#E7EDF7] bg-white px-4 py-3 text-right">
+            <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7A8499]">Credits</div>
+            <div className="mt-1 text-2xl font-semibold">{snapshot?.billing.wallet.availableCredits ?? "--"}</div>
           </div>
         </div>
 
-        <div className="mb-6 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <section className="rounded-3xl border border-[#dbe3f1] bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold">Available Plans</h2>
-            <p className="mt-1 text-sm text-[#6b7280]">
-              Starter packs are available only until the first successful paid purchase. Subscription
-              cancellation remains end-of-cycle and does not auto-refund the current cycle.
-            </p>
+        <section className="rounded-2xl border border-[#E7EDF7] bg-white p-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {snapshot?.billing.catalog.map((product) => {
+              const totalCredits = product.creditsGranted + product.bonusCredits;
+              const isSelected = selectedCode === product.code;
 
-            <div className="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-              {snapshot?.billing.catalog.map((product) => {
-                const totalCredits = product.creditsGranted + product.bonusCredits;
-                const isSelected = selectedCode === product.code;
-
-                return (
-                  <button
-                    key={product.code}
-                    type="button"
-                    onClick={() => setSelectedCode(product.code)}
-                    className={`rounded-2xl border p-4 text-left transition ${
-                      isSelected
-                        ? "border-[#265BD1] bg-[#edf3ff] shadow-[0_10px_30px_rgba(38,91,209,0.12)]"
-                        : "border-[#e5e7eb] bg-[#fafbfc]"
-                    }`}
-                  >
-                    <div className="text-xs uppercase tracking-[0.16em] text-[#6b7280]">
-                      {product.kind}
+              return (
+                <button
+                  key={product.code}
+                  type="button"
+                  onClick={() => setSelectedCode(product.code)}
+                  className={`rounded-xl border px-4 py-3 text-left transition-colors ${
+                    isSelected ? "border-[#356DFF] bg-[#EEF3FF]" : "border-[#E7EDF7] bg-[#F8FAFF]"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-semibold">{product.name}</div>
+                      <div className="mt-1 text-xs text-[#687184]">{totalCredits.toLocaleString()} credits</div>
                     </div>
-                    <div className="mt-2 text-lg font-semibold">{product.name}</div>
-                    <div className="mt-1 text-sm text-[#6b7280]">
-                      {formatCurrency(product.amountPaise, product.currency)} for {totalCredits} credits
+                    <div className="shrink-0 text-sm font-semibold">
+                      {formatCurrency(product.amountPaise, product.currency)}
                     </div>
-                    {product.bonusCredits > 0 ? (
-                      <div className="mt-2 text-xs text-[#265BD1]">
-                        Includes {product.bonusCredits} bonus credits
-                      </div>
-                    ) : null}
-                  </button>
-                );
-              })}
-            </div>
-          </section>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
 
-          <section className="rounded-3xl border border-[#dbe3f1] bg-white p-6 shadow-sm">
-            <h2 className="text-lg font-semibold">Subscription Status</h2>
-            <div className="mt-4 space-y-2 text-sm text-[#374151]">
-              <div>
-                Pricing: {snapshot?.billing.pricing.countryName || "NA"} /{" "}
-                {snapshot?.billing.pricing.tier?.replace("_", " ") || "NA"} /{" "}
-                {snapshot?.billing.pricing.currency || "NA"}
-              </div>
-              <div>Status: {snapshot?.billing.subscription.status || "NA"}</div>
-              <div>Plan: {snapshot?.billing.subscription.planCode || "NA"}</div>
-              <div>Renews: {formatDate(snapshot?.billing.subscription.renewsAt)}</div>
-              <div>Cancels on: {formatDate(snapshot?.billing.subscription.willCancelAt)}</div>
-            </div>
-
-            {currentSubscription ? (
-              <button
-                type="button"
-                onClick={handleCancelSubscription}
-                disabled={busyCode === "cancel" || currentSubscription.cancelAtCycleEnd}
-                className="mt-5 w-full rounded-2xl bg-[#111827] px-4 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {currentSubscription.cancelAtCycleEnd ? "Cancellation Scheduled" : "Cancel At Cycle End"}
-              </button>
-            ) : null}
-
-            <div className="mt-6 rounded-2xl bg-[#f7f9fc] p-4 text-sm text-[#4b5563]">
-              <div className="font-medium text-[#111827]">Status</div>
-              <div className="mt-1">{status}</div>
-            </div>
-          </section>
-        </div>
-
-        <section className="rounded-3xl border border-[#dbe3f1] bg-white p-6 shadow-sm">
+        <section className="mt-4 rounded-2xl border border-[#E7EDF7] bg-white p-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h2 className="text-lg font-semibold">Selected Checkout</h2>
-              <p className="mt-1 text-sm text-[#6b7280]">
-                Credits grant only after provider-confirmed backend reconciliation.
-              </p>
+              <div className="text-sm font-semibold">{selectedProduct?.name || "Select an item"}</div>
+              <div className="mt-1 text-xs text-[#687184]">
+                {selectedProduct
+                  ? `${formatCurrency(selectedProduct.amountPaise, selectedProduct.currency)} · ${
+                      selectedProduct.creditsGranted + selectedProduct.bonusCredits
+                    } credits`
+                  : "No item selected"}
+              </div>
             </div>
             {selectedProduct ? (
               <button
@@ -536,43 +484,41 @@ export default function BillingClient({
                     : handleOrderCheckout(selectedProduct)
                 }
                 disabled={busyCode === selectedProduct.code}
-                className="rounded-2xl bg-[#265BD1] px-5 py-3 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-xl bg-[#356DFF] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {busyCode === selectedProduct.code
                   ? "Processing..."
                   : selectedProduct.kind === "subscription"
-                    ? "Start Subscription"
-                    : "Buy Credits"}
+                    ? "Start subscription"
+                    : "Buy credits"}
               </button>
             ) : null}
           </div>
+          <div className="mt-4 rounded-xl bg-[#F8FAFF] px-4 py-3 text-xs text-[#687184]">{status}</div>
+        </section>
 
-          {selectedProduct ? (
-            <div className="mt-5 grid gap-3 rounded-2xl bg-[#f7f9fc] p-5 md:grid-cols-4">
-              <div>
-                <div className="text-xs uppercase tracking-[0.14em] text-[#6b7280]">Product</div>
-                <div className="mt-1 font-medium">{selectedProduct.name}</div>
-              </div>
-              <div>
-                <div className="text-xs uppercase tracking-[0.14em] text-[#6b7280]">Amount</div>
-                <div className="mt-1 font-medium">
-                  {formatCurrency(selectedProduct.amountPaise, selectedProduct.currency)}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs uppercase tracking-[0.14em] text-[#6b7280]">Credits</div>
-                <div className="mt-1 font-medium">
-                  {selectedProduct.creditsGranted + selectedProduct.bonusCredits}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs uppercase tracking-[0.14em] text-[#6b7280]">Cycle</div>
-                <div className="mt-1 font-medium">{selectedProduct.billingCycle}</div>
+        <section className="mt-4 rounded-2xl border border-[#E7EDF7] bg-white p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <div className="text-sm font-semibold">Subscription</div>
+              <div className="mt-1 text-xs text-[#687184]">
+                {snapshot?.billing.subscription.status || "NA"}
+                {snapshot?.billing.subscription.renewsAt
+                  ? ` · renews ${formatDate(snapshot.billing.subscription.renewsAt)}`
+                  : ""}
               </div>
             </div>
-          ) : (
-            <div className="mt-4 text-sm text-[#6b7280]">No eligible catalog item available right now.</div>
-          )}
+            {currentSubscription ? (
+              <button
+                type="button"
+                onClick={handleCancelSubscription}
+                disabled={busyCode === "cancel" || currentSubscription.cancelAtCycleEnd}
+                className="rounded-xl border border-[#DCE5FF] bg-[#EDF2FF] px-4 py-2 text-xs font-semibold text-[#2E56CC] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {currentSubscription.cancelAtCycleEnd ? "Cancellation scheduled" : "Cancel subscription"}
+              </button>
+            ) : null}
+          </div>
         </section>
       </div>
     </main>
