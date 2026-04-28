@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/auth";
 import { buildBillingSnapshot } from "@/lib/billing/db";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 function getInitials(name: string | undefined, email: string) {
   return (
     name

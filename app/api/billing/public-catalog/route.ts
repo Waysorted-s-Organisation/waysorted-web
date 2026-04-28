@@ -6,6 +6,10 @@ import {
   getCountryFromRequest,
 } from "@/lib/billing/regional-pricing";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export async function GET(request: NextRequest) {
   const pricing = createPricingContext({
     detectedCountry: getCountryFromRequest(request),
@@ -23,7 +27,9 @@ export async function GET(request: NextRequest) {
     },
     {
       headers: {
-        "Cache-Control": "private, no-store",
+        "Cache-Control": "private, no-store, no-cache, max-age=0, must-revalidate",
+        "CDN-Cache-Control": "no-store",
+        "Vercel-CDN-Cache-Control": "no-store",
       },
     },
   );

@@ -10,6 +10,19 @@ const HIDDEN_BILLING_PATHS = new Set([
   "/api/billing/public-catalog",
 ]);
 const BILLING_TEST_COOKIE = "ws_billing_preview";
+const NO_STORE_HEADERS = {
+  "Cache-Control": "private, no-store, no-cache, max-age=0, must-revalidate",
+  "CDN-Cache-Control": "no-store",
+  "Vercel-CDN-Cache-Control": "no-store",
+  "X-Robots-Tag": "noindex, nofollow, noarchive",
+};
+
+function applyNoStoreHeaders(response: NextResponse) {
+  Object.entries(NO_STORE_HEADERS).forEach(([key, value]) => {
+    response.headers.set(key, value);
+  });
+  return response;
+}
 
 function clearLegacyPricingCountryCookie(request: NextRequest, response: NextResponse) {
   if (request.cookies.has(LEGACY_PRICING_COUNTRY_COOKIE)) {
@@ -34,18 +47,13 @@ function guardHiddenBillingRoutes(request: NextRequest) {
 
   if (isBridgeCheckout) {
     const response = NextResponse.next();
-    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
-    response.headers.set("Cache-Control", "private, no-store, max-age=0");
-    return clearLegacyPricingCountryCookie(request, response);
+    return clearLegacyPricingCountryCookie(request, applyNoStoreHeaders(response));
   }
 
   if (!configuredToken) {
     return new NextResponse("Not Found", {
       status: 404,
-      headers: {
-        "X-Robots-Tag": "noindex, nofollow, noarchive",
-        "Cache-Control": "private, no-store, max-age=0",
-      },
+      headers: NO_STORE_HEADERS,
     });
   }
 
@@ -54,9 +62,7 @@ function guardHiddenBillingRoutes(request: NextRequest) {
 
   if (cookieToken === configuredToken) {
     const response = NextResponse.next();
-    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
-    response.headers.set("Cache-Control", "private, no-store, max-age=0");
-    return clearLegacyPricingCountryCookie(request, response);
+    return clearLegacyPricingCountryCookie(request, applyNoStoreHeaders(response));
   }
 
   if (accessToken === configuredToken) {
@@ -70,17 +76,12 @@ function guardHiddenBillingRoutes(request: NextRequest) {
       path: "/",
       maxAge: 60 * 60 * 6,
     });
-    response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
-    response.headers.set("Cache-Control", "private, no-store, max-age=0");
-    return clearLegacyPricingCountryCookie(request, response);
+    return clearLegacyPricingCountryCookie(request, applyNoStoreHeaders(response));
   }
 
   return new NextResponse("Not Found", {
     status: 404,
-    headers: {
-      "X-Robots-Tag": "noindex, nofollow, noarchive",
-      "Cache-Control": "private, no-store, max-age=0",
-    },
+    headers: NO_STORE_HEADERS,
   });
 }
 
@@ -124,6 +125,10 @@ export function middleware(request: NextRequest) {
     Object.entries(corsHeaders || {}).forEach(([key, value]) => {
       response.headers.set(key, value);
     });
+  }
+
+  if (pathname.startsWith("/api/billing/") || pathname === "/pricing" || pathname === "/billing" || pathname === "/payment") {
+    applyNoStoreHeaders(response);
   }
 
   return clearLegacyPricingCountryCookie(request, response);

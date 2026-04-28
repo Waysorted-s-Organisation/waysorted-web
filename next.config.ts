@@ -1,6 +1,12 @@
 import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
+const billingNoStoreHeaders = [
+  { key: "Cache-Control", value: "private, no-store, no-cache, max-age=0, must-revalidate" },
+  { key: "CDN-Cache-Control", value: "no-store" },
+  { key: "Vercel-CDN-Cache-Control", value: "no-store" },
+  { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+];
 
 const nextConfig: NextConfig = {
   // Add CORS headers for API routes - this runs at platform level
@@ -9,33 +15,25 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/pricing",
-        headers: [
-          { key: "Cache-Control", value: "private, no-store, max-age=0" },
-          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
-        ],
+        headers: billingNoStoreHeaders,
       },
       {
         source: "/billing",
         headers: [
-          { key: "Cache-Control", value: "private, no-store, max-age=0" },
-          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+          ...billingNoStoreHeaders,
           { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
         ],
       },
       {
         source: "/payment",
         headers: [
-          { key: "Cache-Control", value: "private, no-store, max-age=0" },
-          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+          ...billingNoStoreHeaders,
           { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
         ],
       },
       {
-        source: "/api/billing/public-catalog",
-        headers: [
-          { key: "Cache-Control", value: "private, no-store, max-age=0" },
-          { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
-        ],
+        source: "/api/billing/:path*",
+        headers: billingNoStoreHeaders,
       },
       {
         // Cache static assets for 1 year

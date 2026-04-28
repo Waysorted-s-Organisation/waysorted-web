@@ -2,6 +2,8 @@ import { cookies, headers } from "next/headers";
 import PricingClient, { type PricingPayload } from "./pricing-client";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 async function loadInitialPricing(): Promise<{
   initialPricingData: PricingPayload | null;
@@ -35,7 +37,7 @@ async function loadInitialPricing(): Promise<{
       requestHeaders.cookie = cookieHeader;
     }
 
-    const response = await fetch(`${baseUrl}/api/billing/public-catalog`, {
+    const response = await fetch(`${baseUrl}/api/billing/public-catalog?ts=${Date.now()}`, {
       headers: requestHeaders,
       cache: "no-store",
     });

@@ -5,6 +5,10 @@ import { findPurchaseByUserAndReference } from "@/lib/billing/db";
 import { fetchRazorpayPayment } from "@/lib/billing/razorpay";
 import { verifyRazorpaySignature } from "@/lib/billing/crypto";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 type VerifyBody = {
   purchaseId?: string;
   orderId?: string;

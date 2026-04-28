@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import BillingClient from "@/app/billing/billing-client";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export const metadata: Metadata = {
   title: "Payment Test",
   description: "Internal Razorpay payment test page for Waysorted.",

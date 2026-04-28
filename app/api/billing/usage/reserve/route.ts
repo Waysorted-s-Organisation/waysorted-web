@@ -4,6 +4,10 @@ import { buildBillingSnapshot, expireStaleReservations, reserveCredits } from "@
 import { getFeaturePricingRule, resolveImportPricing } from "@/lib/billing/catalog";
 import dbConnect from "@/lib/db";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 type ReserveBody = {
   featureCode?: string;
   toolCode?: string;

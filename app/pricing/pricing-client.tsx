@@ -146,7 +146,7 @@ export default function PricingClient({
     async function loadPricing() {
       setPricingError(null);
       try {
-        const response = await fetch("/api/billing/public-catalog", { cache: "no-store" });
+        const response = await fetch(`/api/billing/public-catalog?ts=${Date.now()}`, { cache: "no-store" });
 
         const payload = (await response.json()) as PricingPayload | { error?: string };
         if (!response.ok || !("catalog" in payload)) {

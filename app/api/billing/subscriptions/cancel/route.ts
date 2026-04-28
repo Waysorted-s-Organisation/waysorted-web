@@ -3,6 +3,10 @@ import { cancelRazorpaySubscription, fetchRazorpaySubscription } from "@/lib/bil
 import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/auth";
 import { findCurrentSubscription, updateBillingSubscriptionState } from "@/lib/billing/db";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json().catch(() => ({}))) as { bridgeToken?: string };

@@ -5,6 +5,10 @@ import { getCatalogProduct } from "@/lib/billing/catalog";
 import { createRazorpayOrder } from "@/lib/billing/razorpay";
 import { getRazorpayConfig } from "@/lib/billing/env";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 type OrderBody = {
   productCode?: string;
   idempotencyKey?: string;

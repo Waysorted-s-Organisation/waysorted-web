@@ -195,7 +195,8 @@ export default function BillingClient({
   );
 
   const refreshSnapshot = useCallback(async () => {
-    const response = await fetch(`/api/billing/snapshot${query}`, { cache: "no-store" });
+    const separator = query ? "&" : "?";
+    const response = await fetch(`/api/billing/snapshot${query}${separator}ts=${Date.now()}`, { cache: "no-store" });
     const payload = (await response.json()) as BillingSnapshot | { error?: string };
     if (!response.ok || !("billing" in payload)) {
       if (response.status === 401 && !bridgeToken) {
@@ -211,7 +212,8 @@ export default function BillingClient({
   }, [bridgeToken, query, redirectPath, router, selectedCode]);
 
   const refreshCurrentSubscription = useCallback(async () => {
-    const response = await fetch(`/api/billing/subscriptions/current${query}`, {
+    const separator = query ? "&" : "?";
+    const response = await fetch(`/api/billing/subscriptions/current${query}${separator}ts=${Date.now()}`, {
       cache: "no-store",
     });
     const payload = (await response.json()) as CurrentSubscription | { error?: string };
