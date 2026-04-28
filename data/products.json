@@ -26,5 +26,19 @@
     "description": "Import files effortlessly with smart font handling and previews.",
     "icon": "/icons/file-importer.svg",
     "href": "/learning/file-importer"
+  },
+  {
+    "id": 5,
+    "name": "Icon Library",
+    "description": "Built-in SVG icon library for faster browsing, filtering, and export.",
+    "icon": "/images/icon-library/icon.png",
+    "href": "/learning/icon-library"
+  },
+  {
+    "id": 6,
+    "name": "HTML to Design",
+    "description": "Convert HTML into editable Figma layers across viewports.",
+    "icon": "/images/html-to-design/icon.png",
+    "href": "/learning/html-to-design"
   }
 ]
