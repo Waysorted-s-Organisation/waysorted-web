@@ -197,6 +197,14 @@ export default function PricingClient({
     return sortByCodes(pricingData.catalog, paygMode === "subscriber" ? subscriberTopupCodes : standardTopupCodes);
   }, [paygMode, pricingData]);
 
+  const availablePaygModes = useMemo(() => {
+    const catalog = pricingData?.catalog || [];
+    return {
+      standard: standardTopupCodes.some((code) => catalog.some((product) => product.code === code)),
+      subscriber: subscriberTopupCodes.some((code) => catalog.some((product) => product.code === code)),
+    };
+  }, [pricingData]);
+
   const topupMarks = useMemo(
     () => [
       {
@@ -216,6 +224,21 @@ export default function PricingClient({
   );
 
   const activeTopup = topupMarks[Math.min(selectedTopupIndex, topupMarks.length - 1)] || topupMarks[0];
+
+  useEffect(() => {
+    if (!pricingData) return;
+
+    if (paygMode === "standard" && !availablePaygModes.standard && availablePaygModes.subscriber) {
+      setPaygMode("subscriber");
+      setSelectedTopupIndex(1);
+      return;
+    }
+
+    if (paygMode === "subscriber" && !availablePaygModes.subscriber && availablePaygModes.standard) {
+      setPaygMode("standard");
+      setSelectedTopupIndex(1);
+    }
+  }, [availablePaygModes.standard, availablePaygModes.subscriber, paygMode, pricingData]);
 
   function goToCheckout(productCode: string | null) {
     if (!productCode) return;
@@ -321,6 +344,7 @@ export default function PricingClient({
                       setPaygMode("standard");
                       setSelectedTopupIndex(1);
                     }}
+                    disabled={!availablePaygModes.standard}
                     className={`font-medium transition-colors duration-200 ${
                       paygMode === "standard" ? "text-[#111827]" : "text-[#6B7280]"
                     }`}
@@ -330,6 +354,16 @@ export default function PricingClient({
                   <button
                     type="button"
                     onClick={() => {
+                      if (!availablePaygModes.standard && availablePaygModes.subscriber) {
+                        setPaygMode("subscriber");
+                        setSelectedTopupIndex(1);
+                        return;
+                      }
+                      if (!availablePaygModes.subscriber && availablePaygModes.standard) {
+                        setPaygMode("standard");
+                        setSelectedTopupIndex(1);
+                        return;
+                      }
                       setPaygMode(paygMode === "standard" ? "subscriber" : "standard");
                       setSelectedTopupIndex(1);
                     }}
@@ -348,15 +382,13 @@ export default function PricingClient({
                       setPaygMode("subscriber");
                       setSelectedTopupIndex(1);
                     }}
+                    disabled={!availablePaygModes.subscriber}
                     className={`font-medium transition-colors duration-200 ${
                       paygMode === "subscriber" ? "text-[#111827]" : "text-[#6B7280]"
                     }`}
                   >
                     Subscriber
                   </button>
-                  <span className="rounded-full bg-[#16A34A] px-3 py-1 text-[11px] font-semibold text-white">
-                    Dynamic
-                  </span>
                 </div>
 
                 <div className="mt-7 flex items-end gap-2">
