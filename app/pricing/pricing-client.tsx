@@ -223,7 +223,7 @@ export default function PricingClient({
   function goToCheckout(productCode: string | null) {
     if (!productCode) return;
 
-    const target = `/billing?product=${encodeURIComponent(productCode)}`;
+    const target = `/billing?product=${encodeURIComponent(productCode)}&autostart=1`;
     if (!user && !loading) {
       router.push(`/login?redirect=${encodeURIComponent(target)}`);
       return;
@@ -399,7 +399,7 @@ export default function PricingClient({
                 <GlowStarButton
                   onClick={() => goToCheckout(activeTopup?.product?.code || null)}
                   disabled={!activeTopup?.product}
-                  className="force-hover mt-8 inline-flex w-full cursor-pointer items-center justify-center rounded-xl border border-secondary-db-20 bg-secondary-db-100 px-5 py-[11px] text-[12px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+                  className="mt-8 inline-flex w-full cursor-pointer items-center justify-center rounded-xl border border-secondary-db-20 bg-secondary-db-100 px-5 py-[11px] text-[12px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
                 >
                   <span>{activeTopup?.product ? "Purchase credits" : "Starter grant is automatic"}</span>
                 </GlowStarButton>

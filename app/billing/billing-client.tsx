@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 type RazorpaySuccessResponse = {
@@ -172,9 +172,11 @@ function formatDate(value?: string | null) {
 
 export default function BillingClient({
   bridgeToken,
+  autostart,
   initialProductCode,
 }: {
   bridgeToken: string | null;
+  autostart: boolean;
   initialProductCode: string | null;
 }) {
   const router = useRouter();
@@ -185,6 +187,9 @@ export default function BillingClient({
   const [selectedCode, setSelectedCode] = useState<string | null>(initialProductCode);
   const [status, setStatus] = useState("Loading billing...");
   const [busyCode, setBusyCode] = useState<string | null>(null);
+  const [scriptReady, setScriptReady] = useState(false);
+  const [showCatalog, setShowCatalog] = useState(!initialProductCode);
+  const autostartedRef = useRef(false);
 
   const query = bridgeToken ? `?bridge=${encodeURIComponent(bridgeToken)}` : "";
   const redirectPath = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
@@ -193,6 +198,10 @@ export default function BillingClient({
     () => snapshot?.billing.catalog.find((product) => product.code === selectedCode) || null,
     [selectedCode, snapshot?.billing.catalog],
   );
+
+  const hasChosenProduct = Boolean(selectedProduct);
+  const shouldShowSubscriptionPanel =
+    Boolean(currentSubscription) || Boolean(snapshot && snapshot.billing.subscription.status !== "inactive");
 
   const refreshSnapshot = useCallback(async () => {
     const separator = query ? "&" : "?";
@@ -223,18 +232,29 @@ export default function BillingClient({
   }, [query]);
 
   useEffect(() => {
-    loadRazorpayScript().catch((error) => {
-      setStatus(error instanceof Error ? error.message : "Unable to load Razorpay.");
-    });
+    loadRazorpayScript()
+      .then(() => setScriptReady(true))
+      .catch((error) => {
+        setStatus(error instanceof Error ? error.message : "Unable to load Razorpay.");
+      });
 
-    Promise.all([refreshSnapshot(), refreshCurrentSubscription()])
+    refreshSnapshot()
       .then(() => setStatus("Billing ready."))
       .catch((error) => {
         setStatus(error instanceof Error ? error.message : "Unable to load billing.");
       });
-  }, [refreshCurrentSubscription, refreshSnapshot]);
+  }, [refreshSnapshot]);
 
-  async function handleOrderCheckout(product: CatalogProduct) {
+  useEffect(() => {
+    if (!snapshot) return;
+    if (!["active", "cancel_scheduled", "payment_pending"].includes(snapshot.billing.subscription.status)) return;
+
+    refreshCurrentSubscription().catch(() => {
+      // Snapshot already contains the current entitlement state; this panel is supplemental.
+    });
+  }, [refreshCurrentSubscription, snapshot]);
+
+  const handleOrderCheckout = useCallback(async (product: CatalogProduct) => {
     setBusyCode(product.code);
     setStatus(`Creating order for ${product.name}...`);
 
@@ -316,9 +336,9 @@ export default function BillingClient({
       setStatus(error instanceof Error ? error.message : "Checkout failed.");
       setBusyCode(null);
     }
-  }
+  }, [bridgeToken, refreshSnapshot, snapshot?.email, snapshot?.name]);
 
-  async function handleSubscriptionCheckout(product: CatalogProduct) {
+  const handleSubscriptionCheckout = useCallback(async (product: CatalogProduct) => {
     setBusyCode(product.code);
     setStatus(`Creating subscription for ${product.name}...`);
 
@@ -391,7 +411,31 @@ export default function BillingClient({
       setStatus(error instanceof Error ? error.message : "Subscription checkout failed.");
       setBusyCode(null);
     }
-  }
+  }, [bridgeToken, refreshCurrentSubscription, refreshSnapshot, snapshot?.email, snapshot?.name]);
+
+  useEffect(() => {
+    if (!autostart || autostartedRef.current || !scriptReady || !selectedProduct || busyCode) return;
+
+    autostartedRef.current = true;
+    const params = new URLSearchParams(searchParams.toString());
+    if (params.has("autostart")) {
+      params.delete("autostart");
+      router.replace(params.size ? `${pathname}?${params.toString()}` : pathname, { scroll: false });
+    }
+    void (selectedProduct.kind === "subscription"
+      ? handleSubscriptionCheckout(selectedProduct)
+      : handleOrderCheckout(selectedProduct));
+  }, [
+    autostart,
+    busyCode,
+    handleOrderCheckout,
+    handleSubscriptionCheckout,
+    pathname,
+    router,
+    scriptReady,
+    searchParams,
+    selectedProduct,
+  ]);
 
   async function handleCancelSubscription() {
     setBusyCode("cancel");
@@ -424,57 +468,31 @@ export default function BillingClient({
   return (
     <main className="min-h-screen bg-[#F5F7FC] px-4 py-8 text-secondary-db-100 sm:px-6">
       <div className="mx-auto max-w-[880px]">
-        <div className="mb-5 flex items-center justify-between gap-4">
+        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold">Billing</h1>
-            <p className="mt-1 text-sm text-[#687184]">Choose a plan or top up credits.</p>
+            <h1 className="text-[30px] font-semibold tracking-[-0.02em]">Secure checkout</h1>
+            <p className="mt-1 text-sm text-[#687184]">
+              {hasChosenProduct ? "Review the selected plan and continue to Razorpay." : "Choose a plan or top up credits."}
+            </p>
           </div>
-          <div className="rounded-xl border border-[#E7EDF7] bg-white px-4 py-3 text-right">
-            <div className="text-[11px] font-medium uppercase tracking-[0.12em] text-[#7A8499]">Credits</div>
-            <div className="mt-1 text-2xl font-semibold">{snapshot?.billing.wallet.availableCredits ?? "--"}</div>
+          <div className="rounded-full border border-[#E7EDF7] bg-white px-4 py-2 text-xs font-medium text-[#5E6A7B]">
+            Available credits: <span className="font-semibold text-secondary-db-100">{snapshot?.billing.wallet.availableCredits ?? "--"}</span>
           </div>
         </div>
 
-        <section className="rounded-2xl border border-[#E7EDF7] bg-white p-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            {snapshot?.billing.catalog.map((product) => {
-              const totalCredits = product.creditsGranted + product.bonusCredits;
-              const isSelected = selectedCode === product.code;
-
-              return (
-                <button
-                  key={product.code}
-                  type="button"
-                  onClick={() => setSelectedCode(product.code)}
-                  className={`rounded-xl border px-4 py-3 text-left transition-colors ${
-                    isSelected ? "border-[#356DFF] bg-[#EEF3FF]" : "border-[#E7EDF7] bg-[#F8FAFF]"
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="text-sm font-semibold">{product.name}</div>
-                      <div className="mt-1 text-xs text-[#687184]">{totalCredits.toLocaleString()} credits</div>
-                    </div>
-                    <div className="shrink-0 text-sm font-semibold">
-                      {formatCurrency(product.amountPaise, product.currency)}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="mt-4 rounded-2xl border border-[#E7EDF7] bg-white p-4">
-          <div className="flex flex-wrap items-center justify-between gap-4">
+        <section className="rounded-[26px] border border-[#E7EDF7] bg-white p-5 shadow-[0_12px_34px_rgba(13,18,24,0.04)] sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
-              <div className="text-sm font-semibold">{selectedProduct?.name || "Select an item"}</div>
-              <div className="mt-1 text-xs text-[#687184]">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7A8499]">Selected item</div>
+              <div className="mt-2 text-[28px] font-semibold tracking-[-0.02em] text-secondary-db-100">
+                {selectedProduct?.name || "Select a product"}
+              </div>
+              <div className="mt-2 text-sm text-[#687184]">
                 {selectedProduct
                   ? `${formatCurrency(selectedProduct.amountPaise, selectedProduct.currency)} · ${
                       selectedProduct.creditsGranted + selectedProduct.bonusCredits
                     } credits`
-                  : "No item selected"}
+                  : "Choose a plan below to continue."}
               </div>
             </div>
             {selectedProduct ? (
@@ -486,42 +504,88 @@ export default function BillingClient({
                     : handleOrderCheckout(selectedProduct)
                 }
                 disabled={busyCode === selectedProduct.code}
-                className="rounded-xl bg-[#356DFF] px-5 py-3 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-2xl bg-[#356DFF] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_20px_rgba(53,109,255,0.22)] transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
               >
                 {busyCode === selectedProduct.code
                   ? "Processing..."
                   : selectedProduct.kind === "subscription"
-                    ? "Start subscription"
-                    : "Buy credits"}
+                    ? "Continue to Razorpay"
+                    : "Continue to Razorpay"}
               </button>
             ) : null}
           </div>
-          <div className="mt-4 rounded-xl bg-[#F8FAFF] px-4 py-3 text-xs text-[#687184]">{status}</div>
+
+          <div className="mt-4 rounded-2xl border border-[#EEF2FA] bg-[#F8FAFF] px-4 py-3 text-xs text-[#687184]">
+            {status}
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setShowCatalog((value) => !value)}
+              className="rounded-full border border-[#DCE5FF] bg-[#EDF2FF] px-4 py-2 text-xs font-semibold text-[#2E56CC] transition-colors duration-200 hover:bg-[#E3ECFF]"
+            >
+              {showCatalog ? "Hide other plans" : "Change plan"}
+            </button>
+            {autostart ? <span className="text-xs text-[#7A8499]">Checkout opens automatically when ready.</span> : null}
+          </div>
+
+          {showCatalog ? (
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              {snapshot?.billing.catalog.map((product) => {
+                const totalCredits = product.creditsGranted + product.bonusCredits;
+                const isSelected = selectedCode === product.code;
+
+                return (
+                  <button
+                    key={product.code}
+                    type="button"
+                    onClick={() => setSelectedCode(product.code)}
+                    className={`rounded-2xl border px-4 py-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm ${
+                      isSelected ? "border-[#356DFF] bg-[#EEF3FF]" : "border-[#E7EDF7] bg-[#F8FAFF]"
+                    }`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-semibold">{product.name}</div>
+                        <div className="mt-1 text-xs text-[#687184]">{totalCredits.toLocaleString()} credits</div>
+                      </div>
+                      <div className="shrink-0 text-sm font-semibold">
+                        {formatCurrency(product.amountPaise, product.currency)}
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
         </section>
 
-        <section className="mt-4 rounded-2xl border border-[#E7EDF7] bg-white p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <div className="text-sm font-semibold">Subscription</div>
-              <div className="mt-1 text-xs text-[#687184]">
-                {snapshot?.billing.subscription.status || "NA"}
-                {snapshot?.billing.subscription.renewsAt
-                  ? ` · renews ${formatDate(snapshot.billing.subscription.renewsAt)}`
-                  : ""}
+        {shouldShowSubscriptionPanel ? (
+          <section className="mt-4 rounded-2xl border border-[#E7EDF7] bg-white p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <div className="text-sm font-semibold">Subscription</div>
+                <div className="mt-1 text-xs text-[#687184]">
+                  {snapshot?.billing.subscription.status || "NA"}
+                  {snapshot?.billing.subscription.renewsAt
+                    ? ` · renews ${formatDate(snapshot.billing.subscription.renewsAt)}`
+                    : ""}
+                </div>
               </div>
+              {currentSubscription ? (
+                <button
+                  type="button"
+                  onClick={handleCancelSubscription}
+                  disabled={busyCode === "cancel" || currentSubscription.cancelAtCycleEnd}
+                  className="rounded-xl border border-[#DCE5FF] bg-[#EDF2FF] px-4 py-2 text-xs font-semibold text-[#2E56CC] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {currentSubscription.cancelAtCycleEnd ? "Cancellation scheduled" : "Cancel subscription"}
+                </button>
+              ) : null}
             </div>
-            {currentSubscription ? (
-              <button
-                type="button"
-                onClick={handleCancelSubscription}
-                disabled={busyCode === "cancel" || currentSubscription.cancelAtCycleEnd}
-                className="rounded-xl border border-[#DCE5FF] bg-[#EDF2FF] px-4 py-2 text-xs font-semibold text-[#2E56CC] disabled:cursor-not-allowed disabled:opacity-60"
-              >
-                {currentSubscription.cancelAtCycleEnd ? "Cancellation scheduled" : "Cancel subscription"}
-              </button>
-            ) : null}
-          </div>
-        </section>
+          </section>
+        ) : null}
       </div>
     </main>
   );

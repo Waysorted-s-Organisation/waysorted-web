@@ -158,6 +158,10 @@ export async function resolveUserPricingContext(
   });
   const detectedTier = detectedCountry ? getCountryTier(detectedCountry) : null;
   const currentLockedTier = billing.pricingTier as PricingContext["tier"] | null;
+  const shouldRealignToAuthCountry =
+    !billing.firstSuccessfulPurchaseAt &&
+    authCountry &&
+    normalizeCountry(authCountry) !== normalizeCountry(billing.pricingCountry);
   const detectedOrDefaultCountry =
     authCountry &&
     authTier &&
@@ -175,22 +179,31 @@ export async function resolveUserPricingContext(
   const shouldLock =
     !billing.pricingCountry ||
     !billing.pricingTier ||
+    shouldRealignToAuthCountry ||
     shouldUpgrade;
 
   if (shouldLock) {
     const countryToLock =
-      (!billing.pricingCountry || shouldUpgrade) && detectedOrDefaultCountry
+      shouldRealignToAuthCountry && authCountry
+        ? authCountry
+        : (!billing.pricingCountry || shouldUpgrade) && detectedOrDefaultCountry
         ? detectedOrDefaultCountry
         : lockedContext.country;
     const tierToLock =
-      (!billing.pricingTier || shouldUpgrade) && detectedOrDefaultTier
+      shouldRealignToAuthCountry && authTier
+        ? authTier
+        : (!billing.pricingTier || shouldUpgrade) && detectedOrDefaultTier
         ? detectedOrDefaultTier
         : lockedContext.tier;
     billing.pricingCountry = countryToLock;
     billing.pricingTier = tierToLock;
     billing.pricingCurrency = getCurrencyForCountry(countryToLock);
     billing.pricingLockedAt ||= new Date();
-    billing.pricingLockReason = shouldUpgrade ? "higher_tier_detection" : "initial_detection";
+    billing.pricingLockReason = shouldRealignToAuthCountry
+      ? "pre_purchase_auth_alignment"
+      : shouldUpgrade
+        ? "higher_tier_detection"
+        : "initial_detection";
   }
 
   const riskFlags = [...lockedContext.riskFlags];

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { memo, useEffect, useMemo, useState } from "react";
 
 /* Deterministic PRNG so SSR/CSR can be stable when desired */
 function mulberry32(a: number) {
@@ -43,7 +43,7 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   bgColor?: string; // New prop for background color
 };
 
-export default function GlowStarButton({
+function GlowStarButton({
   children = "Start Instantly!",
   className = "",
   starCount = 20,
@@ -55,11 +55,17 @@ export default function GlowStarButton({
   title,
   "aria-label": ariaLabel,
   onClick,
+  onMouseEnter,
+  onMouseLeave,
+  onFocus,
+  onBlur,
+  onTouchStart,
   bgColor = "secondary-db-100", // Default value for bgColor
   ...props
 }: Props) {
   const [hoverKey, setHoverKey] = useState(0);
   const [mountNonce, setMountNonce] = useState<string>("");
+  const [isActive, setIsActive] = useState(false);
 
   useEffect(() => {
     if (randomizeOnMount) {
@@ -125,40 +131,64 @@ export default function GlowStarButton({
     <button
       type="submit"
       className={`btn-glow text-white ${bgColor} ${className}`} // Added bgColor with default value 
-      onMouseEnter={rerollOnHover ? () => setHoverKey(k => k + 1) : undefined}
-      onTouchStart={rerollOnHover ? () => setHoverKey(k => k + 1) : undefined}
+      onMouseEnter={(event) => {
+        setIsActive(true);
+        if (rerollOnHover) setHoverKey((key) => key + 1);
+        onMouseEnter?.(event);
+      }}
+      onMouseLeave={(event) => {
+        setIsActive(false);
+        onMouseLeave?.(event);
+      }}
+      onFocus={(event) => {
+        setIsActive(true);
+        onFocus?.(event);
+      }}
+      onBlur={(event) => {
+        setIsActive(false);
+        onBlur?.(event);
+      }}
+      onTouchStart={(event) => {
+        setIsActive(true);
+        if (rerollOnHover) setHoverKey((key) => key + 1);
+        onTouchStart?.(event);
+      }}
       title={title}
       aria-label={ariaLabel}
       onClick={onClick}
       {...props}
     >
       <span className="btn-inner">{children}</span>
-      {dots.map((d, i) => (
-        <svg
-          key={i}
-          aria-hidden="true"
-          viewBox="0 0 24 24"
-          className="btn-star"
-          style={
-            {
-              "--top": `${d.top}%`,
-              "--left": `${d.left}%`,
-              "--size": `${d.size}px`,
-              "--scale": d.scale,
-              "--dx": `${d.dx}px`,
-              "--dy": `${d.dy}px`,
-              "--spin": `${d.spin}deg`,
-              "--dur": `${d.durMs}ms`,
-              "--enter-delay": `${d.enterDelay}s`,
-              "--delay": `${d.enterDelay}s`,
-              "--enter-dur": `${enterDurationSec}s`,
-              "--rot": "0deg",
-            } as React.CSSProperties
-          }
-        >
-          <circle cx="12" cy="12" r={d.radius} fill="currentColor" />
-        </svg>
-      ))}
+      {isActive
+        ? dots.map((d, i) => (
+            <svg
+              key={i}
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              className="btn-star"
+              style={
+                {
+                  "--top": `${d.top}%`,
+                  "--left": `${d.left}%`,
+                  "--size": `${d.size}px`,
+                  "--scale": d.scale,
+                  "--dx": `${d.dx}px`,
+                  "--dy": `${d.dy}px`,
+                  "--spin": `${d.spin}deg`,
+                  "--dur": `${d.durMs}ms`,
+                  "--enter-delay": `${d.enterDelay}s`,
+                  "--delay": `${d.enterDelay}s`,
+                  "--enter-dur": `${enterDurationSec}s`,
+                  "--rot": "0deg",
+                } as React.CSSProperties
+              }
+            >
+              <circle cx="12" cy="12" r={d.radius} fill="currentColor" />
+            </svg>
+          ))
+        : null}
     </button>
   );
 }
+
+export default memo(GlowStarButton);
