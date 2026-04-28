@@ -32,7 +32,7 @@ export default function PricingCard({
 }: PricingCardProps) {
   return (
     <article
-      className={`flex min-h-[478px] flex-col rounded-[22px] border p-5 transition-all md:p-6 ${
+      className={`group flex min-h-[478px] flex-col rounded-[22px] border p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(25,40,86,0.12)] md:p-6 ${
         featured
           ? "border-[#356DFF] bg-[#356DFF] text-white"
           : "border-[#E7EDF7] bg-white text-secondary-db-100"
@@ -41,7 +41,7 @@ export default function PricingCard({
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-2.5">
           <span
-            className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+            className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-110 ${
               featured ? "bg-white/20" : "bg-[#EDF2FF]"
             }`}
           >
@@ -50,7 +50,7 @@ export default function PricingCard({
               alt={`${planName} icon`}
               width={12}
               height={12}
-              className="h-3 w-3 object-contain"
+              className="h-3 w-3 object-contain transition-transform duration-300 group-hover:rotate-6"
             />
           </span>
           <p className="text-[40px] font-semibold leading-none tracking-[-0.03em]">{planName}</p>
@@ -81,7 +81,7 @@ export default function PricingCard({
 
       <GlowStarButton
         onClick={onSelect}
-        className={`mt-5 inline-flex w-full cursor-pointer items-center justify-center rounded-[10px] border px-4 py-[10px] text-[13px] font-semibold transition-transform active:scale-95 ${
+        className={`mt-5 inline-flex w-full cursor-pointer items-center justify-center rounded-[10px] border px-4 py-[10px] text-[13px] font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm active:scale-95 ${
           featured
             ? "force-hover border-white bg-white !text-[#2557DE]"
             : "border-[#DCE5FF] bg-[#EDF2FF] !text-[#2E56CC]"

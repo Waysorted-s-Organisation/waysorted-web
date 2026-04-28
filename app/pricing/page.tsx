@@ -52,7 +52,7 @@ const planUi = [
     description: "Best for new users getting started with the Waysorted ecosystem.",
     ctaLabel: "Build Plan",
     discountTag: "Start",
-    iconSrc: "/icons/lightning-blue.svg",
+    iconSrc: "/pricingIcons/Discover.png",
     features: [
       "Backend-authoritative subscription status",
       "Full credit block granted after payment sync",
@@ -65,7 +65,7 @@ const planUi = [
     description: "Perfect for agencies who need automation and scaling workflows.",
     ctaLabel: "Get Started",
     discountTag: "Popular",
-    iconSrc: "/icons/infinity-icon.svg",
+    iconSrc: "/pricingIcons/Core.png",
     featured: true,
     features: [
       "Backend-authoritative subscription status",
@@ -79,7 +79,7 @@ const planUi = [
     description: "For high-growth teams and enterprises with advanced needs.",
     ctaLabel: "Build Plan",
     discountTag: "Scale",
-    iconSrc: "/icons/grid-icon.svg",
+    iconSrc: "/pricingIcons/Pro.png",
     features: [
       "Backend-authoritative subscription status",
       "Full credit block granted after payment sync",
@@ -229,7 +229,7 @@ export default function PricingPage() {
               <button
                 type="button"
                 onClick={() => setBillingCycle("monthly")}
-                className={`rounded-full px-5 py-1.5 ${
+                className={`rounded-full px-5 py-1.5 transition-all duration-200 hover:scale-[1.02] ${
                   billingCycle === "monthly" ? "bg-[#EEF3FF] text-[#2F67FF] shadow-sm" : ""
                 }`}
               >
@@ -238,7 +238,7 @@ export default function PricingPage() {
               <button
                 type="button"
                 onClick={() => setBillingCycle("yearly")}
-                className={`rounded-full px-5 py-1.5 ${
+                className={`rounded-full px-5 py-1.5 transition-all duration-200 hover:scale-[1.02] ${
                   billingCycle === "yearly" ? "bg-[#EEF3FF] text-[#2F67FF] shadow-sm" : ""
                 }`}
               >
@@ -283,11 +283,11 @@ export default function PricingPage() {
             })}
           </section>
 
-          <section className="mt-5 rounded-2xl border border-[#E7EDF7] bg-white p-6">
+          <section className="mt-5 rounded-2xl border border-[#E7EDF7] bg-white p-6 transition-all duration-300 hover:shadow-[0_12px_28px_rgba(25,40,86,0.08)]">
             <div className="grid grid-cols-1 gap-8 md:grid-cols-[1.05fr_1fr]">
               <div>
                 <p className="flex items-center gap-2 text-[42px] font-semibold leading-none tracking-[-0.02em] text-secondary-db-100">
-                  <Image src="/icons/gifts.svg" alt="" width={20} height={20} className="h-5 w-5" />
+                  <Image src="/pricingIcons/Pay as you go.png" alt="" width={20} height={20} className="h-5 w-5" />
                   <span>Pay as you go</span>
                 </p>
                 <p className="mt-3 max-w-[430px] text-[13px] leading-[1.45] text-[#687184]">
@@ -318,7 +318,9 @@ export default function PricingPage() {
                       setPaygMode("standard");
                       setSelectedTopupIndex(1);
                     }}
-                    className={`font-medium ${paygMode === "standard" ? "text-[#111827]" : "text-[#6B7280]"}`}
+                    className={`font-medium transition-colors duration-200 hover:text-[#111827] ${
+                      paygMode === "standard" ? "text-[#111827]" : "text-[#6B7280]"
+                    }`}
                   >
                     Standard
                   </button>
@@ -328,7 +330,7 @@ export default function PricingPage() {
                       setPaygMode(paygMode === "standard" ? "subscriber" : "standard");
                       setSelectedTopupIndex(1);
                     }}
-                    className="relative h-6 w-11 rounded-full bg-[#111827]"
+                    className="relative h-6 w-11 rounded-full bg-[#111827] transition-transform duration-200 hover:scale-105 active:scale-95"
                     aria-label="Toggle subscriber top-up mode"
                   >
                     <span
@@ -343,7 +345,9 @@ export default function PricingPage() {
                       setPaygMode("subscriber");
                       setSelectedTopupIndex(1);
                     }}
-                    className={`font-medium ${paygMode === "subscriber" ? "text-[#111827]" : "text-[#6B7280]"}`}
+                    className={`font-medium transition-colors duration-200 hover:text-[#111827] ${
+                      paygMode === "subscriber" ? "text-[#111827]" : "text-[#6B7280]"
+                    }`}
                   >
                     Subscriber
                   </button>
@@ -365,7 +369,7 @@ export default function PricingPage() {
                       key={`${mark.title}-${mark.value}`}
                       type="button"
                       onClick={() => setSelectedTopupIndex(index)}
-                      className={`rounded-xl border px-3 py-3 text-left ${
+                      className={`rounded-xl border px-3 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm ${
                         index === selectedTopupIndex
                           ? "border-[#3C6FE8] bg-[#EEF3FF]"
                           : "border-[#E7EDF7] bg-[#F7F9FD]"
@@ -401,11 +405,26 @@ export default function PricingPage() {
                 <button
                   key={item}
                   onClick={() => setActiveFaq(idx)}
-                  className="mb-2 w-full rounded-xl border border-[#EEF2FA] bg-white px-4 py-3 text-left hover:bg-[#F8FAFF] last:mb-0"
+                  className="mb-2 w-full rounded-xl border border-[#EEF2FA] bg-white px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#F8FAFF] hover:shadow-sm last:mb-0"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[13px] font-medium text-secondary-db-100">{item}</span>
-                    <span className="text-[16px] leading-none text-[#667085]">{activeFaq === idx ? "⌃" : "⌄"}</span>
+                    <span
+                      className={`inline-flex h-5 w-5 shrink-0 items-center justify-center text-[#667085] transition-transform duration-200 ${
+                        activeFaq === idx ? "rotate-180" : "rotate-0"
+                      }`}
+                      aria-hidden="true"
+                    >
+                      <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4">
+                        <path
+                          d="M5.5 7.5L10 12.5L14.5 7.5"
+                          stroke="currentColor"
+                          strokeWidth="2.2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
                   </div>
                   {activeFaq === idx && (
                     <p className="mt-2 pr-8 text-[11px] leading-relaxed text-[#667085]">
