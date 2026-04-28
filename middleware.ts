@@ -27,6 +27,7 @@ function guardHiddenBillingRoutes(request: NextRequest) {
   if (isBridgeCheckout) {
     const response = NextResponse.next();
     response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
     return response;
   }
 
@@ -35,6 +36,7 @@ function guardHiddenBillingRoutes(request: NextRequest) {
       status: 404,
       headers: {
         "X-Robots-Tag": "noindex, nofollow, noarchive",
+        "Cache-Control": "private, no-store, max-age=0",
       },
     });
   }
@@ -45,6 +47,7 @@ function guardHiddenBillingRoutes(request: NextRequest) {
   if (cookieToken === configuredToken) {
     const response = NextResponse.next();
     response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
     return response;
   }
 
@@ -60,6 +63,7 @@ function guardHiddenBillingRoutes(request: NextRequest) {
       maxAge: 60 * 60 * 6,
     });
     response.headers.set("X-Robots-Tag", "noindex, nofollow, noarchive");
+    response.headers.set("Cache-Control", "private, no-store, max-age=0");
     return response;
   }
 
@@ -67,6 +71,7 @@ function guardHiddenBillingRoutes(request: NextRequest) {
     status: 404,
     headers: {
       "X-Robots-Tag": "noindex, nofollow, noarchive",
+      "Cache-Control": "private, no-store, max-age=0",
     },
   });
 }
