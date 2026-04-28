@@ -1,12 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PricingCard from "./components/PricingCard";
+import GlowStarButton from "@/components/GlowStarButton";
 import { useUser } from "@/hooks/useUser";
 
 type CatalogProduct = {
@@ -138,7 +139,6 @@ export default function PricingClient({
   const [selectedTopupIndex, setSelectedTopupIndex] = useState(1);
   const [pricingData, setPricingData] = useState<PricingPayload | null>(initialPricingData);
   const [pricingError, setPricingError] = useState<string | null>(initialPricingError);
-  const skippedInitialRef = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -161,24 +161,11 @@ export default function PricingClient({
       }
     }
 
-    if (loading) {
-      return () => {
-        active = false;
-      };
-    }
-
-    if (!skippedInitialRef.current && initialPricingData) {
-      skippedInitialRef.current = true;
-      return () => {
-        active = false;
-      };
-    }
-
     loadPricing();
     return () => {
       active = false;
     };
-  }, [initialPricingData, loading, user?._id]);
+  }, [user?._id]);
 
   const subscriptionProducts = useMemo(() => {
     if (!pricingData) return [];
@@ -260,7 +247,7 @@ export default function PricingClient({
               <button
                 type="button"
                 onClick={() => setBillingCycle("monthly")}
-                className={`rounded-full px-5 py-1.5 transition-colors duration-200 ${
+                className={`rounded-full px-5 py-1.5 transition-all duration-200 hover:scale-[1.02] ${
                   billingCycle === "monthly" ? "bg-[#EEF3FF] text-[#2F67FF] shadow-sm" : ""
                 }`}
               >
@@ -269,7 +256,7 @@ export default function PricingClient({
               <button
                 type="button"
                 onClick={() => setBillingCycle("yearly")}
-                className={`rounded-full px-5 py-1.5 transition-colors duration-200 ${
+                className={`rounded-full px-5 py-1.5 transition-all duration-200 hover:scale-[1.02] ${
                   billingCycle === "yearly" ? "bg-[#EEF3FF] text-[#2F67FF] shadow-sm" : ""
                 }`}
               >
@@ -280,7 +267,7 @@ export default function PricingClient({
             {pricingError ? <div className="mt-4 text-[12px] text-[#B42318]">{pricingError}</div> : null}
           </div>
 
-          <section className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <section className="grid min-h-[478px] grid-cols-1 gap-4 md:grid-cols-3">
             {subscriptionProducts.map((product, index) => {
               const ui = planUi[index] || planUi[0];
               return (
@@ -302,7 +289,7 @@ export default function PricingClient({
             })}
           </section>
 
-          <section className="mt-5 rounded-2xl border border-[#E7EDF7] bg-white p-6">
+          <section className="mt-5 rounded-2xl border border-[#E7EDF7] bg-white p-6 transition-all duration-300 hover:shadow-[0_12px_28px_rgba(25,40,86,0.08)]">
             <div className="grid grid-cols-1 gap-8 md:grid-cols-[1.05fr_1fr]">
               <div>
                 <p className="flex items-center gap-2 text-[42px] font-semibold leading-none tracking-[-0.02em] text-secondary-db-100">
@@ -338,7 +325,7 @@ export default function PricingClient({
                       setSelectedTopupIndex(1);
                     }}
                     disabled={!availablePaygModes.standard}
-                    className={`font-medium transition-colors duration-200 ${
+                    className={`font-medium transition-colors duration-200 hover:text-[#111827] disabled:cursor-not-allowed disabled:opacity-45 ${
                       paygMode === "standard" ? "text-[#111827]" : "text-[#6B7280]"
                     }`}
                   >
@@ -360,7 +347,7 @@ export default function PricingClient({
                       setPaygMode(paygMode === "standard" ? "subscriber" : "standard");
                       setSelectedTopupIndex(1);
                     }}
-                    className="relative h-6 w-11 rounded-full bg-[#111827] transition-transform duration-200 active:scale-95"
+                    className="relative h-6 w-11 rounded-full bg-[#111827] transition-transform duration-200 hover:scale-105 active:scale-95"
                     aria-label="Toggle subscriber top-up mode"
                   >
                     <span
@@ -376,7 +363,7 @@ export default function PricingClient({
                       setSelectedTopupIndex(1);
                     }}
                     disabled={!availablePaygModes.subscriber}
-                    className={`font-medium transition-colors duration-200 ${
+                    className={`font-medium transition-colors duration-200 hover:text-[#111827] disabled:cursor-not-allowed disabled:opacity-45 ${
                       paygMode === "subscriber" ? "text-[#111827]" : "text-[#6B7280]"
                     }`}
                   >
@@ -397,7 +384,7 @@ export default function PricingClient({
                       key={`${mark.title}-${mark.value}`}
                       type="button"
                       onClick={() => setSelectedTopupIndex(index)}
-                      className={`rounded-xl border px-3 py-3 text-left transition-colors duration-150 ${
+                      className={`rounded-xl border px-3 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm ${
                         index === selectedTopupIndex
                           ? "border-[#3C6FE8] bg-[#EEF3FF]"
                           : "border-[#E7EDF7] bg-[#F7F9FD]"
@@ -409,14 +396,13 @@ export default function PricingClient({
                   ))}
                 </div>
 
-                <button
-                  type="button"
+                <GlowStarButton
                   onClick={() => goToCheckout(activeTopup?.product?.code || null)}
                   disabled={!activeTopup?.product}
-                  className="mt-8 inline-flex w-full items-center justify-center rounded-xl border border-secondary-db-20 bg-secondary-db-100 px-5 py-[11px] text-[12px] font-semibold text-white transition-opacity duration-150 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="force-hover mt-8 inline-flex w-full cursor-pointer items-center justify-center rounded-xl border border-secondary-db-20 bg-secondary-db-100 px-5 py-[11px] text-[12px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-none"
                 >
                   <span>{activeTopup?.product ? "Purchase credits" : "Starter grant is automatic"}</span>
-                </button>
+                </GlowStarButton>
               </div>
             </div>
           </section>
@@ -434,7 +420,7 @@ export default function PricingClient({
                 <button
                   key={item}
                   onClick={() => setActiveFaq(idx)}
-                  className="mb-2 w-full rounded-xl border border-[#EEF2FA] bg-white px-4 py-3 text-left transition-colors duration-150 hover:bg-[#F8FAFF] last:mb-0"
+                  className="mb-2 w-full rounded-xl border border-[#EEF2FA] bg-white px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#F8FAFF] hover:shadow-sm last:mb-0"
                 >
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-[13px] font-medium text-secondary-db-100">{item}</span>

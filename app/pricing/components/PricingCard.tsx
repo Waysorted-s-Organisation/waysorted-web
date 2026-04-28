@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import GlowStarButton from "@/components/GlowStarButton";
 
 interface PricingCardProps {
   planName: string;
@@ -31,7 +32,7 @@ export default function PricingCard({
 }: PricingCardProps) {
   return (
     <article
-      className={`group flex min-h-[478px] flex-col rounded-[22px] border p-5 transition-transform duration-200 hover:-translate-y-0.5 md:p-6 ${
+      className={`group flex min-h-[478px] flex-col rounded-[22px] border p-5 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(25,40,86,0.12)] md:p-6 ${
         featured
           ? "border-[#356DFF] bg-[#356DFF] text-white"
           : "border-[#E7EDF7] bg-white text-secondary-db-100"
@@ -78,17 +79,16 @@ export default function PricingCard({
         </span>
       </div>
 
-      <button
-        type="button"
+      <GlowStarButton
         onClick={onSelect}
-        className={`mt-5 inline-flex w-full items-center justify-center rounded-[10px] border px-4 py-[10px] text-[13px] font-semibold transition-colors duration-150 active:scale-[0.99] ${
+        className={`mt-5 inline-flex w-full items-center justify-center rounded-[10px] border px-4 py-[10px] text-[13px] font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.98] ${
           featured
             ? "force-hover border-white bg-white !text-[#2557DE]"
             : "border-[#DCE5FF] bg-[#EDF2FF] !text-[#2E56CC]"
         }`}
       >
         <span>{ctaLabel}</span>
-      </button>
+      </GlowStarButton>
 
       <div className={`mt-4 ${featured ? "dashed-line-white" : "dashed-line"} opacity-70`} />
 
@@ -116,7 +116,7 @@ export default function PricingCard({
         {features.map((feature) => (
           <li key={feature} className="flex items-start gap-2">
             <span
-              className={`mt-[2px] inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold ${
+              className={`mt-[2px] inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-transform duration-200 group-hover:scale-110 ${
                 featured ? "bg-white text-[#2F67FF]" : "bg-[#2F67FF] text-white"
               }`}
             >

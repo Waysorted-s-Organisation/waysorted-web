@@ -47,6 +47,13 @@ async function loadInitialPricing(): Promise<{
       throw new Error(("error" in payload && payload.error) || "Unable to load pricing.");
     }
 
+    if (payload.pricing.source === "default" || payload.pricing.riskFlags.includes("missing_country_default_tier_1")) {
+      return {
+        initialPricingData: null,
+        initialPricingError: null,
+      };
+    }
+
     return {
       initialPricingData: payload,
       initialPricingError: null,
