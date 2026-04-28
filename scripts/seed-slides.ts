@@ -187,6 +187,23 @@ const toolsData = [
         version: '1.0.0',
     },
     {
+        name: 'Icon Library',
+        slug: 'icon-library',
+        heading: 'Built-in SVG icon library inside Waysorted for browsing, filtering, customizing, and exporting icons directly in Figma.',
+        description: 'A built-in SVG icon library in Waysorted for finding, customizing, and exporting icons directly inside Figma.',
+        shortDescription: 'A built-in SVG icon library in Waysorted for finding, customizing, and exporting icons directly inside Figma.',
+        icon: '/images/icon-library/icon.png',
+        isAI: false,
+        badge: { label: 'New', type: 'new' as const },
+        disabled: false,
+        isActive: true,
+        category: 'design',
+        tagline: 'Browse, filter, customize, and export icons faster without leaving Figma.',
+        tags: ['icons', 'library', 'svg', 'export', 'filter'],
+        slides: [],
+        version: '1.0.0',
+    },
+    {
         name: 'Comment Summariser',
         slug: 'comment-summariser',
         heading: 'AI-powered insights that distill design feedback.',
@@ -630,6 +647,94 @@ const fileImporterSlides = [
 ];
 
 // ============================================================================
+// ICON LIBRARY SLIDES (6 slides)
+// ============================================================================
+const iconLibrarySlides = [
+    {
+        toolName: 'icon-library',
+        order: 1,
+        toolID: 'icon-library',
+        title: 'Find Your Icons Faster',
+        subtitle: 'Search and browse thousands of icons in a unified library inside Figma.',
+        bullets: [
+            'Search icons by name or keyword',
+            'Browse all icons in one place',
+            'Stay inside your design workflow',
+        ],
+        image: '/images/icon-library/1.png',
+        imageAlt: 'Icon library search with unified library',
+    },
+    {
+        toolName: 'icon-library',
+        order: 2,
+        toolID: 'icon-library',
+        title: 'Filter to Narrow Results',
+        subtitle: 'Quickly refine your icon search to find the right asset for your design system.',
+        bullets: [
+            'Filter by library, style, and category',
+            'Reduce time spent scrolling through large icon sets',
+        ],
+        image: '/images/icon-library/2.png',
+        imageAlt: 'Icon library filters panel',
+    },
+    {
+        toolName: 'icon-library',
+        order: 3,
+        toolID: 'icon-library',
+        title: 'Export Icons Instantly',
+        subtitle: 'Select icons and export them directly for quicker design workflows.',
+        bullets: [
+            'Export icons straight from the library',
+            'Use quick export for faster selection',
+            'Supports single or multiple icon export',
+        ],
+        image: '/images/icon-library/3.png',
+        imageAlt: 'Icon export selection with quick export',
+    },
+    {
+        toolName: 'icon-library',
+        order: 4,
+        toolID: 'icon-library',
+        title: 'Create Reusable Components',
+        subtitle: 'Turn icons into reusable Figma components for more organized design systems.',
+        bullets: [
+            'Export icons as components',
+            'Keep assets reusable across files and screens',
+        ],
+        image: '/images/icon-library/4.png',
+        imageAlt: 'Create component toggle in icon library',
+    },
+    {
+        toolName: 'icon-library',
+        order: 5,
+        toolID: 'icon-library',
+        title: 'Customize Before Export',
+        subtitle: 'Adjust icon colors before exporting.',
+        bullets: [
+            'Change icon colors inside the tool',
+            'Preview before export',
+            'Prepare icons faster with fewer extra edits',
+        ],
+        image: '/images/icon-library/5.png',
+        imageAlt: 'Color picker for icon customization',
+    },
+    {
+        toolName: 'icon-library',
+        order: 6,
+        toolID: 'icon-library',
+        title: 'Export with Code Reference',
+        subtitle: 'Make developer handoff easier by exporting icon URLs for reference.',
+        bullets: [
+            'Export icon URLs for development use',
+            'Share the exact asset reference with developers',
+            'Improve design-to-dev clarity',
+        ],
+        image: '/images/icon-library/6.png',
+        imageAlt: 'Icon export URL reference card',
+    },
+];
+
+// ============================================================================
 // MAIN SEED FUNCTION
 // ============================================================================
 async function seedDatabase() {
@@ -650,6 +755,7 @@ async function seedDatabase() {
         ...framesToPdfSlides,
         ...unitConverterSlides,
         ...fileImporterSlides,
+        ...iconLibrarySlides,
     ];
 
     const toolSlugs = toolsData.map(t => t.slug);
