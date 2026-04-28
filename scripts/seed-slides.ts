@@ -204,6 +204,23 @@ const toolsData = [
         version: '1.0.0',
     },
     {
+        name: 'HTML to Design',
+        slug: 'html-to-design',
+        heading: 'Convert HTML into Editable Figma Designs with multiple viewports',
+        description: 'Bring real HTML into Figma without rebuilding everything from scratch. HTML to Design helps you import code, preview layouts across viewports, and turn live UI into editable design layers.',
+        shortDescription: 'Bring real HTML into Figma without rebuilding everything from scratch. HTML to Design helps you import code, preview layouts across viewports, and turn live UI into editable design layers.',
+        icon: '/images/html-to-design/icon.png',
+        isAI: false,
+        badge: { label: 'New', type: 'new' as const },
+        disabled: false,
+        isActive: true,
+        category: 'import',
+        tagline: 'Convert websites, code, or local HTML files into editable design layers in Figma.',
+        tags: ['html', 'import', 'code', 'web', 'viewport'],
+        slides: [],
+        version: '1.0.0',
+    },
+    {
         name: 'Comment Summariser',
         slug: 'comment-summariser',
         heading: 'AI-powered insights that distill design feedback.',
@@ -735,6 +752,101 @@ const iconLibrarySlides = [
 ];
 
 // ============================================================================
+// HTML TO DESIGN SLIDES (6 slides)
+// ============================================================================
+const htmlToDesignSlides = [
+    {
+        toolName: 'html-to-design',
+        order: 1,
+        toolID: 'html-to-design',
+        title: 'Choose Your Import Method',
+        subtitle: 'Start by choosing how you want to bring HTML into the plugin.',
+        bullets: [
+            'Import from a live URL',
+            'Paste HTML code directly',
+            'Use the browser extension',
+            'Upload local HTML files',
+        ],
+        image: '/images/html-to-design/1.png',
+        imageAlt: 'HTML import method selection',
+    },
+    {
+        toolName: 'html-to-design',
+        order: 2,
+        toolID: 'html-to-design',
+        title: 'Pick Your Viewport',
+        subtitle: 'Choose the screen size you want to import for.',
+        bullets: [
+            'Desktop, Laptop, and Tablet presets',
+            'iPhone and Mobile options',
+            'Custom viewport support',
+            'Helps match layout to the target device',
+        ],
+        image: '/images/html-to-design/2.png',
+        imageAlt: 'Viewport presets for HTML import',
+    },
+    {
+        toolName: 'html-to-design',
+        order: 3,
+        toolID: 'html-to-design',
+        title: 'Set Language and Theme',
+        subtitle: 'Adjust your workspace before importing.',
+        bullets: [
+            'Select your preferred language',
+            'Switch between available themes',
+            'Designed for a cleaner import experience',
+        ],
+        image: '/images/html-to-design/3.png',
+        imageAlt: 'Language and theme options',
+    },
+    {
+        toolName: 'html-to-design',
+        order: 4,
+        toolID: 'html-to-design',
+        title: 'Advanced Import Settings',
+        subtitle: 'Fine-tune how your HTML is interpreted before import.',
+        bullets: [
+            'Use Auto layout',
+            'Extract styles automatically',
+            'Preserve image assets',
+            'Keep HTML layer names',
+            'Enable component detection',
+            'Add hyperlinks when needed',
+        ],
+        image: '/images/html-to-design/4.png',
+        imageAlt: 'Advanced HTML import settings',
+    },
+    {
+        toolName: 'html-to-design',
+        order: 5,
+        toolID: 'html-to-design',
+        title: 'Keep Visual Assets Intact',
+        subtitle: 'Bring in more than just structure.',
+        bullets: [
+            'Preserve image assets during import',
+            'Use high-resolution image settings',
+            'Keep local styles where available',
+        ],
+        image: '/images/html-to-design/5.png',
+        imageAlt: 'Preserve assets in HTML import',
+    },
+    {
+        toolName: 'html-to-design',
+        order: 6,
+        toolID: 'html-to-design',
+        title: 'Ready-to-Import Detection',
+        subtitle: 'The plugin checks your HTML before import so you can move forward with confidence.',
+        bullets: [
+            'Detects valid HTML input',
+            'Reduces errors before conversion',
+            'Shows import progress in real time',
+        ],
+        image: '/images/html-to-design/6.png',
+        imageAlt: 'HTML detected and ready to import',
+    },
+];
+
+// ============================================================================
 // MAIN SEED FUNCTION
 // ============================================================================
 async function seedDatabase() {
@@ -756,6 +868,7 @@ async function seedDatabase() {
         ...unitConverterSlides,
         ...fileImporterSlides,
         ...iconLibrarySlides,
+        ...htmlToDesignSlides,
     ];
 
     const toolSlugs = toolsData.map(t => t.slug);
