@@ -18,7 +18,7 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
   const activePlanCode = user.billing?.subscription?.planCode;
   const activePlan = user.billing?.catalog?.find(p => p.code === activePlanCode);
   const totalCredits = (user.billing?.wallet?.lifetimePurchasedCredits || 0) + (user.billing?.wallet?.lifetimeBonusCredits || 0);
-  let remainingCredits = Math.max(0, creditsRemaining || 0);
+  const remainingCredits = Math.max(0, creditsRemaining || 0);
 
   const displayDate = user.integrations?.figmaConnectedAt || user.createdAt;
   const startedDisplay = hasAccess && displayDate
@@ -28,7 +28,6 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
       day: "numeric",
     })
     : "N/A";
-  const renewalDisplay = null;
   const statusDisplay = hasAccess ? "Active" : "N/A";
   const getPlanDisplayName = () => {
     const status = user.billing?.subscription?.status;

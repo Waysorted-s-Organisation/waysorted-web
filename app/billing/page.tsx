@@ -8,10 +8,6 @@ export const fetchCache = "force-no-store";
 export const metadata: Metadata = {
   title: "Billing",
   description: "Waysorted billing and subscription management.",
-  robots: {
-    index: false,
-    follow: false,
-  },
 };
 
 export default async function BillingPage({

@@ -14,5 +14,9 @@ export interface User extends IUser {
 // 'auto' parameter is ignored as the context handles fetching globally
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useUser(auto: boolean = true) {
-  return useUserContext();
+  const context = useUserContext();
+  return {
+    ...context,
+    refreshUser: context.refetch,
+  };
 }

@@ -67,7 +67,6 @@ export async function GET(request: NextRequest) {
     const callbackCountry = normalizeCountry(getCountryFromRequest(request) || existingSession.countryCode);
 
     const existingUser = await User.findOne({ email: googleUser.email });
-    const createdNewUser = !existingUser;
     const user =
       existingUser ||
       new User({

@@ -11,9 +11,6 @@ export default function robots(): MetadataRoute.Robots {
                     '/settings',
                     '/connected',
                     '/allow-access',
-                    '/billing',
-                    '/payment',
-                    '/pricing',
                     '/mobile-redirect',
                     '/_next/',
                     '/admin/',
@@ -32,38 +29,38 @@ export default function robots(): MetadataRoute.Robots {
             {
                 userAgent: 'Googlebot',
                 allow: '/',
-                disallow: ['/api/', '/settings', '/connected', '/allow-access', '/billing', '/payment', '/pricing'],
+                disallow: ['/api/', '/settings', '/connected', '/allow-access'],
             },
             // AI Crawlers - explicitly allow for GEO optimization
             {
                 userAgent: 'GPTBot',
                 allow: ['/', '/learning/', '/document-hub/', '/about-us', '/figma-beta'],
-                disallow: ['/api/', '/settings', '/connected', '/allow-access', '/billing', '/payment', '/pricing'],
+                disallow: ['/api/', '/settings', '/connected', '/allow-access'],
             },
             {
                 userAgent: 'ChatGPT-User',
                 allow: '/',
-                disallow: ['/api/', '/settings', '/billing', '/payment', '/pricing'],
+                disallow: ['/api/', '/settings'],
             },
             {
                 userAgent: 'Google-Extended',
                 allow: '/',
-                disallow: ['/api/', '/settings', '/billing', '/payment', '/pricing'],
+                disallow: ['/api/', '/settings'],
             },
             {
                 userAgent: 'CCBot',
                 allow: '/',
-                disallow: ['/api/', '/settings', '/billing', '/payment', '/pricing'],
+                disallow: ['/api/', '/settings'],
             },
             {
                 userAgent: 'anthropic-ai',
                 allow: '/',
-                disallow: ['/api/', '/settings', '/billing', '/payment', '/pricing'],
+                disallow: ['/api/', '/settings'],
             },
             {
                 userAgent: 'Bingbot',
                 allow: '/',
-                disallow: ['/api/', '/settings', '/connected', '/allow-access', '/billing', '/payment', '/pricing'],
+                disallow: ['/api/', '/settings', '/connected', '/allow-access'],
             },
             {
                 userAgent: 'Twitterbot',

@@ -6,19 +6,8 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 export const metadata: Metadata = {
-  title: "Payment Test",
-  description: "Internal Razorpay payment test page for Waysorted.",
-  robots: {
-    index: false,
-    follow: false,
-    nocache: true,
-    googleBot: {
-      index: false,
-      follow: false,
-      noimageindex: true,
-      "max-snippet": 0,
-    },
-  },
+  title: "Payment",
+  description: "Waysorted payment and checkout page.",
 };
 
 export default async function PaymentPage({

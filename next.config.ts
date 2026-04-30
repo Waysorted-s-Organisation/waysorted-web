@@ -1,10 +1,13 @@
 import type { NextConfig } from "next";
 
 const isProd = process.env.NODE_ENV === "production";
-const billingNoStoreHeaders = [
+const billingPageHeaders = [
   { key: "Cache-Control", value: "private, no-store, no-cache, max-age=0, must-revalidate" },
   { key: "CDN-Cache-Control", value: "no-store" },
   { key: "Vercel-CDN-Cache-Control", value: "no-store" },
+];
+const billingApiHeaders = [
+  ...billingPageHeaders,
   { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
 ];
 
@@ -15,25 +18,25 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/pricing",
-        headers: billingNoStoreHeaders,
+        headers: billingPageHeaders,
       },
       {
         source: "/billing",
         headers: [
-          ...billingNoStoreHeaders,
+          ...billingPageHeaders,
           { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
         ],
       },
       {
         source: "/payment",
         headers: [
-          ...billingNoStoreHeaders,
+          ...billingPageHeaders,
           { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
         ],
       },
       {
         source: "/api/billing/:path*",
-        headers: billingNoStoreHeaders,
+        headers: billingApiHeaders,
       },
       {
         // Cache static assets for 1 year

@@ -15,7 +15,7 @@ export default function CreditsUsageCard({ user }: Props) {
   const activePlanCode = user.billing?.subscription?.planCode;
   const activePlan = user.billing?.catalog?.find(p => p.code === activePlanCode);
   const totalCredits = (user.billing?.wallet?.lifetimePurchasedCredits || 0) + (user.billing?.wallet?.lifetimeBonusCredits || 0);
-  let remainingCredits = Math.max(0, creditsRemaining || 0);
+  const remainingCredits = Math.max(0, creditsRemaining || 0);
 
   const renewsAt = user.billing?.subscription?.renewsAt;
   const isAboutToExpire = !!(activePlanCode && renewsAt && (new Date(renewsAt).getTime() - Date.now() < 3 * 24 * 60 * 60 * 1000));

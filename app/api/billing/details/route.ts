@@ -35,7 +35,10 @@ export async function POST(request: NextRequest) {
     );
 
     return NextResponse.json({ success: true });
-  } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unable to save billing details" },
+      { status: 500 },
+    );
   }
 }
