@@ -35,6 +35,15 @@ export interface IUserBilling {
   subscriptionRenewsAt?: Date | null;
   subscriptionWillCancelAt?: Date | null;
   cancelAtCycleEnd: boolean;
+  billingDetails?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    address: string;
+    country: string;
+    city: string;
+    zipCode: string;
+  } | null;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -80,6 +89,18 @@ const UserBillingSchema = new Schema<IUserBilling, UserBillingModel>(
     subscriptionRenewsAt: { type: Date, default: null },
     subscriptionWillCancelAt: { type: Date, default: null },
     cancelAtCycleEnd: { type: Boolean, default: false },
+    billingDetails: {
+      type: {
+        firstName: { type: String, required: true },
+        lastName: { type: String, required: true },
+        email: { type: String, required: true },
+        address: { type: String, required: true },
+        country: { type: String, required: true },
+        city: { type: String, required: true },
+        zipCode: { type: String, required: true },
+      },
+      default: null,
+    },
   },
   {
     timestamps: true,

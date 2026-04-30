@@ -6,6 +6,7 @@ import type { IUser } from "@/types/user";
 export interface User extends IUser {
   integrations?: {
     figma: boolean;
+    figmaConnectedAt?: string | Date;
   };
 }
 

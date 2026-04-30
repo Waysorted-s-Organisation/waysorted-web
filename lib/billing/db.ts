@@ -61,6 +61,14 @@ export type BillingSnapshot = {
   pricingVersion: string;
   pricing: PricingContext;
   catalog: RegionalPricedProduct[];
+  billingDetails?: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    country: string;
+    city: string;
+    zipCode: string;
+  } | null;
 };
 
 type PurchaseDocument = HydratedDocument<IPurchase>;
@@ -285,6 +293,7 @@ export async function buildBillingSnapshot(user: IUser, request?: NextRequest | 
     catalog: getVisibleCatalog({ isNewUser, hasActiveSubscription }).map((product) =>
       applyRegionalPrice(product, pricing),
     ),
+    billingDetails: billing.billingDetails || null,
   };
 }
 
@@ -1021,6 +1030,9 @@ export async function ensureStarterGrant(input: {
   deviceId?: string | null;
 }) {
   return runBillingTransaction(async (session) => {
+    const isPluginSource = input.source === "figma" || input.source === "plugin";
+    if (!isPluginSource) return null;
+
     const existing = await StarterGrant.findOne({ user: input.user._id }).session(session);
     if (existing) return existing;
 
@@ -1109,7 +1121,7 @@ export async function ensureStarterGrant(input: {
       },
     });
 
-    if (status === "granted") {
+    if (status === "granted" && isPluginSource) {
       const billing = await ensureUserBilling(input.user, session);
       billing.availableCredits += STARTER_GRANT_CREDITS;
       billing.lifetimeBonusCredits += STARTER_GRANT_CREDITS;

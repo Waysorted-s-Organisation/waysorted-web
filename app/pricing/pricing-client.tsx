@@ -8,6 +8,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import PricingCard from "./components/PricingCard";
 import GlowStarButton from "@/components/GlowStarButton";
+import BillingDetailsModal, { type BillingDetails } from "@/components/BillingDetailsModal";
 import { useUser } from "@/hooks/useUser";
 
 type CatalogProduct = {
@@ -139,6 +140,38 @@ export default function PricingClient({
   const [selectedTopupIndex, setSelectedTopupIndex] = useState(1);
   const [pricingData, setPricingData] = useState<PricingPayload | null>(initialPricingData);
   const [pricingError, setPricingError] = useState<string | null>(initialPricingError);
+  const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+
+  const requireBillingDetails = (action: () => void) => {
+    if (!user) {
+      action(); // let login redirect handle it
+      return;
+    }
+    // Always show the modal, but it will be pre-filled with existing details
+    setPendingAction(() => action);
+    setIsBillingModalOpen(true);
+  };
+
+  const handleBillingSubmit = async (details: BillingDetails) => {
+    const res = await fetch("/api/billing/details", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(details),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Failed to save billing details");
+    }
+    
+    setIsBillingModalOpen(false);
+    
+    // Proceed with the action that was blocked
+    if (pendingAction) {
+      pendingAction();
+      setPendingAction(null);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -229,11 +262,20 @@ export default function PricingClient({
       return;
     }
 
-    router.push(target);
+    requireBillingDetails(() => router.push(target));
   }
+
+
 
   return (
     <main className={`min-h-screen bg-[#F5F7FC] ${showBanner ? "pt-24" : "pt-16"}`}>
+      <BillingDetailsModal 
+        isOpen={isBillingModalOpen} 
+        onClose={() => setIsBillingModalOpen(false)} 
+        onSubmit={handleBillingSubmit}
+        initialData={user?.billing?.billingDetails}
+      />
+      
       <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 
       <section className="w-full px-4 pb-16 pt-10 md:pb-20 md:pt-14">
@@ -265,6 +307,8 @@ export default function PricingClient({
             </div>
 
             {pricingError ? <div className="mt-4 text-[12px] text-[#B42318]">{pricingError}</div> : null}
+
+
           </div>
 
           <section className="grid min-h-[478px] grid-cols-1 gap-4 md:grid-cols-3">
@@ -403,6 +447,8 @@ export default function PricingClient({
                 >
                   <span>{activeTopup?.product ? "Purchase credits" : "Starter grant is automatic"}</span>
                 </GlowStarButton>
+
+
               </div>
             </div>
           </section>

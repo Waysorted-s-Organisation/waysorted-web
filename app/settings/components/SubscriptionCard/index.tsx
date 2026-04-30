@@ -1,24 +1,96 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
-import type { IUser } from "@/types/user";
+import Link from "next/link";
+import type { User } from "@/hooks/useUser";
+import BillingHistoryModal from "@/components/BillingHistoryModal";
 
 type Props = {
-  user: IUser;
+  user: User;
+  onEditBilling?: () => void;
 };
 
-export default function SubscriptionCard({ user }: Props) {
-  const { earlyAccess } = user;
+export default function SubscriptionCard({ user, onEditBilling }: Props) {
+  const { earlyAccess, integrations, creditsRemaining } = user;
+  const hasAccess = earlyAccess || integrations?.figma;
 
-  const startedDisplay = earlyAccess && user.createdAt
-    ? new Date(user.createdAt).toLocaleDateString(undefined, {
+  const activePlanCode = user.billing?.subscription?.planCode;
+  const activePlan = user.billing?.catalog?.find(p => p.code === activePlanCode);
+  const totalCredits = (user.billing?.wallet?.lifetimePurchasedCredits || 0) + (user.billing?.wallet?.lifetimeBonusCredits || 0);
+  let remainingCredits = Math.max(0, creditsRemaining || 0);
+
+  const displayDate = user.integrations?.figmaConnectedAt || user.createdAt;
+  const startedDisplay = hasAccess && displayDate
+    ? new Date(displayDate).toLocaleDateString(undefined, {
       year: "numeric",
       month: "long",
       day: "numeric",
     })
     : "N/A";
   const renewalDisplay = null;
-  const statusDisplay = earlyAccess ? "Active" : "N/A";
+  const statusDisplay = hasAccess ? "Active" : "N/A";
+  const getPlanDisplayName = () => {
+    const status = user.billing?.subscription?.status;
+    const renewsAt = user.billing?.subscription?.renewsAt;
+    
+    // A plan is active only if status is active/cancel_scheduled and date is in the future
+    const isPlanActive = (status === "active" || status === "cancel_scheduled") && 
+      (!renewsAt || new Date(renewsAt).getTime() > Date.now());
+
+    if (activePlanCode && isPlanActive) {
+      if (activePlanCode === "sub_month_1" || activePlanCode === "sub_year_1599") return "Discover";
+      if (activePlanCode === "sub_month_2" || activePlanCode === "sub_year_3499") return "Core";
+      if (activePlanCode === "sub_month_3" || activePlanCode === "sub_year_7499") return "Pro";
+    }
+    
+    // If they have a plan code but it's not active (expired or cancelled)
+    if (activePlanCode && !isPlanActive) {
+      return "No Plan";
+    }
+    
+    // If no plan code, check if they have ever purchased credits (Top-ups)
+    const purchased = user.billing?.wallet?.lifetimePurchasedCredits || 0;
+    if (purchased > 0) {
+      return "Top up plan";
+    }
+    
+    return "Free Plan";
+  };
+
+  const [isCancelOpen, setIsCancelOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+  const handleCancelSubscription = async () => {
+    if (!confirm("Are you sure you want to cancel your subscription?")) return;
+    try {
+      const res = await fetch("/api/billing/subscriptions/cancel", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) alert("Error: " + data.error);
+      else window.location.reload();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const billingDetails = user.billing?.billingDetails;
+  const renewsAt = user.billing?.subscription?.renewsAt;
+  const isAboutToExpire = !!(activePlanCode && renewsAt && (new Date(renewsAt).getTime() - Date.now() < 3 * 24 * 60 * 60 * 1000));
+
+  const getAlertButtonText = () => {
+    if (totalCredits === 0 && !activePlanCode) return "Get early access";
+    if (activePlanCode) return isAboutToExpire ? "Upgrade plan" : "Top up credit";
+    return "Upgrade plan";
+  };
+
+  const getButtonClasses = () => {
+    if (activePlanCode) {
+      if (isAboutToExpire) return "text-[#B20000] border border-[#B20000] hover:bg-red-50";
+      return " text-primary-way-100 border border-primary-way-100 hover:bg-primary-way-5";
+    }
+    if (remainingCredits === 0) return "text-[#B20000] border border-[#B20000] hover:bg-red-50";
+    return "text-primary-way-100 hover:bg-primary-way-200 border border-primary-way-100";
+  };
 
   return (
     <section className="max-w-3xl rounded-lg border border-secondary-db-5 bg-white">
@@ -29,105 +101,247 @@ export default function SubscriptionCard({ user }: Props) {
         </p>
       </header>
 
-      <div className="px-6 pb-8 pt-5">
+      <div className="px-11 pb-6 pt-5">
         {/* Plan Info */}
         <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-          <h2 className="text-base font-medium text-secondary-db-90 flex items-center gap-2">
+          <h2 className="text-base text-secondary-db-100 flex items-center gap-2">
             Your Plan
-            {earlyAccess && (
-              <span className="inline-flex items-center rounded-sm bg-success-100 px-2 py-1/2 text-xs font-medium text-success-500 border border-success-100">
-                Beta Access
+            {hasAccess && (
+              <span className="inline-flex items-center rounded-sm bg-[#E5F5ED] px-2 py-1 text-sm font-medium text-[#01913A] uppercase">
+                {getPlanDisplayName()}
               </span>
             )}
           </h2>
+
         </div>
 
         {/* Alerts / Info */}
-        {!earlyAccess ? (
-          <div className="relative mb-6 rounded-md bg-error-100 p-4 text-error-500">
-            <div className="flex items-start justify-between gap-4">
+        {totalCredits === 0 && !activePlanCode ? (
+          <div className="mt-5 flex flex-col space-y-4 rounded-md border border-blue-100 bg-primary-way-10 p-4">
+            <div className="flex items-start gap-4">
+              <Image
+                src="/icons/info-1.svg"
+                alt="Info Icon"
+                width={20}
+                height={20}
+                className="object-contain mt-0.5"
+              />
+              <p className="text-sm text-primary-way-100 leading-relaxed">
+                Welcome to Waysorted! Get early access to start using our powerful design automation tools and get your first 300 credits.
+              </p>
+            </div>
+            <Link
+              href="/pricing"
+              className={`inline-flex w-fit items-center rounded-md px-4 py-1.5 text-sm font-medium transition-all duration-200 cursor-pointer ${getButtonClasses()}`}
+            >
+              {getAlertButtonText()}
+            </Link>
+          </div>
+        ) : remainingCredits === 0 || isAboutToExpire ? (
+          <div className="relative mb-6 rounded-md bg-[#FEEAEB] p-4 text-[#B20000] flex border border-red-100">
+            <div className="w-full flex items-center justify-between gap-4">
               <div className="flex items-center gap-2">
                 <Image
-                  src="/icons/info-red.svg"
-                  alt="Error Icon"
+                  src={isAboutToExpire ? "/icons/info-red.svg" : "/icons/red-clock.svg"}
+                  alt="Info Icon"
                   width={16}
                   height={16}
                   className="object-contain"
                 />
-                <p className="text-sm text-error-500 font-medium">
-                  You don&apos;t have any active Subscription!
+                <p className="text-sm font-medium">
+                  {isAboutToExpire 
+                    ? "Your subscription is about to expire soon. Upgrade now to keep your premium benefits."
+                    : "Your credits are over. No worries! Top up more credits to keep exporting, generating, and speeding up your design work."
+                  }
                 </p>
               </div>
+              <Link href="/pricing" className={`text-sm font-medium rounded-md px-4 py-1.5 transition-all duration-200 whitespace-nowrap ${getButtonClasses()}`}>
+                  {getAlertButtonText()}
+              </Link>
+            </div>
+          </div>
+        ) : getPlanDisplayName() === "Free Plan" ? (
+          <div className="mt-5 flex flex-col space-y-4 rounded-md border border-blue-100 bg-primary-way-10 p-4">
+            <div className="flex items-start gap-4">
+              <Image
+                src="/icons/info-1.svg"
+                alt="Info Icon"
+                width={20}
+                height={20}
+                className="object-contain mt-0.5"
+              />
+              <p className="text-sm text-primary-way-100 leading-relaxed">
+                You&apos;re on the Free plan! Enjoy 300 free credits, early feature drops, and full Waysorted access, you’re officially part of the Beta Crew.
+              </p>
             </div>
           </div>
         ) : (
-          <div className="mt-5 flex flex-col space-y-6 rounded-md border border-blue-100 bg-primary-way-10 p-4">
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-start gap-2">
-                <div className="flex items-center gap-4">
-                  <Image
-                    src="/icons/info-1.svg"
-                    alt="Info Icon"
-                    width={20}
-                    height={20}
-                    className="object-contain"
-                  />
-                  <p className="text-sm text-primary-way-100">
-                    You&apos;re on an Beta Access plan! Enjoy unlimited plugin usage, early feature drops, and full Waysorted access, you&apos;re officially part of the Beta Crew.
-                  </p>
-                </div>
-              </div>
+          <div className="mt-5 flex flex-col space-y-4 rounded-md border border-blue-100 bg-primary-way-10 p-4">
+            <div className="flex items-start gap-4">
+              <Image
+                src="/icons/info-1.svg"
+                alt="Info Icon"
+                width={20}
+                height={20}
+                className="object-contain mt-0.5"
+              />
+              <p className="text-sm text-primary-way-100 leading-relaxed">
+                You&apos;re on the {getPlanDisplayName()} plan! You have full access to all features. Top up more credits if you need to keep your workflow moving fast.
+              </p>
             </div>
-            <button
-              type="button"
-              onClick={() => window.open("https://www.figma.com", "_blank")}
-              className="bg-primary-way-10 border border-primary-way-100 w-32 rounded-lg hover:bg-primary-way-20 text-sm font-medium text-primary-way-100 px-2 py-1.5 cursor-pointer"
+            <Link
+              href="/pricing"
+              className="inline-flex w-fit items-center rounded-md bg-white px-4 py-2 text-xs font-medium text-primary-way-100 cursor-pointer border border-primary-way-10 shadow-sm hover:bg-primary-way-5 transition-all"
             >
-              Go to Figma
-            </button>
+              Top up credit
+            </Link>
           </div>
         )}
 
         {/* Meta Info */}
-        <div className="my-6 grid grid-cols-1 text-sm space-y-2">
-          <div className="inline-block space-x-1">
-            <span className="text-secondary-db-70">Status:</span>
-            <span className="font-medium text-secondary-db-100">{statusDisplay}</span>
-          </div>
-          <div className="inline-block space-x-1">
-            <span className="text-secondary-db-70">Started On:</span>
-            <span className="font-medium text-secondary-db-100">{startedDisplay}</span>
-          </div>
-          <div className="inline-block space-x-1">
-            <span className="text-secondary-db-70">Next Renewal:</span>
-            <span className="font-medium text-secondary-db-100">{renewalDisplay ?? "N/A"}</span>
-          </div>
-        </div>
-
-        {/* Credits */}
-        <div className="flex flex-col gap-4 rounded-md border border-secondary-db-5 px-4 py-3 md:flex-row md:items-center md:justify-between">
-          <div className="flex items-center gap-2 text-sm">
-            <Image
-              src="/icons/clock.svg"
-              alt="Credits Icon"
-              width={16}
-              height={19}
-              className="object-contain"
-            />
-            <span className="text-secondary-db-100">
-              <span className="font-semibold">
-                {earlyAccess ? "∞" : "0"}
-              </span> /
-              {earlyAccess ? " ∞" : " 0"} credits left
-            </span>
+        <div className="my-6 grid grid-row-1 md:grid-row-2 gap-6 text-sm">
+          <div className="space-y-3">
+            <div className="inline-block space-x-1">
+              <span className="text-sm text-secondary-db-100 font-medium">Plan Detail:</span>
+              <span className="text-sm font-medium text-secondary-db-80">
+                {getPlanDisplayName()} 
+                {activePlan && (activePlanCode?.startsWith("sub_month_") || activePlanCode?.startsWith("sub_year_")) 
+                  ? ` - ${activePlan.currency} ${activePlan.amountPaise / 100}` 
+                  : ""}
+              </span>
+            </div>
+            <div className="block space-x-1">
+              <span className="text-sm text-secondary-db-100 font-medium">Status:</span>
+              <span className="text-sm font-medium text-secondary-db-80">{statusDisplay}</span>
+            </div>
+            <div className="block space-x-1">
+              <span className="text-sm text-secondary-db-100 font-medium">Started On:</span>
+              <span className="text-sm font-regular text-secondary-db-80">{startedDisplay}</span>
+            </div>
           </div>
 
-          {earlyAccess && (
-            <span className="inline-flex items-center rounded-md bg-secondary-db-5 px-4 py-1.5 text-xs font-medium text-secondary-db-70 border border-secondary-db-10">
-              Upgraded
-            </span>
+          {billingDetails && (
+            <div className="rounded-lg bg-primary-way-5 p-4 flex items-center justify-between">
+              {/* LHS: Info */}
+              <div className="flex flex-col gap-4">
+                <span className="text-sm font-semibold text-secondary-db-100">Billing Information</span>
+                <div className="flex flex-col  gap-1">
+                  <p className="text-xs font-medium text-secondary-db-100">
+                  {billingDetails.firstName} {billingDetails.lastName}
+                </p>
+                
+                <p className="text-xs font-medium text-secondary-db-80">
+                    {billingDetails.email}
+                </p>
+                </div>
+                
+              </div>
+
+              {/* RHS: Buttons in Row */}
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={onEditBilling}
+                  className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-xs font-medium text-primary-way-100 bg-primary-way-10 cursor-pointer"
+                >
+                  Change Information
+                </button>
+                <button 
+                  onClick={() => setIsHistoryOpen(true)}
+                  className="inline-flex items-center justify-center rounded-md bg-primary-way-10 px-3 py-1.5 text-xs font-medium text-primary-way-100 cursor-pointer hover:bg-primary-way-20 transition-colors"
+                >
+                  Show History
+                </button>
+              </div>
+            </div>
           )}
         </div>
+
+        <BillingHistoryModal 
+          isOpen={isHistoryOpen} 
+          onClose={() => setIsHistoryOpen(false)} 
+        />
+
+
+
+        {/* Credits */}
+        <div className={`flex flex-col gap-4 rounded-md border px-4 py-4 md:flex-row md:items-center md:justify-between transition-colors ${
+          remainingCredits === 0 
+            ? "bg-[#FEEAEB] border-none" 
+            : "border-secondary-db-5"
+        }`}>
+          <div className="flex items-center gap-2">
+            <span className="flex items-center justify-center">
+              <Image
+                src={remainingCredits === 0 ? "/icons/red-clock.svg" : "/icons/clock.svg"}
+                alt="Credits Icon"
+                width={16}
+                height={19}
+                className="object-contain"
+                onError={(e) => {
+                  // Fallback if clock-red doesn't exist
+                  (e.target as HTMLImageElement).src = "/icons/clock.svg";
+                }}
+              />
+            </span>
+            <div className="flex items-baseline gap-1">
+              <span className={`text-xl font-semibold ${
+                remainingCredits === 0 ? "text-[#B20000]" : "text-secondary-db-90"
+              }`}>
+                {remainingCredits}
+              </span>
+              <span className={`text-sm font-medium ${
+                remainingCredits === 0 ? "text-[#B20000]" : "text-secondary-db-90"
+              }`}>
+                / {totalCredits} credits left
+              </span>
+            </div>
+          </div>
+
+          <Link 
+            href="/pricing" 
+            className={`inline-flex items-center rounded-md px-4 py-2 text-xs font-medium transition-all duration-200 cursor-pointer ${getButtonClasses()}`}
+          >
+            {getAlertButtonText()}
+          </Link>
+        </div>
+
+        {/* Cancel Subscription Accordion */}
+        {activePlanCode && (
+          <div className="mt-8 rounded-md bg-[#FEEAEB] border border-red-100 overflow-hidden">
+            <button 
+              onClick={() => setIsCancelOpen(!isCancelOpen)}
+              className="flex w-full items-center justify-between px-4 py-3 pr-5 text-sm font-semibold text-[#B20000] cursor-pointer transition-colors hover:bg-red-100/50"
+            >
+              <div className="flex items-center gap-2">
+                <Image src="/icons/error-sub.svg" alt="Cancel" width={22} height={22} />
+                Cancel Subscription
+              </div>
+              <Image 
+                src="/icons/chevron-down.svg" 
+                alt="chevron-down" 
+                width={10} 
+                height={5} 
+                className={`transition-transform duration-200 ${isCancelOpen ? 'rotate-180' : 'rotate-0'}`} 
+              />
+            </button>
+            
+            {isCancelOpen && (
+              <div className="px-4 pb-6 pr-5">
+                <p className="text-xs text-secondary-db-80 mb-4 font-medium leading-relaxed">
+                  You can cancel your Waysorted subscription from here. Your current plan will remain active until the end of the billing cycle. This action cannot be undone.
+                </p>
+                <div className="flex justify-end">
+                    <button
+                    onClick={handleCancelSubscription}
+                    className="rounded-md bg-[#CC0E0E] py-1 px-2 text-xs font-medium text-white hover:bg-[#8B0000] cursor-pointer"
+                    >
+                    Confirm Cancellation
+                    </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </section>
   );

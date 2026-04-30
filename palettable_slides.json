@@ -1,1 +1,94 @@
-{"slides":[{"_id":"697e082fb4578357da49ddaa","toolName":"palettable","order":1,"toolID":"palettable","title":"Selecting Colors","subtitle":"Pick Your Color","bullets":["Choose colors via HEX, RGB, or HSL.","Or copy color code from shapes in file.","Instantly preview shades and swatches."],"image":"/images/palettable-brief-1.svg","imageAlt":"Palettable color selection interface","__v":0,"createdAt":"2026-01-31T13:48:31.309Z","updatedAt":"2026-01-31T13:48:31.309Z"},{"_id":"697e082fb4578357da49ddab","toolName":"palettable","order":2,"toolID":"palettable","title":"Color Variations","subtitle":"Play with Variations","bullets":["Adjust brightness, darkness, saturation, monochrome and hue.","Generate multiple steps for smooth gradients.","Perfect for UI states, themes, or highlights."],"image":"/images/palettable-brief-2.svg","imageAlt":"Color variations panel showing brightness and saturation controls","__v":0,"createdAt":"2026-01-31T13:48:31.310Z","updatedAt":"2026-01-31T13:48:31.310Z"},{"_id":"697e082fb4578357da49ddac","toolName":"palettable","order":3,"toolID":"palettable","title":"Color Schemes","subtitle":"Generate Smart Schemes","bullets":["Explore Analogous, and Complementary palettes.","Quickly build consistent themes.","Check Complementary schemes for instant use."],"image":"/images/palettable-brief-3.svg","imageAlt":"Color schemes panel with complementary and analogous options","__v":0,"createdAt":"2026-01-31T13:48:31.310Z","updatedAt":"2026-01-31T13:48:31.310Z"},{"_id":"697e082fb4578357da49ddad","toolName":"palettable","order":4,"toolID":"palettable","title":"Color Contrast & Accessibility","subtitle":"Check Contrast level","bullets":["Test your color pairs against WCAG & APCA standards.","Get compliance scores for normal and large text.","Run blindness checks."],"image":"/images/palettable-brief-4.svg","imageAlt":"Accessibility panel showing WCAG contrast checks","__v":0,"createdAt":"2026-01-31T13:48:31.310Z","updatedAt":"2026-01-31T13:48:31.310Z"},{"_id":"697e082fb4578357da49ddae","toolName":"palettable","order":5,"toolID":"palettable","title":"Export & Apply","subtitle":"Take Your Palette Anywhere","bullets":["Export single colors or full palettes.","Integrate with your design system instantly.","Save time, keep consistency, and design faster."],"image":"/images/palettable-brief-5.svg","imageAlt":"Export options for colors and palettes","__v":0,"createdAt":"2026-01-31T13:48:31.310Z","updatedAt":"2026-01-31T13:48:31.310Z"}]}
+{
+    "slides": [
+        {
+            "_id": "697e082fb4578357da49ddaa",
+            "toolName": "palettable",
+            "order": 1,
+            "toolID": "palettable",
+            "title": "Selecting Colors",
+            "subtitle": "Pick Your Color",
+            "bullets": [
+                "Choose colors via HEX, RGB, or HSL.",
+                "Or copy color code from shapes in file.",
+                "Instantly preview shades and swatches."
+            ],
+            "image": "/images/palettable-brief-1.svg",
+            "imageAlt": "Palettable color selection interface",
+            "__v": 0,
+            "createdAt": "2026-01-31T13:48:31.309Z",
+            "updatedAt": "2026-01-31T13:48:31.309Z"
+        },
+        {
+            "_id": "697e082fb4578357da49ddab",
+            "toolName": "palettable",
+            "order": 2,
+            "toolID": "palettable",
+            "title": "Color Variations",
+            "subtitle": "Play with Variations",
+            "bullets": [
+                "Adjust brightness, darkness, saturation, monochrome and hue.",
+                "Generate multiple steps for smooth gradients.",
+                "Perfect for UI states, themes, or highlights."
+            ],
+            "image": "/images/palettable-brief-2.svg",
+            "imageAlt": "Color variations panel showing brightness and saturation controls",
+            "__v": 0,
+            "createdAt": "2026-01-31T13:48:31.310Z",
+            "updatedAt": "2026-01-31T13:48:31.310Z"
+        },
+        {
+            "_id": "697e082fb4578357da49ddac",
+            "toolName": "palettable",
+            "order": 3,
+            "toolID": "palettable",
+            "title": "Color Schemes",
+            "subtitle": "Generate Smart Schemes",
+            "bullets": [
+                "Explore Analogous, and Complementary palettes.",
+                "Quickly build consistent themes.",
+                "Check Complementary schemes for instant use."
+            ],
+            "image": "/images/palettable-brief-3.svg",
+            "imageAlt": "Color schemes panel with complementary and analogous options",
+            "__v": 0,
+            "createdAt": "2026-01-31T13:48:31.310Z",
+            "updatedAt": "2026-01-31T13:48:31.310Z"
+        },
+        {
+            "_id": "697e082fb4578357da49ddad",
+            "toolName": "palettable",
+            "order": 4,
+            "toolID": "palettable",
+            "title": "Color Contrast & Accessibility",
+            "subtitle": "Check Contrast level",
+            "bullets": [
+                "Test your color pairs against WCAG & APCA standards.",
+                "Get compliance scores for normal and large text.",
+                "Run blindness checks."
+            ],
+            "image": "/images/palettable-brief-4.svg",
+            "imageAlt": "Accessibility panel showing WCAG contrast checks",
+            "__v": 0,
+            "createdAt": "2026-01-31T13:48:31.310Z",
+            "updatedAt": "2026-01-31T13:48:31.310Z"
+        },
+        {
+            "_id": "697e082fb4578357da49ddae",
+            "toolName": "palettable",
+            "order": 5,
+            "toolID": "palettable",
+            "title": "Export & Apply",
+            "subtitle": "Take Your Palette Anywhere",
+            "bullets": [
+                "Export single colors or full palettes.",
+                "Integrate with your design system instantly.",
+                "Save time, keep consistency, and design faster."
+            ],
+            "image": "/images/palettable-brief-5.svg",
+            "imageAlt": "Export options for colors and palettes",
+            "__v": 0,
+            "createdAt": "2026-01-31T13:48:31.310Z",
+            "updatedAt": "2026-01-31T13:48:31.310Z"
+        }
+    ]
+}

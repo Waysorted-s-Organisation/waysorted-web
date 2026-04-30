@@ -56,10 +56,12 @@ export async function GET(request: NextRequest) {
         initials,
         creditsRemaining: billing.wallet.availableCredits,
         integrations: {
-          figma: isFigmaConnected
+          figma: isFigmaConnected,
+          figmaConnectedAt: figmaSession ? figmaSession.createdAt : null,
         },
         role: user.role,
         billing,
+        createdAt: user.createdAt,
       },
     });
   } catch (err) {

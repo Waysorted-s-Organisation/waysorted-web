@@ -117,16 +117,14 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    if (createdNewUser) {
-      await ensureStarterGrant({
-        user,
-        source: existingSession.source || "web",
-        googleSub: typeof googleUser.sub === "string" ? googleUser.sub : null,
-        ipPrefix: callbackSignals.ipPrefix || existingSession.ipPrefix || null,
-        userAgent: callbackSignals.userAgent || existingSession.userAgent || null,
-        deviceId: existingSession.deviceId || callbackSignals.deviceId || null,
-      });
-    }
+    await ensureStarterGrant({
+      user,
+      source: existingSession.source || "web",
+      googleSub: typeof googleUser.sub === "string" ? googleUser.sub : null,
+      ipPrefix: callbackSignals.ipPrefix || existingSession.ipPrefix || null,
+      userAgent: callbackSignals.userAgent || existingSession.userAgent || null,
+      deviceId: existingSession.deviceId || callbackSignals.deviceId || null,
+    });
 
     const finalUrl = new URL(redirectPath, urlObj.origin);
     const response = NextResponse.redirect(finalUrl);
