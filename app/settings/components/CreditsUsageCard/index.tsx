@@ -12,7 +12,7 @@ export default function CreditsUsageCard({ user }: Props) {
   const wallet = user.billing?.wallet;
   const subscription = user.billing?.subscription;
   const subscriptionStatus = subscription?.status || "inactive";
-  const hasSubscriptionAccess = ["active", "cancel_scheduled", "payment_pending"].includes(subscriptionStatus);
+  const hasSubscriptionAccess = ["active", "cancel_scheduled"].includes(subscriptionStatus);
   const activePlanCode = hasSubscriptionAccess ? subscription?.planCode || null : null;
   const activePlan = activePlanCode ? user.billing?.catalog?.find((plan) => plan.code === activePlanCode) : null;
 

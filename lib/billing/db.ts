@@ -77,6 +77,7 @@ export type BillingSnapshot = {
 type PurchaseDocument = HydratedDocument<IPurchase>;
 type SubscriptionDocument = HydratedDocument<ISubscription>;
 const STARTER_GRANT_CREDITS = 300;
+const PENDING_SUBSCRIPTION_TTL_MS = 30 * 60 * 1000;
 
 type LedgerInput = {
   userId: string;
@@ -131,7 +132,7 @@ export async function ensureUserBilling(
 ) {
   const existing = await UserBilling.findOne({ user: user._id }).session(session || null);
   if (existing) {
-    return normalizeLegacyStarterWallet(user, existing, session);
+    return reconcileLegacyBillingState(user, existing, session);
   }
 
   const billing = new UserBilling({
@@ -144,7 +145,79 @@ export async function ensureUserBilling(
     cancelAtCycleEnd: false,
   });
   await billing.save({ session });
-  return normalizeLegacyStarterWallet(user, billing, session);
+  return reconcileLegacyBillingState(user, billing, session);
+}
+
+async function reconcileLegacyBillingState(
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  billing: HydratedDocument<IUserBilling>,
+  session?: ClientSession,
+) {
+  const reconciledBilling = await reconcileStalePendingSubscription(user, billing, session);
+  return normalizeLegacyStarterWallet(user, reconciledBilling, session);
+}
+
+function isPendingSubscriptionStale(subscription: SubscriptionDocument) {
+  const activityAt =
+    subscription.updatedAt ||
+    subscription.createdAt ||
+    subscription.currentPeriodStart ||
+    subscription.currentPeriodEnd ||
+    null;
+  if (!activityAt) return true;
+  return Date.now() - new Date(activityAt).getTime() > PENDING_SUBSCRIPTION_TTL_MS;
+}
+
+async function reconcileStalePendingSubscription(
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  billing: HydratedDocument<IUserBilling>,
+  session?: ClientSession,
+) {
+  if (billing.subscriptionStatus !== "payment_pending") {
+    return billing;
+  }
+
+  const pendingSubscription = await Subscription.findOne({
+    user: user._id,
+    status: "payment_pending",
+  })
+    .sort({ updatedAt: -1, createdAt: -1 })
+    .session(session || null);
+
+  if (pendingSubscription && !isPendingSubscriptionStale(pendingSubscription)) {
+    return billing;
+  }
+
+  if (pendingSubscription) {
+    pendingSubscription.status = "expired";
+    pendingSubscription.canceledAt = pendingSubscription.canceledAt || new Date();
+    await pendingSubscription.save({ session });
+
+    await Purchase.updateMany(
+      {
+        user: user._id,
+        razorpaySubscriptionId: pendingSubscription.providerSubscriptionId,
+        status: "pending",
+      },
+      {
+        $set: {
+          status: "failed",
+        },
+      },
+      { session },
+    );
+  }
+
+  billing.subscriptionStatus = "inactive";
+  billing.subscriptionPlanCode = null;
+  billing.subscriptionStartAt = null;
+  billing.subscriptionEndAt = null;
+  billing.subscriptionRenewsAt = null;
+  billing.subscriptionWillCancelAt = null;
+  billing.cancelAtCycleEnd = false;
+  await billing.save({ session });
+
+  return billing;
 }
 
 async function normalizeLegacyStarterWallet(

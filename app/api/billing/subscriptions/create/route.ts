@@ -17,6 +17,7 @@ import { getRazorpayConfig } from "@/lib/billing/env";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
+const PENDING_SUBSCRIPTION_TTL_MS = 30 * 60 * 1000;
 
 type SubscriptionBody = {
   productCode?: string;
@@ -50,7 +51,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Product is not currently eligible for this user." }, { status: 403 });
     }
     const existingSubscription = await findCurrentSubscription(String(auth.user._id));
-    if (existingSubscription && ["active", "cancel_scheduled", "payment_pending"].includes(existingSubscription.status)) {
+    const isFreshPendingSubscription =
+      existingSubscription?.status === "payment_pending" &&
+      Boolean(
+        (existingSubscription.updatedAt || existingSubscription.createdAt) &&
+          Date.now() -
+            new Date(existingSubscription.updatedAt || existingSubscription.createdAt || Date.now()).getTime() <
+            PENDING_SUBSCRIPTION_TTL_MS,
+      );
+
+    if (
+      existingSubscription &&
+      (["active", "cancel_scheduled"].includes(existingSubscription.status) || isFreshPendingSubscription)
+    ) {
       return NextResponse.json({
         subscriptionId: existingSubscription.providerSubscriptionId,
         key: getRazorpayConfig().publicKeyId,

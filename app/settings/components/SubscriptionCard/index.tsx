@@ -16,7 +16,7 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
   const subscription = user.billing?.subscription;
   const subscriptionStatus = subscription?.status || "inactive";
   const subscriptionPlanCode = subscription?.planCode || null;
-  const hasSubscriptionAccess = ["active", "cancel_scheduled", "payment_pending"].includes(subscriptionStatus);
+  const hasSubscriptionAccess = ["active", "cancel_scheduled"].includes(subscriptionStatus);
   const activePlanCode = hasSubscriptionAccess ? subscriptionPlanCode : null;
   const activePlan = activePlanCode ? user.billing?.catalog?.find((plan) => plan.code === activePlanCode) : null;
 
