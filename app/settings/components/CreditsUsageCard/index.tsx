@@ -9,25 +9,40 @@ type Props = {
 };
 
 export default function CreditsUsageCard({ user }: Props) {
-  const { earlyAccess, creditsRemaining, integrations } = user;
-  const hasAccess = earlyAccess || integrations?.figma;
+  const wallet = user.billing?.wallet;
+  const subscription = user.billing?.subscription;
+  const subscriptionStatus = subscription?.status || "inactive";
+  const hasSubscriptionAccess = ["active", "cancel_scheduled", "payment_pending"].includes(subscriptionStatus);
+  const activePlanCode = hasSubscriptionAccess ? subscription?.planCode || null : null;
+  const activePlan = activePlanCode ? user.billing?.catalog?.find((plan) => plan.code === activePlanCode) : null;
 
-  const activePlanCode = user.billing?.subscription?.planCode;
-  const activePlan = user.billing?.catalog?.find(p => p.code === activePlanCode);
-  const totalCredits = (user.billing?.wallet?.lifetimePurchasedCredits || 0) + (user.billing?.wallet?.lifetimeBonusCredits || 0);
-  const remainingCredits = Math.max(0, creditsRemaining || 0);
+  const purchasedCredits = Math.max(0, wallet?.lifetimePurchasedCredits || 0);
+  const bonusCredits = Math.max(0, wallet?.lifetimeBonusCredits || 0);
+  const spentCredits = Math.max(0, wallet?.lifetimeSpentCredits || 0);
+  const refundedCredits = Math.max(0, wallet?.lifetimeRefundedCredits || 0);
+  const heldCredits = Math.max(0, wallet?.heldCredits || 0);
+  const remainingCredits = Math.max(0, wallet?.availableCredits ?? user.creditsRemaining ?? 0);
+  const totalCredits = Math.max(
+    remainingCredits + heldCredits + spentCredits,
+    purchasedCredits + bonusCredits - refundedCredits,
+    remainingCredits,
+  );
 
-  const renewsAt = user.billing?.subscription?.renewsAt;
-  const isAboutToExpire = !!(activePlanCode && renewsAt && (new Date(renewsAt).getTime() - Date.now() < 3 * 24 * 60 * 60 * 1000));
+  const renewsAt = subscription?.renewsAt;
+  const isAboutToExpire = !!(
+    hasSubscriptionAccess &&
+    renewsAt &&
+    new Date(renewsAt).getTime() - Date.now() < 3 * 24 * 60 * 60 * 1000
+  );
 
   const getButtonText = () => {
-    if (totalCredits === 0 && !activePlanCode) return "Get early access";
-    if (activePlanCode) return isAboutToExpire ? "Upgrade plan" : "Top up credits";
-    return "Upgrade plan";
+    if (!hasSubscriptionAccess && totalCredits === 0) return "Get started";
+    if (hasSubscriptionAccess) return isAboutToExpire ? "Upgrade plan" : "Top up credits";
+    return "View plans";
   };
 
   const getButtonClasses = () => {
-    if (activePlanCode) {
+    if (hasSubscriptionAccess) {
       if (isAboutToExpire) return "text-[#B20000] border border-[#B20000] hover:bg-red-50";
       return "bg-white text-primary-way-100 border border-primary-way-10 shadow-sm hover:bg-primary-way-5";
     }
@@ -97,7 +112,7 @@ export default function CreditsUsageCard({ user }: Props) {
 
         {/* Conditional Panels */}
 
-        {!hasAccess || totalCredits === 0 || isAboutToExpire ? (
+        {((!hasSubscriptionAccess && totalCredits === 0) || isAboutToExpire) ? (
           <div className="pt-4 pb-4 pl-6 bg-[#FEEAEB] mt-4 rounded-md border border-red-100">
             <div className=" text-sm text-[#B20000] font-medium flex items-center gap-2">
               <Image
@@ -107,8 +122,8 @@ export default function CreditsUsageCard({ user }: Props) {
                 height={16}
                 className="object-contain"
               />
-              {totalCredits === 0 && !activePlanCode
-                ? "Waysorted credits will become available once you get early access." 
+              {totalCredits === 0 && !hasSubscriptionAccess
+                ? "Your free account starts with 300 credits after the billing checks complete."
                 : isAboutToExpire
                   ? "Your subscription is about to expire soon. Upgrade now to keep your premium benefits."
                   : "Your credits are over. Upgrade to a plan to continue."
@@ -128,7 +143,7 @@ export default function CreditsUsageCard({ user }: Props) {
               <p className="text-sm text-primary-way-100 leading-relaxed">
                 {activePlanCode 
                   ? `You're on the ${activePlan?.name || "Premium"} plan! You have full access to all features. Top up more credits if you need to keep your workflow moving fast.`
-                  : "You're on the Free plan! Enjoy 300 free credits, early feature drops, and full Waysorted access, you’re officially part of the Beta Crew."
+                  : "You're on the Free plan! Enjoy your starter credits and full Waysorted access while you explore the workflow."
                 }
               </p>
             </div>

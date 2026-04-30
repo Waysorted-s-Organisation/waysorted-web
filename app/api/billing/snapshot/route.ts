@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
       picture: auth.user.picture,
       favorites: auth.user.favorites || [],
       creditsRemaining: snapshot.wallet.availableCredits,
-      earlyAccess: snapshot.capabilities.customizablePresets,
+      earlyAccess: Boolean(auth.user.earlyAccess),
       initials: getInitials(auth.user.name, auth.user.email),
       role: auth.user.role || "user",
       billing: snapshot,

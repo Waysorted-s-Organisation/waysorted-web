@@ -11,6 +11,7 @@ import type { ISubscription } from "@/models/subscription";
 import Subscription from "@/models/subscription";
 import UsageReservation from "@/models/usageReservation";
 import UserBilling from "@/models/userBilling";
+import type { IUserBilling } from "@/models/userBilling";
 import User from "@/models/user";
 import type { IUser } from "@/types/user";
 import {
@@ -49,6 +50,8 @@ export type BillingSnapshot = {
   subscription: {
     planCode: string | null;
     status: string;
+    startedAt: string | null;
+    endsAt: string | null;
     renewsAt: string | null;
     willCancelAt: string | null;
     cancelAtCycleEnd: boolean;
@@ -127,7 +130,9 @@ export async function ensureUserBilling(
   session?: ClientSession,
 ) {
   const existing = await UserBilling.findOne({ user: user._id }).session(session || null);
-  if (existing) return existing;
+  if (existing) {
+    return normalizeLegacyStarterWallet(user, existing, session);
+  }
 
   const billing = new UserBilling({
     user: user._id,
@@ -139,6 +144,52 @@ export async function ensureUserBilling(
     cancelAtCycleEnd: false,
   });
   await billing.save({ session });
+  return normalizeLegacyStarterWallet(user, billing, session);
+}
+
+async function normalizeLegacyStarterWallet(
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  billing: HydratedDocument<IUserBilling>,
+  session?: ClientSession,
+) {
+  const isLegacyStarterState =
+    Boolean(user.earlyAccess) &&
+    !billing.firstSuccessfulPurchaseAt &&
+    billing.subscriptionStatus === "inactive" &&
+    billing.availableCredits > STARTER_GRANT_CREDITS &&
+    billing.heldCredits === 0 &&
+    billing.lifetimePurchasedCredits === 0 &&
+    billing.lifetimeBonusCredits === 0 &&
+    billing.lifetimeSpentCredits === 0 &&
+    billing.lifetimeRefundedCredits === 0;
+
+  if (!isLegacyStarterState) {
+    return billing;
+  }
+
+  const previousAvailableCredits = billing.availableCredits;
+  billing.availableCredits = STARTER_GRANT_CREDITS;
+  billing.lifetimeBonusCredits = STARTER_GRANT_CREDITS;
+  await billing.save({ session });
+
+  await updateLegacyUserCredits(String(user._id), billing.availableCredits, session);
+
+  await appendCreditLedger(
+    {
+      userId: String(user._id),
+      deltaCredits: STARTER_GRANT_CREDITS - previousAvailableCredits,
+      balanceAfter: billing.availableCredits,
+      reason: "manual_adjustment",
+      idempotencyKey: `legacy-starter-normalize:${user._id}`,
+      metadata: {
+        migration: "legacy_early_access_to_starter_grant",
+        previousAvailableCredits,
+        normalizedAvailableCredits: STARTER_GRANT_CREDITS,
+      },
+    },
+    session,
+  );
+
   return billing;
 }
 
@@ -279,12 +330,14 @@ export async function buildBillingSnapshot(user: IUser, request?: NextRequest | 
     subscription: {
       planCode: billing.subscriptionPlanCode || null,
       status: billing.subscriptionStatus,
+      startedAt: billing.subscriptionStartAt?.toISOString() || null,
+      endsAt: billing.subscriptionEndAt?.toISOString() || null,
       renewsAt: billing.subscriptionRenewsAt?.toISOString() || null,
       willCancelAt: billing.subscriptionWillCancelAt?.toISOString() || null,
       cancelAtCycleEnd: billing.cancelAtCycleEnd,
     },
     capabilities: {
-      customizablePresets: hasActiveSubscription || Boolean(user.earlyAccess),
+      customizablePresets: hasActiveSubscription,
       canPurchaseTopups: true,
       canPurchaseStarterPack: isNewUser,
     },

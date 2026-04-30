@@ -22,6 +22,8 @@ export interface IUser {
         subscription: {
             planCode: string | null;
             status: string;
+            startedAt?: string | null;
+            endsAt?: string | null;
             renewsAt: string | null;
             willCancelAt: string | null;
             cancelAtCycleEnd: boolean;

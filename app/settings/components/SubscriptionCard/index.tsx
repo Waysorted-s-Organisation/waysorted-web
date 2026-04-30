@@ -12,48 +12,65 @@ type Props = {
 };
 
 export default function SubscriptionCard({ user, onEditBilling }: Props) {
-  const { earlyAccess, integrations, creditsRemaining } = user;
-  const hasAccess = earlyAccess || integrations?.figma;
+  const wallet = user.billing?.wallet;
+  const subscription = user.billing?.subscription;
+  const subscriptionStatus = subscription?.status || "inactive";
+  const subscriptionPlanCode = subscription?.planCode || null;
+  const hasSubscriptionAccess = ["active", "cancel_scheduled", "payment_pending"].includes(subscriptionStatus);
+  const activePlanCode = hasSubscriptionAccess ? subscriptionPlanCode : null;
+  const activePlan = activePlanCode ? user.billing?.catalog?.find((plan) => plan.code === activePlanCode) : null;
 
-  const activePlanCode = user.billing?.subscription?.planCode;
-  const activePlan = user.billing?.catalog?.find(p => p.code === activePlanCode);
-  const totalCredits = (user.billing?.wallet?.lifetimePurchasedCredits || 0) + (user.billing?.wallet?.lifetimeBonusCredits || 0);
-  const remainingCredits = Math.max(0, creditsRemaining || 0);
+  const purchasedCredits = Math.max(0, wallet?.lifetimePurchasedCredits || 0);
+  const bonusCredits = Math.max(0, wallet?.lifetimeBonusCredits || 0);
+  const spentCredits = Math.max(0, wallet?.lifetimeSpentCredits || 0);
+  const refundedCredits = Math.max(0, wallet?.lifetimeRefundedCredits || 0);
+  const heldCredits = Math.max(0, wallet?.heldCredits || 0);
+  const remainingCredits = Math.max(0, wallet?.availableCredits ?? user.creditsRemaining ?? 0);
+  const totalCredits = Math.max(
+    remainingCredits + heldCredits + spentCredits,
+    purchasedCredits + bonusCredits - refundedCredits,
+    remainingCredits,
+  );
+  const hasTopUpHistory = purchasedCredits > 0;
 
-  const displayDate = user.integrations?.figmaConnectedAt || user.createdAt;
-  const startedDisplay = hasAccess && displayDate
-    ? new Date(displayDate).toLocaleDateString(undefined, {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
-    : "N/A";
-  const statusDisplay = hasAccess ? "Active" : "N/A";
+  const formatDate = (value?: string | Date | null) =>
+    value
+      ? new Date(value).toLocaleDateString(undefined, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : "N/A";
+
+  const startedDisplay = hasSubscriptionAccess
+    ? formatDate(subscription?.startedAt || user.createdAt)
+    : formatDate(user.createdAt);
+
+  const statusDisplayMap: Record<string, string> = {
+    active: "Active",
+    cancel_scheduled: "Cancel scheduled",
+    payment_pending: "Payment pending",
+    cancelled: "Cancelled",
+    expired: "Expired",
+    halted: "Halted",
+    refunded: "Refunded",
+    refund_pending: "Refund pending",
+    inactive: "No active subscription",
+  };
+  const statusDisplay = statusDisplayMap[subscriptionStatus] || "No active subscription";
+
   const getPlanDisplayName = () => {
-    const status = user.billing?.subscription?.status;
-    const renewsAt = user.billing?.subscription?.renewsAt;
-    
-    // A plan is active only if status is active/cancel_scheduled and date is in the future
-    const isPlanActive = (status === "active" || status === "cancel_scheduled") && 
-      (!renewsAt || new Date(renewsAt).getTime() > Date.now());
-
-    if (activePlanCode && isPlanActive) {
+    if (activePlanCode) {
       if (activePlanCode === "sub_month_1" || activePlanCode === "sub_year_1599") return "Discover";
       if (activePlanCode === "sub_month_2" || activePlanCode === "sub_year_3499") return "Core";
       if (activePlanCode === "sub_month_3" || activePlanCode === "sub_year_7499") return "Pro";
+      return activePlan?.name || "Subscription";
     }
-    
-    // If they have a plan code but it's not active (expired or cancelled)
-    if (activePlanCode && !isPlanActive) {
-      return "No Plan";
-    }
-    
-    // If no plan code, check if they have ever purchased credits (Top-ups)
-    const purchased = user.billing?.wallet?.lifetimePurchasedCredits || 0;
-    if (purchased > 0) {
+
+    if (hasTopUpHistory) {
       return "Top up plan";
     }
-    
+
     return "Free Plan";
   };
 
@@ -73,17 +90,21 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
   };
 
   const billingDetails = user.billing?.billingDetails;
-  const renewsAt = user.billing?.subscription?.renewsAt;
-  const isAboutToExpire = !!(activePlanCode && renewsAt && (new Date(renewsAt).getTime() - Date.now() < 3 * 24 * 60 * 60 * 1000));
+  const renewsAt = subscription?.renewsAt;
+  const isAboutToExpire = !!(
+    hasSubscriptionAccess &&
+    renewsAt &&
+    new Date(renewsAt).getTime() - Date.now() < 3 * 24 * 60 * 60 * 1000
+  );
 
   const getAlertButtonText = () => {
-    if (totalCredits === 0 && !activePlanCode) return "Get early access";
-    if (activePlanCode) return isAboutToExpire ? "Upgrade plan" : "Top up credit";
-    return "Upgrade plan";
+    if (!hasSubscriptionAccess && totalCredits === 0) return "Get started";
+    if (hasSubscriptionAccess) return isAboutToExpire ? "Upgrade plan" : "Top up credit";
+    return "View plans";
   };
 
   const getButtonClasses = () => {
-    if (activePlanCode) {
+    if (hasSubscriptionAccess) {
       if (isAboutToExpire) return "text-[#B20000] border border-[#B20000] hover:bg-red-50";
       return " text-primary-way-100 border border-primary-way-100 hover:bg-primary-way-5";
     }
@@ -105,17 +126,15 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
         <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <h2 className="text-base text-secondary-db-100 flex items-center gap-2">
             Your Plan
-            {hasAccess && (
-              <span className="inline-flex items-center rounded-sm bg-[#E5F5ED] px-2 py-1 text-sm font-medium text-[#01913A] uppercase">
-                {getPlanDisplayName()}
-              </span>
-            )}
+            <span className="inline-flex items-center rounded-sm bg-[#E5F5ED] px-2 py-1 text-sm font-medium text-[#01913A] uppercase">
+              {getPlanDisplayName()}
+            </span>
           </h2>
 
         </div>
 
         {/* Alerts / Info */}
-        {totalCredits === 0 && !activePlanCode ? (
+        {!hasSubscriptionAccess && totalCredits === 0 ? (
           <div className="mt-5 flex flex-col space-y-4 rounded-md border border-blue-100 bg-primary-way-10 p-4">
             <div className="flex items-start gap-4">
               <Image
@@ -126,7 +145,7 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
                 className="object-contain mt-0.5"
               />
               <p className="text-sm text-primary-way-100 leading-relaxed">
-                Welcome to Waysorted! Get early access to start using our powerful design automation tools and get your first 300 credits.
+                Welcome to Waysorted! Your free account starts with 300 credits after the billing checks complete. Upgrade anytime if you need more.
               </p>
             </div>
             <Link
@@ -170,7 +189,7 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
                 className="object-contain mt-0.5"
               />
               <p className="text-sm text-primary-way-100 leading-relaxed">
-                You&apos;re on the Free plan! Enjoy 300 free credits, early feature drops, and full Waysorted access, you’re officially part of the Beta Crew.
+                You&apos;re on the Free plan! Enjoy your starter credits and full Waysorted access while you explore the workflow.
               </p>
             </div>
           </div>
@@ -206,6 +225,8 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
                 {getPlanDisplayName()} 
                 {activePlan && (activePlanCode?.startsWith("sub_month_") || activePlanCode?.startsWith("sub_year_")) 
                   ? ` - ${activePlan.currency} ${activePlan.amountPaise / 100}` 
+                  : !hasSubscriptionAccess && !hasTopUpHistory
+                    ? ` - 300 starter credits`
                   : ""}
               </span>
             </div>
@@ -305,7 +326,7 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
         </div>
 
         {/* Cancel Subscription Accordion */}
-        {activePlanCode && (
+        {hasSubscriptionAccess && (
           <div className="mt-8 rounded-md bg-[#FEEAEB] border border-red-100 overflow-hidden">
             <button 
               onClick={() => setIsCancelOpen(!isCancelOpen)}

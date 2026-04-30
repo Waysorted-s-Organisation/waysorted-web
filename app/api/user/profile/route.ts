@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       email: auth.user.email,
       picture: auth.user.picture,
       favorites: auth.user.favorites || [],
-      earlyAccess: billing.capabilities.customizablePresets || Boolean(auth.user.earlyAccess),
+      earlyAccess: Boolean(auth.user.earlyAccess),
       creditsRemaining: billing.wallet.availableCredits,
       role: auth.user.role || "user",
       billing,

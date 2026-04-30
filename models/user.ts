@@ -108,9 +108,7 @@ UserSchema.methods.toPublic = function () {
 // Pre-save hook to initialize credits correctly
 UserSchema.pre("save", function (next) {
   if (this.isNew) {
-    if (this.earlyAccess) {
-      this.creditsRemaining = 20000;
-    } else {
+    if (typeof this.creditsRemaining !== "number") {
       this.creditsRemaining = 0;
     }
   }

@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
         email: user.email,
         picture: user.picture,
         favorites: user.favorites || [],
-        earlyAccess: billing.capabilities.customizablePresets || Boolean(user.earlyAccess),
+        earlyAccess: Boolean(user.earlyAccess),
         initials,
         creditsRemaining: billing.wallet.availableCredits,
         integrations: {
