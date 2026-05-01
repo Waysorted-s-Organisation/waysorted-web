@@ -90,18 +90,6 @@ const planUi = [
   },
 ];
 
-const faqItems = [
-  "What is Waysorted?",
-  "How is Waysorted different from other plugin services?",
-  "What tools are included?",
-  "Who creates these tool packs?",
-  "Can I suggest tools to be included?",
-  "Will Waysorted slow down my Figma?",
-  "Is Waysorted safe and secure?",
-  "What if I face an issue while using Waysorted?",
-  "How do I get started?",
-];
-
 function minorUnitMultiplier(currency: string) {
   const digits =
     new Intl.NumberFormat(undefined, {
@@ -134,7 +122,6 @@ export default function PricingClient({
   const router = useRouter();
   const { user, loading } = useUser();
   const { showBanner, setShowBanner } = useBanner();
-  const [activeFaq, setActiveFaq] = useState<number>(0);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [paygMode, setPaygMode] = useState<"standard" | "subscriber">("standard");
   const [selectedTopupIndex, setSelectedTopupIndex] = useState(1);
@@ -475,50 +462,6 @@ export default function PricingClient({
             </div>
           </section>
 
-          <section className="mt-12">
-            <h2 className="text-center text-[34px] font-semibold text-secondary-db-100">
-              <span className="rounded-md bg-[#EAF1FF] px-2 py-0.5">Top</span> Frequently Asked Questions
-            </h2>
-            <p className="mt-2 text-center text-[12px] text-[#7A8499]">
-              Quick answers about Waysorted plans, credits, safety, and billing.
-            </p>
-
-            <div className="mx-auto mt-6 max-w-[930px] rounded-2xl border border-[#E7EDF7] bg-white p-3 md:p-4">
-              {faqItems.map((item, idx) => (
-                <button
-                  key={item}
-                  onClick={() => setActiveFaq(idx)}
-                  className="mb-2 w-full rounded-xl border border-[#EEF2FA] bg-white px-4 py-3 text-left transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#F8FAFF] hover:shadow-sm last:mb-0"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-[13px] font-medium text-secondary-db-100">{item}</span>
-                    <span
-                      className={`inline-flex h-5 w-5 shrink-0 items-center justify-center text-[#667085] transition-transform duration-200 ${
-                        activeFaq === idx ? "rotate-180" : "rotate-0"
-                      }`}
-                      aria-hidden="true"
-                    >
-                      <svg viewBox="0 0 20 20" fill="none" className="h-4 w-4">
-                        <path
-                          d="M5.5 7.5L10 12.5L14.5 7.5"
-                          stroke="currentColor"
-                          strokeWidth="2.2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </span>
-                  </div>
-                  {activeFaq === idx && (
-                    <p className="mt-2 pr-8 text-[11px] leading-relaxed text-[#667085]">
-                      Waysorted combines design workflow tools with a backend-led credit system. Payments, subscription
-                      status, reservations, and refunds are reconciled on the server, not by frontend state.
-                    </p>
-                  )}
-                </button>
-              ))}
-            </div>
-          </section>
         </div>
       </section>
 
