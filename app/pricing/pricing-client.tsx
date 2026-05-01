@@ -52,7 +52,7 @@ const planUi = [
     planName: "Discover",
     description: "Best for new users getting started with the Waysorted ecosystem.",
     ctaLabel: "Build Plan",
-    discountTag: "Start",
+    discountTag: "25% off",
     iconSrc: "/pricingIcons/Discover.png",
     features: [
       "Backend-authoritative subscription status",
@@ -65,7 +65,7 @@ const planUi = [
     planName: "Core",
     description: "Perfect for agencies who need automation and scaling workflows.",
     ctaLabel: "Get Started",
-    discountTag: "Popular",
+    discountTag: "13% off",
     iconSrc: "/pricingIcons/Core.png",
     featured: true,
     features: [
@@ -79,7 +79,7 @@ const planUi = [
     planName: "Pro",
     description: "For high-growth teams and enterprises with advanced needs.",
     ctaLabel: "Build Plan",
-    discountTag: "Scale",
+    discountTag: "6% off",
     iconSrc: "/pricingIcons/Pro.png",
     features: [
       "Backend-authoritative subscription status",
@@ -222,13 +222,13 @@ export default function PricingClient({
     () => [
       {
         title: "Free",
-        value: "300 credits",
+        value: "300",
         amountLabel: "Free",
         product: null as CatalogProduct | null,
       },
       ...topupProducts.map((product) => ({
         title: formatCurrency(product.amountPaise, product.currency),
-        value: `${product.creditsGranted + product.bonusCredits} credits`,
+        value: `${product.creditsGranted + product.bonusCredits}`,
         amountLabel: formatCurrency(product.amountPaise, product.currency),
         product,
       })),
@@ -268,7 +268,7 @@ export default function PricingClient({
 
 
   return (
-    <main className={`min-h-screen bg-[#F5F7FC] ${showBanner ? "pt-24" : "pt-16"}`}>
+    <main className={`min-h-screen bg-white ${showBanner ? "pt-24" : "pt-16"}`}>
       <BillingDetailsModal 
         isOpen={isBillingModalOpen} 
         onClose={() => setIsBillingModalOpen(false)} 
@@ -279,31 +279,48 @@ export default function PricingClient({
       <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 
       <section className="w-full px-4 pb-16 pt-10 md:pb-20 md:pt-14">
-        <div className="mx-auto w-full max-w-[1040px]">
+        <div className="mx-auto w-full max-w-[1110px]">
           <div className="mb-8 text-center">
             <h1 className="text-[42px] font-semibold leading-[1.1] tracking-[-0.02em] text-secondary-db-100">
               Choose the perfect plan for your workflow
             </h1>
 
-            <div className="mx-auto mt-5 inline-flex items-center rounded-full border border-[#E3E9F5] bg-white p-1 text-xs font-medium text-[#5E6A7B]">
+            <div className="mx-auto mt-6 flex items-center justify-center gap-3 text-[16px]">
               <button
                 type="button"
                 onClick={() => setBillingCycle("monthly")}
-                className={`rounded-full px-5 py-1.5 transition-all duration-200 hover:scale-[1.02] ${
-                  billingCycle === "monthly" ? "bg-[#EEF3FF] text-[#2F67FF] shadow-sm" : ""
+                className={`font-medium transition-colors duration-200 ${
+                  billingCycle === "monthly" ? "text-secondary-db-100" : "text-[#6B7280]"
                 }`}
               >
                 Monthly
               </button>
               <button
                 type="button"
-                onClick={() => setBillingCycle("yearly")}
-                className={`rounded-full px-5 py-1.5 transition-all duration-200 hover:scale-[1.02] ${
-                  billingCycle === "yearly" ? "bg-[#EEF3FF] text-[#2F67FF] shadow-sm" : ""
-                }`}
+                onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
+                className="relative h-6 w-11 rounded-full bg-[#111827] transition-transform duration-200 hover:scale-105 active:scale-95"
+                aria-label="Toggle billing cycle"
               >
-                Yearly
+                <span
+                  className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${
+                    billingCycle === "yearly" ? "left-6" : "left-1"
+                  }`}
+                />
               </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setBillingCycle("yearly")}
+                  className={`font-medium transition-colors duration-200 ${
+                    billingCycle === "yearly" ? "text-secondary-db-100" : "text-[#6B7280]"
+                  }`}
+                >
+                  Yearly
+                </button>
+                <span className="rounded-md bg-primary-way-100 px-1.5 py-0.5 text-[14px] font-regular tracking-wide text-white">
+                  Save 20%
+                </span>
+              </div>
             </div>
 
             {pricingError ? <div className="mt-4 text-[12px] text-[#B42318]">{pricingError}</div> : null}
@@ -328,12 +345,13 @@ export default function PricingClient({
                   featured={ui.featured}
                   features={ui.features}
                   onSelect={() => goToCheckout(product.code)}
+                  bonusCreditsLabel={`Plus ${[25, 75, 100][index] || 25} bonus credits for new users`}
                 />
               );
             })}
           </section>
 
-          <section className="mt-5 rounded-2xl border border-[#E7EDF7] bg-white p-6 transition-all duration-300 hover:shadow-[0_12px_28px_rgba(25,40,86,0.08)]">
+          <section className="mt-5 rounded-2xl border-5 border-secondary-db-5 p-6 transition-all duration-300 hover:shadow-[0_12px_28px_rgba(25,40,86,0.08)] ">
             <div className="grid grid-cols-1 gap-8 md:grid-cols-[1.05fr_1fr]">
               <div>
                 <p className="flex items-center gap-2 text-[42px] font-semibold leading-none tracking-[-0.02em] text-secondary-db-100">
@@ -361,7 +379,7 @@ export default function PricingClient({
               </div>
 
               <div className="flex flex-col">
-                <div className="flex items-center justify-start gap-2.5 text-[12px] text-[#111827]">
+                <div className="flex items-center justify-start gap-2.5 text-[16px] text-[#111827]">
                   <button
                     type="button"
                     onClick={() => {
@@ -413,13 +431,16 @@ export default function PricingClient({
                   >
                     Subscriber
                   </button>
+                  <span className="rounded-md bg-[#01A04E] px-1.5 py-0.5 text-[14px] font-regular tracking-wide text-white ">
+                    Extra credit
+                  </span>
                 </div>
 
                 <div className="mt-7 flex items-end gap-2">
                   <p className="text-[48px] font-semibold leading-none text-[#111827]">
-                    {activeTopup?.amountLabel || "--"}
+                    {activeTopup?.value || "--"}
                   </p>
-                  <p className="pb-1 text-[13px] text-[#111827]">for {activeTopup?.value || "--"}</p>
+                  <p className="pb-1 text-[13px] text-[#111827]">credits </p>
                 </div>
 
                 <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -434,8 +455,9 @@ export default function PricingClient({
                           : "border-[#E7EDF7] bg-[#F7F9FD]"
                       }`}
                     >
-                      <p className="text-[13px] font-semibold text-[#111827]">{mark.title}</p>
-                      <p className="mt-1 text-[12px] text-[#6B7280]">{mark.value}</p>
+                      <p className="mt-1 text-[13px] text-secondary-db-100 font-semibold">{mark.value} credits</p>
+                      <p className="text-[12px]  text-secondary-db-80">{mark.title}</p>
+                      
                     </button>
                   ))}
                 </div>

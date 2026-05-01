@@ -306,11 +306,14 @@ export function getTierRank(tier: PricingTier) {
 
 export function getCountryFromRequest(request?: NextRequest | null) {
   if (!request) return null;
-  return (
+  const country =
     request.headers.get("cf-ipcountry") ||
-    request.headers.get("x-vercel-ip-country") ||
-    null
-  );
+    request.headers.get("x-vercel-ip-country");
+
+  if (!country && process.env.NODE_ENV === "development") {
+    return "IN";
+  }
+  return country || null;
 }
 
 export function withPricingRiskFlags(pricing: PricingContext, riskFlags: string[]): PricingContext {

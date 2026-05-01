@@ -238,7 +238,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               onMouseLeave={() => setProductsOpen(false)}
             >
               <span>Products</span>
-              <Badge variant="tertiary-orange-500">New</Badge>
               <Image
                 src="/icons/chevron-down.svg"
                 alt="Chevron Down"
@@ -286,6 +285,13 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               onClick={() => router.push('/support')}
             >
               Support
+            </button>
+
+            <button
+              className={`flex items-center pr-3 font-medium text-sm cursor-pointer ${textColor}`}
+              onClick={() => router.push('/pricing')}
+            >
+              Pricing
             </button>
 
 
@@ -394,7 +400,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                   }
                 >
                   <span className="font-medium">Products</span>
-                  <Badge variant="tertiary-orange-500">New</Badge>
                   <Image
                     src="/icons/chevron-down.svg"
                     alt="Toggle Products"
