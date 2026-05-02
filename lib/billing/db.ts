@@ -49,7 +49,10 @@ export type BillingSnapshot = {
   };
   subscription: {
     planCode: string | null;
+    planName: string | null;
     status: string;
+    statusLabel: string;
+    description: string;
     startedAt: string | null;
     endsAt: string | null;
     renewsAt: string | null;
@@ -78,6 +81,66 @@ type PurchaseDocument = HydratedDocument<IPurchase>;
 type SubscriptionDocument = HydratedDocument<ISubscription>;
 const STARTER_GRANT_CREDITS = 300;
 const PENDING_SUBSCRIPTION_TTL_MS = 30 * 60 * 1000;
+
+function formatBillingPlanName(planCode: string | null, status: string) {
+  if (!(status === "active" || status === "cancel_scheduled" || status === "payment_pending")) {
+    return null;
+  }
+  if (planCode === "sub_month_1" || planCode === "sub_year_1599") return "Discover";
+  if (planCode === "sub_month_2" || planCode === "sub_year_3499") return "Core";
+  if (planCode === "sub_month_3" || planCode === "sub_year_7499") return "Pro";
+  return "Active";
+}
+
+function buildSubscriptionPresentation(input: {
+  status: string;
+  planCode: string | null;
+  renewsAt: Date | null;
+  willCancelAt: Date | null;
+}) {
+  const planName = formatBillingPlanName(input.planCode, input.status);
+
+  if (input.status === "active") {
+    return {
+      planName,
+      statusLabel: "Active",
+      description: `${planName || "Subscription"} plan active. Credits and pricing stay synced with your Waysorted account.`,
+    };
+  }
+
+  if (input.status === "cancel_scheduled") {
+    const effectiveDate = input.willCancelAt || input.renewsAt;
+    return {
+      planName,
+      statusLabel: "Cancels at period end",
+      description: effectiveDate
+        ? `${planName || "Subscription"} stays active until ${effectiveDate.toISOString()}.`
+        : `${planName || "Subscription"} cancellation is scheduled for period end.`,
+    };
+  }
+
+  if (input.status === "payment_pending") {
+    return {
+      planName,
+      statusLabel: "Payment pending",
+      description: "Finish your pending checkout on Waysorted to activate this plan.",
+    };
+  }
+
+  if (input.status === "halted") {
+    return {
+      planName,
+      statusLabel: "Halted",
+      description: "Subscription needs attention before benefits resume.",
+    };
+  }
+
+  return {
+    planName: null,
+    statusLabel: "Inactive",
+    description: "No active subscription. Top up credits or subscribe on Waysorted.",
+  };
+}
 
 type LedgerInput = {
   userId: string;
@@ -446,6 +509,12 @@ export async function buildBillingSnapshot(user: IUser, request?: NextRequest | 
     billing.subscriptionRenewsAt || billing.subscriptionEndAt || null,
   );
   const isNewUser = !billing.firstSuccessfulPurchaseAt;
+  const subscriptionPresentation = buildSubscriptionPresentation({
+    status: billing.subscriptionStatus,
+    planCode: billing.subscriptionPlanCode || null,
+    renewsAt: billing.subscriptionRenewsAt || billing.subscriptionEndAt || null,
+    willCancelAt: billing.subscriptionWillCancelAt || null,
+  });
 
   return {
     wallet: {
@@ -459,7 +528,10 @@ export async function buildBillingSnapshot(user: IUser, request?: NextRequest | 
     },
     subscription: {
       planCode: billing.subscriptionPlanCode || null,
+      planName: subscriptionPresentation.planName,
       status: billing.subscriptionStatus,
+      statusLabel: subscriptionPresentation.statusLabel,
+      description: subscriptionPresentation.description,
       startedAt: billing.subscriptionStartAt?.toISOString() || null,
       endsAt: billing.subscriptionEndAt?.toISOString() || null,
       renewsAt: billing.subscriptionRenewsAt?.toISOString() || null,
