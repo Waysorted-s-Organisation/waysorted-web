@@ -81,6 +81,7 @@ type PurchaseDocument = HydratedDocument<IPurchase>;
 type SubscriptionDocument = HydratedDocument<ISubscription>;
 const STARTER_GRANT_CREDITS = 300;
 const PENDING_SUBSCRIPTION_TTL_MS = 30 * 60 * 1000;
+const EXISTING_FREE_PLAN_CUTOFF = new Date("2026-05-03T00:00:00.000Z");
 
 function formatBillingPlanName(planCode: string | null, status: string) {
   if (!(status === "active" || status === "cancel_scheduled" || status === "payment_pending")) {
@@ -136,7 +137,7 @@ function buildSubscriptionPresentation(input: {
   }
 
   return {
-    planName: null,
+    planName: "Free",
     statusLabel: "Inactive",
     description: "No active subscription. Top up credits or subscribe on Waysorted.",
   };
@@ -190,7 +191,7 @@ async function runBillingTransaction<T>(work: (session: ClientSession) => Promis
 }
 
 export async function ensureUserBilling(
-  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
   session?: ClientSession,
 ) {
   const existing = await UserBilling.findOne({ user: user._id }).session(session || null);
@@ -212,13 +213,14 @@ export async function ensureUserBilling(
 }
 
 async function reconcileLegacyBillingState(
-  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
   billing: HydratedDocument<IUserBilling>,
   session?: ClientSession,
 ) {
   const reconciledBilling = await reconcileStalePendingSubscription(user, billing, session);
   const normalizedBilling = await normalizeLegacyStarterWallet(user, reconciledBilling, session);
-  return reconcileDuplicateStarterWallet(user, normalizedBilling, session);
+  const dedupedBilling = await reconcileDuplicateStarterWallet(user, normalizedBilling, session);
+  return backfillExistingFreePlanWallet(user, dedupedBilling, session);
 }
 
 function isPendingSubscriptionStale(subscription: SubscriptionDocument) {
@@ -233,7 +235,7 @@ function isPendingSubscriptionStale(subscription: SubscriptionDocument) {
 }
 
 async function reconcileStalePendingSubscription(
-  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
   billing: HydratedDocument<IUserBilling>,
   session?: ClientSession,
 ) {
@@ -285,7 +287,7 @@ async function reconcileStalePendingSubscription(
 }
 
 async function normalizeLegacyStarterWallet(
-  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
   billing: HydratedDocument<IUserBilling>,
   session?: ClientSession,
 ) {
@@ -331,7 +333,7 @@ async function normalizeLegacyStarterWallet(
 }
 
 async function reconcileDuplicateStarterWallet(
-  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
   billing: HydratedDocument<IUserBilling>,
   session?: ClientSession,
 ) {
@@ -373,6 +375,65 @@ async function reconcileDuplicateStarterWallet(
   return billing;
 }
 
+async function backfillExistingFreePlanWallet(
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
+  billing: HydratedDocument<IUserBilling>,
+  session?: ClientSession,
+) {
+  const createdAt = user.createdAt ? new Date(user.createdAt) : null;
+  const isExistingUser =
+    createdAt instanceof Date &&
+    !Number.isNaN(createdAt.getTime()) &&
+    createdAt.getTime() <= EXISTING_FREE_PLAN_CUTOFF.getTime();
+
+  const isEligibleForFreePlanBackfill =
+    isExistingUser &&
+    !billing.firstSuccessfulPurchaseAt &&
+    billing.subscriptionStatus === "inactive" &&
+    billing.heldCredits === 0 &&
+    billing.lifetimePurchasedCredits === 0 &&
+    billing.lifetimeSpentCredits === 0 &&
+    billing.lifetimeRefundedCredits === 0 &&
+    (billing.availableCredits < STARTER_GRANT_CREDITS ||
+      billing.lifetimeBonusCredits < STARTER_GRANT_CREDITS);
+
+  if (!isEligibleForFreePlanBackfill) {
+    return billing;
+  }
+
+  const previousAvailableCredits = billing.availableCredits;
+  billing.availableCredits = Math.max(billing.availableCredits, STARTER_GRANT_CREDITS);
+  billing.lifetimeBonusCredits = Math.max(
+    billing.lifetimeBonusCredits,
+    STARTER_GRANT_CREDITS,
+  );
+  await billing.save({ session });
+
+  await updateLegacyUserCredits(String(user._id), billing.availableCredits, session);
+
+  const deltaCredits = billing.availableCredits - previousAvailableCredits;
+  if (deltaCredits !== 0) {
+    await appendCreditLedger(
+      {
+        userId: String(user._id),
+        deltaCredits,
+        balanceAfter: billing.availableCredits,
+        reason: "manual_adjustment",
+        idempotencyKey: `existing-free-plan-backfill:${user._id}`,
+        metadata: {
+          migration: "existing_users_free_plan_300",
+          previousAvailableCredits,
+          normalizedAvailableCredits: billing.availableCredits,
+          cutoff: EXISTING_FREE_PLAN_CUTOFF.toISOString(),
+        },
+      },
+      session,
+    );
+  }
+
+  return billing;
+}
+
 function walletAlreadyReflectsStarterGrant(billing: HydratedDocument<IUserBilling>) {
   return (
     !billing.firstSuccessfulPurchaseAt &&
@@ -387,7 +448,7 @@ function walletAlreadyReflectsStarterGrant(billing: HydratedDocument<IUserBillin
 }
 
 export async function resolveUserPricingContext(
-  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
   request?: NextRequest | null,
   session?: ClientSession,
 ) {
@@ -1277,7 +1338,7 @@ export async function createRefundRecord(input: {
 }
 
 export async function ensureStarterGrant(input: {
-  user: Pick<IUser, "_id" | "email" | "creditsRemaining" | "earlyAccess">;
+  user: Pick<IUser, "_id" | "email" | "creditsRemaining" | "earlyAccess" | "createdAt">;
   source?: string | null;
   googleSub?: string | null;
   ipPrefix?: string | null;
