@@ -154,7 +154,8 @@ async function reconcileLegacyBillingState(
   session?: ClientSession,
 ) {
   const reconciledBilling = await reconcileStalePendingSubscription(user, billing, session);
-  return normalizeLegacyStarterWallet(user, reconciledBilling, session);
+  const normalizedBilling = await normalizeLegacyStarterWallet(user, reconciledBilling, session);
+  return reconcileDuplicateStarterWallet(user, normalizedBilling, session);
 }
 
 function isPendingSubscriptionStale(subscription: SubscriptionDocument) {
@@ -264,6 +265,62 @@ async function normalizeLegacyStarterWallet(
   );
 
   return billing;
+}
+
+async function reconcileDuplicateStarterWallet(
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  billing: HydratedDocument<IUserBilling>,
+  session?: ClientSession,
+) {
+  const looksLikeDuplicateStarterGrant =
+    !billing.firstSuccessfulPurchaseAt &&
+    billing.subscriptionStatus === "inactive" &&
+    billing.availableCredits === STARTER_GRANT_CREDITS * 2 &&
+    billing.heldCredits === 0 &&
+    billing.lifetimePurchasedCredits === 0 &&
+    billing.lifetimeBonusCredits === STARTER_GRANT_CREDITS * 2 &&
+    billing.lifetimeSpentCredits === 0 &&
+    billing.lifetimeRefundedCredits === 0;
+
+  if (!looksLikeDuplicateStarterGrant) {
+    return billing;
+  }
+
+  billing.availableCredits = STARTER_GRANT_CREDITS;
+  billing.lifetimeBonusCredits = STARTER_GRANT_CREDITS;
+  await billing.save({ session });
+
+  await updateLegacyUserCredits(String(user._id), billing.availableCredits, session);
+
+  await appendCreditLedger(
+    {
+      userId: String(user._id),
+      deltaCredits: -STARTER_GRANT_CREDITS,
+      balanceAfter: billing.availableCredits,
+      reason: "manual_adjustment",
+      idempotencyKey: `starter-grant-dedupe:${user._id}`,
+      metadata: {
+        migration: "duplicate_starter_grant_reconciled",
+        normalizedAvailableCredits: STARTER_GRANT_CREDITS,
+      },
+    },
+    session,
+  );
+
+  return billing;
+}
+
+function walletAlreadyReflectsStarterGrant(billing: HydratedDocument<IUserBilling>) {
+  return (
+    !billing.firstSuccessfulPurchaseAt &&
+    billing.subscriptionStatus === "inactive" &&
+    billing.heldCredits === 0 &&
+    billing.lifetimePurchasedCredits === 0 &&
+    billing.lifetimeSpentCredits === 0 &&
+    billing.lifetimeRefundedCredits === 0 &&
+    billing.availableCredits >= STARTER_GRANT_CREDITS &&
+    billing.lifetimeBonusCredits >= STARTER_GRANT_CREDITS
+  );
 }
 
 export async function resolveUserPricingContext(
@@ -1249,27 +1306,36 @@ export async function ensureStarterGrant(input: {
 
     if (status === "granted" && isPluginSource) {
       const billing = await ensureUserBilling(input.user, session);
-      billing.availableCredits += STARTER_GRANT_CREDITS;
-      billing.lifetimeBonusCredits += STARTER_GRANT_CREDITS;
-      await billing.save({ session });
+      const alreadyFunded = walletAlreadyReflectsStarterGrant(billing);
 
-      await updateLegacyUserCredits(String(input.user._id), billing.availableCredits, session);
+      if (!alreadyFunded) {
+        billing.availableCredits += STARTER_GRANT_CREDITS;
+        billing.lifetimeBonusCredits += STARTER_GRANT_CREDITS;
+        await billing.save({ session });
 
-      await appendCreditLedger(
-        {
-          userId: String(input.user._id),
-          deltaCredits: STARTER_GRANT_CREDITS,
-          balanceAfter: billing.availableCredits,
-          reason: "starter_grant",
-          idempotencyKey: `starter-grant:${input.user._id}`,
-          metadata: {
-            source: input.source || null,
-            riskScore,
-            decisionReason: grant.decisionReason,
+        await updateLegacyUserCredits(String(input.user._id), billing.availableCredits, session);
+
+        await appendCreditLedger(
+          {
+            userId: String(input.user._id),
+            deltaCredits: STARTER_GRANT_CREDITS,
+            balanceAfter: billing.availableCredits,
+            reason: "starter_grant",
+            idempotencyKey: `starter-grant:${input.user._id}`,
+            metadata: {
+              source: input.source || null,
+              riskScore,
+              decisionReason: grant.decisionReason,
+            },
           },
-        },
-        session,
-      );
+          session,
+        );
+      } else {
+        grant.notes = {
+          ...(grant.notes || {}),
+          walletAlreadyFunded: true,
+        };
+      }
     }
 
     await grant.save({ session });
