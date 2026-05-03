@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import LearnClient from "./LearnClient";
 import dbConnect from "@/lib/toolsdb";
 import Tool, { ITool } from "@/models/tool";
+import { applyToolIconOverrides } from "@/lib/tool-icon-overrides";
 
 export const metadata: Metadata = {
   title: "Explore Beta Release Tools",
@@ -67,7 +68,7 @@ async function getTools() {
     });
 
     // Serialize for props
-    return JSON.parse(JSON.stringify(all));
+    return JSON.parse(JSON.stringify(applyToolIconOverrides(all)));
   } catch (error) {
     console.error("Failed to fetch tools for SSR:", error);
     return [];

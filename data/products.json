@@ -31,14 +31,14 @@
     "id": 5,
     "name": "Icon Library",
     "description": "Built-in SVG icon library for faster browsing, filtering, and export.",
-    "icon": "/images/icon-library/icon.png",
+    "icon": "/images/icon-library/icon.svg",
     "href": "/learning/icon-library"
   },
   {
     "id": 6,
     "name": "HTML to Design",
     "description": "Convert HTML into editable Figma layers across viewports.",
-    "icon": "/images/html-to-design/icon.png",
+    "icon": "/images/html-to-design/icon.svg",
     "href": "/learning/html-to-design"
   }
 ]

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/toolsdb";
 import Tool from "@/models/tool";
 import { ITool } from "@/models/tool";
+import { applyToolIconOverrides } from "@/lib/tool-icon-overrides";
 
 export const runtime = "nodejs";
 
@@ -32,5 +33,5 @@ export async function GET() {
     return a.name.localeCompare(b.name);
   });
 
-  return NextResponse.json({ data: all }, { status: 200 });
+  return NextResponse.json({ data: applyToolIconOverrides(all) }, { status: 200 });
 }
