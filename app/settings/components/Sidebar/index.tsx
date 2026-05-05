@@ -9,7 +9,7 @@ const items = [
   { key: "general", label: "General" },
   { key: "refer", label: "Refer & Earn", logo:"/icons/refer.svg",  badge: "Coming Soon" },
   { key: "credits", label: "Credits Usage" },
-  { key: "subscription", label: "Subscription" },
+  { key: "subscription", label: "Subscription & Plans" },
   { key: "notifications", label: "Notifications" },
   { key: "integrations", label: "Integrations" },
   { key: "beta", label: "Beta Features" },
