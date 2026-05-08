@@ -32,7 +32,7 @@ export function buildCorsHeaders(req: NextRequest) {
     "Access-Control-Allow-Origin": origin,
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers":
-      "Content-Type, Authorization, X-Session-Id, X-Waysorted-Device-Id, X-Waysorted-Callback-Signature, X-Waysorted-Processor-Token",
+      "Content-Type, Authorization, X-Session-Id, X-Waysorted-Device-Id, X-Waysorted-Callback-Signature, X-Waysorted-Processor-Token, x-actor-id, x-actor-handle",
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   } as const;
