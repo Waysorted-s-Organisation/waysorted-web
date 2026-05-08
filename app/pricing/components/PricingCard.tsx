@@ -6,6 +6,7 @@ import GlowStarButton from "@/components/GlowStarButton";
 interface PricingCardProps {
   planName: string;
   description: string;
+  originalAmountLabel?: string;
   amountLabel: string;
   cycleLabel: string;
   creditsLabel: string;
@@ -21,6 +22,7 @@ interface PricingCardProps {
 export default function PricingCard({
   planName,
   description,
+  originalAmountLabel,
   amountLabel,
   cycleLabel,
   creditsLabel,
@@ -73,11 +75,23 @@ export default function PricingCard({
         {description}
       </p>
 
+<<<<<<< HEAD
       <div className="mt-8 flex items-end">
+=======
+      <div className="mt-8">
+        {originalAmountLabel ? (
+          <p className={`text-[16px] line-through ${featured ? "text-white/75" : "text-secondary-db-60"}`}>
+            {originalAmountLabel}
+          </p>
+        ) : null}
+
+        <div className="mt-3 flex items-end">
+>>>>>>> fb454a5dd2ddc6033a61bfefc4157bf425c22fc0
         <p className="text-[36px] font-semibold leading-none tracking-[-0.03em]">{amountLabel}</p>
         <span className={`mb-1 ml-1 text-[14px] ${featured ? "text-white/85" : "text-secondary-db-60"}`}>
           /{cycleLabel}
         </span>
+        </div>
       </div>
 
       <GlowStarButton

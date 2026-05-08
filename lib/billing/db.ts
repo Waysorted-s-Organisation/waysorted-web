@@ -49,7 +49,10 @@ export type BillingSnapshot = {
   };
   subscription: {
     planCode: string | null;
+    planName: string | null;
     status: string;
+    statusLabel: string;
+    description: string;
     startedAt: string | null;
     endsAt: string | null;
     renewsAt: string | null;
@@ -78,6 +81,67 @@ type PurchaseDocument = HydratedDocument<IPurchase>;
 type SubscriptionDocument = HydratedDocument<ISubscription>;
 const STARTER_GRANT_CREDITS = 300;
 const PENDING_SUBSCRIPTION_TTL_MS = 30 * 60 * 1000;
+const EXISTING_FREE_PLAN_CUTOFF = new Date("2026-05-03T00:00:00.000Z");
+
+function formatBillingPlanName(planCode: string | null, status: string) {
+  if (!(status === "active" || status === "cancel_scheduled" || status === "payment_pending")) {
+    return null;
+  }
+  if (planCode === "sub_month_1" || planCode === "sub_year_1599") return "Discover";
+  if (planCode === "sub_month_2" || planCode === "sub_year_3499") return "Core";
+  if (planCode === "sub_month_3" || planCode === "sub_year_7499") return "Pro";
+  return "Active";
+}
+
+function buildSubscriptionPresentation(input: {
+  status: string;
+  planCode: string | null;
+  renewsAt: Date | null;
+  willCancelAt: Date | null;
+}) {
+  const planName = formatBillingPlanName(input.planCode, input.status);
+
+  if (input.status === "active") {
+    return {
+      planName,
+      statusLabel: "Active",
+      description: `${planName || "Subscription"} plan active. Credits and pricing stay synced with your Waysorted account.`,
+    };
+  }
+
+  if (input.status === "cancel_scheduled") {
+    const effectiveDate = input.willCancelAt || input.renewsAt;
+    return {
+      planName,
+      statusLabel: "Cancels at period end",
+      description: effectiveDate
+        ? `${planName || "Subscription"} stays active until ${effectiveDate.toISOString()}.`
+        : `${planName || "Subscription"} cancellation is scheduled for period end.`,
+    };
+  }
+
+  if (input.status === "payment_pending") {
+    return {
+      planName,
+      statusLabel: "Payment pending",
+      description: "Finish your pending checkout on Waysorted to activate this plan.",
+    };
+  }
+
+  if (input.status === "halted") {
+    return {
+      planName,
+      statusLabel: "Halted",
+      description: "Subscription needs attention before benefits resume.",
+    };
+  }
+
+  return {
+    planName: "Free",
+    statusLabel: "Inactive",
+    description: "No active subscription. Top up credits or subscribe on Waysorted.",
+  };
+}
 
 type LedgerInput = {
   userId: string;
@@ -127,7 +191,7 @@ async function runBillingTransaction<T>(work: (session: ClientSession) => Promis
 }
 
 export async function ensureUserBilling(
-  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
   session?: ClientSession,
 ) {
   const existing = await UserBilling.findOne({ user: user._id }).session(session || null);
@@ -149,12 +213,14 @@ export async function ensureUserBilling(
 }
 
 async function reconcileLegacyBillingState(
-  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
   billing: HydratedDocument<IUserBilling>,
   session?: ClientSession,
 ) {
   const reconciledBilling = await reconcileStalePendingSubscription(user, billing, session);
-  return normalizeLegacyStarterWallet(user, reconciledBilling, session);
+  const normalizedBilling = await normalizeLegacyStarterWallet(user, reconciledBilling, session);
+  const dedupedBilling = await reconcileDuplicateStarterWallet(user, normalizedBilling, session);
+  return backfillExistingFreePlanWallet(user, dedupedBilling, session);
 }
 
 function isPendingSubscriptionStale(subscription: SubscriptionDocument) {
@@ -169,7 +235,7 @@ function isPendingSubscriptionStale(subscription: SubscriptionDocument) {
 }
 
 async function reconcileStalePendingSubscription(
-  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
   billing: HydratedDocument<IUserBilling>,
   session?: ClientSession,
 ) {
@@ -221,7 +287,7 @@ async function reconcileStalePendingSubscription(
 }
 
 async function normalizeLegacyStarterWallet(
-  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
   billing: HydratedDocument<IUserBilling>,
   session?: ClientSession,
 ) {
@@ -266,8 +332,123 @@ async function normalizeLegacyStarterWallet(
   return billing;
 }
 
+async function reconcileDuplicateStarterWallet(
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
+  billing: HydratedDocument<IUserBilling>,
+  session?: ClientSession,
+) {
+  const looksLikeDuplicateStarterGrant =
+    !billing.firstSuccessfulPurchaseAt &&
+    billing.subscriptionStatus === "inactive" &&
+    billing.availableCredits === STARTER_GRANT_CREDITS * 2 &&
+    billing.heldCredits === 0 &&
+    billing.lifetimePurchasedCredits === 0 &&
+    billing.lifetimeBonusCredits === STARTER_GRANT_CREDITS * 2 &&
+    billing.lifetimeSpentCredits === 0 &&
+    billing.lifetimeRefundedCredits === 0;
+
+  if (!looksLikeDuplicateStarterGrant) {
+    return billing;
+  }
+
+  billing.availableCredits = STARTER_GRANT_CREDITS;
+  billing.lifetimeBonusCredits = STARTER_GRANT_CREDITS;
+  await billing.save({ session });
+
+  await updateLegacyUserCredits(String(user._id), billing.availableCredits, session);
+
+  await appendCreditLedger(
+    {
+      userId: String(user._id),
+      deltaCredits: -STARTER_GRANT_CREDITS,
+      balanceAfter: billing.availableCredits,
+      reason: "manual_adjustment",
+      idempotencyKey: `starter-grant-dedupe:${user._id}`,
+      metadata: {
+        migration: "duplicate_starter_grant_reconciled",
+        normalizedAvailableCredits: STARTER_GRANT_CREDITS,
+      },
+    },
+    session,
+  );
+
+  return billing;
+}
+
+async function backfillExistingFreePlanWallet(
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
+  billing: HydratedDocument<IUserBilling>,
+  session?: ClientSession,
+) {
+  const createdAt = user.createdAt ? new Date(user.createdAt) : null;
+  const isExistingUser =
+    createdAt instanceof Date &&
+    !Number.isNaN(createdAt.getTime()) &&
+    createdAt.getTime() <= EXISTING_FREE_PLAN_CUTOFF.getTime();
+
+  const isEligibleForFreePlanBackfill =
+    isExistingUser &&
+    !billing.firstSuccessfulPurchaseAt &&
+    billing.subscriptionStatus === "inactive" &&
+    billing.heldCredits === 0 &&
+    billing.lifetimePurchasedCredits === 0 &&
+    billing.lifetimeSpentCredits === 0 &&
+    billing.lifetimeRefundedCredits === 0 &&
+    (billing.availableCredits < STARTER_GRANT_CREDITS ||
+      billing.lifetimeBonusCredits < STARTER_GRANT_CREDITS);
+
+  if (!isEligibleForFreePlanBackfill) {
+    return billing;
+  }
+
+  const previousAvailableCredits = billing.availableCredits;
+  billing.availableCredits = Math.max(billing.availableCredits, STARTER_GRANT_CREDITS);
+  billing.lifetimeBonusCredits = Math.max(
+    billing.lifetimeBonusCredits,
+    STARTER_GRANT_CREDITS,
+  );
+  await billing.save({ session });
+
+  await updateLegacyUserCredits(String(user._id), billing.availableCredits, session);
+
+  const deltaCredits = billing.availableCredits - previousAvailableCredits;
+  if (deltaCredits !== 0) {
+    await appendCreditLedger(
+      {
+        userId: String(user._id),
+        deltaCredits,
+        balanceAfter: billing.availableCredits,
+        reason: "manual_adjustment",
+        idempotencyKey: `existing-free-plan-backfill:${user._id}`,
+        metadata: {
+          migration: "existing_users_free_plan_300",
+          previousAvailableCredits,
+          normalizedAvailableCredits: billing.availableCredits,
+          cutoff: EXISTING_FREE_PLAN_CUTOFF.toISOString(),
+        },
+      },
+      session,
+    );
+  }
+
+  return billing;
+}
+
+function walletAlreadyReflectsStarterGrant(billing: HydratedDocument<IUserBilling>) {
+  return (
+    !billing.firstSuccessfulPurchaseAt &&
+    billing.subscriptionStatus === "inactive" &&
+    billing.heldCredits === 0 &&
+    billing.lifetimePurchasedCredits === 0 &&
+    billing.lifetimeSpentCredits === 0 &&
+    billing.lifetimeRefundedCredits === 0 &&
+    billing.availableCredits >= STARTER_GRANT_CREDITS &&
+    billing.lifetimeBonusCredits >= STARTER_GRANT_CREDITS
+  );
+}
+
 export async function resolveUserPricingContext(
-  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess">,
+  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
   request?: NextRequest | null,
   session?: ClientSession,
 ) {
@@ -389,6 +570,12 @@ export async function buildBillingSnapshot(user: IUser, request?: NextRequest | 
     billing.subscriptionRenewsAt || billing.subscriptionEndAt || null,
   );
   const isNewUser = !billing.firstSuccessfulPurchaseAt;
+  const subscriptionPresentation = buildSubscriptionPresentation({
+    status: billing.subscriptionStatus,
+    planCode: billing.subscriptionPlanCode || null,
+    renewsAt: billing.subscriptionRenewsAt || billing.subscriptionEndAt || null,
+    willCancelAt: billing.subscriptionWillCancelAt || null,
+  });
 
   return {
     wallet: {
@@ -402,7 +589,10 @@ export async function buildBillingSnapshot(user: IUser, request?: NextRequest | 
     },
     subscription: {
       planCode: billing.subscriptionPlanCode || null,
+      planName: subscriptionPresentation.planName,
       status: billing.subscriptionStatus,
+      statusLabel: subscriptionPresentation.statusLabel,
+      description: subscriptionPresentation.description,
       startedAt: billing.subscriptionStartAt?.toISOString() || null,
       endsAt: billing.subscriptionEndAt?.toISOString() || null,
       renewsAt: billing.subscriptionRenewsAt?.toISOString() || null,
@@ -1148,7 +1338,7 @@ export async function createRefundRecord(input: {
 }
 
 export async function ensureStarterGrant(input: {
-  user: Pick<IUser, "_id" | "email" | "creditsRemaining" | "earlyAccess">;
+  user: Pick<IUser, "_id" | "email" | "creditsRemaining" | "earlyAccess" | "createdAt">;
   source?: string | null;
   googleSub?: string | null;
   ipPrefix?: string | null;
@@ -1249,27 +1439,36 @@ export async function ensureStarterGrant(input: {
 
     if (status === "granted" && isPluginSource) {
       const billing = await ensureUserBilling(input.user, session);
-      billing.availableCredits += STARTER_GRANT_CREDITS;
-      billing.lifetimeBonusCredits += STARTER_GRANT_CREDITS;
-      await billing.save({ session });
+      const alreadyFunded = walletAlreadyReflectsStarterGrant(billing);
 
-      await updateLegacyUserCredits(String(input.user._id), billing.availableCredits, session);
+      if (!alreadyFunded) {
+        billing.availableCredits += STARTER_GRANT_CREDITS;
+        billing.lifetimeBonusCredits += STARTER_GRANT_CREDITS;
+        await billing.save({ session });
 
-      await appendCreditLedger(
-        {
-          userId: String(input.user._id),
-          deltaCredits: STARTER_GRANT_CREDITS,
-          balanceAfter: billing.availableCredits,
-          reason: "starter_grant",
-          idempotencyKey: `starter-grant:${input.user._id}`,
-          metadata: {
-            source: input.source || null,
-            riskScore,
-            decisionReason: grant.decisionReason,
+        await updateLegacyUserCredits(String(input.user._id), billing.availableCredits, session);
+
+        await appendCreditLedger(
+          {
+            userId: String(input.user._id),
+            deltaCredits: STARTER_GRANT_CREDITS,
+            balanceAfter: billing.availableCredits,
+            reason: "starter_grant",
+            idempotencyKey: `starter-grant:${input.user._id}`,
+            metadata: {
+              source: input.source || null,
+              riskScore,
+              decisionReason: grant.decisionReason,
+            },
           },
-        },
-        session,
-      );
+          session,
+        );
+      } else {
+        grant.notes = {
+          ...(grant.notes || {}),
+          walletAlreadyFunded: true,
+        };
+      }
     }
 
     await grant.save({ session });

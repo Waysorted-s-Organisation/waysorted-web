@@ -32,6 +32,7 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
     remainingCredits,
   );
   const hasTopUpHistory = purchasedCredits > 0;
+  const isFreePlan = !activePlanCode && !hasTopUpHistory;
 
   const formatDate = (value?: string | Date | null) =>
     value
@@ -115,7 +116,7 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
   return (
     <section className="max-w-3xl rounded-lg border border-secondary-db-5 bg-white">
       <header className="px-5 py-3 border-b border-secondary-db-5">
-        <h2 className="text-base font-medium text-secondary-db-100">Subscription</h2>
+        <h2 className="text-base font-medium text-secondary-db-100">Subscription &amp; Plans</h2>
         <p className="text-sm text-secondary-db-80 font-medium">
           Stay on top of your plan and benefits.
         </p>
@@ -178,7 +179,7 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
               </Link>
             </div>
           </div>
-        ) : getPlanDisplayName() === "Free Plan" ? (
+        ) : isFreePlan ? (
           <div className="mt-5 flex flex-col space-y-4 rounded-md border border-blue-100 bg-primary-way-10 p-4">
             <div className="flex items-start gap-4">
               <Image
@@ -230,17 +231,19 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
                   : ""}
               </span>
             </div>
-            <div className="block space-x-1">
-              <span className="text-sm text-secondary-db-100 font-medium">Status:</span>
-              <span className="text-sm font-medium text-secondary-db-80">{statusDisplay}</span>
-            </div>
+            {!isFreePlan && (
+              <div className="block space-x-1">
+                <span className="text-sm text-secondary-db-100 font-medium">Status:</span>
+                <span className="text-sm font-medium text-secondary-db-80">{statusDisplay}</span>
+              </div>
+            )}
             <div className="block space-x-1">
               <span className="text-sm text-secondary-db-100 font-medium">Started On:</span>
               <span className="text-sm font-regular text-secondary-db-80">{startedDisplay}</span>
             </div>
           </div>
 
-          {billingDetails && (
+          {!isFreePlan && billingDetails && (
             <div className="rounded-lg bg-primary-way-5 p-4 flex items-center justify-between">
               {/* LHS: Info */}
               <div className="flex flex-col gap-4">

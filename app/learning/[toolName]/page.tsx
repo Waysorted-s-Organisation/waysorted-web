@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import dbConnect from '@/lib/toolsdb'
 import Tool, { ITool } from '@/models/tool'
 import ClientToolPage from './ClientToolPage'
+import { applyToolIconOverride } from '@/lib/tool-icon-overrides'
 
 // Ensure Tool model is registered
 import '@/models/tool'
@@ -20,12 +21,12 @@ async function getTool(slug: string): Promise<ITool | null> {
     if (!tool) return null
 
     // Serialize _id
-    return {
+    return applyToolIconOverride({
         ...tool,
         _id: tool._id.toString(),
         createdAt: tool.createdAt,
         updatedAt: tool.updatedAt
-    } as unknown as ITool
+    } as unknown as ITool)
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
