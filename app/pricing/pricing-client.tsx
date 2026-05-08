@@ -50,42 +50,51 @@ const subscriberTopupCodes = ["topup_sub_50", "topup_sub_100", "topup_sub_120"];
 const planUi = [
   {
     planName: "Discover",
-    description: "Best for new users getting started with the Waysorted ecosystem.",
-    ctaLabel: "Build Plan",
-    discountTag: "25% off",
+    description: "Best for individuals getting started with Waysorted.",
+    ctaLabel: "Select Plan",
+    discountTag: "25% OFF",
+    originalAmountLabel: "₹199",
+    monthlyCreditsLabel: "250 credits/month",
+    bonusCreditsLabel: "Plus 25 bonus credits for new users",
     iconSrc: "/pricingIcons/Discover.png",
     features: [
-      "Backend-authoritative subscription status",
-      "Full credit block granted after payment sync",
-      "Customisable presets included while active",
-      "Credits tracked through ledger entries",
+      "Includes all core Waysorted features",
+      "Regular updates with ongoing support",
+      "Lowest cost for credit top-ups",
+      "Credits never expires, no monthly resets.",
     ],
   },
   {
     planName: "Core",
-    description: "Perfect for agencies who need automation and scaling workflows.",
+    description: "Perfect for designers who need full access to tools, credits & ongoing updates.",
     ctaLabel: "Get Started",
-    discountTag: "13% off",
+    discountTag: "13% OFF",
+    originalAmountLabel: "₹399",
+    monthlyCreditsLabel: "500 credits/month",
+    bonusCreditsLabel: "Plus 50 bonus credits for new users",
     iconSrc: "/pricingIcons/Core.png",
     featured: true,
     features: [
-      "Backend-authoritative subscription status",
-      "Full credit block granted after payment sync",
-      "Customisable presets included while active",
-      "Credits tracked through ledger entries",
+      "Includes all core Waysorted features",
+      "Regular updates with ongoing support",
+      "Lowest cost for credit top-ups",
+      "Credits never expires, no monthly resets.",
     ],
   },
   {
     planName: "Pro",
-    description: "For high-growth teams and enterprises with advanced needs.",
-    ctaLabel: "Build Plan",
-    discountTag: "6% off",
+    description: "Designed for studios and enterprises with more support & credits.",
+    ctaLabel: "Select Plan",
+    discountTag: "6% OFF",
+    originalAmountLabel: "₹799",
+    monthlyCreditsLabel: "1200 credits/month",
+    bonusCreditsLabel: "Plus 100 bonus credits for new users",
     iconSrc: "/pricingIcons/Pro.png",
     features: [
-      "Backend-authoritative subscription status",
-      "Full credit block granted after payment sync",
-      "Customisable presets included while active",
-      "Credits tracked through ledger entries",
+      "Includes all core Waysorted features",
+      "Regular updates with ongoing support",
+      "Lowest cost for credit top-ups",
+      "Credits never expires, no monthly resets.",
     ],
   },
 ];
@@ -103,6 +112,8 @@ function formatCurrency(amountSubunits: number, currency: string) {
   return new Intl.NumberFormat(undefined, {
     style: "currency",
     currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
   }).format(amountSubunits / minorUnitMultiplier(currency));
 }
 
@@ -269,7 +280,7 @@ export default function PricingClient({
         <div className="mx-auto w-full max-w-[1110px]">
           <div className="mb-8 text-center">
             <h1 className="text-[42px] font-semibold leading-[1.1] tracking-[-0.02em] text-secondary-db-100">
-              Choose the perfect plan for your workflow
+              Perfect plans for your workflow
             </h1>
 
             <div className="mx-auto mt-6 flex items-center justify-center gap-3 text-[16px]">
@@ -323,16 +334,21 @@ export default function PricingClient({
                   key={product.code}
                   planName={ui.planName}
                   description={ui.description}
+                  originalAmountLabel={billingCycle === "monthly" ? ui.originalAmountLabel : undefined}
                   amountLabel={formatCurrency(product.amountPaise, product.currency)}
                   cycleLabel={billingCycle}
-                  creditsLabel={`${(product.creditsGranted + product.bonusCredits).toLocaleString()} credits/${billingCycle}`}
+                  creditsLabel={
+                    billingCycle === "monthly"
+                      ? ui.monthlyCreditsLabel
+                      : `${(product.creditsGranted + product.bonusCredits).toLocaleString()} credits/year`
+                  }
                   ctaLabel={ui.ctaLabel}
                   discountTag={ui.discountTag}
                   iconSrc={ui.iconSrc}
                   featured={ui.featured}
                   features={ui.features}
                   onSelect={() => goToCheckout(product.code)}
-                  bonusCreditsLabel={`Plus ${[25, 75, 100][index] || 25} bonus credits for new users`}
+                  bonusCreditsLabel={ui.bonusCreditsLabel}
                 />
               );
             })}
@@ -346,21 +362,21 @@ export default function PricingClient({
                   <span>Pay as you go</span>
                 </p>
                 <p className="mt-3 max-w-[430px] text-[13px] leading-[1.45] text-[#687184]">
-                  Top up credits when needed. The website backend chooses the eligible top-up product and Razorpay
-                  amount; the browser never sends a trusted balance or price.
+                  Spend less to grow more with Pay as you go top up credit model, pay only when you need to, credits
+                  never expire, reset when credits get low!
                 </p>
                 <ul className="mt-6 space-y-3 text-[13px] text-[#2F3749]">
                   <li className="flex items-start gap-2">
                     <Image src="/icons/check.svg" alt="" width={16} height={16} className="mt-[3px] h-4 w-4" />
-                    <span>New users receive a one-time 300-credit starter grant after auth checks.</span>
+                    <span>Includes all core Waysorted features</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Image src="/icons/check.svg" alt="" width={16} height={16} className="mt-[3px] h-4 w-4" />
-                    <span>Duplicate payments and retries are guarded by idempotency and webhooks.</span>
+                    <span>Regular updates with ongoing support</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <Image src="/icons/check.svg" alt="" width={16} height={16} className="mt-[3px] h-4 w-4" />
-                    <span>Subscribed users see subscriber top-up economics at checkout.</span>
+                    <span>Credits never expires, reset when needed</span>
                   </li>
                 </ul>
               </div>
