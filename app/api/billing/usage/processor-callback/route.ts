@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    if (status === "completed" && body.compensateCommitted === true) {
+    if (status === "completed") {
       const committedReservation = await commitReservation({
         userId: verifiedToken.payload.userId,
         reservationId,

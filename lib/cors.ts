@@ -5,8 +5,12 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "https://waysorted.com",
   "https://www.figma.com",
   "https://figma.com",
+  "https://d94k870h57ivk.cloudfront.net",
+  "https://swipefolio.waysorted.com",
   "http://localhost:3000",
+  "http://localhost:5173",
   "http://127.0.0.1:3000",
+  "http://127.0.0.1:5173",
   "null",
 ];
 

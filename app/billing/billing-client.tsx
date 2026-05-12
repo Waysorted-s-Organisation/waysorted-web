@@ -254,9 +254,31 @@ export default function BillingClient({
     });
   }, [refreshCurrentSubscription, snapshot]);
 
+  const waitForWalletUpdate = useCallback(async (baselineCredits: number | null) => {
+    for (let index = 0; index < 6; index += 1) {
+      await new Promise((resolve) => setTimeout(resolve, index === 0 ? 600 : 1000));
+      const latestSnapshot = await refreshSnapshot();
+      if (
+        baselineCredits === null ||
+        latestSnapshot.billing.wallet.availableCredits !== baselineCredits
+      ) {
+        return { latestSnapshot, settled: true };
+      }
+    }
+
+    const latestSnapshot = await refreshSnapshot();
+    return {
+      latestSnapshot,
+      settled:
+        baselineCredits === null ||
+        latestSnapshot.billing.wallet.availableCredits !== baselineCredits,
+    };
+  }, [refreshSnapshot]);
+
   const handleOrderCheckout = useCallback(async (product: CatalogProduct) => {
     setBusyCode(product.code);
     setStatus(`Creating order for ${product.name}...`);
+    const baselineCredits = snapshot?.billing.wallet.availableCredits ?? null;
 
     try {
       const response = await fetch("/api/billing/checkout/order", {
@@ -312,22 +334,39 @@ export default function BillingClient({
           },
         },
         handler: async (checkoutResponse) => {
-          setStatus("Payment received. Verifying signature and waiting for webhook sync...");
-          await fetch("/api/billing/checkout/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              bridgeToken,
-              purchaseId: payload.purchaseId,
-              orderId: payload.orderId,
-              ...checkoutResponse,
-            }),
-          });
+          try {
+            setStatus("Payment received. Verifying signature and waiting for webhook sync...");
+            const verifyResponse = await fetch("/api/billing/checkout/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                bridgeToken,
+                purchaseId: payload.purchaseId,
+                orderId: payload.orderId,
+                ...checkoutResponse,
+              }),
+            });
 
-          await new Promise((resolve) => setTimeout(resolve, 1200));
-          await refreshSnapshot();
-          setStatus("Payment submitted. Credits will only finalize after webhook confirmation.");
-          setBusyCode(null);
+            const verifyPayload = (await verifyResponse.json().catch(() => ({}))) as {
+              verified?: boolean;
+              error?: string;
+            };
+
+            if (!verifyResponse.ok || verifyPayload.verified !== true) {
+              throw new Error(verifyPayload.error || "Unable to verify payment.");
+            }
+
+            const { settled } = await waitForWalletUpdate(baselineCredits);
+            setStatus(
+              settled
+                ? "Payment confirmed. Credits updated."
+                : "Payment verified. Credits will finalize after webhook confirmation.",
+            );
+          } catch (error) {
+            setStatus(error instanceof Error ? error.message : "Payment verification failed.");
+          } finally {
+            setBusyCode(null);
+          }
         },
       });
 
@@ -336,7 +375,13 @@ export default function BillingClient({
       setStatus(error instanceof Error ? error.message : "Checkout failed.");
       setBusyCode(null);
     }
-  }, [bridgeToken, refreshSnapshot, snapshot?.email, snapshot?.name]);
+  }, [
+    bridgeToken,
+    snapshot?.billing.wallet.availableCredits,
+    snapshot?.email,
+    snapshot?.name,
+    waitForWalletUpdate,
+  ]);
 
   const handleSubscriptionCheckout = useCallback(async (product: CatalogProduct) => {
     setBusyCode(product.code);
@@ -390,19 +435,30 @@ export default function BillingClient({
           },
         },
         handler: async () => {
-          setStatus("Subscription payment submitted. Waiting for Razorpay webhook sync...");
+          try {
+            setStatus("Subscription payment submitted. Waiting for Razorpay webhook sync...");
+            let settled = false;
 
-          for (let index = 0; index < 6; index += 1) {
-            await new Promise((resolve) => setTimeout(resolve, 1500));
-            await refreshCurrentSubscription();
-            const latestSnapshot = await refreshSnapshot();
-            if (latestSnapshot.billing.subscription.status !== "payment_pending") {
-              break;
+            for (let index = 0; index < 6; index += 1) {
+              await new Promise((resolve) => setTimeout(resolve, 1000));
+              await refreshCurrentSubscription();
+              const latestSnapshot = await refreshSnapshot();
+              if (latestSnapshot.billing.subscription.status !== "payment_pending") {
+                settled = true;
+                break;
+              }
             }
-          }
 
-          setBusyCode(null);
-          setStatus("Subscription submitted. Final entitlement remains webhook-driven.");
+            setStatus(
+              settled
+                ? "Subscription confirmed. Entitlements updated."
+                : "Subscription submitted. Final entitlement remains webhook-driven.",
+            );
+          } catch (error) {
+            setStatus(error instanceof Error ? error.message : "Unable to refresh subscription.");
+          } finally {
+            setBusyCode(null);
+          }
         },
       });
 
