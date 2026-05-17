@@ -1,13 +1,31 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, ChevronRight, Frown, Meh, Smile, User } from "lucide-react";
+import { fetchBlogs } from "@/lib/blogsClient";
+import type { BlogPostCard } from "@/types/blog";
 
 export default function BlogsContent() {
   const [activeTab, setActiveTab] = useState("All");
   const [selectedRating, setSelectedRating] = useState<number | null>(4);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [feedbackSent, setFeedbackSent] = useState(false);
+  const [isSendingFeedback, setIsSendingFeedback] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [blogPosts, setBlogPosts] = useState<BlogPostCard[]>([]);
+  const [tabs, setTabs] = useState([
+    "All",
+    "Design Best Practices",
+    "Tips and Tutorials",
+    "Way Mavens",
+    "Why Waysorted",
+    "Updates",
+  ]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const ratings = [
     { id: 1, icon: <Frown className="w-6 h-6" /> },
@@ -17,21 +35,58 @@ export default function BlogsContent() {
     { id: 5, icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/></svg> }
   ];
 
-  const tabs = [
-    "All",
-    "Design Best Practices",
-    "Tips and Tutorials",
-    "Way Mavens",
-    "Why Waysorted",
-    "Updates",
-  ];
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setDebouncedSearchTerm(searchTerm.trim()), 250);
+    return () => window.clearTimeout(timeout);
+  }, [searchTerm]);
 
-  const blogPosts = Array(9).fill({
-    category: "Design Best Practices",
-    readTime: "4 min read",
-    title: "Lorem ipsum dolor sit amet, cons ectetur adipiscing elit.",
-    image: "/images/og-image.png", // Using og-image as placeholder
-  });
+  const loadBlogs = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchBlogs({
+        category: activeTab,
+        q: debouncedSearchTerm,
+        limit: 12,
+      });
+      setBlogPosts(data.posts);
+      setTabs(["All", ...data.categories.filter((category) => category !== "All")]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load blogs");
+      setBlogPosts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [activeTab, debouncedSearchTerm]);
+
+  useEffect(() => {
+    loadBlogs();
+  }, [loadBlogs]);
+
+  const submitFeedback = async () => {
+    if (!selectedRating) return;
+
+    setIsSendingFeedback(true);
+    try {
+      const res = await fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ rating: selectedRating, comment: feedbackComment }),
+      });
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body?.error || "Failed to submit feedback");
+      }
+
+      setFeedbackSent(true);
+      setFeedbackComment("");
+    } catch (err) {
+      console.error("Failed to submit blog feedback", err);
+    } finally {
+      setIsSendingFeedback(false);
+    }
+  };
 
   return (
     <div className="flex flex-col w-full">
@@ -83,20 +138,41 @@ export default function BlogsContent() {
           <input
             type="text"
             placeholder="Search"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
             className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm w-full lg:w-[240px] focus:outline-none focus:ring-1 focus:ring-gray-300 focus:bg-white transition-colors"
           />
         </div>
       </div>
 
       {/* Grid of Blog Posts */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 mb-20">
-        {blogPosts.map((post, idx) => (
-          <Link href="/blogs/how-to-check-color-contrast" key={idx} className="group cursor-pointer flex flex-col group">
+      {loading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 mb-20">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <div key={idx} className="flex flex-col animate-pulse">
+              <div className="w-full aspect-[1.6/1] rounded-2xl bg-gray-100 mb-5" />
+              <div className="h-4 bg-gray-100 rounded w-2/3 mb-3" />
+              <div className="h-6 bg-gray-100 rounded w-full" />
+            </div>
+          ))}
+        </div>
+      ) : error ? (
+        <div className="mb-20 rounded-xl bg-gray-50 p-8 text-center text-sm text-gray-600">
+          {error}
+        </div>
+      ) : blogPosts.length === 0 ? (
+        <div className="mb-20 rounded-xl bg-gray-50 p-8 text-center text-sm text-gray-600">
+          No blog posts found.
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 mb-20">
+          {blogPosts.map((post) => (
+          <Link href={`/blogs/${post.slug}`} key={post.id} className="group cursor-pointer flex flex-col">
             {/* Image Container */}
             <div className="relative w-full aspect-[1.6/1] rounded-2xl overflow-hidden bg-blue-500 mb-5 shadow-sm">
               <Image
-                src={post.image}
-                alt={post.title}
+                src={post.coverImage}
+                alt={post.coverImageAlt || post.title}
                 fill
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
@@ -118,8 +194,9 @@ export default function BlogsContent() {
               {post.title}
             </h3>
           </Link>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
 
       {/* Dotted Separator */}
       <div className="w-full border-t border-dashed border-gray-300 mb-16"></div>
@@ -149,6 +226,9 @@ export default function BlogsContent() {
         <div className="w-full relative mb-6">
           <textarea
             placeholder="[Optional] If you have additional comments..."
+            value={feedbackComment}
+            onChange={(event) => setFeedbackComment(event.target.value)}
+            maxLength={500}
             className="w-full bg-gray-50 border-none rounded-xl p-4 min-h-[100px] text-sm text-gray-700 resize-none focus:ring-1 focus:ring-gray-300 focus:outline-none"
           ></textarea>
         </div>
@@ -160,8 +240,12 @@ export default function BlogsContent() {
             </div>
             <span>Anonymous</span>
           </div>
-          <button className="bg-gray-900 hover:bg-gray-800 text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors">
-            Send Feedback
+          <button
+            onClick={submitFeedback}
+            disabled={!selectedRating || isSendingFeedback || feedbackSent}
+            className="bg-gray-900 hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-sm font-medium px-6 py-2.5 rounded-lg transition-colors"
+          >
+            {feedbackSent ? "Feedback Sent" : isSendingFeedback ? "Sending..." : "Send Feedback"}
           </button>
         </div>
       </div>

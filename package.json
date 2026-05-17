@@ -9,6 +9,7 @@
     "lint": "next lint",
     "backup": "tsx scripts/backup-db.ts",
     "seed:slides": "tsx scripts/seed-slides.ts",
+    "seed:blogs": "tsx scripts/seed-blogs.ts",
     "make-admin": "tsx scripts/make-admin.ts"
   },
   "dependencies": {
@@ -68,6 +69,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.4.6",
     "tailwindcss": "^4",
+    "tsx": "^4.22.1",
     "typescript": "5.9.2"
   }
 }

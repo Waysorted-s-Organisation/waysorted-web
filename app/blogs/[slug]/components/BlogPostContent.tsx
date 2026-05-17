@@ -3,27 +3,121 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { ChevronRight, Link2, Instagram, Linkedin, Twitter } from "lucide-react";
+import { fetchBlogBySlug } from "@/lib/blogsClient";
+import type { BlogContentBlock, BlogPostDetail } from "@/types/blog";
 
-const tocItems = [
-  { id: 0, title: "Lorem ipsum", sectionId: "section-0" },
-  { id: 1, title: "Lorem ipsum", sectionId: "section-1" },
-  { id: 2, title: "Lorem ipsum", sectionId: "section-2" },
-  { id: 3, title: "Lorem ipsum", sectionId: "section-3" },
-  { id: 4, title: "Lorem ipsum", sectionId: "section-4" },
-];
+function formatDate(value?: string) {
+  if (!value) return "";
+  return new Intl.DateTimeFormat("en", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(value));
+}
+
+function BlogBlock({ block }: { block: BlogContentBlock }) {
+  if (block.type === "heading") {
+    const HeadingTag = block.level === 3 ? "h3" : "h2";
+    return (
+      <HeadingTag
+        id={block.anchor}
+        className={
+          block.level === 3
+            ? "text-2xl font-bold text-gray-900 mb-4 leading-tight tracking-tight mt-8 scroll-mt-32"
+            : "text-[32px] font-bold text-gray-900 mb-6 leading-tight tracking-tight mt-2 scroll-mt-32"
+        }
+      >
+        {block.text}
+      </HeadingTag>
+    );
+  }
+
+  if (block.type === "paragraph") {
+    return <p>{block.text}</p>;
+  }
+
+  if (block.type === "image") {
+    return (
+      <figure className="my-8">
+        <div className="relative w-full aspect-[1.8/1] overflow-hidden rounded-2xl bg-gray-100">
+          <Image src={block.src} alt={block.alt} fill className="object-cover" />
+        </div>
+        {block.caption && (
+          <figcaption className="mt-3 text-sm text-gray-500 text-center">{block.caption}</figcaption>
+        )}
+      </figure>
+    );
+  }
+
+  if (block.type === "quote") {
+    return (
+      <blockquote className="border-l-4 border-blue-600 pl-5 text-gray-900 italic">
+        <p>{block.text}</p>
+        {block.attribution && <cite className="mt-2 block text-sm text-gray-500 not-italic">{block.attribution}</cite>}
+      </blockquote>
+    );
+  }
+
+  if (block.type === "list") {
+    const ListTag = block.style === "numbered" ? "ol" : "ul";
+    return (
+      <ListTag className={block.style === "numbered" ? "list-decimal pl-6 space-y-2" : "list-disc pl-6 space-y-2"}>
+        {block.items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ListTag>
+    );
+  }
+
+  return null;
+}
 
 export default function BlogPostContent() {
+  const params = useParams<{ slug: string }>();
+  const slug = params?.slug;
   const [activeToc, setActiveToc] = useState(0);
+  const [post, setPost] = useState<BlogPostDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!slug) return;
+
+    let mounted = true;
+    setLoading(true);
+    setError(null);
+
+    fetchBlogBySlug(slug)
+      .then((data) => {
+        if (mounted) setPost(data);
+      })
+      .catch((err) => {
+        if (mounted) {
+          setError(err instanceof Error ? err.message : "Failed to load blog");
+          setPost(null);
+        }
+      })
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+
+    return () => {
+      mounted = false;
+    };
+  }, [slug]);
+
+  useEffect(() => {
+    if (!post?.tableOfContents.length) return;
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            const index = parseInt(entry.target.id.split('-')[1]);
-            if (!isNaN(index)) {
-              setActiveToc(index);
+            const index = post.tableOfContents.findIndex((item) => item.sectionId === entry.target.id);
+            if (index >= 0) {
+              setActiveToc(post.tableOfContents[index].id);
             }
           }
         });
@@ -34,13 +128,42 @@ export default function BlogPostContent() {
       }
     );
 
-    tocItems.forEach((item) => {
+    post.tableOfContents.forEach((item) => {
       const element = document.getElementById(item.sectionId);
       if (element) observer.observe(element);
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [post]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col w-full max-w-[1000px] mx-auto mt-4 animate-pulse">
+        <div className="h-4 bg-gray-100 rounded w-1/3 mb-8" />
+        <div className="h-5 bg-gray-100 rounded w-1/2 mb-6" />
+        <div className="h-12 bg-gray-100 rounded w-5/6 mb-8" />
+        <div className="w-full aspect-[2/1] bg-gray-100 rounded-[20px] mb-12" />
+        <div className="space-y-4">
+          <div className="h-8 bg-gray-100 rounded w-2/3" />
+          <div className="h-4 bg-gray-100 rounded w-full" />
+          <div className="h-4 bg-gray-100 rounded w-11/12" />
+          <div className="h-4 bg-gray-100 rounded w-10/12" />
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !post) {
+    return (
+      <div className="flex flex-col w-full max-w-[1000px] mx-auto mt-4">
+        <div className="rounded-xl bg-gray-50 p-8 text-center text-sm text-gray-600">
+          {error || "Blog post not found."}
+        </div>
+      </div>
+    );
+  }
+
+  const publishedDate = formatDate(post.publishedAt || post.createdAt);
 
   return (
     <div className="flex flex-col w-full max-w-[1000px] mx-auto mt-4">
@@ -52,12 +175,12 @@ export default function BlogPostContent() {
         <ChevronRight className="w-4 h-4 mx-2" />
         <Link
           href="/blogs"
-          className="text-gray-900 hover:text-blue-600 transition-colors border-b-2 border-blue-600 pb-0.5 font-semibold"
+          className="hover:text-gray-900 transition-colors"
         >
           Blogs
         </Link>
         <ChevronRight className="w-4 h-4 mx-2" />
-        <span className="text-gray-900 font-semibold">Design Best Practices</span>
+        <span className="text-gray-900 border-b-2 border-blue-600 pb-0.5 font-semibold">{post.category}</span>
       </div>
 
       {/* Author and Share Icons */}
@@ -67,15 +190,19 @@ export default function BlogPostContent() {
             {/* Minimal White W */}
             <span className="text-white text-[10px] font-bold">W</span>
           </div>
-          <span>Waysorted</span>
+          <span>{post.authorName}</span>
           <span className="mx-2 text-gray-300">•</span>
-          <span>29 Jan , 2025</span>
+          <span>{publishedDate}</span>
           <span className="mx-2 text-gray-300">•</span>
-          <span>4 min read</span>
+          <span>{post.readTime}</span>
         </div>
 
         <div className="flex items-center space-x-2">
-          <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+          <button
+            onClick={() => navigator.clipboard?.writeText(window.location.href)}
+            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+            aria-label="Copy blog link"
+          >
             <Link2 className="w-4 h-4" />
           </button>
           <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
@@ -92,14 +219,14 @@ export default function BlogPostContent() {
 
       {/* Title */}
       <h1 className="text-4xl md:text-[44px] font-bold text-gray-900 leading-[1.2] tracking-tight mb-8">
-        How to Check Color Contrast inside Figma in 2026 (WCAG & APCA Explained)
+        {post.title}
       </h1>
 
       {/* Hero Image */}
       <div className="relative w-full aspect-[2/1] bg-blue-500 rounded-[20px] overflow-hidden mb-12 shadow-sm">
         <Image
-          src="/images/og-image.png"
-          alt="How to check color contrast inside figma"
+          src={post.coverImage}
+          alt={post.coverImageAlt || post.title}
           fill
           className="object-cover"
         />
@@ -109,64 +236,16 @@ export default function BlogPostContent() {
       <div className="flex flex-col lg:flex-row gap-12 mb-20 relative">
         {/* Left Column (Article Text) */}
         <article className="lg:w-3/4 text-[17px] text-gray-700 leading-relaxed font-normal space-y-6">
-          <h2 id="section-0" className="text-[32px] font-bold text-gray-900 mb-6 leading-tight tracking-tight mt-2 scroll-mt-32">
-            Suspendisse malesuada nisl uu
-          </h2>
-          
-          <p id="section-1" className="scroll-mt-32">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc euismod, ante congue vehicula 
-            lacinia, diam quam imperdiet turpis, sed vulputate ipsum erat non nulla. Donec finibus, quam 
-            sed hendrerit euismod, ipsum libero ullamcorper purus, vitae sollicitudin felis felis non diam. Ut 
-            aliquam in magna quis dignissim. Pellentesque nec varius sapien. Nulla dui erat, cursus ut odio 
-            et, luctus scelerisque tellus. Fusce finibus mauris id gravida pulvinar. Nullam lacinia nibh sit 
-            amet quam aliquet maximus. Suspendisse sit amet urna et velit vestibulum fringilla. Integer felis 
-            arcu, condimentum non interdum eget, lacinia ut lacus. Integer facilisis, lacus id porttitor lacinia, 
-            urna nibh pharetra dolor, et tincidunt quam lorem et lacus. Nullam scelerisque, elit a aliquet 
-            fringilla, enim leo lacinia libero, ut molestie magna neque ac odio. Duis tempus augue nec elit 
-            consectetur, non ullamcorper enim euismod. Fusce iaculis massa eu tempus posuere. Mauris 
-            sollicitudin vel nisi at tempor.
-          </p>
-
-          <p id="section-2" className="scroll-mt-32">
-            Proin finibus vel sem eu varius. Nulla rutrum justo id elementum commodo. Pellentesque 
-            tempus lectus vel leo auctor feugiat. Integer eu quam a quam posuere suscipit et eu arcu. 
-            Integer ornare ex volutpat purus pellentesque imperdiet. Class aptent taciti sociosqu ad litora 
-            torquent per conubia nostra, per inceptos himenaeos. Mauris lorem mi, vehicula sit amet 
-            imperdiet vel, commodo et leo. Morbi a est malesuada, consectetur odio ac, rutrum nisi. 
-            Phasellus ut fermentum turpis.
-          </p>
-
-          <p id="section-3" className="scroll-mt-32">
-            Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec 
-            ac elit luctus, fringilla libero ut, finibus purus. Vivamus efficitur, nibh et egestas tincidunt, diam 
-            arcu egestas turpis, quis cursus lacus dolor non sem. Donec pharetra turpis vel est tempor, id 
-            porttitor enim volutpat. Aenean vitae libero eget urna efficitur venenatis. Class aptent taciti 
-            sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.
-          </p>
-
-          <p id="section-4" className="scroll-mt-32">
-            Integer scelerisque sagittis nulla. Vivamus porttitor quis mauris venenatis vestibulum. 
-            Vestibulum augue turpis, gravida ut facilisis quis, bibendum quis augue. Nunc luctus fringilla 
-            aliquet. Vivamus mollis sapien et massa blandit, nec sagittis justo euismod. Nunc porttitor risus 
-            metus, eget varius sem elementum in. Mauris at gravida enim. Nunc purus lectus, molestie sit 
-            amet fringilla ultrices, dignissim non tortor. <br/>
-            Aenean in enim eget risus efficitur convallis. Nulla eleifend, dolor quis aliquet consectetur, eros 
-            nisi convallis dolor, at laoreet orci tellus ac ipsum.
-          </p>
-
-          <p id="section-5" className="scroll-mt-32">
-            Etiam blandit elit vitae dui euismod mollis. Pellentesque quis dolor quis arcu eleifend interdum 
-            eget eu ipsum. Sed mi massa, congue id odio ac, dapibus efficitur erat. Praesent vestibulum 
-            ipsum vitae molestie pulvinar. Curabitur pellentesque ex id elit dignissim, et tempor velit 
-            tempor. Donec finibus auctor lacus, eu aliquet sapien rutrum at. Sed nec blandit lectus, ac 
-            maximus massa.
-          </p>
+          {post.contentBlocks.map((block, index) => (
+            <BlogBlock key={`${block.type}-${index}`} block={block} />
+          ))}
         </article>
 
         {/* Right Column (Sticky TOC) */}
+        {post.tableOfContents.length > 0 && (
         <aside className="lg:w-1/4 hidden lg:block">
           <div className="sticky top-24 border-l-2 border-gray-100 pl-0 ml-4 py-2 flex flex-col space-y-1">
-            {tocItems.map((item) => (
+            {post.tableOfContents.map((item) => (
               <div 
                 key={item.id}
                 onClick={() => {
@@ -184,6 +263,7 @@ export default function BlogPostContent() {
             ))}
           </div>
         </aside>
+        )}
       </div>
     </div>
   );
