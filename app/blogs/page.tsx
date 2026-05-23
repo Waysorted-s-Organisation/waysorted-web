@@ -1,19 +1,48 @@
-"use client";
-import { useBanner } from "@/context/BannerContext";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import BlogsContent from "./components/BlogsContent";
+import type { Metadata } from "next";
+import BlogsPageClient from "./BlogsPageClient";
+
+const title = "Waysorted Blogs - Figma Design Workflow, Accessibility, and Product Updates";
+const description =
+  "Read Waysorted blogs about Figma workflows, design accessibility, color systems, productivity tools, and product updates for modern designers.";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: {
+    canonical: "/blogs",
+  },
+  keywords: [
+    "Waysorted blog",
+    "Figma design workflow",
+    "Figma plugins",
+    "design accessibility",
+    "color contrast",
+    "design productivity",
+    "UI UX design tools",
+  ],
+  openGraph: {
+    title,
+    description,
+    url: "/blogs",
+    siteName: "Waysorted",
+    type: "website",
+    images: [
+      {
+        url: "/images/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Waysorted blog for designers",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: ["/images/og-image.png"],
+  },
+};
 
 export default function BlogsPage() {
-  const { showBanner, setShowBanner } = useBanner();
-  
-  return (
-    <main className={`min-h-screen bg-white transition-all duration-300 ${showBanner ? "pt-24" : "pt-16"}`}>
-      <Header showBanner={showBanner} setShowBanner={setShowBanner} />
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 max-w-7xl">
-        <BlogsContent />
-      </div>
-      <Footer />
-    </main>
-  );
+  return <BlogsPageClient />;
 }

@@ -1,19 +1,138 @@
-"use client";
-import { useBanner } from "@/context/BannerContext";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import BlogPostContent from "./components/BlogPostContent";
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import dbConnect from "@/lib/db";
+import BlogPost from "@/models/blogPost";
+import type { BlogContentBlock, BlogPostDetail } from "@/types/blog";
+import BlogPostPageClient from "./BlogPostPageClient";
 
-export default function BlogPostPage() {
-  const { showBanner, setShowBanner } = useBanner();
-  
+const siteUrl = "https://www.waysorted.com";
+
+type BlogPostPageProps = {
+  params: Promise<{ slug: string }>;
+};
+
+function absoluteUrl(value?: string) {
+  if (!value) return `${siteUrl}/images/og-image.png`;
+  if (value.startsWith("http://") || value.startsWith("https://")) return value;
+  return `${siteUrl}${value.startsWith("/") ? value : `/${value}`}`;
+}
+
+function blocksToText(blocks: BlogContentBlock[]) {
+  return blocks
+    .flatMap((block) => {
+      if (block.type === "heading" || block.type === "paragraph" || block.type === "quote") return [block.text];
+      if (block.type === "list") return block.items;
+      if (block.type === "image") return [block.caption || block.alt];
+      return [];
+    })
+    .filter(Boolean)
+    .join(" ");
+}
+
+async function getPublishedPost(slug: string): Promise<BlogPostDetail | null> {
+  await dbConnect();
+  const post = await BlogPost.findOne({ slug, status: "published", isDeleted: false });
+  return post ? post.toDetail() : null;
+}
+
+export async function generateMetadata({ params }: BlogPostPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = await getPublishedPost(slug);
+
+  if (!post) {
+    return {
+      title: "Blog Not Found",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const url = `/blogs/${post.slug}`;
+  const image = absoluteUrl(post.coverImage);
+  const publishedTime = post.publishedAt || post.createdAt;
+  const modifiedTime = post.updatedAt || publishedTime;
+
+  return {
+    title: post.title,
+    description: post.excerpt,
+    alternates: {
+      canonical: url,
+    },
+    keywords: post.tags,
+    authors: [{ name: post.authorName }],
+    category: post.category,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      url,
+      siteName: "Waysorted",
+      type: "article",
+      publishedTime,
+      modifiedTime,
+      authors: [post.authorName],
+      tags: post.tags,
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: post.coverImageAlt || post.title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [image],
+    },
+  };
+}
+
+export default async function BlogPostPage({ params }: BlogPostPageProps) {
+  const { slug } = await params;
+  const post = await getPublishedPost(slug);
+
+  if (!post) notFound();
+
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.excerpt,
+    image: [absoluteUrl(post.coverImage)],
+    datePublished: post.publishedAt || post.createdAt,
+    dateModified: post.updatedAt || post.publishedAt || post.createdAt,
+    author: {
+      "@type": "Organization",
+      name: post.authorName || "Waysorted",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Waysorted",
+      logo: {
+        "@type": "ImageObject",
+        url: `${siteUrl}/images/logo.svg`,
+      },
+    },
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": `${siteUrl}/blogs/${post.slug}`,
+    },
+    articleSection: post.category,
+    keywords: post.tags.join(", "),
+    wordCount: blocksToText(post.contentBlocks).split(/\s+/).filter(Boolean).length,
+  };
+
   return (
-    <main className={`min-h-screen bg-white transition-all duration-300 ${showBanner ? "pt-24" : "pt-16"}`}>
-      <Header showBanner={showBanner} setShowBanner={setShowBanner} />
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 max-w-7xl">
-        <BlogPostContent />
-      </div>
-      <Footer />
-    </main>
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      <BlogPostPageClient />
+    </>
   );
 }
