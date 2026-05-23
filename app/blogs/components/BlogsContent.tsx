@@ -6,7 +6,9 @@ import Link from "next/link";
 import { Search, ChevronRight, Frown, Meh, Smile, User, Plus } from "lucide-react";
 import { fetchBlogs } from "@/lib/blogsClient";
 import { useUser } from "@/hooks/useUser";
-import type { BlogPostCard } from "@/types/blog";
+import type { BlogPostCard, BlogPostStatus } from "@/types/blog";
+
+type AdminStatusFilter = "all" | BlogPostStatus;
 
 export default function BlogsContent() {
   const { user } = useUser();
@@ -18,6 +20,7 @@ export default function BlogsContent() {
   const [isSendingFeedback, setIsSendingFeedback] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<AdminStatusFilter>("all");
   const [blogPosts, setBlogPosts] = useState<BlogPostCard[]>([]);
   const [tabs, setTabs] = useState([
     "All",
@@ -50,6 +53,7 @@ export default function BlogsContent() {
       const data = await fetchBlogs({
         category: activeTab,
         q: debouncedSearchTerm,
+        status: isAdmin && statusFilter !== "all" ? statusFilter : undefined,
         limit: 12,
       });
       setBlogPosts(data.posts);
@@ -60,7 +64,7 @@ export default function BlogsContent() {
     } finally {
       setLoading(false);
     }
-  }, [activeTab, debouncedSearchTerm]);
+  }, [activeTab, debouncedSearchTerm, isAdmin, statusFilter]);
 
   useEffect(() => {
     loadBlogs();
@@ -114,13 +118,14 @@ export default function BlogsContent() {
       </div>
 
       {/* Navigation & Search */}
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 space-y-4 lg:space-y-0 border-b border-gray-100 pb-2">
-        <div className="flex flex-wrap gap-x-8 gap-y-4">
+      <div className="mb-10 border-b border-gray-100 pb-5">
+        <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-8 gap-y-4">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`text-[15px] font-medium transition-colors relative pb-2 ${
+              className={`text-[15px] font-medium transition-colors relative whitespace-nowrap pb-2 ${
                 activeTab === tab
                   ? "text-gray-900"
                   : "text-gray-400 hover:text-gray-600"
@@ -134,17 +139,39 @@ export default function BlogsContent() {
           ))}
         </div>
 
-        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto lg:items-center lg:mt-0">
+        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center xl:w-auto xl:shrink-0">
+          {isAdmin && (
+            <div className="inline-flex h-10 shrink-0 overflow-hidden rounded-[8px] border border-gray-200 bg-gray-50 p-1">
+              {[
+                { label: "All", value: "all" },
+                { label: "Published", value: "published" },
+                { label: "Drafts", value: "draft" },
+              ].map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => setStatusFilter(item.value as AdminStatusFilter)}
+                  className={`rounded-[6px] px-3 text-sm font-semibold transition-colors ${
+                    statusFilter === item.value
+                      ? "bg-white text-gray-900 shadow-sm"
+                      : "text-gray-500 hover:text-gray-900"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
           {isAdmin && (
             <Link
               href="/admin/blogs/new"
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-gray-900 bg-white px-4 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50"
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-[8px] border border-gray-900 bg-white px-4 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50"
             >
               <Plus className="h-4 w-4" />
               Add blog
             </Link>
           )}
-        <div className="relative w-full lg:w-auto">
+        <div className="relative w-full sm:w-[260px] xl:w-[300px]">
           <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
             <Search className="h-4 w-4 text-gray-400" />
           </div>
@@ -153,8 +180,9 @@ export default function BlogsContent() {
             placeholder="Search"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm w-full lg:w-[240px] focus:outline-none focus:ring-1 focus:ring-gray-300 focus:bg-white transition-colors"
+            className="h-10 w-full rounded-lg border border-gray-100 bg-gray-50 py-2 pl-10 pr-4 text-sm transition-colors focus:bg-white focus:outline-none focus:ring-1 focus:ring-gray-300"
           />
+        </div>
         </div>
         </div>
       </div>
@@ -194,6 +222,11 @@ export default function BlogsContent() {
               <div className="absolute bottom-4 right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md transform transition-transform group-hover:translate-x-1">
                 <ChevronRight className="w-5 h-5 text-blue-600" />
               </div>
+              {isAdmin && post.status === "draft" && (
+                <div className="absolute left-4 top-4 rounded-full bg-gray-900 px-3 py-1 text-xs font-semibold text-white shadow-sm">
+                  Draft
+                </div>
+              )}
             </div>
 
             {/* Post Metadata */}

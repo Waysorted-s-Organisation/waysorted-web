@@ -4,6 +4,7 @@ type FetchBlogsParams = {
   q?: string;
   category?: string;
   tag?: string;
+  status?: "draft" | "published";
   page?: number;
   limit?: number;
 };
@@ -40,6 +41,7 @@ export async function fetchBlogs(params?: FetchBlogsParams) {
   if (params?.q) search.set("q", params.q);
   if (params?.category && params.category !== "All") search.set("category", params.category);
   if (params?.tag) search.set("tag", params.tag);
+  if (params?.status) search.set("status", params.status);
   if (params?.page) search.set("page", String(params.page));
   if (params?.limit) search.set("limit", String(params.limit));
 
@@ -53,4 +55,3 @@ export async function fetchBlogBySlug(slug: string) {
   const data = await handleResponse<{ post: BlogPostDetail }>(res);
   return data.post;
 }
-
