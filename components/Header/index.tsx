@@ -503,6 +503,16 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                     >
                       Document Hub
                     </button>
+                    <button
+                      className="w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
+                      onClick={() => {
+                        router.push('/blogs');
+                        setMobileOpen(false);
+                        setMobileResourcesOpen(false);
+                      }}
+                    >
+                      Blogs
+                    </button>
                   </div>
                 </div>
                 <div className="mt-3 px-3">

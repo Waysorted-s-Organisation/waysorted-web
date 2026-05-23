@@ -3,11 +3,14 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Search, ChevronRight, Frown, Meh, Smile, User } from "lucide-react";
+import { Search, ChevronRight, Frown, Meh, Smile, User, Plus } from "lucide-react";
 import { fetchBlogs } from "@/lib/blogsClient";
+import { useUser } from "@/hooks/useUser";
 import type { BlogPostCard } from "@/types/blog";
 
 export default function BlogsContent() {
+  const { user } = useUser();
+  const isAdmin = user?.role?.toLowerCase() === "admin";
   const [activeTab, setActiveTab] = useState("All");
   const [selectedRating, setSelectedRating] = useState<number | null>(4);
   const [feedbackComment, setFeedbackComment] = useState("");
@@ -131,7 +134,17 @@ export default function BlogsContent() {
           ))}
         </div>
 
-        <div className="relative w-full lg:w-auto mt-4 lg:mt-0">
+        <div className="flex w-full flex-col gap-3 sm:flex-row lg:w-auto lg:items-center lg:mt-0">
+          {isAdmin && (
+            <Link
+              href="/admin/blogs/new"
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-[8px] border border-gray-900 bg-white px-4 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50"
+            >
+              <Plus className="h-4 w-4" />
+              Add blog
+            </Link>
+          )}
+        <div className="relative w-full lg:w-auto">
           <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
             <Search className="h-4 w-4 text-gray-400" />
           </div>
@@ -142,6 +155,7 @@ export default function BlogsContent() {
             onChange={(event) => setSearchTerm(event.target.value)}
             className="pl-10 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-lg text-sm w-full lg:w-[240px] focus:outline-none focus:ring-1 focus:ring-gray-300 focus:bg-white transition-colors"
           />
+        </div>
         </div>
       </div>
 
