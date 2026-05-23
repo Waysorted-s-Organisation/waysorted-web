@@ -19,7 +19,7 @@ export async function GET(_req: NextRequest, context: any) {
     if (!slug) return NextResponse.json({ message: "Missing slug" }, { status: 400 });
 
     const user = await getCurrentUser();
-    const isAdmin = user?.role === "admin";
+    const isAdmin = user?.role?.toLowerCase() === "admin";
     const query: Record<string, unknown> = { slug, isDeleted: false };
     if (!isAdmin) query.status = "published";
 
@@ -38,7 +38,7 @@ export async function GET(_req: NextRequest, context: any) {
 export async function PUT(req: NextRequest, context: any) {
   try {
     const user = await getCurrentUser();
-    if (user?.role !== "admin") {
+    if (user?.role?.toLowerCase() !== "admin") {
       return NextResponse.json({ message: "Not allowed" }, { status: 403 });
     }
 
@@ -83,7 +83,7 @@ export async function PUT(req: NextRequest, context: any) {
 export async function DELETE(_req: NextRequest, context: any) {
   try {
     const user = await getCurrentUser();
-    if (user?.role !== "admin") {
+    if (user?.role?.toLowerCase() !== "admin") {
       return NextResponse.json({ message: "Not allowed" }, { status: 403 });
     }
 

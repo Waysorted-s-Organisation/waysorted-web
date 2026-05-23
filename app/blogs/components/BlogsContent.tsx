@@ -98,42 +98,42 @@ export default function BlogsContent() {
   return (
     <div className="flex flex-col w-full">
       {/* Breadcrumb */}
-      <div className="flex items-center text-sm text-gray-500 mb-8 mt-4 font-medium">
-        <Link href="/" className="hover:text-gray-900 transition-colors">
+      <div className="mb-9 mt-3 flex items-center text-[15px] font-normal text-[#6B7280]">
+        <Link href="/" className="hover:text-[#0D1218] transition-colors">
           Home
         </Link>
-        <ChevronRight className="w-4 h-4 mx-2" />
-        <span className="text-gray-900 font-semibold border-b border-gray-900">Blogs</span>
+        <ChevronRight className="mx-3 h-4 w-4 text-[#8A93A3]" />
+        <span className="border-b border-[#0D1218] pb-0.5 font-semibold text-[#0D1218]">Blogs</span>
       </div>
 
       {/* Header Area */}
       <div className="mb-10">
-        <div className="inline-flex items-center px-3 py-1.5 rounded-full bg-gray-50 text-sm font-medium border border-gray-200 mb-4 shadow-sm">
-          <div className="w-4 h-4 bg-gray-900 rounded-[4px] mr-2"></div>
+        <div className="mb-6 inline-flex h-8 items-center rounded-[6px] bg-[#F3F4F6] px-2 text-[13px] font-medium text-[#0D1218]">
+          <div className="mr-2 h-5 w-5 rounded-[4px] bg-[#0D1218]"></div>
           Our Blogs
         </div>
-        <h1 className="text-4xl md:text-[40px] font-semibold text-gray-900 tracking-tight">
+        <h1 className="text-4xl md:text-[40px] font-semibold tracking-tight text-[#0D1218]">
           Waysorted Blogs
         </h1>
       </div>
 
       {/* Navigation & Search */}
-      <div className="mb-10 border-b border-gray-100 pb-5">
+      <div className="mb-10 border-b border-[#EEF0F3] pb-4">
         <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-8 gap-y-4">
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-10 gap-y-4">
           {tabs.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`text-[15px] font-medium transition-colors relative whitespace-nowrap pb-2 ${
+              className={`relative whitespace-nowrap pb-3 text-[15px] transition-colors ${
                 activeTab === tab
-                  ? "text-gray-900"
-                  : "text-gray-400 hover:text-gray-600"
+                  ? "font-medium text-[#0D1218]"
+                  : "font-normal text-[#8A93A3] hover:text-[#4B5563]"
               }`}
             >
               {tab}
               {activeTab === tab && (
-                <div className="absolute bottom-[-2px] left-0 right-0 h-[2px] bg-gray-900 rounded-t-full"></div>
+                <div className="absolute bottom-[-1px] left-0 h-[2px] w-full rounded-t-full bg-[#0D1218]"></div>
               )}
             </button>
           ))}
@@ -141,7 +141,7 @@ export default function BlogsContent() {
 
         <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center xl:w-auto xl:shrink-0">
           {isAdmin && (
-            <div className="inline-flex h-10 shrink-0 overflow-hidden rounded-[8px] border border-gray-200 bg-gray-50 p-1">
+            <div className="inline-flex h-9 shrink-0 overflow-hidden rounded-[6px] border border-[#E2E5EA] bg-[#F7F8FA] p-1">
               {[
                 { label: "All", value: "all" },
                 { label: "Published", value: "published" },
@@ -151,10 +151,10 @@ export default function BlogsContent() {
                   key={item.value}
                   type="button"
                   onClick={() => setStatusFilter(item.value as AdminStatusFilter)}
-                  className={`rounded-[6px] px-3 text-sm font-semibold transition-colors ${
+                  className={`rounded-[4px] px-3 text-[13px] font-medium transition-colors ${
                     statusFilter === item.value
-                      ? "bg-white text-gray-900 shadow-sm"
-                      : "text-gray-500 hover:text-gray-900"
+                      ? "bg-white text-[#0D1218] shadow-sm"
+                      : "text-[#6B7280] hover:text-[#0D1218]"
                   }`}
                 >
                   {item.label}
@@ -165,7 +165,7 @@ export default function BlogsContent() {
           {isAdmin && (
             <Link
               href="/admin/blogs/new"
-              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-[8px] border border-gray-900 bg-white px-4 text-sm font-semibold text-gray-900 shadow-sm transition-colors hover:bg-gray-50"
+              className="inline-flex h-9 shrink-0 items-center justify-center gap-2 rounded-[6px] border border-[#0D1218] bg-white px-4 text-[13px] font-medium text-[#0D1218] transition-colors hover:bg-[#F7F8FA]"
             >
               <Plus className="h-4 w-4" />
               Add blog
@@ -173,14 +173,14 @@ export default function BlogsContent() {
           )}
         <div className="relative w-full sm:w-[260px] xl:w-[300px]">
           <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-gray-400" />
+            <Search className="h-4 w-4 text-[#6B7280]" />
           </div>
           <input
             type="text"
             placeholder="Search"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.target.value)}
-            className="h-10 w-full rounded-lg border border-gray-100 bg-gray-50 py-2 pl-10 pr-4 text-sm transition-colors focus:bg-white focus:outline-none focus:ring-1 focus:ring-gray-300"
+            className="h-9 w-full rounded-[6px] border border-transparent bg-[#F3F4F6] py-2 pl-9 pr-4 text-[14px] text-[#0D1218] transition-colors placeholder:text-[#6B7280] focus:border-[#D1D5DB] focus:bg-white focus:outline-none"
           />
         </div>
         </div>
@@ -189,10 +189,10 @@ export default function BlogsContent() {
 
       {/* Grid of Blog Posts */}
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 mb-20">
+        <div className="mb-20 grid grid-cols-1 gap-x-4 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, idx) => (
             <div key={idx} className="flex flex-col animate-pulse">
-              <div className="w-full aspect-[1.6/1] rounded-2xl bg-gray-100 mb-5" />
+              <div className="mb-4 aspect-[1.68/1] w-full rounded-[8px] bg-gray-100" />
               <div className="h-4 bg-gray-100 rounded w-2/3 mb-3" />
               <div className="h-6 bg-gray-100 rounded w-full" />
             </div>
@@ -207,11 +207,11 @@ export default function BlogsContent() {
           No blog posts found.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12 mb-20">
+        <div className="mb-20 grid grid-cols-1 gap-x-4 gap-y-10 md:grid-cols-2 lg:grid-cols-3">
           {blogPosts.map((post) => (
-          <Link href={`/blogs/${post.slug}`} key={post.id} className="group cursor-pointer flex flex-col">
+          <div key={post.id} className="group flex flex-col">
             {/* Image Container */}
-            <div className="relative w-full aspect-[1.6/1] rounded-2xl overflow-hidden bg-blue-500 mb-5 shadow-sm">
+            <Link href={`/blogs/${post.slug}`} className="relative mb-4 aspect-[1.68/1] w-full overflow-hidden rounded-[8px] bg-blue-500">
               <Image
                 src={post.coverImage}
                 alt={post.coverImageAlt || post.title}
@@ -219,28 +219,38 @@ export default function BlogsContent() {
                 className="object-cover transition-transform duration-300 group-hover:scale-105"
               />
               {/* Arrow Button Overlay */}
-              <div className="absolute bottom-4 right-4 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md transform transition-transform group-hover:translate-x-1">
-                <ChevronRight className="w-5 h-5 text-blue-600" />
+              <div className="absolute bottom-3 right-3 flex h-9 w-9 transform items-center justify-center rounded-full bg-white shadow-sm transition-transform group-hover:translate-x-1">
+                <ChevronRight className="h-5 w-5 text-[#265BD1]" />
               </div>
               {isAdmin && post.status === "draft" && (
                 <div className="absolute left-4 top-4 rounded-full bg-gray-900 px-3 py-1 text-xs font-semibold text-white shadow-sm">
                   Draft
                 </div>
               )}
-            </div>
+            </Link>
 
             {/* Post Metadata */}
-            <div className="flex items-center text-sm text-gray-500 mb-2">
-              <span className="font-medium text-gray-600">{post.category}</span>
-              <span className="mx-2 text-gray-300">•</span>
-              <span>{post.readTime}</span>
+            <div className="mb-2 flex items-center justify-between gap-3 text-[13px] font-normal text-[#4B5563]">
+              <div className="min-w-0">
+                <span>{post.category}</span>
+                <span className="mx-2 text-[#B6BBC4]">•</span>
+                <span>{post.readTime}</span>
+              </div>
+              {isAdmin && (
+                <Link
+                  href={`/admin/blogs/${post.slug}/edit`}
+                  className="shrink-0 rounded-[6px] border border-[#D1D5DB] px-2 py-1 text-xs font-medium text-[#0D1218] transition-colors hover:border-[#0D1218] hover:bg-[#F7F8FA]"
+                >
+                  Edit
+                </Link>
+              )}
             </div>
 
             {/* Post Title */}
-            <h3 className="text-xl font-semibold text-gray-900 leading-snug group-hover:text-blue-600 transition-colors">
+            <Link href={`/blogs/${post.slug}`} className="text-[18px] font-semibold leading-snug text-[#0D1218] transition-colors group-hover:text-[#265BD1]">
               {post.title}
-            </h3>
-          </Link>
+            </Link>
+          </div>
           ))}
         </div>
       )}

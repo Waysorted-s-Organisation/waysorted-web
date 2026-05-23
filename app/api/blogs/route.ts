@@ -13,7 +13,7 @@ function isValidStatus(status: unknown): status is "draft" | "published" {
 
 async function getIsAdmin() {
   const user = await getCurrentUser();
-  return user?.role === "admin";
+  return user?.role?.toLowerCase() === "admin";
 }
 
 function buildListQuery(searchParams: URLSearchParams, isAdmin: boolean) {
@@ -90,7 +90,7 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (user?.role !== "admin") {
+    if (user?.role?.toLowerCase() !== "admin") {
       return NextResponse.json({ message: "Not allowed" }, { status: 403 });
     }
 

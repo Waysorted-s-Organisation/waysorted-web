@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: NextRequest) {
   try {
     const user = await getCurrentUser();
-    if (user?.role !== "admin") {
+    if (user?.role?.toLowerCase() !== "admin") {
       return NextResponse.json({ message: "Not allowed" }, { status: 403 });
     }
 
