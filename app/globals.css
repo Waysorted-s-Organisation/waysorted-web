@@ -668,6 +668,7 @@ html, body {
   position: relative;
   overflow: hidden; /* keep star glows inside rounded corners */
   isolation: isolate; /* text above star glows */
+  cursor: pointer;
 }
  
 /* Remove any old button-level halo glow */
@@ -683,31 +684,28 @@ html, body {
   z-index: 2;
 }
  
-/* Stars: hidden by default; start slightly below final spot */
+/* Stars: visible at the bottom by default; slide up and float on hover */
 .btn-star {
   position: absolute;
   color: #fff;
   width: var(--size, 8px);
   height: var(--size, 8px);
-  top: var(--top, 50%);
+  top: var(--top-default, var(--top, 85%));
   left: var(--left, 50%);
-  opacity: 0; /* hidden initially */
-  transform:
-    translate(-50%, calc(-50% + var(--enter-offset, 18px)))
-    scale(var(--scale, 1))
-    rotate(var(--rot, 0deg));
+  opacity: 0.65; /* Subtle starry bottom row when not hovered */
+  transform: translate(-50%, -50%) scale(var(--scale, 1)) rotate(var(--rot, 0deg));
   filter:
-    drop-shadow(0 0 2px rgba(255, 255, 255, 0.4))
-    drop-shadow(0 0 6px rgba(110, 231, 255, 0.25))
-    drop-shadow(0 0 10px rgba(196, 113, 255, 0.18));
-  will-change: transform, filter, opacity;
+    drop-shadow(0 0 1px rgba(255, 255, 255, 0.3))
+    drop-shadow(0 0 3px rgba(110, 231, 255, 0.15));
+  will-change: transform, filter, opacity, top;
   z-index: 1;
   pointer-events: none;
  
   transition:
-    transform .25s ease,
-    opacity .22s ease,
-    filter .25s ease;
+    top 0.5s cubic-bezier(0.2, 0.8, 0.2, 1),
+    opacity 0.3s ease,
+    transform 0.3s ease,
+    filter 0.3s ease;
 }
  
 /* Per-star glow halo (off until hover) */
@@ -731,15 +729,14 @@ html, body {
   z-index: -1;
 }
  
-/* On hover/focus: entrance, then floating loop.
-   IMPORTANT: use --enter-delay if provided, else fallback to --delay. */
+/* On hover/focus: slide up to top-hover, increase brightness, and float */
 .btn-glow:hover .btn-star,
 .btn-glow:focus-visible .btn-star,
 .btn-glow.force-hover .btn-star {
+  top: var(--top-hover, var(--top, 50%));
   opacity: 1;
   animation:
-    starEnter var(--enter-dur, .45s) cubic-bezier(.2,.8,.2,1) var(--enter-delay, var(--delay, 0s)) forwards,
-    btnStarFloat var(--dur, 2.1s) ease-in-out calc(var(--enter-delay, var(--delay, 0s)) + var(--enter-dur, .45s)) infinite alternate;
+    btnStarFloat var(--dur, 2.1s) ease-in-out var(--enter-delay, var(--delay, 0s)) infinite alternate;
   filter:
     drop-shadow(0 0 4px rgba(255, 255, 255, 0.95))
     drop-shadow(0 0 14px rgba(110, 231, 255, 0.75))
@@ -752,10 +749,10 @@ html, body {
   opacity: 1;
   transform: scale(1);
   filter: blur(12px);
-  transition-delay: calc(var(--enter-delay, var(--delay, 0s)) + var(--enter-dur, .45s));
+  transition-delay: var(--enter-delay, var(--delay, 0s));
 }
  
-/* Entrance: rise from below into place */
+/* Entrance: rise from below into place (kept for compatibility) */
 @keyframes starEnter {
   0% {
     opacity: 0;
@@ -927,4 +924,13 @@ html, body {
 
 [data-state="closed"][data-slot="sheet-content"] {
   animation: sheet-slide-out-to-right 0.3s ease-in-out forwards;
+}
+
+/* Force standard pointer cursor for standard interactive elements */
+button,
+a,
+input[type="button"],
+input[type="submit"],
+[role="button"] {
+  cursor: pointer;
 }

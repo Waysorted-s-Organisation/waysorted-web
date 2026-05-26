@@ -41,6 +41,7 @@ type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   "aria-label"?: string;
   onClick?: React.MouseEventHandler<HTMLButtonElement>;
   bgColor?: string; // New prop for background color
+  bottomOnly?: boolean; // Restrict glow dots to the bottom edge
 };
 
 function GlowStarButton({
@@ -61,6 +62,7 @@ function GlowStarButton({
   onBlur,
   onTouchStart,
   bgColor = "secondary-db-100", // Default value for bgColor
+  bottomOnly = false,
   ...props
 }: Props) {
   const [hoverKey, setHoverKey] = useState(0);
@@ -77,14 +79,15 @@ function GlowStarButton({
   const effectiveSeed = rerollOnHover ? `${seedBase}-${hoverKey}` : seedBase;
 
   const dots = useMemo(() => {
-    const minX = 8, maxX = 92;
-    const minY = 18, maxY = 86;
+    const minX = 6, maxX = 94;
     const deadLeft = 36, deadRight = 64;
     const deadTop = 44, deadBottom = 60;
+    const colWidth = (maxX - minX) / starCount;
 
     const arr: {
       left: number;
-      top: number;
+      topDefault: number;
+      topHover: number;
       size: number;
       scale: number;
       dx: number;
@@ -97,17 +100,21 @@ function GlowStarButton({
     for (let i = 0; i < starCount; i++) {
       const r = rngForIndex(effectiveSeed, i);
 
-      let left = minX + r() * (maxX - minX);
-      let top = minY + r() * (maxY - minY);
-
-      // Push away from center zone
-      if (left > deadLeft && left < deadRight && top > deadTop && top < deadBottom) {
-        const pushDirX = r() < 0.5 ? -1 : 1;
-        const pushDirY = r() < 0.5 ? -1 : 1;
-        left += pushDirX * (10 + r() * 8);
-        top += pushDirY * (8 + r() * 6);
-        left = Math.min(maxX, Math.max(minX, left));
-        top = Math.min(maxY, Math.max(minY, top));
+      // Stratified X-coordinate to ensure natural uniform distribution without clumping
+      const colStart = minX + i * colWidth;
+      const left = colStart + r() * colWidth;
+      const topDefault = 83 + r() * 7; // Concentrated at bottom (83% - 90%)
+      
+      let topHover = 18 + r() * 64; // Spread all over Y (18% - 82%)
+      if (bottomOnly) {
+        topHover = topDefault; // If bottomOnly, they stay at the bottom even on hover
+      } else {
+        // Push away from center zone on hover
+        if (left > deadLeft && left < deadRight && topHover > deadTop && topHover < deadBottom) {
+          const pushDirY = r() < 0.5 ? -1 : 1;
+          topHover += pushDirY * (8 + r() * 6);
+          topHover = Math.min(82, Math.max(18, topHover));
+        }
       }
 
       const size = 5 + Math.round(r() * 5); // used for external width/height
@@ -122,15 +129,15 @@ function GlowStarButton({
       const enterDelay = Math.max(0, base + jitter);
       const radius = 4; // You can vary: 8 + Math.round(r() * 4)
 
-      arr.push({ left, top, size, scale, dx, dy, spin, durMs, enterDelay, radius });
+      arr.push({ left, topDefault, topHover, size, scale, dx, dy, spin, durMs, enterDelay, radius });
     }
     return arr;
-  }, [effectiveSeed, starCount, delayJitter]);
+  }, [effectiveSeed, starCount, delayJitter, bottomOnly]);
 
   return (
     <button
       type="submit"
-      className={`btn-glow text-white ${bgColor} ${className}`} // Added bgColor with default value 
+      className={`btn-glow text-white ${bgColor} ${className} group`} // Added bgColor with default value and group for overlay transition
       onMouseEnter={(event) => {
         setIsActive(true);
         if (rerollOnHover) setHoverKey((key) => key + 1);
@@ -159,34 +166,39 @@ function GlowStarButton({
       {...props}
     >
       <span className="btn-inner">{children}</span>
-      {isActive
-        ? dots.map((d, i) => (
-            <svg
-              key={i}
-              aria-hidden="true"
-              viewBox="0 0 24 24"
-              className="btn-star"
-              style={
-                {
-                  "--top": `${d.top}%`,
-                  "--left": `${d.left}%`,
-                  "--size": `${d.size}px`,
-                  "--scale": d.scale,
-                  "--dx": `${d.dx}px`,
-                  "--dy": `${d.dy}px`,
-                  "--spin": `${d.spin}deg`,
-                  "--dur": `${d.durMs}ms`,
-                  "--enter-delay": `${d.enterDelay}s`,
-                  "--delay": `${d.enterDelay}s`,
-                  "--enter-dur": `${enterDurationSec}s`,
-                  "--rot": "0deg",
-                } as React.CSSProperties
-              }
-            >
-              <circle cx="12" cy="12" r={d.radius} fill="currentColor" />
-            </svg>
-          ))
-        : null}
+      
+      {/* Bottom white gradient inside the button */}
+      <div className={`absolute inset-x-0 bottom-0 h-[28%] bg-gradient-to-t to-transparent pointer-events-none transition-all duration-300 ${
+        isActive ? "from-white/20" : "from-white/12"
+      }`} />
+      
+      {dots.map((d, i) => (
+        <svg
+          key={i}
+          aria-hidden="true"
+          viewBox="0 0 24 24"
+          className="btn-star"
+          style={
+            {
+              "--top-default": `${d.topDefault}%`,
+              "--top-hover": `${d.topHover}%`,
+              "--left": `${d.left}%`,
+              "--size": `${d.size}px`,
+              "--scale": d.scale,
+              "--dx": `${d.dx}px`,
+              "--dy": `${d.dy}px`,
+              "--spin": `${d.spin}deg`,
+              "--dur": `${d.durMs}ms`,
+              "--enter-delay": `${d.enterDelay}s`,
+              "--delay": `${d.enterDelay}s`,
+              "--enter-dur": `${enterDurationSec}s`,
+              "--rot": "0deg",
+            } as React.CSSProperties
+          }
+        >
+          <circle cx="12" cy="12" r={d.radius} fill="currentColor" />
+        </svg>
+      ))}
     </button>
   );
 }
