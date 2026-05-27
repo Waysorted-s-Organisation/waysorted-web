@@ -44,12 +44,12 @@ export default function PricingCard({
     >
       <div className="flex items-start justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 h-[22px]">
-            <Image src={iconSrc} alt="" width={18} height={18} className="h-[18px] w-[18px]" />
-            <h3 className="text-[22px] font-semibold leading-none">{planName}</h3>
+          <div className="flex items-center gap-2 h-[42px]">
+            <Image src={iconSrc} alt="" width={24} height={24} className="h-[24px] w-[24px]" />
+            <h3 className="text-[32px] font-semibold leading-[42px]">{planName}</h3>
           </div>
           <p
-            className={`mt-3 max-w-[250px] text-[13px] leading-[1.35] h-[54px] ${
+            className={`mt-3 max-w-[250px] text-[14px] font-medium leading-[21px] h-[54px] ${
               featured ? "text-white/85" : "text-[#6B7280]"
             }`}
           >
@@ -62,7 +62,7 @@ export default function PricingCard({
         </span>
       </div>
 
-      <div className="mt-4">
+      <div className="mt-[5px] md:mt-4">
         <div className="h-[20px] flex items-end">
           {originalAmountLabel ? (
             <p className={`text-[13px] line-through leading-none ${featured ? "text-white/65" : "text-[#98A2B3]"}`}>
@@ -71,9 +71,9 @@ export default function PricingCard({
           ) : null}
         </div>
 
-        <div className="mt-1 flex items-end gap-1.5 h-[28px]">
-          <p className="text-[24px] font-bold leading-none md:text-[28px]">{amountLabel}</p>
-          <span className={`pb-0.5 text-[12px] leading-none ${featured ? "text-white/75" : "text-[#6B7280]"}`}>
+        <div className="mt-1 flex items-end gap-1.5 h-[36px]">
+          <p className="text-[36px] font-bold leading-none">{amountLabel}</p>
+          <span className={`pb-0.5 text-[16px] font-medium leading-[21px] ${featured ? "text-white/75" : "text-[#6B7280]"}`}>
             /{cycleLabel}
           </span>
         </div>
@@ -82,7 +82,7 @@ export default function PricingCard({
       <GlowStarButton
         type="button"
         onClick={onSelect}
-        className={`mt-4 h-[40px] rounded-[10px] text-[13px] font-medium transition-all hover:scale-[1.01] active:scale-[0.99] shrink-0 ${
+        className={`mt-4 h-[44px] rounded-[10px] text-[16px] font-medium transition-all hover:scale-[1.01] active:scale-[0.99] shrink-0 ${
           featured
             ? "bg-white/15 text-white hover:bg-white/20 border border-white/10"
             : "bg-[#EAF1FF] !text-[#4B73D8] hover:bg-[#DCE7FF]"
@@ -101,7 +101,7 @@ export default function PricingCard({
           featured ? "bg-[#1E4BB5] text-white" : "bg-[#F6F8FC] text-[#111827]"
         }`}
       >
-        <p className="flex items-center gap-2 text-[13px] font-semibold leading-none">
+        <p className="flex items-center gap-2 text-[14px] font-medium leading-[21px]">
           <Image
             src={featured ? "/icons/c-blue.svg" : "/icons/c.svg"}
             alt=""
@@ -121,7 +121,7 @@ export default function PricingCard({
           <li key={feature} className="flex items-start gap-2">
             <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center">
               <Image
-                src="/icons/tick-blue.svg"
+                src={featured ? "/icons/white check.svg" : "/icons/blue check.svg"}
                 alt=""
                 width={16}
                 height={16}

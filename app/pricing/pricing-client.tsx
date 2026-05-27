@@ -110,36 +110,36 @@ const faqs = [
   {
     question: "Do I need a subscription to use Waysorted?",
     answer:
-      "No. You can start with credits only and top up when needed. Subscriptions are better if you want monthly credits and lower top-up costs.",
+      "No. You can start with credits if you only want to use specific actions. A subscription is better if you want regular monthly credits, full access, and ongoing updates.",
   },
   {
     question: "What is the difference between a plan and credit top-up?",
     answer:
-      "A plan gives you recurring credits each billing cycle. A credit top-up is a one-time purchase you can use whenever your workflow needs more.",
+      "A plan gives you monthly access, included credits, and ongoing support. A credit top-up is a one-time purchase for users who want to spend less and pay only when they need extra usage.",
   },
   {
     question: "Do credits expire?",
-    answer: "No. Credits stay on your account until you use them.",
+    answer: "No. Your purchased credits stay with you until you use them. There are no monthly resets on top-up credits.",
   },
   {
     question: "Can I buy credits without upgrading to a paid plan?",
-    answer: "Yes. Credit purchases work separately, so you can buy them without a subscription.",
+    answer: "Yes. If you are not ready for a monthly plan, you can top-up credits separately and use Waysorted only when your workflow needs it.",
   },
   {
     question: "Which plan should I choose?",
-    answer: "Discover is best for getting started, Core fits regular usage, and Pro works best for larger teams or heavier workflows.",
+    answer: "Choose Discover if you are just getting started. Choose Core if you want full access for regular design work. Choose Pro if you need more credits, more support, or use Waysorted heavily.",
   },
   {
     question: "What happens when my subscription ends?",
-    answer: "Your paid plan stops renewing, but any unused credits already in your account remain available.",
+    answer: "You will lose access to paid plan benefits after the subscription ends. Any unused purchased credits should remain available, if that is your intended policy.",
   },
   {
     question: "Can I upgrade later?",
-    answer: "Yes. You can switch plans later if your needs grow.",
+    answer: "Yes. You can start small with credits or a lower plan, then upgrade when you need more access, more credits, or heavier usage.",
   },
   {
     question: "Where can I manage my plan and credits?",
-    answer: "You can manage billing, subscriptions, and credit purchases from your billing area after sign-in.",
+    answer: "Go to Account Settings → Subscription & Plans in your Waysorted Website. You’ll find your active plan, credit balance, billing details, invoices, and top-up options in one place.",
   },
 ];
 
@@ -318,12 +318,12 @@ export default function PricingClient({
 
       <section className="px-4 pb-16 pt-6 md:pb-24 md:pt-8">
         <div className="mx-auto w-full max-w-[1120px]">
-          <div className="mb-10 flex items-center gap-2 text-[12px] text-[#8A94A6]">
-            <Link href="/" className="underline text-[#8A94A6] hover:text-[#111827] transition-colors">
+          <div className="mb-10 flex items-center gap-2 text-[16px] text-[#8A94A6]">
+            <Link href="/" className="text-[#8A94A6] hover:text-[#111827] transition-colors">
               Home
             </Link>
-            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#8A94A6]" />
-            <span className="font-medium text-[#111827] underline">Pricing</span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-[#8A94A6]" />
+            <span className="font-medium text-[#111827] border-b-2 border-[#2F63D7] pb-0.5">Pricing</span>
           </div>
 
           <div className="text-center">
@@ -418,31 +418,31 @@ export default function PricingClient({
               </div>
               {/* Desktop text layout */}
               <p className="hidden md:block text-[14px] leading-[1.5] text-[#7C8798]">
-                <span className="text-[15px] font-semibold text-[#111827]">Not ready for a plan?</span> Start with <span className="font-semibold text-[#111827]">Credits top-up</span> and use Waysorted only when your workflow needs it. No subscription or monthly reset required.
+                <span className="text-[15px] font-semibold text-[#111827]">Not ready for a plan?</span> Start with <span className="font-semibold text-[#111827]">Credits top-up</span> and use Waysorted only when your workflow needs it.<br />No subscription or monthly reset required.
               </p>
             </div>
           </div>
 
-          <section className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-[0.9fr_1.1fr] md:items-start">
-            <div className="pt-2">
+          <section className="mt-10 flex flex-col gap-8 md:flex-row md:items-stretch md:justify-center md:gap-[50px]">
+            <div className="w-full md:w-[434px] md:py-8 flex flex-col">
               <div className="flex items-center gap-2">
-                <Image src="/pricingIcons/Pay as you go.png" alt="" width={20} height={20} className="h-5 w-5" />
-                <h2 className="text-[26px] font-semibold text-[#111827] md:text-[42px]">Pay as you go</h2>
+                <Image src="/pricingIcons/Pay as you go.png" alt="" width={32} height={32} className="h-8 w-8" />
+                <h2 className="text-[32px] font-medium text-[#111827]">Pay as you go</h2>
               </div>
 
-              <p className="mt-4 max-w-[320px] text-[14px] leading-[1.5] text-[#7C8798]">
+              <p className="mt-4 w-full md:w-[434px] md:max-w-none text-[16px] font-medium leading-[21px] text-[#7C8798]">
                 Top up credits whenever you need extra power for advanced actions. No monthly reset, no wasted balance,
                 your credits stay until you use them.
               </p>
 
-              <ul className="hidden md:block mt-6 space-y-4">
+              <ul className="mt-6 space-y-4">
                 {[
                   "Includes all core Waysorted features",
                   "Regular updates with ongoing support",
                   "Credits never expires, reset when needed",
                 ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-[14px] text-[#3D4656]">
-                    <Image src="/icons/purple.svg" alt="" width={16} height={16} className="mt-0.5 h-4 w-4" />
+                  <li key={item} className="flex items-start gap-3 text-[14px] text-[#3D4656]">
+                    <Image src="/icons/purple.svg" alt="" width={18} height={18} className="mt-0.5 h-[18px] w-[18px]" />
                     <span>{item}</span>
                   </li>
                 ))}
@@ -450,62 +450,64 @@ export default function PricingClient({
             </div>
 
             <div>
-              <div className="rounded-[15.31px] border border-[#E8ECF4] bg-white p-6 md:p-8">
-                <div className="flex flex-wrap items-center gap-3 text-[12px]">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPaygMode("standard");
-                      setSelectedTopupIndex(1);
-                    }}
-                    disabled={!availablePaygModes.standard}
-                    className={paygMode === "standard" ? "font-semibold text-[#111827]" : "text-[#6B7280]"}
-                  >
-                    First Purchase
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const nextMode = paygMode === "standard" ? "subscriber" : "standard";
-                      if (nextMode === "subscriber" && !availablePaygModes.subscriber) return;
-                      if (nextMode === "standard" && !availablePaygModes.standard) return;
-                      setPaygMode(nextMode);
-                      setSelectedTopupIndex(1);
-                    }}
-                    className="relative h-[20px] w-[38px] rounded-full bg-[#111827]"
-                    aria-label="Toggle pay as you go mode"
-                  >
-                    <span
-                      className={`absolute top-[2px] h-4 w-4 rounded-full bg-white transition-all ${
-                        paygMode === "subscriber" ? "left-[20px]" : "left-[2px]"
-                      }`}
-                    />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPaygMode("subscriber");
-                      setSelectedTopupIndex(1);
-                    }}
-                    disabled={!availablePaygModes.subscriber}
-                    className={paygMode === "subscriber" ? "font-semibold text-[#111827]" : "text-[#6B7280]"}
-                  >
-                    Subscribed User
-                  </button>
-                  <span className="rounded-[999px] bg-[#1DB96B] px-2 py-[3px] text-[10px] font-semibold text-white">
-                    Extra Credits
-                  </span>
-                </div>
+              <div className="rounded-[15.31px] border border-[#E8ECF4] bg-white p-[25px] flex flex-col w-full md:w-[492px]">
+                <div>
+                  <div className="flex flex-wrap items-center justify-start gap-3 text-[16px] font-medium">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPaygMode("standard");
+                        setSelectedTopupIndex(1);
+                      }}
+                      disabled={!availablePaygModes.standard}
+                      className={paygMode === "standard" ? "text-[#111827]" : "text-[#6B7280]"}
+                    >
+                      First Purchase
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextMode = paygMode === "standard" ? "subscriber" : "standard";
+                        if (nextMode === "subscriber" && !availablePaygModes.subscriber) return;
+                        if (nextMode === "standard" && !availablePaygModes.standard) return;
+                        setPaygMode(nextMode);
+                        setSelectedTopupIndex(1);
+                      }}
+                      className="relative h-[20px] w-[38px] rounded-full bg-[#111827]"
+                      aria-label="Toggle pay as you go mode"
+                    >
+                      <span
+                        className={`absolute top-[2px] h-4 w-4 rounded-full bg-white transition-all ${
+                          paygMode === "subscriber" ? "left-[20px]" : "left-[2px]"
+                        }`}
+                      />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPaygMode("subscriber");
+                        setSelectedTopupIndex(1);
+                      }}
+                      disabled={!availablePaygModes.subscriber}
+                      className={paygMode === "subscriber" ? "text-[#111827]" : "text-[#6B7280]"}
+                    >
+                      Subscribed User
+                    </button>
+                    <span className="rounded-[999px] bg-[#1DB96B] px-2 py-[3px] text-[10px] font-semibold text-white">
+                      Extra Credits
+                    </span>
+                  </div>
 
-                {/* Credit heading - same on desktop and mobile, responsive font size */}
-                <div className="mt-6">
-                  <p className="text-[30px] font-bold leading-none text-[#111827] md:text-[36px] tracking-tight">
-                    {activeTopup?.value || "--"} Credits
-                  </p>
+                  {/* Credit heading - same on desktop and mobile, responsive font size */}
+                  <div className="mt-[20px]">
+                    <p className="text-[40px] font-bold leading-none text-[#111827] tracking-tight">
+                      {activeTopup?.value || "--"} Credits
+                    </p>
+                  </div>
                 </div>
 
                 {/* Unified responsive slider */}
-                <div className="mt-8 md:mt-10">
+                <div className="mt-[20px]">
                   <div className="relative h-[18px] w-full">
                     <div className="absolute left-0 right-0 top-1/2 h-[4px] -translate-y-1/2 rounded-full bg-[#D9DDE7]" />
                     <div
@@ -537,7 +539,7 @@ export default function PricingClient({
                   />
 
                   {/* Responsive marks */}
-                  <div className="relative mt-6 h-[64px] md:h-[74px]">
+                  <div className="relative mt-[20px] h-[40px]">
                     {topupMarks.map((mark, index) => {
                       const position = topupMarks.length > 1 ? (index / (topupMarks.length - 1)) * 100 : 0;
                       const alignmentClass =
@@ -555,10 +557,10 @@ export default function PricingClient({
                           className={`absolute top-0 ${alignmentClass}`}
                           style={index === 0 || index === topupMarks.length - 1 ? undefined : { left: `${position}%`, transform: "translateX(-50%)" }}
                         >
-                          <p className={`text-[12px] md:text-[15px] font-semibold ${index === clampedTopupIndex ? "text-[#111827]" : "text-[#4B5563]"}`}>
+                          <p className={`text-[18px] font-bold ${index === clampedTopupIndex ? "text-[#111827]" : "text-[#4B5563]"}`}>
                             {mark.title}
                           </p>
-                          <p className="mt-0.5 whitespace-nowrap text-[10px] md:text-[12px] text-[#8A94A6]">{mark.creditsLabel}</p>
+                          <p className="mt-0.5 whitespace-nowrap text-[14px] font-normal text-[#8A94A6]">{mark.creditsLabel}</p>
                         </button>
                       );
                     })}
@@ -569,34 +571,20 @@ export default function PricingClient({
                   type="button"
                   onClick={() => goToCheckout(activeTopup?.product?.code || null)}
                   disabled={!activeTopup?.product}
-                  className="mt-8 h-[42px] w-full rounded-[10px] bg-[#111827] text-[13px] font-medium text-white disabled:opacity-60 cursor-pointer"
+                  className="mt-[20px] h-[42px] w-full rounded-[10px] bg-[#111827] text-[16px] font-semibold text-white disabled:opacity-60 cursor-pointer shrink-0"
                   starCount={18}
                   enterDurationSec={0.35}
                 >
                   {activeTopup?.product ? "Purchase credits" : "Starter grant is automatic"}
                 </GlowStarButton>
               </div>
-
-              {/* Mobile-only checklist displayed below the Pay as you go card */}
-              <ul className="md:hidden mt-6 space-y-4 px-2">
-                {[
-                  "Includes all core Waysorted features",
-                  "Regular updates with ongoing support",
-                  "Credits never expires, reset when needed",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-[14px] text-[#3D4656]">
-                    <Image src="/icons/purple.svg" alt="" width={16} height={16} className="mt-0.5 h-4 w-4" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
           </section>
 
           <section className="mx-auto mt-24 max-w-[880px]">
             <div className="text-center">
-              <h2 className="text-[32px] font-semibold text-[#111827] md:text-[44px]">Common Questions</h2>
-              <p className="mt-3 text-[16px] text-[#8A94A6]">Everything you need to know before buying.</p>
+              <h2 className="text-[36px] font-semibold text-[#111827]">Common Questions</h2>
+              <p className="mt-3 text-[20px] font-semibold text-[#8A94A6]">Everything you need to know before buying.</p>
             </div>
 
             <div className="mt-10 space-y-3">
@@ -616,7 +604,7 @@ export default function PricingClient({
                         isOpen ? "bg-white hover:bg-[#F8FAFC]" : "bg-white hover:bg-[#EAF1FF]"
                       } ${isOpen ? "" : "rounded-[12px]"}`}
                     >
-                      <span className="text-[15px] font-medium text-[#111827]">{faq.question}</span>
+                      <span className="text-[20px] font-medium text-[#111827]">{faq.question}</span>
                       <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all ${
                         isOpen 
                           ? "bg-[#EAF1FF] text-[#2F63D7]" 
@@ -630,7 +618,7 @@ export default function PricingClient({
                       </span>
                     </button>
                     {isOpen ? (
-                      <div className="px-5 pb-5 text-[14px] leading-[1.55] text-[#667085] bg-white">{faq.answer}</div>
+                      <div className="px-5 pb-5 text-[16px] leading-[1.55] text-[#667085] bg-white">{faq.answer}</div>
                     ) : null}
                   </div>
                 );
@@ -638,11 +626,11 @@ export default function PricingClient({
             </div>
           </section>
 
-          <section className="mx-auto mt-24 max-w-[880px] text-center">
-            <h2 className="text-[30px] font-semibold leading-[1.2] text-[#111827] md:text-[44px]">
+          <section className="mx-auto mt-24 max-w-[880px] flex flex-col items-center text-center">
+            <h2 className="text-[30px] font-medium leading-[1.2] text-[#111827]">
               Ready to experience the flow?
             </h2>
-            <p className="mt-3 text-[16px] text-[#8A94A6]">
+            <p className="mt-3 text-[16px] font-medium text-[#8A94A6]">
               Replace multiple plugin subscriptions with one complete Waysorted suite.
             </p>
             <button
@@ -651,7 +639,7 @@ export default function PricingClient({
                 const corePlan = subscriptionProducts[1] || subscriptionProducts[0];
                 goToCheckout(corePlan?.code || null);
               }}
-              className="relative mt-8 h-[72px] w-full rounded-[20px] bg-[#111827] px-6 text-[24px] font-medium text-white md:text-[28px] overflow-hidden group transition-all hover:scale-[1.01] active:scale-[0.99]"
+              className="relative mt-8 h-[100px] w-[650px] max-w-full rounded-[20px] bg-[#111827] px-6 text-[36px] font-medium text-white overflow-hidden group transition-all hover:scale-[1.01] active:scale-[0.99]"
             >
               {/* Bottom white gradient inside the button */}
               <div className="absolute inset-x-0 bottom-0 h-[24px] bg-gradient-to-t from-white/20 to-transparent pointer-events-none group-hover:from-white/30 transition-all" />
