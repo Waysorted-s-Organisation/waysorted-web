@@ -327,7 +327,7 @@ export default function PricingClient({
           </div>
 
           <div className="text-center">
-            <h1 className="text-[32px] font-semibold leading-[1.15] text-[#111827] md:text-[46px]">
+            <h1 className="text-3xl sm:text-4xl md:text-[46px] font-semibold leading-[1.15] text-[#111827]">
               Perfect plans for your workflow
             </h1>
 
@@ -424,10 +424,10 @@ export default function PricingClient({
           </div>
 
           <section className="mt-10 flex flex-col gap-8 md:flex-row md:items-stretch md:justify-center md:gap-[50px]">
-            <div className="w-full md:w-[434px] md:py-8 flex flex-col">
+            <div className="w-full px-[25px] md:px-0 md:w-[434px] md:py-8 flex flex-col">
               <div className="flex items-center gap-2">
                 <Image src="/pricingIcons/Pay as you go.png" alt="" width={32} height={32} className="h-8 w-8" />
-                <h2 className="text-[32px] font-medium text-[#111827]">Pay as you go</h2>
+                <h2 className="text-2xl md:text-[32px] font-medium text-[#111827]">Pay as you go</h2>
               </div>
 
               <p className="mt-4 w-full md:w-[434px] md:max-w-none text-[16px] font-medium leading-[21px] text-[#7C8798]">
@@ -500,7 +500,7 @@ export default function PricingClient({
 
                   {/* Credit heading - same on desktop and mobile, responsive font size */}
                   <div className="mt-[20px]">
-                    <p className="text-[40px] font-bold leading-none text-[#111827] tracking-tight">
+                    <p className="text-3xl md:text-[40px] font-bold leading-none text-[#111827] tracking-tight">
                       {activeTopup?.value || "--"} Credits
                     </p>
                   </div>
@@ -583,8 +583,8 @@ export default function PricingClient({
 
           <section className="mx-auto mt-24 max-w-[880px]">
             <div className="text-center">
-              <h2 className="text-[36px] font-semibold text-[#111827]">Common Questions</h2>
-              <p className="mt-3 text-[20px] font-semibold text-[#8A94A6]">Everything you need to know before buying.</p>
+              <h2 className="text-3xl md:text-[36px] font-semibold text-[#111827]">Common Questions</h2>
+              <p className="mt-3 text-base md:text-[20px] font-semibold text-[#8A94A6]">Everything you need to know before buying.</p>
             </div>
 
             <div className="mt-10 space-y-3">
@@ -604,7 +604,7 @@ export default function PricingClient({
                         isOpen ? "bg-white hover:bg-[#F8FAFC]" : "bg-white hover:bg-[#EAF1FF]"
                       } ${isOpen ? "" : "rounded-[12px]"}`}
                     >
-                      <span className="text-[20px] font-medium text-[#111827]">{faq.question}</span>
+                      <span className="text-base md:text-[20px] font-medium text-[#111827] text-left">{faq.question}</span>
                       <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-all ${
                         isOpen 
                           ? "bg-[#EAF1FF] text-[#2F63D7]" 
@@ -627,10 +627,10 @@ export default function PricingClient({
           </section>
 
           <section className="mx-auto mt-24 max-w-[880px] flex flex-col items-center text-center">
-            <h2 className="text-[30px] font-medium leading-[1.2] text-[#111827]">
+            <h2 className="text-2xl md:text-[30px] font-medium leading-[1.2] text-[#111827]">
               Ready to experience the flow?
             </h2>
-            <p className="mt-3 text-[16px] font-medium text-[#8A94A6]">
+            <p className="mt-3 text-sm md:text-[16px] font-medium text-[#8A94A6]">
               Replace multiple plugin subscriptions with one complete Waysorted suite.
             </p>
             <button
@@ -639,11 +639,13 @@ export default function PricingClient({
                 const corePlan = subscriptionProducts[1] || subscriptionProducts[0];
                 goToCheckout(corePlan?.code || null);
               }}
-              className="relative mt-8 h-[100px] w-[650px] max-w-full rounded-[20px] bg-[#111827] px-6 text-[36px] font-medium text-white overflow-hidden group transition-all hover:scale-[1.01] active:scale-[0.99]"
+              className="relative mt-8 flex h-auto min-h-[72px] md:min-h-0 md:h-[100px] w-full md:w-[650px] max-w-full flex-col md:flex-row items-center justify-center gap-1 md:gap-2 rounded-[20px] bg-[#111827] px-4 py-4 md:py-0 text-2xl md:text-[36px] font-medium text-white overflow-hidden group transition-all hover:scale-[1.01] active:scale-[0.99]"
             >
               {/* Bottom white gradient inside the button */}
               <div className="absolute inset-x-0 bottom-0 h-[24px] bg-gradient-to-t from-white/20 to-transparent pointer-events-none group-hover:from-white/30 transition-all" />
-              <span className="relative z-10">Get core — ₹349/monthly</span>
+              <span className="relative z-10 text-center">
+                Get core &mdash; {subscriptionProducts[1] ? formatCurrency(subscriptionProducts[1].amountPaise, subscriptionProducts[1].currency) : "₹349"}/{billingCycle === "monthly" ? "monthly" : "yearly"}
+              </span>
             </button>
           </section>
         </div>
