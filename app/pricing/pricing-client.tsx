@@ -380,7 +380,7 @@ export default function PricingClient({
                   description={ui.description}
                   originalAmountLabel={billingCycle === "monthly" ? ui.originalAmountLabel : undefined}
                   amountLabel={formatCurrency(product.amountPaise, product.currency)}
-                  cycleLabel="monthly"
+                  cycleLabel={billingCycle}
                   creditsLabel={
                     billingCycle === "monthly"
                       ? ui.monthlyCreditsLabel
