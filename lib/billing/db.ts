@@ -183,7 +183,7 @@ async function runBillingTransaction<T>(work: (session: ClientSession) => Promis
     session = await mongoose.startSession();
   } catch (sessionError) {
     console.warn("MongoDB sessions not supported, running without session/transaction:", sessionError);
-    return await work(null as any);
+    return await work(null as unknown as ClientSession);
   }
 
   try {
@@ -193,15 +193,15 @@ async function runBillingTransaction<T>(work: (session: ClientSession) => Promis
         result = await work(session!);
       });
       return result as T;
-    } catch (txError: any) {
-      const errorMsg = String(txError.message || txError);
+    } catch (txError) {
+      const errorMsg = txError instanceof Error ? txError.message : String(txError);
       if (
         errorMsg.includes("Transaction numbers") ||
         errorMsg.includes("replica set") ||
         errorMsg.includes("mongos")
       ) {
         console.warn("MongoDB transactions not supported by this server, falling back to non-transactional execution:", txError);
-        return await work(null as any);
+        return await work(null as unknown as ClientSession);
       }
       throw txError;
     }
