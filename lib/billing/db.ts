@@ -177,16 +177,38 @@ export async function syncCatalogProducts() {
 
 async function runBillingTransaction<T>(work: (session: ClientSession) => Promise<T>) {
   await dbConnect();
-  const session = await mongoose.startSession();
+
+  let session: ClientSession | null = null;
+  try {
+    session = await mongoose.startSession();
+  } catch (sessionError) {
+    console.warn("MongoDB sessions not supported, running without session/transaction:", sessionError);
+    return await work(null as unknown as ClientSession);
+  }
 
   try {
     let result: T | undefined;
-    await session.withTransaction(async () => {
-      result = await work(session);
-    });
-    return result as T;
+    try {
+      await session.withTransaction(async () => {
+        result = await work(session!);
+      });
+      return result as T;
+    } catch (txError) {
+      const errorMsg = txError instanceof Error ? txError.message : String(txError);
+      if (
+        errorMsg.includes("Transaction numbers") ||
+        errorMsg.includes("replica set") ||
+        errorMsg.includes("mongos")
+      ) {
+        console.warn("MongoDB transactions not supported by this server, falling back to non-transactional execution:", txError);
+        return await work(null as unknown as ClientSession);
+      }
+      throw txError;
+    }
   } finally {
-    await session.endSession();
+    if (session) {
+      await session.endSession();
+    }
   }
 }
 

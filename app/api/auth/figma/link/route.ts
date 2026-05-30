@@ -1,13 +1,17 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 
-export async function GET() {
+function getAppUrl(request: NextRequest) {
+  return process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin;
+}
+
+export async function GET(request: NextRequest) {
   const cookieStore = await cookies();
   const sessionId = cookieStore.get("sessionId")?.value;
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = getAppUrl(request);
 
   if (!sessionId) {
     return NextResponse.redirect(new URL("/login?next=/api/auth/figma/link", appUrl));

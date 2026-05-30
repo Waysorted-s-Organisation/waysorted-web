@@ -1,5 +1,4 @@
 "use client";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 type TopBannerProps = {
@@ -7,7 +6,6 @@ type TopBannerProps = {
 };
 
 export default function TopBanner({ earlyAccess }: TopBannerProps) {
-    const router = useRouter();
     return (
         <div className="top-banner">
             {!earlyAccess && (
