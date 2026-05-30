@@ -71,6 +71,8 @@ export default function BillingDetailsModal({ isOpen, onClose, onSubmit, initial
     type="text"
     placeholder="Enter first name"
     value={formData.firstName}
+    pattern="^[A-Za-z\s\-']+$"
+    title="Only letters, spaces, hyphens, and apostrophes are allowed"
     onChange={(e) =>
       setFormData({ ...formData, firstName: e.target.value })
     }
@@ -84,6 +86,8 @@ export default function BillingDetailsModal({ isOpen, onClose, onSubmit, initial
                 type="text"
                 placeholder="Enter last name"
                 value={formData.lastName}
+                pattern="^[A-Za-z\s\-']+$"
+                title="Only letters, spaces, hyphens, and apostrophes are allowed"
                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                 className="mt-0.5 block w-full border-none bg-transparent p-0 text-xs font-regular text-secondary-db-50 placeholder-secondary-db-40 outline-none focus:ring-0"
               />
@@ -122,6 +126,8 @@ export default function BillingDetailsModal({ isOpen, onClose, onSubmit, initial
                 type="text"
                 placeholder="Enter country"
                 value={formData.country}
+                pattern="^[A-Za-z\s\-']+$"
+                title="Only letters, spaces, hyphens, and apostrophes are allowed"
                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                 className="mt-0.5 block w-full border-none bg-transparent p-0 text-xs font-regular text-secondary-db-50 placeholder-secondary-db-40 outline-none focus:ring-0"
               />
@@ -133,6 +139,8 @@ export default function BillingDetailsModal({ isOpen, onClose, onSubmit, initial
                 type="text"
                 placeholder="Enter city"
                 value={formData.city}
+                pattern="^[A-Za-z\s\-']+$"
+                title="Only letters, spaces, hyphens, and apostrophes are allowed"
                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                 className="mt-0.5 block w-full border-none bg-transparent p-0 text-xs font-regular text-secondary-db-50 placeholder-secondary-db-40 outline-none focus:ring-0"
               />
@@ -146,6 +154,8 @@ export default function BillingDetailsModal({ isOpen, onClose, onSubmit, initial
               type="text"
               placeholder="Enter zip code"
               value={formData.zipCode}
+              pattern="^[A-Za-z0-9\s\-]+$"
+              title="Only letters, numbers, spaces, and hyphens are allowed"
               onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
               className="mt-0.5 block w-full border-none bg-transparent p-0 text-xs font-regular text-secondary-db-50 placeholder-secondary-db-40 outline-none focus:ring-0"
             />

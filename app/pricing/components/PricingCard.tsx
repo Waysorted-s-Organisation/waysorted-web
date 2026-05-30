@@ -36,112 +36,101 @@ export default function PricingCard({
 }: PricingCardProps) {
   return (
     <article
-      className={`relative group flex min-h-[478px] flex-col rounded-[22px] border-5 p-5 transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-[0_14px_30px_rgba(25,40,86,0.12)] md:p-6 ${
+      className={`flex h-full flex-col rounded-[15.31px] border p-4 md:p-5 ${
         featured
-          ? "border-primary-way-90 bg-primary-way-100 text-white"
-          : "border-secondary-db-5 bg-white text-secondary-db-100"
+          ? "border-[#2B5FD3] bg-[#2F63D7] text-white"
+          : "border-[#E7EBF3] bg-white text-[#111827]"
       }`}
     >
-      <span
-        className="absolute right-4 top-4 z-10 rounded-md bg-[#01A04E] px-1.5 py-0.5 text-[11px] font-medium tracking-wide text-white"
-      >
-        {discountTag}
-      </span>
-
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2.5">
-          <span
-            className={`inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-110 ${
-              featured ? "bg-white/20" : "bg-[#EDF2FF]"
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2 h-[42px]">
+            <Image src={iconSrc} alt="" width={24} height={24} className="h-[24px] w-[24px]" />
+            <h3 className="text-[32px] font-semibold leading-[42px]">{planName}</h3>
+          </div>
+          <p
+            className={`mt-3 max-w-[250px] text-[14px] font-medium leading-[21px] h-[54px] ${
+              featured ? "text-white/85" : "text-[#6B7280]"
             }`}
           >
-            <Image
-              src={iconSrc}
-              alt={`${planName} icon`}
-              width={12}
-              height={12}
-              className="h-3 w-3 object-contain transition-transform duration-300 group-hover:rotate-6"
-            />
-          </span>
-          <p className="text-3xl font-semibold leading-none tracking-[-0.03em]">{planName}</p>
+            {description}
+          </p>
         </div>
+
+        <span className="rounded-[6px] bg-[#10B058] px-2.5 py-1 text-[10px] font-bold leading-none text-white whitespace-nowrap shrink-0 uppercase tracking-wider">
+          {discountTag}
+        </span>
       </div>
 
-      <p
-        className={`mt-2 max-w-[250px] text-[16px] leading-snug ${
-          featured ? "text-white/95" : "text-secondary-db-60"
-        }`}
-      >
-        {description}
-      </p>
+      <div className="mt-[5px] md:mt-4">
+        <div className="h-[20px] flex items-end">
+          {originalAmountLabel ? (
+            <p className={`text-[13px] line-through leading-none ${featured ? "text-white/65" : "text-[#98A2B3]"}`}>
+              {originalAmountLabel}
+            </p>
+          ) : null}
+        </div>
 
-      <div className="mt-8">
-        {originalAmountLabel ? (
-          <p className={`text-[16px] line-through ${featured ? "text-white/75" : "text-secondary-db-60"}`}>
-            {originalAmountLabel}
-          </p>
-        ) : null}
-
-        <div className="mt-3 flex items-end">
-        <p className="text-[36px] font-semibold leading-none tracking-[-0.03em]">{amountLabel}</p>
-        <span className={`mb-1 ml-1 text-[14px] ${featured ? "text-white/85" : "text-secondary-db-60"}`}>
-          /{cycleLabel}
-        </span>
+        <div className="mt-1 flex items-end gap-1.5 h-[36px]">
+          <p className="text-[36px] font-bold leading-none">{amountLabel}</p>
+          <span className={`pb-0.5 text-[16px] font-medium leading-[21px] ${featured ? "text-white/75" : "text-[#6B7280]"}`}>
+            /{cycleLabel}
+          </span>
         </div>
       </div>
 
       <GlowStarButton
+        type="button"
         onClick={onSelect}
-        className={`mt-5 inline-flex w-full items-center justify-center rounded-[10px] border border-transparent px-4 py-[10px] text-[13px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.98] ${
+        className={`mt-4 h-[44px] rounded-[10px] text-[16px] font-medium transition-all hover:scale-[1.01] active:scale-[0.99] shrink-0 ${
           featured
-            ? "force-hover bg-primary-way-80"
-            : "border-[#DCE5FF] bg-primary-way-10 !text-primary-way-100"
+            ? "bg-white/15 text-white hover:bg-white/20 border border-white/10"
+            : "bg-[#EAF1FF] !text-[#4B73D8] hover:bg-[#DCE7FF]"
         }`}
+        starCount={14}
+        enterDurationSec={0.35}
       >
-        <span>{ctaLabel}</span>
+        {ctaLabel}
       </GlowStarButton>
 
+      {/* Dotted/Dashed Separator Line inside the card */}
+      <div className={`my-4 border-t border-dashed shrink-0 ${featured ? "border-white/20" : "border-[#E7EBF3]"}`} />
+
       <div
-        className={`mt-4 rounded-[12px]  px-4 py-3 ${
-          featured ? " bg-primary-way-90 text-white" : "bg-primary-way-5 text-secondary-db-100"
+        className={`rounded-[12px] px-4 py-2.5 shrink-0 ${
+          featured ? "bg-[#1E4BB5] text-white" : "bg-[#F6F8FC] text-[#111827]"
         }`}
       >
-        <p className="flex items-center gap-1 text-[16px] font-semibold leading-tight">
-          <span
-            className={`inline-flex  items-center justify-center`}
-          >
-            <Image
+        <p className="flex items-center gap-2 text-[14px] font-medium leading-[21px]">
+          <Image
             src={featured ? "/icons/c-blue.svg" : "/icons/c.svg"}
-            alt={`${planName} icon`}
-            width={18}
-            height={18}
-            className="object-contain transition-transform duration-300 group-hover:rotate-6"
+            alt=""
+            width={16}
+            height={16}
+            className="h-4 w-4 shrink-0"
           />
-          </span>
           {creditsLabel}
         </p>
-        <p className={`mt-1 text-[14px] ${featured ? "text-primary-way-5" : "text-secondary-db-70"}`}>
-          {bonusCreditsLabel || "Credits are granted only after Razorpay webhook confirmation."}
+        <p className={`mt-1 text-[12px] leading-[1.35] h-[16px] ${featured ? "text-white/80" : "text-[#8A94A6]"}`}>
+          {bonusCreditsLabel}
         </p>
       </div>
 
-      <ul className="mt-4 space-y-2 text-[12px] leading-tight">
+      <ul className="mt-4 space-y-3 flex-1">
         {features.map((feature) => (
           <li key={feature} className="flex items-start gap-2">
-            <span
-              className={`mt-[2px] inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold transition-transform duration-200 group-hover:scale-110 ${
-                featured ? "bg-white text-[#2F67FF]" : "bg-[#2F67FF] text-white"
-              }`}
-            >
+            <span className="mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center">
               <Image
-                src={featured ? "/icons/tick-blue.svg" : "/icons/tick.svg"}
+                src={featured ? "/icons/white check.svg" : "/icons/blue check.svg"}
                 alt=""
-                width={8}
-                height={8}
-                className="object-contain transition-transform duration-300 group-hover:rotate-6"
+                width={16}
+                height={16}
+                className="h-4 w-4"
               />
             </span>
-            <span className={featured ? "text-white/95 text-[14px]" : "text-[#2F3749] text-[14px]"}>{feature}</span>
+            <span className={`text-[12px] leading-[1.35] ${featured ? "text-white/88" : "text-[#3D4656]"}`}>
+              {feature}
+            </span>
           </li>
         ))}
       </ul>

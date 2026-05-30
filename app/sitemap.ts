@@ -1,6 +1,8 @@
 import { MetadataRoute } from 'next'
+import dbConnect from '@/lib/db'
+import BlogPost from '@/models/blogPost'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://www.waysorted.com'
 
     // Main pages - sitelink-eligible pages first with high priority
@@ -11,6 +13,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
         '/about-us',
         '/support',
         '/requests',
+        '/blogs',
         '/get-early-access',
         '/docs',
         '/release-notes',
@@ -98,6 +101,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ]
 
     const currentDate = new Date()
+    let blogPages: MetadataRoute.Sitemap = []
+
+    try {
+        await dbConnect()
+        const posts = await BlogPost.find({ status: 'published', isDeleted: false })
+            .select('slug updatedAt publishedAt')
+            .sort({ publishedAt: -1, updatedAt: -1 })
+            .lean<{ slug: string; updatedAt?: Date; publishedAt?: Date }[]>()
+
+        blogPages = posts.map((post) => ({
+            url: `${baseUrl}/blogs/${post.slug}`,
+            lastModified: post.updatedAt || post.publishedAt || currentDate,
+            changeFrequency: 'monthly' as const,
+            priority: 0.7,
+        }))
+    } catch (error) {
+        console.error('Failed to add blog posts to sitemap', error)
+    }
 
     return [
         // Main pages with high priority
@@ -122,5 +143,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
             changeFrequency: 'monthly' as const,
             priority: 0.7,
         })),
+        ...blogPages,
     ]
 }

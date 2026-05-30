@@ -9,7 +9,18 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 });
     }
 
+    console.log("=== PROFILE API ===");
+    console.log("auth.user.email:", auth.user.email);
+    console.log("auth.user.createdAt:", auth.user.createdAt);
+    console.log("auth.user.createdAt type:", typeof auth.user.createdAt);
+
     const billing = await buildBillingSnapshot(auth.user, request);
+
+    const isNewUser = auth.user.createdAt
+      ? Date.now() - new Date(auth.user.createdAt).getTime() < 5 * 60 * 1000
+      : false;
+
+    console.log("isNewUser calculated:", isNewUser);
 
     return NextResponse.json({
       id: String(auth.user._id),
@@ -21,6 +32,7 @@ export async function GET(request: NextRequest) {
       earlyAccess: Boolean(auth.user.earlyAccess),
       creditsRemaining: billing.wallet.availableCredits,
       role: auth.user.role || "user",
+      isNewUser,
       billing,
     });
   } catch (error) {

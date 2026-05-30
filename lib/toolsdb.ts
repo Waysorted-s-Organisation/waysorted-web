@@ -19,6 +19,7 @@ export async function dbConnect(): Promise<Mongoose> {
     globalCache.promise = mongoose
       .connect(MONGODB_URI as string, {
         bufferCommands: false,
+        dbName: "waysorted_tools",
       })
       .then((m) => m);
   }

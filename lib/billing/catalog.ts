@@ -22,6 +22,10 @@ export type FileImportPricingRule = {
   credits: number;
 };
 
+export type FileImportPricingOptions = {
+  importMode?: unknown;
+};
+
 export const BILLING_PRICING_VERSION = "v1";
 
 export const CATALOG_PRODUCTS: CatalogProduct[] = [
@@ -272,6 +276,18 @@ export const PSD_IMPORT_PRICING: FileImportPricingRule[] = [
   { featureCode: "import_psd", sizeLabel: "large", maxBytes: 200 * 1024 * 1024, credits: 40 },
 ];
 
+export const PDF_EDITABLE_IMPORT_PRICING: FileImportPricingRule[] = [
+  { featureCode: "import_pdf_editable", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 15 },
+  { featureCode: "import_pdf_editable", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 20 },
+  { featureCode: "import_pdf_editable", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 30 },
+];
+
+export const PDF_IMAGE_IMPORT_PRICING: FileImportPricingRule[] = [
+  { featureCode: "import_pdf_image", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 15 },
+  { featureCode: "import_pdf_image", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 20 },
+  { featureCode: "import_pdf_image", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 30 },
+];
+
 export function getCatalogProduct(code: string) {
   return CATALOG_PRODUCTS.find((product) => product.code === code) || null;
 }
@@ -307,8 +323,18 @@ export function getFeaturePricingRule(featureCode: string) {
   return FEATURE_PRICING.find((rule) => rule.featureCode === featureCode) || null;
 }
 
-export function resolveImportPricing(toolCode: string, sizeBytes: number) {
+export function resolveImportPricing(
+  toolCode: string,
+  sizeBytes: number,
+  selectedOptions: FileImportPricingOptions = {},
+) {
   const normalizedTool = toolCode.trim().toLowerCase();
+  const normalizedPdfImportMode =
+    normalizedTool === "pdf" &&
+    typeof selectedOptions?.importMode === "string" &&
+    selectedOptions.importMode.trim().toLowerCase() === "image"
+      ? "image"
+      : "editable";
   const table =
     normalizedTool === "ai"
       ? AI_IMPORT_PRICING
@@ -316,6 +342,10 @@ export function resolveImportPricing(toolCode: string, sizeBytes: number) {
         ? EPS_IMPORT_PRICING
         : normalizedTool === "psd"
           ? PSD_IMPORT_PRICING
+          : normalizedTool === "pdf"
+            ? normalizedPdfImportMode === "image"
+              ? PDF_IMAGE_IMPORT_PRICING
+              : PDF_EDITABLE_IMPORT_PRICING
           : null;
 
   if (!table) return null;

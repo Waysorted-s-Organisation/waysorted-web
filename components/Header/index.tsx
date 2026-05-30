@@ -503,6 +503,16 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                     >
                       Document Hub
                     </button>
+                    <button
+                      className="w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
+                      onClick={() => {
+                        router.push('/blogs');
+                        setMobileOpen(false);
+                        setMobileResourcesOpen(false);
+                      }}
+                    >
+                      Blogs
+                    </button>
                   </div>
                 </div>
                 <div className="mt-3 px-3">
@@ -512,7 +522,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               <div className="px-3">
                 <button
                   className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
-                  onClick={() => { router.push('/about-us') }}
+                  onClick={() => { router.push('/about-us'); setMobileOpen(false); }}
                 >
                   <span className="font-medium">About Us</span>
                 </button>
@@ -521,9 +531,18 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               <div className="px-3">
                 <button
                   className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
-                  onClick={() => { router.push('/support') }}
+                  onClick={() => { router.push('/support'); setMobileOpen(false); }}
                 >
                   <span className="font-medium">Support</span>
+                </button>
+                <div className="border-t border-primary-way-10" />
+              </div>
+              <div className="px-3">
+                <button
+                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
+                  onClick={() => { router.push('/pricing'); setMobileOpen(false); }}
+                >
+                  <span className="font-medium">Pricing</span>
                 </button>
                 <div className="border-t border-primary-way-10" />
               </div>
