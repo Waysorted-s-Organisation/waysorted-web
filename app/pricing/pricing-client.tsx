@@ -179,7 +179,7 @@ export default function PricingClient({
   const { showBanner, setShowBanner } = useBanner();
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   const [paygMode, setPaygMode] = useState<"standard" | "subscriber">("standard");
-  const [selectedTopupIndex, setSelectedTopupIndex] = useState(1);
+  const [selectedTopupIndex, setSelectedTopupIndex] = useState(0);
   const [pricingData, setPricingData] = useState<PricingPayload | null>(initialPricingData);
   const [pricingError, setPricingError] = useState<string | null>(initialPricingError);
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
@@ -258,12 +258,6 @@ export default function PricingClient({
 
   const topupMarks = useMemo(
     () => [
-      {
-        title: "Free",
-        creditsLabel: "15 credits",
-        value: "15",
-        product: null as CatalogProduct | null,
-      },
       ...topupProducts.map((product) => ({
         title: formatCurrency(product.amountPaise, product.currency),
         creditsLabel: `${product.creditsGranted + product.bonusCredits} credits`,
@@ -283,13 +277,11 @@ export default function PricingClient({
 
     if (paygMode === "standard" && !availablePaygModes.standard && availablePaygModes.subscriber) {
       setPaygMode("subscriber");
-      setSelectedTopupIndex(1);
       return;
     }
 
     if (paygMode === "subscriber" && !availablePaygModes.subscriber && availablePaygModes.standard) {
       setPaygMode("standard");
-      setSelectedTopupIndex(1);
     }
   }, [availablePaygModes.standard, availablePaygModes.subscriber, paygMode, pricingData]);
 
@@ -449,20 +441,17 @@ export default function PricingClient({
               </ul>
             </div>
 
-            <div>
-              <div className="rounded-[15.31px] border border-[#E8ECF4] bg-white p-[25px] flex flex-col w-full md:w-[492px]">
+            <div className="w-full md:w-auto">
+              <div className="flex w-full flex-col rounded-[15.31px] border border-[#E8ECF4] bg-white p-5 md:h-[304px] md:w-[427px] md:px-7 md:py-5">
                 <div>
-                  <div className="flex flex-wrap items-center justify-start gap-3 text-[16px] font-medium">
+                  <div className="flex flex-wrap items-center justify-start gap-[10px] text-[15px] font-medium">
                     <button
                       type="button"
-                      onClick={() => {
-                        setPaygMode("standard");
-                        setSelectedTopupIndex(1);
-                      }}
+                      onClick={() => setPaygMode("standard")}
                       disabled={!availablePaygModes.standard}
                       className={paygMode === "standard" ? "text-[#111827]" : "text-[#6B7280]"}
                     >
-                      First Purchase
+                      Non Subscriber
                     </button>
                     <button
                       type="button"
@@ -471,7 +460,6 @@ export default function PricingClient({
                         if (nextMode === "subscriber" && !availablePaygModes.subscriber) return;
                         if (nextMode === "standard" && !availablePaygModes.standard) return;
                         setPaygMode(nextMode);
-                        setSelectedTopupIndex(1);
                       }}
                       className="relative h-[20px] w-[38px] rounded-full bg-[#111827]"
                       aria-label="Toggle pay as you go mode"
@@ -484,30 +472,25 @@ export default function PricingClient({
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setPaygMode("subscriber");
-                        setSelectedTopupIndex(1);
-                      }}
+                      onClick={() => setPaygMode("subscriber")}
                       disabled={!availablePaygModes.subscriber}
                       className={paygMode === "subscriber" ? "text-[#111827]" : "text-[#6B7280]"}
                     >
                       Subscribed User
                     </button>
-                    <span className="rounded-[999px] bg-[#1DB96B] px-2 py-[3px] text-[10px] font-semibold text-white">
-                      Extra Credits
+                    <span className="rounded-[999px] bg-[#62B46E] px-2 py-[3px] text-[10px] font-semibold text-white">
+                      Low cost
                     </span>
                   </div>
 
-                  {/* Credit heading - same on desktop and mobile, responsive font size */}
-                  <div className="mt-[20px]">
-                    <p className="text-3xl md:text-[40px] font-bold leading-none text-[#111827] tracking-tight">
+                  <div className="mt-5">
+                    <p className="text-[40px] font-bold leading-none tracking-tight text-[#111827] md:text-[45px]">
                       {activeTopup?.value || "--"} Credits
                     </p>
                   </div>
                 </div>
 
-                {/* Unified responsive slider */}
-                <div className="mt-[20px]">
+                <div className="mt-4">
                   <div className="relative h-[18px] w-full">
                     <div className="absolute left-0 right-0 top-1/2 h-[4px] -translate-y-1/2 rounded-full bg-[#D9DDE7]" />
                     <div
@@ -518,14 +501,14 @@ export default function PricingClient({
                       }}
                     />
                     <div
-                      className="pointer-events-none absolute top-1/2 h-[30px] w-[30px] -translate-y-1/2 rounded-full"
+                      className="pointer-events-none absolute top-1/2 h-[22px] w-[22px] -translate-y-1/2 rounded-full"
                       style={{
-                        left: `calc(${sliderPercent}% - 15px)`,
+                        left: `calc(${sliderPercent}% - 11px)`,
                         background: "linear-gradient(135deg, #8B46FF 0%, #6E2FF4 100%)",
-                        boxShadow: "0 0 10px 3px rgba(139, 92, 246, 0.4)",
+                        boxShadow: "0 0 8px 2px rgba(139, 92, 246, 0.32)",
                       }}
                     >
-                      <div className="absolute left-1/2 top-1/2 h-[16px] w-[16px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
+                      <div className="absolute left-1/2 top-1/2 h-[11px] w-[11px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white" />
                     </div>
                   </div>
                   <input
@@ -538,8 +521,7 @@ export default function PricingClient({
                     className="relative z-10 -mt-[18px] h-[30px] w-full cursor-pointer opacity-0"
                   />
 
-                  {/* Responsive marks */}
-                  <div className="relative mt-[20px] h-[40px]">
+                  <div className="relative mt-3 h-[44px]">
                     {topupMarks.map((mark, index) => {
                       const position = topupMarks.length > 1 ? (index / (topupMarks.length - 1)) * 100 : 0;
                       const alignmentClass =
@@ -557,10 +539,10 @@ export default function PricingClient({
                           className={`absolute top-0 ${alignmentClass}`}
                           style={index === 0 || index === topupMarks.length - 1 ? undefined : { left: `${position}%`, transform: "translateX(-50%)" }}
                         >
-                          <p className={`text-[18px] font-bold ${index === clampedTopupIndex ? "text-[#111827]" : "text-[#4B5563]"}`}>
+                          <p className={`text-[18px] font-bold leading-none ${index === clampedTopupIndex ? "text-[#111827]" : "text-[#4B5563]"}`}>
                             {mark.title}
                           </p>
-                          <p className="mt-0.5 whitespace-nowrap text-[14px] font-normal text-[#8A94A6]">{mark.creditsLabel}</p>
+                          <p className="mt-1 whitespace-nowrap text-[14px] font-normal leading-none text-[#8A94A6]">{mark.creditsLabel}</p>
                         </button>
                       );
                     })}
@@ -571,11 +553,11 @@ export default function PricingClient({
                   type="button"
                   onClick={() => goToCheckout(activeTopup?.product?.code || null)}
                   disabled={!activeTopup?.product}
-                  className="mt-[20px] h-[42px] w-full rounded-[10px] bg-[#111827] text-[16px] font-semibold text-white disabled:opacity-60 cursor-pointer shrink-0"
+                  className="mt-auto h-[42px] w-full rounded-[10px] bg-[#111827] text-[16px] font-semibold text-white disabled:opacity-60 cursor-pointer shrink-0"
                   starCount={18}
                   enterDurationSec={0.35}
                 >
-                  {activeTopup?.product ? "Purchase credits" : "Starter grant is automatic"}
+                  Purchase credits
                 </GlowStarButton>
               </div>
             </div>
