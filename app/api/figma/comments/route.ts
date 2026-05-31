@@ -44,11 +44,15 @@ export async function GET(request: Request) {
 
   const user = session.user;
 
-  if (!user.figmaAccessToken) {
-    return NextResponse.json({ error: "Figma account not linked", notLinked: true }, { status: 403 });
-  }
+  // Use individual token if linked, otherwise fallback to shared public credentials if configured
+  let token = user.figmaAccessToken || process.env.FIGMA_ACCESS_TOKEN;
 
-  let token = user.figmaAccessToken;
+  if (!token) {
+    return NextResponse.json(
+      { error: "Figma account not linked", notLinked: true },
+      { status: 403 },
+    );
+  }
 
   try {
     let figmaRes = await fetch(`https://api.figma.com/v1/files/${fileKey}/comments`, {

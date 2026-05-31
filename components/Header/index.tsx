@@ -2,7 +2,6 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import Badge from '../Badge';
 import { ProductsMenu } from '../ProductsMenu';
 import ResourcesMenu from '../ResourcesMenu';
 import LanguageDropdown from '../LanguageDropdown';
@@ -10,7 +9,6 @@ import { useRouter } from 'next/navigation';
 import { useUser } from '@/hooks/useUser';
 import UserMenu from '@/components/UserMenu';
 import products from "@/data/products.json"
-import GlowStarButton from '@/components/GlowStarButton';
 
 interface HeaderProps {
   showBanner: boolean;
@@ -18,7 +16,7 @@ interface HeaderProps {
 }
 
 const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
-  const { user, loading, refetch } = useUser();
+  const { user, refetch } = useUser();
   const [productsOpen, setProductsOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);

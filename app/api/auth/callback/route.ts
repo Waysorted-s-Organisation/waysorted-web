@@ -141,13 +141,16 @@ export async function GET(request: NextRequest) {
 
     return response;
   } catch (err: unknown) {
+    let errorDetails = "";
     if (axios.isAxiosError(err) && err.response) {
       console.error("OAuth callback error:", err.response.data);
+      errorDetails = typeof err.response.data === "object" ? JSON.stringify(err.response.data) : String(err.response.data);
     } else {
       console.error("OAuth callback error:", err);
+      errorDetails = err instanceof Error ? err.message : String(err);
     }
     return NextResponse.redirect(
-      new URL(`/signup?error=${encodeURIComponent("oauth_failed")}`, request.url)
+      new URL(`/signup?error=${encodeURIComponent("oauth_failed")}&details=${encodeURIComponent(errorDetails)}`, request.url)
     );
   }
 }
