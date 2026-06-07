@@ -5,7 +5,16 @@ import { OPTIONS, withCors } from "@/lib/cors";
 import { refreshGoogleToken } from "@/lib/token";
 export { OPTIONS };
 
-async function getOrRefreshAccessToken(session: any): Promise<string> {
+interface SessionDoc {
+  _id: unknown;
+  sessionId: string;
+  accessToken?: string;
+  refreshToken?: string;
+  accessTokenExpiresAt?: number;
+  user?: unknown;
+}
+
+async function getOrRefreshAccessToken(session: SessionDoc): Promise<string> {
   if (!session.accessToken) return "";
 
   const REFRESH_BUFFER_MS = 5 * 60 * 1000; // 5 minutes
@@ -19,7 +28,7 @@ async function getOrRefreshAccessToken(session: any): Promise<string> {
       const prevSession = await Session.findOne({
         user: session.user,
         refreshToken: { $exists: true, $ne: null }
-      }).sort({ completedAt: -1 }).lean() as any;
+      }).sort({ completedAt: -1 }).lean() as SessionDoc | null;
       if (prevSession?.refreshToken) {
         refreshToken = prevSession.refreshToken;
         await Session.updateOne({ _id: session._id }, { $set: { refreshToken } });

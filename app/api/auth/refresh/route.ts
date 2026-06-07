@@ -11,7 +11,7 @@ interface SessionDoc {
     accessToken?: string;
     refreshToken?: string;
     accessTokenExpiresAt?: number;
-    user?: any;
+    user?: unknown;
 }
 
 /**
