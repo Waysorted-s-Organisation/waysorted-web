@@ -2,7 +2,57 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import { OPTIONS, withCors } from "@/lib/cors";
+import { refreshGoogleToken } from "@/lib/token";
 export { OPTIONS };
+
+async function getOrRefreshAccessToken(session: any): Promise<string> {
+  if (!session.accessToken) return "";
+
+  const REFRESH_BUFFER_MS = 5 * 60 * 1000; // 5 minutes
+  const isExpiredOrExpiringSoon =
+    session.accessTokenExpiresAt &&
+    Date.now() > session.accessTokenExpiresAt - REFRESH_BUFFER_MS;
+
+  if (isExpiredOrExpiringSoon) {
+    let refreshToken = session.refreshToken;
+    if (!refreshToken && session.user) {
+      const prevSession = await Session.findOne({
+        user: session.user,
+        refreshToken: { $exists: true, $ne: null }
+      }).sort({ completedAt: -1 }).lean() as any;
+      if (prevSession?.refreshToken) {
+        refreshToken = prevSession.refreshToken;
+        await Session.updateOne({ _id: session._id }, { $set: { refreshToken } });
+        console.log("Recovered fallback refreshToken from previous session during poll.");
+      }
+    }
+
+    if (refreshToken) {
+      try {
+        console.log("Proactively refreshing expired/expiring token during poll for session:", session.sessionId);
+        const refreshedTokens = await refreshGoogleToken(refreshToken);
+        const newAccessToken = refreshedTokens.access_token;
+        const newExpiresAt = Date.now() + refreshedTokens.expires_in * 1000;
+
+        const updateFields: Record<string, unknown> = {
+          accessToken: newAccessToken,
+          accessTokenExpiresAt: newExpiresAt,
+        };
+        if (refreshedTokens.refresh_token) {
+          updateFields.refreshToken = refreshedTokens.refresh_token;
+        }
+
+        await Session.updateOne({ _id: session._id }, { $set: updateFields });
+        console.log("Token refreshed successfully during poll for session:", session.sessionId);
+        return newAccessToken;
+      } catch (err) {
+        console.error("Failed to proactively refresh token during poll:", err);
+      }
+    }
+  }
+
+  return session.accessToken;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,7 +71,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (session.accessToken && session.completed) {
-      return withCors(request, NextResponse.json({ accessToken: session.accessToken }));
+      const token = await getOrRefreshAccessToken(session);
+      return withCors(request, NextResponse.json({ accessToken: token }));
     }
 
     // Still waiting for user to complete OAuth flow
@@ -58,7 +109,8 @@ export async function POST(request: NextRequest) {
     }
 
     if (session.accessToken && session.completed) {
-      return withCors(request, NextResponse.json({ accessToken: session.accessToken }));
+      const token = await getOrRefreshAccessToken(session);
+      return withCors(request, NextResponse.json({ accessToken: token }));
     }
 
     return withCors(request, NextResponse.json({ pending: true }));
