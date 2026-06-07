@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import { refreshGoogleToken } from "@/lib/token";
+import axios from "axios";
 export { OPTIONS } from "@/lib/cors";
 
 interface SessionDoc {
@@ -10,6 +11,7 @@ interface SessionDoc {
     accessToken?: string;
     refreshToken?: string;
     accessTokenExpiresAt?: number;
+    user?: unknown;
 }
 
 /**
@@ -70,7 +72,23 @@ export async function POST(request: NextRequest) {
 
         if (isExpiredOrExpiringSoon) {
             // Token is expired or expiring soon, attempt refresh
-            if (!session.refreshToken) {
+            let refreshToken = session.refreshToken;
+
+            if (!refreshToken && session.user) {
+                console.log("Session is missing refreshToken. Searching fallbacks for user:", session.user);
+                const prevSession = await Session.findOne({
+                    user: session.user,
+                    refreshToken: { $exists: true, $ne: null }
+                }).sort({ completedAt: -1 }).lean() as SessionDoc | null;
+                if (prevSession?.refreshToken) {
+                    refreshToken = prevSession.refreshToken;
+                    // Persist it back to the current session so future calls are cached
+                    await Session.updateOne({ _id: session._id }, { $set: { refreshToken } });
+                    console.log("Successfully recovered fallback refreshToken from previous session.");
+                }
+            }
+
+            if (!refreshToken) {
                 return NextResponse.json(
                     { error: "Token expired and no refresh token available", requiresReauth: true },
                     { status: 401 }
@@ -80,7 +98,7 @@ export async function POST(request: NextRequest) {
             try {
                 console.log("Refreshing expired/expiring token for session:", session.sessionId);
 
-                const refreshedTokens = await refreshGoogleToken(session.refreshToken);
+                const refreshedTokens = await refreshGoogleToken(refreshToken);
                 const newAccessToken = refreshedTokens.access_token;
                 const newExpiresAt = Date.now() + refreshedTokens.expires_in * 1000;
 
@@ -106,9 +124,27 @@ export async function POST(request: NextRequest) {
                 });
             } catch (refreshError) {
                 console.error("Failed to refresh token:", refreshError);
+
+                // Differentiate between transient network failures vs. hard auth expiration
+                if (axios.isAxiosError(refreshError)) {
+                    const status = refreshError.response?.status;
+                    const errorMsg = refreshError.response?.data?.error_description || refreshError.response?.data?.error || "";
+                    console.error(`Google refresh response error code: ${status}, msg: ${errorMsg}`);
+
+                    // Google OAuth endpoints return 400 for revoked/expired/invalid refresh tokens ("invalid_grant")
+                    if (status === 400 || status === 401) {
+                        return NextResponse.json(
+                            { error: "Refresh token is invalid or revoked. Please log in again.", requiresReauth: true },
+                            { status: 401 }
+                        );
+                    }
+                }
+
+                // For transient errors (network connection/timeout/Google 5xx), return a server error
+                // but DO NOT signal requiresReauth, so the client doesn't wipe cached data.
                 return NextResponse.json(
-                    { error: "Failed to refresh token", requiresReauth: true },
-                    { status: 401 }
+                    { error: "Failed to connect to Google authentication server. Please try again." },
+                    { status: 503 }
                 );
             }
         }

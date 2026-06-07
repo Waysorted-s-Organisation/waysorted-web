@@ -2,7 +2,7 @@ import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import User from "@/models/user";
-import Session from "@/models/session";
+import Session, { ISession } from "@/models/session";
 import Subscriber from "@/models/subscriber";
 import { ensureStarterGrant } from "@/lib/billing/db";
 import { extractRequestSignals } from "@/lib/billing/request-signals";
@@ -95,12 +95,25 @@ export async function GET(request: NextRequest) {
       console.error("Auto-subscription failed:", error);
     }
 
+    // Find a previous session with a refresh token for this user as fallback
+    let fallbackRefreshToken = null;
+    if (!refresh_token) {
+      const prevSession = await Session.findOne({
+        user: user._id,
+        refreshToken: { $exists: true, $ne: null }
+      }).sort({ completedAt: -1 }).lean() as ISession | null;
+      if (prevSession) {
+        fallbackRefreshToken = prevSession.refreshToken;
+        console.log("Found fallback refresh token from a previous session for user:", user.email);
+      }
+    }
+
     await Session.updateOne(
       { sessionId: state },
       {
         $set: {
           accessToken: access_token,
-          refreshToken: refresh_token || existingSession.refreshToken,
+          refreshToken: refresh_token || fallbackRefreshToken || existingSession.refreshToken,
           accessTokenExpiresAt,
           idToken: id_token,
           user: user._id,
