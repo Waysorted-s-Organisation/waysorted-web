@@ -3,6 +3,11 @@ import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/
 import { buildBillingSnapshot, expireStaleReservations, reserveCredits } from "@/lib/billing/db";
 import { resolveUsageCredits } from "@/lib/billing/usagePricing";
 import dbConnect from "@/lib/db";
+import {
+  buildBillingBlockedEvent,
+  buildCreditsLowEvent,
+  emitNotificationEvent,
+} from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -18,7 +23,21 @@ type ReserveBody = {
   bridgeToken?: string;
 };
 
+type ReserveNotificationContext = {
+  userId: string;
+  email: string;
+  name?: string | null;
+  eventKey: string;
+  featureCode: string;
+  toolCode?: string | null;
+  creditsRequired: number;
+  availableCredits: number;
+  heldCredits: number;
+};
+
 export async function POST(request: NextRequest) {
+  let notificationContext: ReserveNotificationContext | null = null;
+
   try {
     await dbConnect();
     await expireStaleReservations();
@@ -34,8 +53,29 @@ export async function POST(request: NextRequest) {
 
     const resolved = resolveUsageCredits(body);
     const snapshot = await buildBillingSnapshot(auth.user, request);
+    const reservationIdempotencyKey =
+      body.idempotencyKey?.trim() ||
+      `reserve:${auth.user._id}:${resolved.featureCode}:${Date.now()}`;
+
+    notificationContext = {
+      userId: String(auth.user._id),
+      email: auth.user.email,
+      name: auth.user.name || null,
+      eventKey: reservationIdempotencyKey,
+      featureCode: resolved.featureCode,
+      toolCode: body.toolCode?.trim() || null,
+      creditsRequired: resolved.creditsRequired,
+      availableCredits: snapshot.wallet.availableCredits,
+      heldCredits: snapshot.wallet.heldCredits,
+    };
 
     if (resolved.requiresSubscription && !snapshot.capabilities.customizablePresets) {
+      await emitNotificationEvent(buildBillingBlockedEvent({
+        ...notificationContext,
+        reason: "subscription_required",
+        checkoutTarget: "/pricing",
+      }));
+
       return NextResponse.json(
         {
           error: "This feature requires an active subscription.",
@@ -66,9 +106,7 @@ export async function POST(request: NextRequest) {
       creditsRequired: resolved.creditsRequired,
       processor: body.processor?.trim() || null,
       selectedOptions: body.selectedOptions || {},
-      idempotencyKey:
-        body.idempotencyKey?.trim() ||
-        `reserve:${auth.user._id}:${resolved.featureCode}:${Date.now()}`,
+      idempotencyKey: reservationIdempotencyKey,
     });
 
     return NextResponse.json({
@@ -85,6 +123,13 @@ export async function POST(request: NextRequest) {
     const message = error instanceof Error ? error.message : "Unable to reserve credits.";
 
     if (status === 409 && /insufficient credits/i.test(message)) {
+      if (notificationContext) {
+        await emitNotificationEvent(buildCreditsLowEvent({
+          ...notificationContext,
+          reason: "insufficient_credits",
+        }));
+      }
+
       return NextResponse.json(
         {
           error: message,

@@ -4,6 +4,10 @@ import User from "@/models/user";
 import Session from "@/models/session";
 import OtpRequest from "@/models/otpRequest";
 import Subscriber from "@/models/subscriber";
+import {
+  buildAccountActivatedEvent,
+  emitNotificationEvent,
+} from "@/lib/notifications";
 export { OPTIONS } from "@/lib/cors";
 
 const PROVIDER_VERIFY_URI =
@@ -64,6 +68,7 @@ export async function POST(req: Request) {
     const normalizedEmail = String(email).trim().toLowerCase();
 
     let user = await User.findOne({ email: normalizedEmail });
+    const isNewUser = !user;
     if (!user) {
       user = await User.create({
         email: normalizedEmail,
@@ -99,6 +104,17 @@ export async function POST(req: Request) {
       user: user._id,
       expiresAt,
     });
+
+    if (isNewUser) {
+      await emitNotificationEvent(
+        buildAccountActivatedEvent({
+          userId: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          provider: "otp",
+        })
+      );
+    }
 
     const res = NextResponse.json({
       ok: true,
