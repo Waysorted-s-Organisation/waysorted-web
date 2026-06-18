@@ -8,6 +8,7 @@ import { ensureStarterGrant } from "@/lib/billing/db";
 import { extractRequestSignals } from "@/lib/billing/request-signals";
 import { getCountryFromRequest, getCountryTier, normalizeCountry } from "@/lib/billing/regional-pricing";
 import { withCors } from "@/lib/cors";
+import { SESSION_COOKIE_NAME, getSessionCookieOptions } from "@/lib/auth-cookies";
 
 export async function GET(request: NextRequest) {
   const urlObj = new URL(request.url);
@@ -144,13 +145,11 @@ export async function GET(request: NextRequest) {
     // Add CORS headers to redirect response (needed if Figma follows the redirect)
     withCors(request, response);
 
-    response.cookies.set("sessionId", state, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    });
+    response.cookies.set(
+      SESSION_COOKIE_NAME,
+      state,
+      getSessionCookieOptions(60 * 60 * 24 * 7)
+    );
 
     return response;
   } catch (err: unknown) {

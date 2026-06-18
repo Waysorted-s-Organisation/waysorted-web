@@ -19,33 +19,9 @@ type SessionWithUser = {
 };
 
 async function findBearerSession(accessToken: string) {
-  let session = (await Session.findOne({ accessToken })
+  return (await Session.findOne({ accessToken })
     .populate<{ user: IUser }>("user")
     .lean()) as SessionWithUser | null;
-
-  if (
-    session?.accessTokenExpiresAt &&
-    Date.now() > session.accessTokenExpiresAt - 60_000 &&
-    session.refreshToken
-  ) {
-    const refreshedTokens = await refreshGoogleToken(session.refreshToken);
-    const updateFields: Record<string, unknown> = {
-      accessToken: refreshedTokens.access_token,
-      accessTokenExpiresAt: Date.now() + refreshedTokens.expires_in * 1000,
-    };
-
-    if (refreshedTokens.refresh_token) {
-      updateFields.refreshToken = refreshedTokens.refresh_token;
-    }
-
-    await Session.updateOne({ _id: session._id }, { $set: updateFields });
-
-    session = (await Session.findOne({ _id: session._id })
-      .populate<{ user: IUser }>("user")
-      .lean()) as SessionWithUser | null;
-  }
-
-  return session;
 }
 
 export async function getAuthenticatedUser(request?: NextRequest) {

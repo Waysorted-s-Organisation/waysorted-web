@@ -56,7 +56,14 @@ async function getOrRefreshAccessToken(session: SessionDoc): Promise<string> {
         return newAccessToken;
       } catch (err) {
         console.error("Failed to proactively refresh token during poll:", err);
+        // Extend token lifetime locally
+        const newExpiresAt = Date.now() + 3600 * 1000;
+        await Session.updateOne({ _id: session._id }, { $set: { accessTokenExpiresAt: newExpiresAt } });
       }
+    } else {
+      // Extend token lifetime locally
+      const newExpiresAt = Date.now() + 3600 * 1000;
+      await Session.updateOne({ _id: session._id }, { $set: { accessTokenExpiresAt: newExpiresAt } });
     }
   }
 

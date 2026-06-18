@@ -4,6 +4,7 @@ import User from "@/models/user";
 import Session from "@/models/session";
 import OtpRequest from "@/models/otpRequest";
 import Subscriber from "@/models/subscriber";
+import { SESSION_COOKIE_NAME, getSessionCookieOptions } from "@/lib/auth-cookies";
 export { OPTIONS } from "@/lib/cors";
 
 const PROVIDER_VERIFY_URI =
@@ -110,13 +111,11 @@ export async function POST(req: Request) {
       },
     });
 
-    res.cookies.set("sessionId", sessionId, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: maxAgeDays * 24 * 60 * 60,
-    });
+    res.cookies.set(
+      SESSION_COOKIE_NAME,
+      sessionId,
+      getSessionCookieOptions(maxAgeDays * 24 * 60 * 60)
+    );
 
 
     return res;
