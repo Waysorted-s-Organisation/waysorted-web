@@ -8,7 +8,14 @@ import { ensureStarterGrant } from "@/lib/billing/db";
 import { extractRequestSignals } from "@/lib/billing/request-signals";
 import { getCountryFromRequest, getCountryTier, normalizeCountry } from "@/lib/billing/regional-pricing";
 import { withCors } from "@/lib/cors";
+<<<<<<< HEAD
 import { SESSION_COOKIE_NAME, getSessionCookieOptions } from "@/lib/auth-cookies";
+=======
+import {
+  buildAccountActivatedEvent,
+  emitNotificationEvent,
+} from "@/lib/notifications";
+>>>>>>> 0aada052b5fbe1aa513354245549e620d2c0e340
 
 export async function GET(request: NextRequest) {
   const urlObj = new URL(request.url);
@@ -68,6 +75,7 @@ export async function GET(request: NextRequest) {
     const callbackCountry = normalizeCountry(getCountryFromRequest(request) || existingSession.countryCode);
 
     const existingUser = await User.findOne({ email: googleUser.email });
+    const isNewUser = !existingUser;
     const user =
       existingUser ||
       new User({
@@ -138,6 +146,22 @@ export async function GET(request: NextRequest) {
       userAgent: callbackSignals.userAgent || existingSession.userAgent || null,
       deviceId: existingSession.deviceId || callbackSignals.deviceId || null,
     });
+
+    if (isNewUser) {
+      await emitNotificationEvent(
+        buildAccountActivatedEvent({
+          userId: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          provider: "google-oauth",
+          sourceContext: {
+            auth_source: existingSession.source || "web",
+            country_code: callbackCountry,
+            pricing_tier: getCountryTier(callbackCountry),
+          },
+        })
+      );
+    }
 
     const finalUrl = new URL(redirectPath, urlObj.origin);
     const response = NextResponse.redirect(finalUrl);

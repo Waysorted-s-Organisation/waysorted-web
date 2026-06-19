@@ -7,6 +7,7 @@ export interface ISubscriber extends Document {
   subscribed_at: Date;
   updated_at: Date;
   source: string;
+  preferences?: Record<string, "subscribed" | "unsubscribed">;
   unsubscribed_at?: Date | null;
   resubscribed_at?: Date;
   createdAt: Date;
@@ -40,6 +41,10 @@ const SubscriberSchema = new Schema<ISubscriber>({
   source: {
     type: String,
     default: 'website',
+  },
+  preferences: {
+    type: Object,
+    default: {},
   },
   unsubscribed_at: {
     type: Date,

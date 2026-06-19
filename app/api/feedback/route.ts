@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import dbConnect from "@/lib/db";
 import { getCurrentUser } from "@/lib/user";
+import {
+  buildFeedbackSubmittedEvent,
+  emitNotificationEvent,
+} from "@/lib/notifications";
 import Feedback from "@/models/feedback";
 
 export async function POST(request: Request) {
@@ -44,7 +48,7 @@ export async function POST(request: Request) {
       }
     })();
 
-    await Feedback.create({
+    const feedback = await Feedback.create({
       rating: ratingValue,
       comment: comment || undefined,
       isAnonymous: !user,
@@ -54,6 +58,17 @@ export async function POST(request: Request) {
       path,
       userAgent,
     });
+
+    await emitNotificationEvent(buildFeedbackSubmittedEvent({
+      feedbackId: String(feedback._id),
+      userId: user?.id || null,
+      email: user?.email || null,
+      name: user?.name || null,
+      rating: ratingValue,
+      commentLength: comment.length,
+      path,
+      isAnonymous: !user,
+    }));
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (error) {

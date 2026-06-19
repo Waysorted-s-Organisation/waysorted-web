@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/billing/auth";
 import { recordProcessorReservationStatus } from "@/lib/billing/db";
 import dbConnect from "@/lib/db";
+import {
+  buildToolUsageFailedEvent,
+  emitNotificationEvent,
+} from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -51,6 +55,21 @@ export async function POST(request: NextRequest) {
         ...(body.metadata || {}),
       },
     });
+
+    if (status === "failed") {
+      await emitNotificationEvent(buildToolUsageFailedEvent({
+        userId: String(auth.user._id),
+        email: auth.user.email,
+        name: auth.user.name || null,
+        reservationId: String(reservation._id),
+        featureCode: reservation.featureCode,
+        toolCode: reservation.toolCode || null,
+        creditsReserved: reservation.creditsReserved,
+        processor: reservation.processor || body.processor || null,
+        processorJobId: reservation.processorJobId || body.processorJobId || null,
+        reason: body.reason || null,
+      }));
+    }
 
     return NextResponse.json({
       ok: true,

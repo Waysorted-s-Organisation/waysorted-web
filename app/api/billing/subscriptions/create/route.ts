@@ -13,6 +13,10 @@ import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/
 import { getCatalogProduct } from "@/lib/billing/catalog";
 import { createRazorpayPlan, createRazorpaySubscription } from "@/lib/billing/razorpay";
 import { getRazorpayConfig } from "@/lib/billing/env";
+import {
+  buildSubscriptionCheckoutStartedEvent,
+  emitNotificationEvent,
+} from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -156,6 +160,19 @@ export async function POST(request: NextRequest) {
       status: "payment_pending",
       cancelAtCycleEnd: false,
     });
+
+    await emitNotificationEvent(buildSubscriptionCheckoutStartedEvent({
+      userId: String(auth.user._id),
+      email: auth.user.email,
+      name: auth.user.name || null,
+      purchaseId: String(purchase._id),
+      subscriptionId: subscription.id,
+      productCode: product.code,
+      amountSubunits: pricedProduct.amountPaise,
+      currency: pricedProduct.currency,
+      pricingTier: snapshot.pricing.tier,
+      pricingCountry: snapshot.pricing.country,
+    }));
 
     return NextResponse.json({
       purchaseId: String(purchase._id),

@@ -34,3 +34,17 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Notification Producer
+
+Account activation, preference, feedback, billing, credit, and tool-usage
+events are emitted to the newsletter v2 notification ingest service when these
+server-side environment variables are configured:
+
+- `NOTIFICATION_INGEST_URL`: Full `/api/v2/notifications/events` ingest URL.
+- `NOTIFICATION_INGEST_TOKEN`: Shared ingest token configured on the newsletter service.
+- `NOTIFICATION_EVENT_SOURCE`: Event source name allowed by the newsletter service.
+- `NOTIFICATION_INGEST_TIMEOUT_MS`: Optional request timeout override.
+- `NOTIFICATION_HEAVY_USAGE_CREDIT_THRESHOLD`: Optional credit threshold for
+  `tool_usage_heavy` events. Defaults to `100`.
+- `NOTIFICATION_PRODUCER_ENABLED=false`: Optional local kill switch.
