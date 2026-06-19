@@ -3,6 +3,10 @@ import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import User from "@/models/user";
 
+function basicAuthHeader(clientId: string, clientSecret: string) {
+  return `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const code = searchParams.get("code");
@@ -33,10 +37,9 @@ export async function GET(request: Request) {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: basicAuthHeader(clientId, clientSecret),
       },
       body: new URLSearchParams({
-        client_id: clientId,
-        client_secret: clientSecret,
         redirect_uri: redirectUri,
         code: code,
         grant_type: "authorization_code",
@@ -50,44 +53,21 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "Failed to exchange token", details: tokenData }, { status: 400 });
     }
 
-    const { access_token, refresh_token, user_id } = tokenData;
+    const { access_token, refresh_token, user_id, user_id_string, expires_in } = tokenData;
 
     // Save tokens on the User profile
     await User.findByIdAndUpdate(session.user, {
-      figmaUserId: user_id,
+      figmaUserId: user_id_string || user_id,
       figmaAccessToken: access_token,
       figmaRefreshToken: refresh_token,
+      figmaTokenExpiresAt: expires_in
+        ? new Date(Date.now() + Number(expires_in) * 1000)
+        : undefined,
+      figmaScopes: ["current_user:read", "file_comments:read"],
+      figmaConnectedAt: new Date(),
     });
 
-    // Provide a simple UI to close the popup window for the plugin user
-    const htmlResponse = `
-      <!DOCTYPE html>
-      <html>
-      <head>
-          <title>Figma Linked</title>
-          <style>
-              body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #fafafa; }
-              .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
-              h2 { margin-top: 0; color: #333; }
-              p { color: #555; }
-          </style>
-      </head>
-      <body>
-          <div class="card">
-              <h2>Figma Account Linked Successfully!</h2>
-              <p>You can close this window and return to the plugin to use the Comment Summarizer.</p>
-          </div>
-          <script>
-            // Tell the Figma plugin window to close this if it opened it, or close anyway.
-            setTimeout(() => {
-                window.close();
-            }, 3000);
-          </script>
-      </body>
-      </html>
-    `;
-
-    return new NextResponse(htmlResponse, { headers: { 'Content-Type': 'text/html' } });
+    return NextResponse.redirect(new URL("/connected", request.url));
 
   } catch (error) {
     console.error("Figma OAuth Callback Error:", error);

@@ -5,11 +5,12 @@ import { revalidatePath } from "next/cache";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import User from "@/models/user";
+import { SESSION_COOKIE_NAME } from "@/lib/auth-cookies";
 
 // Helper to authenticate user inside server action
 async function getAuthenticatedUser() {
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get("sessionId")?.value;
+  const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
   if (!sessionId) return null;
 

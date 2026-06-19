@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
+import { SESSION_COOKIE_NAME } from "@/lib/auth-cookies";
 
 export interface CurrentUser {
   id: string;
@@ -17,7 +18,7 @@ export interface CurrentUser {
 export async function getCurrentUser(): Promise<CurrentUser | null> {
   try {
     const cookieStore = await cookies();
-    const sessionId = cookieStore.get("sessionId")?.value;
+    const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
     if (!sessionId) return null;
 

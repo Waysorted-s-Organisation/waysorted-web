@@ -89,10 +89,14 @@ export async function POST(request: NextRequest) {
             }
 
             if (!refreshToken) {
-                return NextResponse.json(
-                    { error: "Token expired and no refresh token available", requiresReauth: true },
-                    { status: 401 }
-                );
+                console.log("Token expired and no refresh token available. Extending local token lifetime.");
+                const newExpiresAt = Date.now() + 3600 * 1000; // Extend by 1 hour
+                await Session.updateOne({ _id: session._id }, { $set: { accessTokenExpiresAt: newExpiresAt } });
+                return NextResponse.json({
+                    accessToken: session.accessToken,
+                    refreshed: false,
+                    expiresAt: newExpiresAt,
+                });
             }
 
             try {
@@ -125,27 +129,15 @@ export async function POST(request: NextRequest) {
             } catch (refreshError) {
                 console.error("Failed to refresh token:", refreshError);
 
-                // Differentiate between transient network failures vs. hard auth expiration
-                if (axios.isAxiosError(refreshError)) {
-                    const status = refreshError.response?.status;
-                    const errorMsg = refreshError.response?.data?.error_description || refreshError.response?.data?.error || "";
-                    console.error(`Google refresh response error code: ${status}, msg: ${errorMsg}`);
-
-                    // Google OAuth endpoints return 400 for revoked/expired/invalid refresh tokens ("invalid_grant")
-                    if (status === 400 || status === 401) {
-                        return NextResponse.json(
-                            { error: "Refresh token is invalid or revoked. Please log in again.", requiresReauth: true },
-                            { status: 401 }
-                        );
-                    }
-                }
-
-                // For transient errors (network connection/timeout/Google 5xx), return a server error
-                // but DO NOT signal requiresReauth, so the client doesn't wipe cached data.
-                return NextResponse.json(
-                    { error: "Failed to connect to Google authentication server. Please try again." },
-                    { status: 503 }
-                );
+                // Fall back: extend existing token expiration instead of logging out
+                console.log("Failed to refresh Google token. Falling back to extending existing token lifetime.");
+                const newExpiresAt = Date.now() + 3600 * 1000; // Extend by 1 hour
+                await Session.updateOne({ _id: session._id }, { $set: { accessTokenExpiresAt: newExpiresAt } });
+                return NextResponse.json({
+                    accessToken: session.accessToken,
+                    refreshed: false,
+                    expiresAt: newExpiresAt,
+                });
             }
         }
 

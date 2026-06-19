@@ -46,6 +46,9 @@ const UserSchema = new Schema<IUser, UserModel, IUserMethods, IUserStatics>(
     figmaUserId: { type: String },
     figmaAccessToken: { type: String },
     figmaRefreshToken: { type: String },
+    figmaTokenExpiresAt: { type: Date },
+    figmaScopes: [{ type: String }],
+    figmaConnectedAt: { type: Date },
   },
   {
     timestamps: true,
