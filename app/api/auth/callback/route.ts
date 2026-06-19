@@ -8,14 +8,11 @@ import { ensureStarterGrant } from "@/lib/billing/db";
 import { extractRequestSignals } from "@/lib/billing/request-signals";
 import { getCountryFromRequest, getCountryTier, normalizeCountry } from "@/lib/billing/regional-pricing";
 import { withCors } from "@/lib/cors";
-<<<<<<< HEAD
 import { SESSION_COOKIE_NAME, getSessionCookieOptions } from "@/lib/auth-cookies";
-=======
 import {
   buildAccountActivatedEvent,
   emitNotificationEvent,
 } from "@/lib/notifications";
->>>>>>> 0aada052b5fbe1aa513354245549e620d2c0e340
 
 export async function GET(request: NextRequest) {
   const urlObj = new URL(request.url);

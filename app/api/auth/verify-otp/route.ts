@@ -4,14 +4,11 @@ import User from "@/models/user";
 import Session from "@/models/session";
 import OtpRequest from "@/models/otpRequest";
 import Subscriber from "@/models/subscriber";
-<<<<<<< HEAD
 import { SESSION_COOKIE_NAME, getSessionCookieOptions } from "@/lib/auth-cookies";
-=======
 import {
   buildAccountActivatedEvent,
   emitNotificationEvent,
 } from "@/lib/notifications";
->>>>>>> 0aada052b5fbe1aa513354245549e620d2c0e340
 export { OPTIONS } from "@/lib/cors";
 
 const PROVIDER_VERIFY_URI =
