@@ -64,11 +64,13 @@ export async function GET(request: Request) {
   }
 
   try {
+    const figmaHeaders: Record<string, string> = token.startsWith("figd_")
+      ? { "X-Figma-Token": token }
+      : { "Authorization": `Bearer ${token}` };
+
     let figmaRes = await fetch(`https://api.figma.com/v1/files/${fileKey}/comments`, {
       method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
+      headers: figmaHeaders
     });
 
     // Auto-refresh logic if the token expired
@@ -106,9 +108,9 @@ export async function GET(request: Request) {
         // Retry the api call
         figmaRes = await fetch(`https://api.figma.com/v1/files/${fileKey}/comments`, {
           method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
+          headers: (token?.startsWith("figd_")
+            ? { "X-Figma-Token": token }
+            : { "Authorization": `Bearer ${token}` }) as Record<string, string>
         });
       } else {
         return NextResponse.json(
