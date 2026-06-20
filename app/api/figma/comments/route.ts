@@ -64,7 +64,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const figmaHeaders = token.startsWith("figd_")
+    const figmaHeaders: Record<string, string> = token.startsWith("figd_")
       ? { "X-Figma-Token": token }
       : { "Authorization": `Bearer ${token}` };
 
@@ -108,9 +108,9 @@ export async function GET(request: Request) {
         // Retry the api call
         figmaRes = await fetch(`https://api.figma.com/v1/files/${fileKey}/comments`, {
           method: "GET",
-          headers: token.startsWith("figd_")
+          headers: (token?.startsWith("figd_")
             ? { "X-Figma-Token": token }
-            : { "Authorization": `Bearer ${token}` }
+            : { "Authorization": `Bearer ${token}` }) as Record<string, string>
         });
       } else {
         return NextResponse.json(
