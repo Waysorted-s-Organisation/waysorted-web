@@ -4,6 +4,8 @@ import {
   type FileImportPricingOptions,
 } from "@/lib/billing/catalog";
 
+const USAGE_CREDIT_MULTIPLIER = 2;
+
 export type UsagePricingRequest = {
   featureCode?: string;
   toolCode?: string;
@@ -18,6 +20,15 @@ export type ResolvedUsagePricing = {
   requiresSubscription: boolean;
   selectedOptions: Record<string, unknown>;
 };
+
+function applyUsageCreditMultiplier(credits: number) {
+  const normalizedCredits = Number(credits);
+  if (!Number.isFinite(normalizedCredits) || normalizedCredits <= 0) {
+    return 0;
+  }
+
+  return normalizedCredits * USAGE_CREDIT_MULTIPLIER;
+}
 
 export function resolveUsageCredits(body: UsagePricingRequest): ResolvedUsagePricing {
   if (!body.featureCode?.trim()) {
@@ -41,7 +52,7 @@ export function resolveUsageCredits(body: UsagePricingRequest): ResolvedUsagePri
     }
 
     return {
-      creditsRequired: importRule.credits,
+      creditsRequired: applyUsageCreditMultiplier(importRule.credits),
       featureCode: importRule.featureCode,
       sizeBucket: importRule.sizeLabel,
       requiresSubscription: false,
@@ -55,7 +66,7 @@ export function resolveUsageCredits(body: UsagePricingRequest): ResolvedUsagePri
   }
 
   return {
-    creditsRequired: rule.credits,
+    creditsRequired: applyUsageCreditMultiplier(rule.credits),
     featureCode: rule.featureCode,
     sizeBucket: null,
     requiresSubscription: Boolean(rule.requiresSubscription),
