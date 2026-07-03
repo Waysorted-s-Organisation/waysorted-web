@@ -2,10 +2,11 @@ import { cookies } from "next/headers";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import type { IUser } from "@/types/user";
+import { SESSION_COOKIE_NAME } from "@/lib/auth-cookies";
 
 export async function getCurrentUser() {
   const cookieStore = await cookies();
-  const sessionId = cookieStore.get("sessionId")?.value;
+  const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
   if (!sessionId) return null;
   await dbConnect();
   const session = await Session.findOne({ sessionId }).populate<{ user: IUser }>("user");

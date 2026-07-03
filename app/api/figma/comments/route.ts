@@ -5,6 +5,10 @@ import Session from "@/models/session";
 import User from "@/models/user";
 import type { IUser } from "@/types/user";
 
+function basicAuthHeader(clientId: string, clientSecret: string) {
+  return `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`;
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const fileKey = searchParams.get("fileKey");
@@ -44,22 +48,29 @@ export async function GET(request: Request) {
 
   const user = session.user;
 
-  // Use individual token if linked, otherwise fallback to shared public credentials if configured
-  let token = user.figmaAccessToken || process.env.FIGMA_ACCESS_TOKEN;
+  // Public OAuth review expects access to happen on behalf of the user who
+  // authorized the app. Do not fall back to a shared personal token here.
+  let token = user.figmaAccessToken;
 
   if (!token) {
     return NextResponse.json(
-      { error: "Figma account not linked", notLinked: true },
+      {
+        error: "Figma account not linked",
+        notLinked: true,
+        requiredScopes: ["current_user:read", "file_comments:read"],
+      },
       { status: 403 },
     );
   }
 
   try {
+    const figmaHeaders: Record<string, string> = token.startsWith("figd_")
+      ? { "X-Figma-Token": token }
+      : { "Authorization": `Bearer ${token}` };
+
     let figmaRes = await fetch(`https://api.figma.com/v1/files/${fileKey}/comments`, {
       method: "GET",
-      headers: {
-        "Authorization": `Bearer ${token}`
-      }
+      headers: figmaHeaders
     });
 
     // Auto-refresh logic if the token expired
@@ -73,10 +84,11 @@ export async function GET(request: Request) {
 
       const refreshRes = await fetch("https://api.figma.com/v1/oauth/refresh", {
         method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+          Authorization: basicAuthHeader(clientId, clientSecret),
+        },
         body: new URLSearchParams({
-           client_id: clientId,
-           client_secret: clientSecret,
            refresh_token: user.figmaRefreshToken,
         }).toString()
       });
@@ -88,17 +100,27 @@ export async function GET(request: Request) {
         // Update user in DB
         await User.findByIdAndUpdate(user._id, {
           figmaAccessToken: refreshData.access_token,
+          figmaTokenExpiresAt: refreshData.expires_in
+            ? new Date(Date.now() + Number(refreshData.expires_in) * 1000)
+            : undefined,
         });
 
         // Retry the api call
         figmaRes = await fetch(`https://api.figma.com/v1/files/${fileKey}/comments`, {
           method: "GET",
-          headers: {
-            "Authorization": `Bearer ${token}`
-          }
+          headers: (token?.startsWith("figd_")
+            ? { "X-Figma-Token": token }
+            : { "Authorization": `Bearer ${token}` }) as Record<string, string>
         });
       } else {
-        return NextResponse.json({ error: "Could not refresh Figma token. Please re-link Figma account." }, { status: 403 });
+        return NextResponse.json(
+          {
+            error: "Could not refresh Figma token. Please re-link Figma account.",
+            notLinked: true,
+            requiredScopes: ["current_user:read", "file_comments:read"],
+          },
+          { status: 403 },
+        );
       }
     }
 
@@ -109,7 +131,6 @@ export async function GET(request: Request) {
 
     const data = await figmaRes.json();
 
-    // Map through the comments. From Figma API, comments have an array structure representing threads.
     return NextResponse.json(data);
 
   } catch (error) {

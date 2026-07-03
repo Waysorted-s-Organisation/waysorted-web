@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { cancelRazorpaySubscription, fetchRazorpaySubscription } from "@/lib/billing/razorpay";
 import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/auth";
 import { findCurrentSubscription, updateBillingSubscriptionState } from "@/lib/billing/db";
+import {
+  buildSubscriptionCancelledEvent,
+  emitNotificationEvent,
+} from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -65,6 +69,17 @@ export async function POST(request: NextRequest) {
       renewsAt: subscription.nextChargeAt || subscription.currentPeriodEnd || null,
       cancelAtCycleEnd,
     });
+
+    await emitNotificationEvent(buildSubscriptionCancelledEvent({
+      userId: String(auth.user._id),
+      email: auth.user.email,
+      name: auth.user.name || null,
+      subscriptionRecordId: String(subscription._id),
+      providerSubscriptionId: subscription.providerSubscriptionId,
+      planCode: subscription.planCode,
+      status: cancelAtCycleEnd ? "cancel_scheduled" : "cancelled",
+      currentPeriodEnd: subscription.currentPeriodEnd || null,
+    }));
 
     return NextResponse.json({
       ok: true,

@@ -2,12 +2,17 @@ import axios from "axios";
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import User from "@/models/user";
-import Session from "@/models/session";
+import Session, { ISession } from "@/models/session";
 import Subscriber from "@/models/subscriber";
 import { ensureStarterGrant } from "@/lib/billing/db";
 import { extractRequestSignals } from "@/lib/billing/request-signals";
 import { getCountryFromRequest, getCountryTier, normalizeCountry } from "@/lib/billing/regional-pricing";
 import { withCors } from "@/lib/cors";
+import { SESSION_COOKIE_NAME, getSessionCookieOptions } from "@/lib/auth-cookies";
+import {
+  buildAccountActivatedEvent,
+  emitNotificationEvent,
+} from "@/lib/notifications";
 
 export async function GET(request: NextRequest) {
   const urlObj = new URL(request.url);
@@ -67,6 +72,7 @@ export async function GET(request: NextRequest) {
     const callbackCountry = normalizeCountry(getCountryFromRequest(request) || existingSession.countryCode);
 
     const existingUser = await User.findOne({ email: googleUser.email });
+    const isNewUser = !existingUser;
     const user =
       existingUser ||
       new User({
@@ -95,12 +101,25 @@ export async function GET(request: NextRequest) {
       console.error("Auto-subscription failed:", error);
     }
 
+    // Find a previous session with a refresh token for this user as fallback
+    let fallbackRefreshToken = null;
+    if (!refresh_token) {
+      const prevSession = await Session.findOne({
+        user: user._id,
+        refreshToken: { $exists: true, $ne: null }
+      }).sort({ completedAt: -1 }).lean() as ISession | null;
+      if (prevSession) {
+        fallbackRefreshToken = prevSession.refreshToken;
+        console.log("Found fallback refresh token from a previous session for user:", user.email);
+      }
+    }
+
     await Session.updateOne(
       { sessionId: state },
       {
         $set: {
           accessToken: access_token,
-          refreshToken: refresh_token || existingSession.refreshToken,
+          refreshToken: refresh_token || fallbackRefreshToken || existingSession.refreshToken,
           accessTokenExpiresAt,
           idToken: id_token,
           user: user._id,
@@ -125,19 +144,33 @@ export async function GET(request: NextRequest) {
       deviceId: existingSession.deviceId || callbackSignals.deviceId || null,
     });
 
+    if (isNewUser) {
+      await emitNotificationEvent(
+        buildAccountActivatedEvent({
+          userId: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          provider: "google-oauth",
+          sourceContext: {
+            auth_source: existingSession.source || "web",
+            country_code: callbackCountry,
+            pricing_tier: getCountryTier(callbackCountry),
+          },
+        })
+      );
+    }
+
     const finalUrl = new URL(redirectPath, urlObj.origin);
     const response = NextResponse.redirect(finalUrl);
 
     // Add CORS headers to redirect response (needed if Figma follows the redirect)
     withCors(request, response);
 
-    response.cookies.set("sessionId", state, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 60 * 60 * 24 * 7,
-    });
+    response.cookies.set(
+      SESSION_COOKIE_NAME,
+      state,
+      getSessionCookieOptions(60 * 60 * 24 * 7)
+    );
 
     return response;
   } catch (err: unknown) {

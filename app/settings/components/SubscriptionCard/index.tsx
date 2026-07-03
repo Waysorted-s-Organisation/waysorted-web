@@ -25,7 +25,12 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
   const spentCredits = Math.max(0, wallet?.lifetimeSpentCredits || 0);
   const refundedCredits = Math.max(0, wallet?.lifetimeRefundedCredits || 0);
   const heldCredits = Math.max(0, wallet?.heldCredits || 0);
-  const remainingCredits = Math.max(0, wallet?.availableCredits ?? user.creditsRemaining ?? 0);
+  const dbAvailable = Math.max(0, wallet?.availableCredits ?? user.creditsRemaining ?? 0);
+  const computedRemaining = Math.max(
+    0,
+    purchasedCredits + bonusCredits - spentCredits - refundedCredits - heldCredits
+  );
+  const remainingCredits = Math.max(dbAvailable, computedRemaining);
   const totalCredits = Math.max(
     remainingCredits + heldCredits + spentCredits,
     purchasedCredits + bonusCredits - refundedCredits,
@@ -315,7 +320,7 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
               <span className={`text-sm font-medium ${
                 remainingCredits === 0 ? "text-[#B20000]" : "text-secondary-db-90"
               }`}>
-                / {totalCredits} credits left
+                credits left
               </span>
             </div>
           </div>

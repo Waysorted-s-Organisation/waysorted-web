@@ -4,11 +4,12 @@ import Session from "@/models/session";
 import type { IUser } from "@/types/user";
 import { buildBillingSnapshot } from "@/lib/billing/db";
 import dbConnect from "@/lib/db";
+import { SESSION_COOKIE_NAME } from "@/lib/auth-cookies";
 
 export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
-    const sessionId = cookieStore.get("sessionId")?.value;
+    const sessionId = cookieStore.get(SESSION_COOKIE_NAME)?.value;
 
     if (!sessionId) {
       return NextResponse.json({ user: null }, { status: 200 });

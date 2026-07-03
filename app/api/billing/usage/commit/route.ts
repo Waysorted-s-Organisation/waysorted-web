@@ -1,6 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/auth";
 import { commitReservation } from "@/lib/billing/db";
+import {
+  buildToolUsageCompletedEvent,
+  buildToolUsageHeavyEvent,
+  emitNotificationEvent,
+  getHeavyUsageCreditThreshold,
+} from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -30,6 +36,32 @@ export async function POST(request: NextRequest) {
       idempotencyKey: body.idempotencyKey?.trim() || null,
       processorJobId: body.processorJobId?.trim() || null,
     });
+
+    const usageEventInput = {
+      userId: String(auth.user._id),
+      email: auth.user.email,
+      name: auth.user.name || null,
+      reservationId: String(reservation._id),
+      featureCode: reservation.featureCode,
+      toolCode: reservation.toolCode || null,
+      creditsReserved: reservation.creditsReserved,
+      processor: reservation.processor || null,
+      processorJobId: reservation.processorJobId || null,
+    };
+    const notificationEvents = [
+      emitNotificationEvent(buildToolUsageCompletedEvent(usageEventInput)),
+    ];
+    const heavyUsageThreshold = getHeavyUsageCreditThreshold();
+    if (reservation.creditsReserved >= heavyUsageThreshold) {
+      notificationEvents.push(
+        emitNotificationEvent(buildToolUsageHeavyEvent({
+          ...usageEventInput,
+          thresholdCredits: heavyUsageThreshold,
+        }))
+      );
+    }
+
+    await Promise.all(notificationEvents);
 
     return NextResponse.json({
       reservationId: String(reservation._id),

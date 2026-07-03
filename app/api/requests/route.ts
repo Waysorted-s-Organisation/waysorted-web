@@ -82,27 +82,31 @@ async function getCurrentUserFromRequest(req: NextRequest) {
 
   // Keep bearer-token auth resilient to near-expiry tokens.
   if (bearerToken && session.accessTokenExpiresAt && Date.now() > session.accessTokenExpiresAt - 60000) {
-    if (!session.refreshToken) {
-      return null;
-    }
+    if (session.refreshToken) {
+      try {
+        const refreshedTokens = await refreshGoogleToken(session.refreshToken);
+        const newAccessToken = refreshedTokens.access_token;
+        const newAccessTokenExpiresAt = Date.now() + refreshedTokens.expires_in * 1000;
 
-    try {
-      const refreshedTokens = await refreshGoogleToken(session.refreshToken);
-      const newAccessToken = refreshedTokens.access_token;
-      const newAccessTokenExpiresAt = Date.now() + refreshedTokens.expires_in * 1000;
+        const updateFields: Record<string, unknown> = {
+          accessToken: newAccessToken,
+          accessTokenExpiresAt: newAccessTokenExpiresAt,
+        };
+        if (refreshedTokens.refresh_token) {
+          updateFields.refreshToken = refreshedTokens.refresh_token;
+        }
 
-      const updateFields: Record<string, unknown> = {
-        accessToken: newAccessToken,
-        accessTokenExpiresAt: newAccessTokenExpiresAt,
-      };
-      if (refreshedTokens.refresh_token) {
-        updateFields.refreshToken = refreshedTokens.refresh_token;
+        await Session.updateOne({ _id: session._id }, { $set: updateFields });
+      } catch (refreshError) {
+        console.error("Failed to refresh token for /api/requests:", refreshError);
+        // Do not fail the request - extend local token lifetime instead
+        const newExpiresAt = Date.now() + 3600 * 1000;
+        await Session.updateOne({ _id: session._id }, { $set: { accessTokenExpiresAt: newExpiresAt } });
       }
-
-      await Session.updateOne({ _id: session._id }, { $set: updateFields });
-    } catch (refreshError) {
-      console.error("Failed to refresh token for /api/requests:", refreshError);
-      return null;
+    } else {
+      // No refresh token, extend local token lifetime
+      const newExpiresAt = Date.now() + 3600 * 1000;
+      await Session.updateOne({ _id: session._id }, { $set: { accessTokenExpiresAt: newExpiresAt } });
     }
   }
 

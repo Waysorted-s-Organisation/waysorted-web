@@ -4,6 +4,11 @@ import User from "@/models/user";
 import Session from "@/models/session";
 import OtpRequest from "@/models/otpRequest";
 import Subscriber from "@/models/subscriber";
+import { SESSION_COOKIE_NAME, getSessionCookieOptions } from "@/lib/auth-cookies";
+import {
+  buildAccountActivatedEvent,
+  emitNotificationEvent,
+} from "@/lib/notifications";
 export { OPTIONS } from "@/lib/cors";
 
 const PROVIDER_VERIFY_URI =
@@ -64,6 +69,7 @@ export async function POST(req: Request) {
     const normalizedEmail = String(email).trim().toLowerCase();
 
     let user = await User.findOne({ email: normalizedEmail });
+    const isNewUser = !user;
     if (!user) {
       user = await User.create({
         email: normalizedEmail,
@@ -100,6 +106,17 @@ export async function POST(req: Request) {
       expiresAt,
     });
 
+    if (isNewUser) {
+      await emitNotificationEvent(
+        buildAccountActivatedEvent({
+          userId: user._id.toString(),
+          email: user.email,
+          name: user.name,
+          provider: "otp",
+        })
+      );
+    }
+
     const res = NextResponse.json({
       ok: true,
       user: {
@@ -110,13 +127,11 @@ export async function POST(req: Request) {
       },
     });
 
-    res.cookies.set("sessionId", sessionId, {
-      httpOnly: true,
-      secure: true,
-      sameSite: "lax",
-      path: "/",
-      maxAge: maxAgeDays * 24 * 60 * 60,
-    });
+    res.cookies.set(
+      SESSION_COOKIE_NAME,
+      sessionId,
+      getSessionCookieOptions(maxAgeDays * 24 * 60 * 60)
+    );
 
 
     return res;

@@ -52,4 +52,7 @@ export interface IUser {
     figmaUserId?: string;
     figmaAccessToken?: string;
     figmaRefreshToken?: string;
+    figmaTokenExpiresAt?: Date;
+    figmaScopes?: string[];
+    figmaConnectedAt?: Date;
 }
