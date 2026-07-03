@@ -1,4 +1,17 @@
 services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./.env
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/.next
+    command: npm run dev -- --hostname 0.0.0.0
+    restart: unless-stopped
+
   figma-mcp:
     build: ./tools/figma-mcp
     ports:
