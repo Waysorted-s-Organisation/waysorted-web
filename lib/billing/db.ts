@@ -79,7 +79,8 @@ export type BillingSnapshot = {
 
 type PurchaseDocument = HydratedDocument<IPurchase>;
 type SubscriptionDocument = HydratedDocument<ISubscription>;
-const STARTER_GRANT_CREDITS = 300;
+const LEGACY_STARTER_GRANT_CREDITS = 300;
+const SIGNUP_STARTER_GRANT_CREDITS = 100;
 const PENDING_SUBSCRIPTION_TTL_MS = 30 * 60 * 1000;
 const EXISTING_FREE_PLAN_CUTOFF = new Date("2026-05-03T00:00:00.000Z");
 
@@ -317,7 +318,7 @@ async function normalizeLegacyStarterWallet(
     Boolean(user.earlyAccess) &&
     !billing.firstSuccessfulPurchaseAt &&
     billing.subscriptionStatus === "inactive" &&
-    billing.availableCredits > STARTER_GRANT_CREDITS &&
+    billing.availableCredits > LEGACY_STARTER_GRANT_CREDITS &&
     billing.heldCredits === 0 &&
     billing.lifetimePurchasedCredits === 0 &&
     billing.lifetimeBonusCredits === 0 &&
@@ -329,8 +330,8 @@ async function normalizeLegacyStarterWallet(
   }
 
   const previousAvailableCredits = billing.availableCredits;
-  billing.availableCredits = STARTER_GRANT_CREDITS;
-  billing.lifetimeBonusCredits = STARTER_GRANT_CREDITS;
+  billing.availableCredits = LEGACY_STARTER_GRANT_CREDITS;
+  billing.lifetimeBonusCredits = LEGACY_STARTER_GRANT_CREDITS;
   await billing.save({ session });
 
   await updateLegacyUserCredits(String(user._id), billing.availableCredits, session);
@@ -338,14 +339,14 @@ async function normalizeLegacyStarterWallet(
   await appendCreditLedger(
     {
       userId: String(user._id),
-      deltaCredits: STARTER_GRANT_CREDITS - previousAvailableCredits,
+      deltaCredits: LEGACY_STARTER_GRANT_CREDITS - previousAvailableCredits,
       balanceAfter: billing.availableCredits,
       reason: "manual_adjustment",
       idempotencyKey: `legacy-starter-normalize:${user._id}`,
       metadata: {
         migration: "legacy_early_access_to_starter_grant",
         previousAvailableCredits,
-        normalizedAvailableCredits: STARTER_GRANT_CREDITS,
+        normalizedAvailableCredits: LEGACY_STARTER_GRANT_CREDITS,
       },
     },
     session,
@@ -362,10 +363,10 @@ async function reconcileDuplicateStarterWallet(
   const looksLikeDuplicateStarterGrant =
     !billing.firstSuccessfulPurchaseAt &&
     billing.subscriptionStatus === "inactive" &&
-    billing.availableCredits === STARTER_GRANT_CREDITS * 2 &&
+    billing.availableCredits === LEGACY_STARTER_GRANT_CREDITS * 2 &&
     billing.heldCredits === 0 &&
     billing.lifetimePurchasedCredits === 0 &&
-    billing.lifetimeBonusCredits === STARTER_GRANT_CREDITS * 2 &&
+    billing.lifetimeBonusCredits === LEGACY_STARTER_GRANT_CREDITS * 2 &&
     billing.lifetimeSpentCredits === 0 &&
     billing.lifetimeRefundedCredits === 0;
 
@@ -373,8 +374,8 @@ async function reconcileDuplicateStarterWallet(
     return billing;
   }
 
-  billing.availableCredits = STARTER_GRANT_CREDITS;
-  billing.lifetimeBonusCredits = STARTER_GRANT_CREDITS;
+  billing.availableCredits = LEGACY_STARTER_GRANT_CREDITS;
+  billing.lifetimeBonusCredits = LEGACY_STARTER_GRANT_CREDITS;
   await billing.save({ session });
 
   await updateLegacyUserCredits(String(user._id), billing.availableCredits, session);
@@ -382,13 +383,13 @@ async function reconcileDuplicateStarterWallet(
   await appendCreditLedger(
     {
       userId: String(user._id),
-      deltaCredits: -STARTER_GRANT_CREDITS,
+      deltaCredits: -LEGACY_STARTER_GRANT_CREDITS,
       balanceAfter: billing.availableCredits,
       reason: "manual_adjustment",
       idempotencyKey: `starter-grant-dedupe:${user._id}`,
       metadata: {
         migration: "duplicate_starter_grant_reconciled",
-        normalizedAvailableCredits: STARTER_GRANT_CREDITS,
+        normalizedAvailableCredits: LEGACY_STARTER_GRANT_CREDITS,
       },
     },
     session,
@@ -416,18 +417,18 @@ async function backfillExistingFreePlanWallet(
     billing.lifetimePurchasedCredits === 0 &&
     billing.lifetimeSpentCredits === 0 &&
     billing.lifetimeRefundedCredits === 0 &&
-    (billing.availableCredits < STARTER_GRANT_CREDITS ||
-      billing.lifetimeBonusCredits < STARTER_GRANT_CREDITS);
+    (billing.availableCredits < LEGACY_STARTER_GRANT_CREDITS ||
+      billing.lifetimeBonusCredits < LEGACY_STARTER_GRANT_CREDITS);
 
   if (!isEligibleForFreePlanBackfill) {
     return billing;
   }
 
   const previousAvailableCredits = billing.availableCredits;
-  billing.availableCredits = Math.max(billing.availableCredits, STARTER_GRANT_CREDITS);
+  billing.availableCredits = Math.max(billing.availableCredits, LEGACY_STARTER_GRANT_CREDITS);
   billing.lifetimeBonusCredits = Math.max(
     billing.lifetimeBonusCredits,
-    STARTER_GRANT_CREDITS,
+    LEGACY_STARTER_GRANT_CREDITS,
   );
   await billing.save({ session });
 
@@ -456,7 +457,10 @@ async function backfillExistingFreePlanWallet(
   return billing;
 }
 
-function walletAlreadyReflectsStarterGrant(billing: HydratedDocument<IUserBilling>) {
+function walletAlreadyReflectsStarterGrant(
+  billing: HydratedDocument<IUserBilling>,
+  minimumCredits = LEGACY_STARTER_GRANT_CREDITS,
+) {
   return (
     !billing.firstSuccessfulPurchaseAt &&
     billing.subscriptionStatus === "inactive" &&
@@ -464,8 +468,8 @@ function walletAlreadyReflectsStarterGrant(billing: HydratedDocument<IUserBillin
     billing.lifetimePurchasedCredits === 0 &&
     billing.lifetimeSpentCredits === 0 &&
     billing.lifetimeRefundedCredits === 0 &&
-    billing.availableCredits >= STARTER_GRANT_CREDITS &&
-    billing.lifetimeBonusCredits >= STARTER_GRANT_CREDITS
+    billing.availableCredits >= minimumCredits &&
+    billing.lifetimeBonusCredits >= minimumCredits
   );
 }
 
@@ -1439,7 +1443,7 @@ export async function ensureStarterGrant(input: {
 
     const grant = new StarterGrant({
       user: input.user._id,
-      grantedCredits: STARTER_GRANT_CREDITS,
+      grantedCredits: SIGNUP_STARTER_GRANT_CREDITS,
       status,
       riskScore,
       decisionReason: reasons.join(",") || "starter_grant_allowed",
@@ -1461,11 +1465,14 @@ export async function ensureStarterGrant(input: {
 
     if (status === "granted" && isPluginSource) {
       const billing = await ensureUserBilling(input.user, session);
-      const alreadyFunded = walletAlreadyReflectsStarterGrant(billing);
+      const alreadyFunded = walletAlreadyReflectsStarterGrant(
+        billing,
+        SIGNUP_STARTER_GRANT_CREDITS,
+      );
 
       if (!alreadyFunded) {
-        billing.availableCredits += STARTER_GRANT_CREDITS;
-        billing.lifetimeBonusCredits += STARTER_GRANT_CREDITS;
+        billing.availableCredits += SIGNUP_STARTER_GRANT_CREDITS;
+        billing.lifetimeBonusCredits += SIGNUP_STARTER_GRANT_CREDITS;
         await billing.save({ session });
 
         await updateLegacyUserCredits(String(input.user._id), billing.availableCredits, session);
@@ -1473,7 +1480,7 @@ export async function ensureStarterGrant(input: {
         await appendCreditLedger(
           {
             userId: String(input.user._id),
-            deltaCredits: STARTER_GRANT_CREDITS,
+            deltaCredits: SIGNUP_STARTER_GRANT_CREDITS,
             balanceAfter: billing.availableCredits,
             reason: "starter_grant",
             idempotencyKey: `starter-grant:${input.user._id}`,
