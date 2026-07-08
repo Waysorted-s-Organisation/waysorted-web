@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import User from "@/models/user";
 import type { IUser } from "@/types/user";
+import { clearFigmaCredentials, getFigmaHeaders, REQUIRED_FIGMA_SCOPES } from "@/lib/figma-auth";
 
 function basicAuthHeader(clientId: string, clientSecret: string) {
   return `Basic ${Buffer.from(`${clientId}:${clientSecret}`).toString("base64")}`;
@@ -57,16 +58,14 @@ export async function GET(request: Request) {
       {
         error: "Figma account not linked",
         notLinked: true,
-        requiredScopes: ["current_user:read", "file_comments:read"],
+        requiredScopes: REQUIRED_FIGMA_SCOPES,
       },
       { status: 403 },
     );
   }
 
   try {
-    const figmaHeaders: Record<string, string> = token.startsWith("figd_")
-      ? { "X-Figma-Token": token }
-      : { "Authorization": `Bearer ${token}` };
+    const figmaHeaders = getFigmaHeaders(token);
 
     let figmaRes = await fetch(`https://api.figma.com/v1/files/${fileKey}/comments`, {
       method: "GET",
@@ -96,10 +95,11 @@ export async function GET(request: Request) {
       const refreshData = await refreshRes.json();
       
       if (refreshRes.ok) {
-        token = refreshData.access_token;
+        const refreshedToken = String(refreshData.access_token || "");
+        token = refreshedToken;
         // Update user in DB
         await User.findByIdAndUpdate(user._id, {
-          figmaAccessToken: refreshData.access_token,
+          figmaAccessToken: refreshedToken,
           figmaTokenExpiresAt: refreshData.expires_in
             ? new Date(Date.now() + Number(refreshData.expires_in) * 1000)
             : undefined,
@@ -108,16 +108,14 @@ export async function GET(request: Request) {
         // Retry the api call
         figmaRes = await fetch(`https://api.figma.com/v1/files/${fileKey}/comments`, {
           method: "GET",
-          headers: (token?.startsWith("figd_")
-            ? { "X-Figma-Token": token }
-            : { "Authorization": `Bearer ${token}` }) as Record<string, string>
+          headers: getFigmaHeaders(refreshedToken)
         });
       } else {
         return NextResponse.json(
           {
             error: "Could not refresh Figma token. Please re-link Figma account.",
             notLinked: true,
-            requiredScopes: ["current_user:read", "file_comments:read"],
+            requiredScopes: REQUIRED_FIGMA_SCOPES,
           },
           { status: 403 },
         );
@@ -126,6 +124,19 @@ export async function GET(request: Request) {
 
     if (!figmaRes.ok) {
        const text = await figmaRes.text();
+       if (figmaRes.status === 401) {
+         await clearFigmaCredentials(user._id);
+         return NextResponse.json(
+           {
+             error: "Invalid or expired Figma token. Please re-link Figma account.",
+             details: text,
+             notLinked: true,
+             reason: "pat_invalid_or_expired",
+             requiredScopes: REQUIRED_FIGMA_SCOPES,
+           },
+           { status: 403 },
+         );
+       }
        return NextResponse.json({ error: "Figma API error", details: text }, { status: figmaRes.status });
     }
 

@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import User from "@/models/user";
 import type { IUser } from "@/types/user";
+import { REQUIRED_FIGMA_SCOPES, validateFigmaToken } from "@/lib/figma-auth";
 
 export async function POST(request: Request) {
   // Support both cookie-based sessionId and Bearer accessToken for plugin flexibility
@@ -38,20 +39,46 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const pat = body.pat;
+    const fileKey = typeof body.fileKey === "string" ? body.fileKey.trim() : null;
 
     if (!pat || typeof pat !== "string") {
       return NextResponse.json({ error: "Missing or invalid Personal Access Token" }, { status: 400 });
     }
 
+    const trimmedPat = pat.trim();
+    const validation = await validateFigmaToken(trimmedPat, fileKey);
+
+    if (!validation.ok) {
+      const message =
+        validation.reason === "comments_check_failed"
+          ? "This PAT could not access comments for the provided Figma file. Check the file URL, permissions, and file_comments scope."
+          : validation.status === 401 || validation.status === 403
+          ? "Invalid or expired Figma Personal Access Token."
+          : "Unable to validate Figma Personal Access Token. Please try again.";
+
+      return NextResponse.json(
+        {
+          error: message,
+          reason: validation.reason === "comments_check_failed"
+            ? "file_not_accessible"
+            : validation.status === 401 || validation.status === 403
+            ? "pat_invalid_or_expired"
+            : "figma_unreachable",
+        },
+        { status: validation.status === 401 || validation.status === 403 ? 400 : 502 },
+      );
+    }
+
     // Save PAT on the User profile
     await User.findByIdAndUpdate(session.user._id, {
-      figmaAccessToken: pat.trim(),
+      figmaAccessToken: trimmedPat,
+      figmaUserId: validation.figmaUserId || undefined,
       // We explicitly unset refresh tokens since PATs don't use them
       $unset: {
         figmaRefreshToken: 1,
         figmaTokenExpiresAt: 1
       },
-      figmaScopes: ["current_user:read", "file_comments:read"],
+      figmaScopes: REQUIRED_FIGMA_SCOPES,
       figmaConnectedAt: new Date(),
     });
 
