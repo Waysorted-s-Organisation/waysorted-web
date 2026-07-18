@@ -7,6 +7,7 @@ import {
   buildBillingBlockedEvent,
   buildCreditsLowEvent,
   emitNotificationEvent,
+  getLowCreditThreshold,
 } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
@@ -33,6 +34,12 @@ type ReserveNotificationContext = {
   creditsRequired: number;
   availableCredits: number;
   heldCredits: number;
+  thresholdCredits: number;
+  subscriptionStatus: string;
+  planCode?: string | null;
+  lifetimePurchasedCredits: number;
+  pricingTier?: string | null;
+  loyaltyEligible: boolean;
 };
 
 export async function POST(request: NextRequest) {
@@ -53,6 +60,10 @@ export async function POST(request: NextRequest) {
 
     const resolved = resolveUsageCredits(body);
     const snapshot = await buildBillingSnapshot(auth.user, request);
+    const lowCreditThreshold = getLowCreditThreshold();
+    const loyaltyEligible =
+      ["active", "cancel_scheduled"].includes(snapshot.subscription.status) ||
+      snapshot.wallet.lifetimePurchasedCredits > 0;
     const reservationIdempotencyKey =
       body.idempotencyKey?.trim() ||
       `reserve:${auth.user._id}:${resolved.featureCode}:${Date.now()}`;
@@ -67,6 +78,12 @@ export async function POST(request: NextRequest) {
       creditsRequired: resolved.creditsRequired,
       availableCredits: snapshot.wallet.availableCredits,
       heldCredits: snapshot.wallet.heldCredits,
+      thresholdCredits: lowCreditThreshold,
+      subscriptionStatus: snapshot.subscription.status,
+      planCode: snapshot.subscription.planCode,
+      lifetimePurchasedCredits: snapshot.wallet.lifetimePurchasedCredits,
+      pricingTier: snapshot.pricing.tier,
+      loyaltyEligible,
     };
 
     if (resolved.requiresSubscription && !snapshot.capabilities.customizablePresets) {
@@ -98,7 +115,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const reservation = await reserveCredits({
+    const { reservation, balanceAfterAction } = await reserveCredits({
       userId: String(auth.user._id),
       featureCode: resolved.featureCode,
       toolCode: body.toolCode?.trim() || null,
@@ -108,6 +125,15 @@ export async function POST(request: NextRequest) {
       selectedOptions: body.selectedOptions || {},
       idempotencyKey: reservationIdempotencyKey,
     });
+
+    if (balanceAfterAction <= lowCreditThreshold) {
+      await emitNotificationEvent(buildCreditsLowEvent({
+        ...notificationContext,
+        eventKey: `reservation:${reservation._id}`,
+        balanceAfterAction,
+        reason: "post_reservation_low_balance",
+      }));
+    }
 
     return NextResponse.json({
       reservationId: String(reservation._id),
@@ -126,6 +152,7 @@ export async function POST(request: NextRequest) {
       if (notificationContext) {
         await emitNotificationEvent(buildCreditsLowEvent({
           ...notificationContext,
+          balanceAfterAction: notificationContext.availableCredits,
           reason: "insufficient_credits",
         }));
       }

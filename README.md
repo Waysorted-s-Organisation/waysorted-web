@@ -47,4 +47,6 @@ server-side environment variables are configured:
 - `NOTIFICATION_INGEST_TIMEOUT_MS`: Optional request timeout override.
 - `NOTIFICATION_HEAVY_USAGE_CREDIT_THRESHOLD`: Optional credit threshold for
   `tool_usage_heavy` events. Defaults to `100`.
+- `NOTIFICATION_LOW_CREDIT_THRESHOLD`: Optional post-reservation balance
+  threshold for proactive `credits_low` events. Defaults to `20`.
 - `NOTIFICATION_PRODUCER_ENABLED=false`: Optional local kill switch.

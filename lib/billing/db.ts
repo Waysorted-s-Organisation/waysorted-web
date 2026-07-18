@@ -927,7 +927,15 @@ export async function reserveCredits(input: {
 }) {
   return runBillingTransaction(async (session) => {
     const existing = await UsageReservation.findOne({ idempotencyKey: input.idempotencyKey }).session(session);
-    if (existing) return existing;
+    if (existing) {
+      const billing = await UserBilling.findOne({ user: input.userId })
+        .select("availableCredits")
+        .session(session);
+      return {
+        reservation: existing,
+        balanceAfterAction: Number(billing?.availableCredits ?? 0),
+      };
+    }
 
     const billing = await UserBilling.findOneAndUpdate(
       {
@@ -999,7 +1007,10 @@ export async function reserveCredits(input: {
       session,
     );
 
-    return reservation;
+    return {
+      reservation,
+      balanceAfterAction: Number(billing.availableCredits),
+    };
   });
 }
 

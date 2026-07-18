@@ -27,6 +27,7 @@ type NotificationProducerConfig = {
 
 const DEFAULT_TIMEOUT_MS = 1500;
 const DEFAULT_HEAVY_USAGE_CREDIT_THRESHOLD = 100;
+const DEFAULT_LOW_CREDIT_THRESHOLD = 20;
 
 function parsePositiveInt(value: string | undefined, fallback: number) {
   const parsed = Number(value);
@@ -98,6 +99,13 @@ export function getHeavyUsageCreditThreshold() {
   return parsePositiveInt(
     process.env.NOTIFICATION_HEAVY_USAGE_CREDIT_THRESHOLD,
     DEFAULT_HEAVY_USAGE_CREDIT_THRESHOLD
+  );
+}
+
+export function getLowCreditThreshold() {
+  return parsePositiveInt(
+    process.env.NOTIFICATION_LOW_CREDIT_THRESHOLD,
+    DEFAULT_LOW_CREDIT_THRESHOLD
   );
 }
 
@@ -221,7 +229,14 @@ export function buildCreditsLowEvent(input: {
   toolCode?: string | null;
   creditsRequired: number;
   availableCredits: number;
+  balanceAfterAction: number;
   heldCredits?: number;
+  thresholdCredits: number;
+  subscriptionStatus: string;
+  planCode?: string | null;
+  lifetimePurchasedCredits: number;
+  pricingTier?: string | null;
+  loyaltyEligible: boolean;
   reason: "insufficient_credits" | "post_reservation_low_balance";
   occurredAt?: Date;
 }) {
@@ -238,7 +253,13 @@ export function buildCreditsLowEvent(input: {
       source: "billing_usage",
       traits: {
         credits_available: input.availableCredits,
+        credits_balance_after_action: input.balanceAfterAction,
         credits_held: input.heldCredits ?? 0,
+        subscription_status: input.subscriptionStatus,
+        subscription_plan_code: input.planCode || null,
+        lifetime_purchased_credits: input.lifetimePurchasedCredits,
+        pricing_tier: input.pricingTier || null,
+        loyalty_eligible: input.loyaltyEligible,
       },
     }),
     payload: {
@@ -246,12 +267,25 @@ export function buildCreditsLowEvent(input: {
       tool_code: input.toolCode || null,
       credits_required: input.creditsRequired,
       available_credits: input.availableCredits,
+      balance_after_action: input.balanceAfterAction,
       held_credits: input.heldCredits ?? 0,
+      threshold_credits: input.thresholdCredits,
+      subscription_status: input.subscriptionStatus,
+      plan_code: input.planCode || null,
+      lifetime_purchased_credits: input.lifetimePurchasedCredits,
+      pricing_tier: input.pricingTier || null,
+      loyalty_eligible: input.loyaltyEligible,
       reason: input.reason,
     },
     traits: {
       credits_available: input.availableCredits,
+      credits_balance_after_action: input.balanceAfterAction,
       credits_held: input.heldCredits ?? 0,
+      subscription_status: input.subscriptionStatus,
+      subscription_plan_code: input.planCode || null,
+      lifetime_purchased_credits: input.lifetimePurchasedCredits,
+      pricing_tier: input.pricingTier || null,
+      loyalty_eligible: input.loyaltyEligible,
     },
   } satisfies NotificationEventInput;
 }
