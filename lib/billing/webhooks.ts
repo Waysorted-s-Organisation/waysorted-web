@@ -2,6 +2,12 @@ import Purchase from "@/models/purchase";
 import RazorpayEventLog from "@/models/razorpayEventLog";
 import Refund from "@/models/refund";
 import Subscription from "@/models/subscription";
+import User from "@/models/user";
+import {
+  buildSubscriptionPurchaseCompletedEvent,
+  emitNotificationEvent,
+  requirePurchaseCompletionNotification,
+} from "@/lib/notifications";
 import {
   applyPurchaseCredits,
   applySubscriptionCycleCredits,
@@ -40,6 +46,37 @@ function getEntityId(payload: Record<string, unknown>) {
   const innerPayload = (payload.payload as Record<string, unknown> | undefined) || {};
   const paymentPayload = (innerPayload.payment as { entity?: Record<string, unknown> } | undefined)?.entity;
   return String(paymentPayload?.id || "");
+}
+
+export async function emitSubscriptionPurchaseCompleted(input: {
+  userId: string;
+  purchaseId?: string | null;
+  subscriptionId: string;
+  productCode: string;
+  completionSource: string;
+}) {
+  const user = await User.findById(input.userId).select("email name");
+  if (!user?.email) {
+    console.warn("Subscription completion notification skipped", {
+      reason: "user_email_not_found",
+      userId: input.userId,
+      subscriptionId: input.subscriptionId,
+    });
+    throw new Error(
+      "Required subscription purchase completion notification failed: user_email_not_found",
+    );
+  }
+
+  const result = await emitNotificationEvent(buildSubscriptionPurchaseCompletedEvent({
+    userId: input.userId,
+    email: user.email,
+    name: user.name || null,
+    purchaseId: input.purchaseId || null,
+    subscriptionId: input.subscriptionId,
+    productCode: input.productCode,
+    completionSource: input.completionSource,
+  }));
+  return requirePurchaseCompletionNotification(result);
 }
 
 export async function recordIncomingWebhook(input: {
@@ -107,6 +144,15 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
       await purchase.save();
 
       await applyPurchaseCredits(purchase);
+      if (purchase.kind === "subscription" && purchase.razorpaySubscriptionId) {
+        await emitSubscriptionPurchaseCompleted({
+          userId: String(purchase.user),
+          purchaseId: String(purchase._id),
+          subscriptionId: purchase.razorpaySubscriptionId,
+          productCode: purchase.productCode,
+          completionSource: eventType,
+        });
+      }
       return { processed: true, type: eventType, purchaseId: String(purchase._id) };
     }
 
@@ -156,6 +202,16 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         cancelAtCycleEnd: subscription.cancelAtCycleEnd,
       });
 
+      if (subscription.status === "active" || subscription.status === "cancel_scheduled") {
+        await emitSubscriptionPurchaseCompleted({
+          userId: String(subscription.user),
+          purchaseId: String(entityNotes.purchaseId || "") || null,
+          subscriptionId: subscription.providerSubscriptionId,
+          productCode: subscription.planCode,
+          completionSource: eventType,
+        });
+      }
+
       return { processed: true, type: eventType, subscriptionId: String(subscription._id) };
     }
 
@@ -204,6 +260,18 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         subscription,
         cycleKey,
         paymentId: String(invoiceEntity?.payment_id || ""),
+      });
+
+      const purchaseId = String(
+        (subscription.metadata as Record<string, unknown> | undefined)
+          ?.purchaseId || "",
+      );
+      await emitSubscriptionPurchaseCompleted({
+        userId: String(subscription.user),
+        purchaseId: purchaseId || null,
+        subscriptionId: subscription.providerSubscriptionId,
+        productCode: subscription.planCode,
+        completionSource: eventType,
       });
 
       return { processed: true, type: eventType, subscriptionId: String(subscription._id) };

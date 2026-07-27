@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test:notifications": "tsx --test test/notifications.test.ts",
     "backup": "tsx scripts/backup-db.ts",
     "seed:slides": "tsx scripts/seed-slides.ts",
     "make-admin": "tsx scripts/make-admin.ts"

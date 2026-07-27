@@ -365,6 +365,47 @@ export function buildSubscriptionCheckoutStartedEvent(input: {
   } satisfies NotificationEventInput;
 }
 
+export function buildSubscriptionPurchaseCompletedEvent(input: {
+  userId: string;
+  email: string;
+  name?: string | null;
+  purchaseId?: string | null;
+  subscriptionId: string;
+  productCode: string;
+  completionSource: string;
+  occurredAt?: Date;
+}) {
+  const occurredAt = input.occurredAt || new Date();
+  const completionKey = input.purchaseId || input.subscriptionId;
+
+  return {
+    eventId: buildEventId("subscription_purchase_completed", [completionKey]),
+    eventType: "subscription_purchase_completed",
+    occurredAt,
+    profile: buildProfile({
+      userId: input.userId,
+      email: input.email,
+      name: input.name,
+      source: "billing_subscription",
+      traits: {
+        subscription_status: "active",
+        subscription_plan_code: input.productCode,
+      },
+    }),
+    payload: {
+      purchase_id: input.purchaseId || null,
+      subscription_id: input.subscriptionId,
+      product_code: input.productCode,
+      completion_source: input.completionSource,
+      status: "completed",
+    },
+    traits: {
+      subscription_status: "active",
+      subscription_plan_code: input.productCode,
+    },
+  } satisfies NotificationEventInput;
+}
+
 export function buildSubscriptionCancelledEvent(input: {
   userId: string;
   email: string;
@@ -576,4 +617,20 @@ export async function emitNotificationEvent(input: NotificationEventInput) {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+export function requirePurchaseCompletionNotification(input: {
+  sent: boolean;
+  reason?: string;
+  status?: number;
+}) {
+  if (input.sent) return input;
+
+  const details = [
+    input.reason || "unknown",
+    input.status ? `status_${input.status}` : "",
+  ].filter(Boolean).join(":");
+  throw new Error(
+    `Required subscription purchase completion notification failed: ${details}`,
+  );
 }

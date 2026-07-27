@@ -50,3 +50,9 @@ server-side environment variables are configured:
 - `NOTIFICATION_LOW_CREDIT_THRESHOLD`: Optional post-reservation balance
   threshold for proactive `credits_low` events. Defaults to `20`.
 - `NOTIFICATION_PRODUCER_ENABLED=false`: Optional local kill switch.
+
+The billing notification producer emits `subscription_checkout_started` when a
+subscription checkout is created and the deterministic
+`subscription_purchase_completed` event when Razorpay confirms the matching
+purchase or subscription. The newsletter service uses these events to schedule
+and safely cancel the N3 purchase-retention reminder.
