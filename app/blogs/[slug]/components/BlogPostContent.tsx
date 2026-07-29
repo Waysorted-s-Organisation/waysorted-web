@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ChevronRight, Link2, Instagram, Linkedin, Twitter } from "lucide-react";
+import { Check, ChevronRight, Link2, Instagram, Linkedin, Twitter } from "lucide-react";
 import { fetchBlogBySlug } from "@/lib/blogsClient";
 import type { BlogContentBlock, BlogPostDetail } from "@/types/blog";
 
@@ -81,6 +81,7 @@ export default function BlogPostContent() {
   const [post, setPost] = useState<BlogPostDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -164,6 +165,15 @@ export default function BlogPostContent() {
   }
 
   const publishedDate = formatDate(post.publishedAt || post.createdAt);
+  const shareUrl = `https://www.waysorted.com/blogs/${post.slug}`;
+  const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+  const xShareUrl = `https://x.com/intent/post?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(post.title)}`;
+
+  async function copyBlogLink() {
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  }
 
   return (
     <div className="flex flex-col w-full max-w-[1000px] mx-auto mt-4">
@@ -199,21 +209,44 @@ export default function BlogPostContent() {
 
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => navigator.clipboard?.writeText(window.location.href)}
+            type="button"
+            onClick={copyBlogLink}
             className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-            aria-label="Copy blog link"
+            aria-label={copied ? "Blog link copied" : "Copy blog link"}
+            title={copied ? "Copied" : "Copy link"}
           >
-            <Link2 className="w-4 h-4" />
+            {copied ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
           </button>
-          <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+          <a
+            href="https://www.instagram.com/waysorted/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Visit Waysorted on Instagram"
+            title="Instagram"
+            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          >
             <Instagram className="w-4 h-4" />
-          </button>
-          <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+          </a>
+          <a
+            href={linkedInShareUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Share this blog on LinkedIn"
+            title="Share on LinkedIn"
+            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          >
             <Linkedin className="w-4 h-4" />
-          </button>
-          <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+          </a>
+          <a
+            href={xShareUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Share this blog on X"
+            title="Share on X"
+            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          >
             <Twitter className="w-4 h-4" />
-          </button>
+          </a>
         </div>
       </div>
 
