@@ -24,9 +24,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchUser = useCallback(async () => {
+    const fetchUser = useCallback(async (showLoading = true) => {
         try {
-            setLoading(true);
+            if (showLoading) setLoading(true);
             setError(null);
             const res = await fetch("/api/me", { credentials: "include" });
             const data = await res.json();
@@ -36,21 +36,23 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             console.error("UserContext fetch error:", err);
             setError("Failed to fetch user");
         } finally {
-            setLoading(false);
+            if (showLoading) setLoading(false);
         }
     }, []);
 
     useEffect(() => {
         fetchUser();
 
-        // Auto-refresh when window regains focus
-        const handleFocus = () => fetchUser();
+        // Revalidate silently when focus returns (including after a native file picker).
+        // Toggling global loading here would replace the current page and unmount
+        // the file input before its change event can finish.
+        const handleFocus = () => fetchUser(false);
         window.addEventListener("focus", handleFocus);
         return () => window.removeEventListener("focus", handleFocus);
     }, [fetchUser]);
 
     return (
-        <UserContext.Provider value={{ user, loading, error, refetch: fetchUser, setUser }}>
+        <UserContext.Provider value={{ user, loading, error, refetch: () => fetchUser(), setUser }}>
             {children}
         </UserContext.Provider>
     );

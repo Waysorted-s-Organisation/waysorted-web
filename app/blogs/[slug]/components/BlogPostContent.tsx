@@ -41,7 +41,7 @@ function BlogBlock({ block }: { block: BlogContentBlock }) {
   if (block.type === "image") {
     return (
       <figure className="my-8">
-        <div className="relative w-full aspect-[1.8/1] overflow-hidden rounded-2xl bg-gray-100">
+        <div className="relative mx-auto w-full max-w-[872px] aspect-[872/518] overflow-hidden rounded-2xl bg-gray-100">
           <Image src={block.src} alt={block.alt} fill className="object-cover" />
         </div>
         {block.caption && (
@@ -142,7 +142,7 @@ export default function BlogPostContent() {
         <div className="h-4 bg-gray-100 rounded w-1/3 mb-8" />
         <div className="h-5 bg-gray-100 rounded w-1/2 mb-6" />
         <div className="h-12 bg-gray-100 rounded w-5/6 mb-8" />
-        <div className="w-full aspect-[2/1] bg-gray-100 rounded-[20px] mb-12" />
+        <div className="mx-auto w-full max-w-[872px] aspect-[872/518] bg-gray-100 rounded-[20px] mb-12" />
         <div className="space-y-4">
           <div className="h-8 bg-gray-100 rounded w-2/3" />
           <div className="h-4 bg-gray-100 rounded w-full" />
@@ -223,7 +223,7 @@ export default function BlogPostContent() {
       </h1>
 
       {/* Hero Image */}
-      <div className="relative w-full aspect-[2/1] bg-blue-500 rounded-[20px] overflow-hidden mb-12 shadow-sm">
+      <div className="relative mx-auto w-full max-w-[872px] aspect-[872/518] bg-blue-500 rounded-[20px] overflow-hidden mb-12 shadow-sm">
         <Image
           src={post.coverImage}
           alt={post.coverImageAlt || post.title}
