@@ -8,6 +8,11 @@ import {
   requirePurchaseCompletionNotification,
 } from "../lib/notifications";
 import { getN4ScanWindow } from "../lib/n4-scan-window";
+import {
+  getN4CanarySimulationTime,
+  parseN4CanaryEmails,
+  validateN4CanaryTestTarget,
+} from "../lib/n4-canary-test";
 
 test("N4 inactivity event is deterministic for repeated daily scans", () => {
   const input = {
@@ -51,6 +56,38 @@ test("N4 scan window prevents historical backfill", () => {
   });
   assert.equal(window.cutoff.toISOString(), "2026-07-30T04:00:00.000Z");
   assert.equal(window.lowerBound.toISOString(), "2026-07-29T12:00:00.000Z");
+});
+
+test("N4 canary simulation accepts only an explicitly allowlisted email", () => {
+  assert.deepEqual(
+    [...parseN4CanaryEmails("Owner@example.com, second@example.com")],
+    ["owner@example.com", "second@example.com"],
+  );
+  assert.deepEqual(validateN4CanaryTestTarget({
+    enabled: "true",
+    allowlist: "owner@example.com",
+    requestedEmail: " OWNER@example.com ",
+  }), { ok: true, email: "owner@example.com" });
+  assert.equal(validateN4CanaryTestTarget({
+    enabled: "false",
+    allowlist: "owner@example.com",
+    requestedEmail: "owner@example.com",
+  }).status, 409);
+  assert.equal(validateN4CanaryTestTarget({
+    enabled: "true",
+    allowlist: "owner@example.com",
+    requestedEmail: "other@example.com",
+  }).status, 403);
+});
+
+test("N4 canary simulation advances just beyond the inactivity threshold", () => {
+  assert.equal(
+    getN4CanarySimulationTime(
+      new Date("2026-08-01T10:00:00.000Z"),
+      7,
+    ).toISOString(),
+    "2026-08-08T10:01:00.000Z",
+  );
 });
 
 

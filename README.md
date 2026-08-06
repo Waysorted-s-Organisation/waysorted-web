@@ -75,6 +75,18 @@ Required rollout configuration:
 - `NOTIFICATION_N4_SCAN_LOOKBACK_HOURS`: Defaults to `50` for one missed-run
   recovery; deterministic IDs make overlap safe.
 - `NOTIFICATION_N4_SCAN_LIMIT`: Defaults to `100` and is capped at `500`.
+- `NOTIFICATION_N4_CANARY_TEST_ENABLED=false`: Enables the protected,
+  canary-only simulated scan. Keep disabled outside a short test window.
+- `NOTIFICATION_N4_PRODUCER_CANARY_EMAILS`: Comma-separated emails permitted
+  as simulated scan targets.
+
+To prove the production scanner path without changing activity timestamps or
+waiting seven days, temporarily enable the canary test flag and send an
+authenticated `POST /api/cron/n4-product-recall` request with
+`{"email":"owner@example.com"}`. The endpoint loads that allowlisted user's
+real latest successful activity, evaluates the normal scanner just beyond the
+configured inactivity threshold, and emits a clearly marked test event. It
+never scans another user. Disable the test flag immediately after validation.
 
 This activity definition has partial coverage: it intentionally excludes
 non-credit plugin interactions until their telemetry is reliable.
