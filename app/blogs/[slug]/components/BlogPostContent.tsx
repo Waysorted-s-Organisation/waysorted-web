@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ChevronRight, Link2, Instagram, Linkedin, Twitter } from "lucide-react";
+import { Check, ChevronRight, Link2, Instagram, Linkedin } from "lucide-react";
 import { fetchBlogBySlug } from "@/lib/blogsClient";
 import type { BlogContentBlock, BlogPostDetail } from "@/types/blog";
 
@@ -15,6 +15,22 @@ function formatDate(value?: string) {
     month: "short",
     year: "numeric",
   }).format(new Date(value));
+}
+
+function XLogo({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 16 15"
+      fill="none"
+      aria-hidden="true"
+      className={className}
+    >
+      <path
+        d="M0.571996 0.604492L6.18492 8.10938L0.536621 14.2112H1.80793L6.75312 8.86884L10.7486 14.2112H15.0746L9.1457 6.28427L14.4032 0.604492H13.1319L8.57774 5.52456L4.898 0.604492H0.571996ZM2.44151 1.54083H4.42886L13.2048 13.2749H11.2175L2.44151 1.54083Z"
+        fill="currentColor"
+      />
+    </svg>
+  );
 }
 
 function BlogBlock({ block }: { block: BlogContentBlock }) {
@@ -41,7 +57,7 @@ function BlogBlock({ block }: { block: BlogContentBlock }) {
   if (block.type === "image") {
     return (
       <figure className="my-8">
-        <div className="relative w-full aspect-[1.8/1] overflow-hidden rounded-2xl bg-gray-100">
+        <div className="relative mx-auto w-full max-w-[872px] aspect-[872/518] overflow-hidden rounded-2xl bg-gray-100">
           <Image src={block.src} alt={block.alt} fill className="object-cover" />
         </div>
         {block.caption && (
@@ -81,6 +97,7 @@ export default function BlogPostContent() {
   const [post, setPost] = useState<BlogPostDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -142,7 +159,7 @@ export default function BlogPostContent() {
         <div className="h-4 bg-gray-100 rounded w-1/3 mb-8" />
         <div className="h-5 bg-gray-100 rounded w-1/2 mb-6" />
         <div className="h-12 bg-gray-100 rounded w-5/6 mb-8" />
-        <div className="w-full aspect-[2/1] bg-gray-100 rounded-[20px] mb-12" />
+        <div className="mx-auto w-full max-w-[872px] aspect-[872/518] bg-gray-100 rounded-[20px] mb-12" />
         <div className="space-y-4">
           <div className="h-8 bg-gray-100 rounded w-2/3" />
           <div className="h-4 bg-gray-100 rounded w-full" />
@@ -164,6 +181,15 @@ export default function BlogPostContent() {
   }
 
   const publishedDate = formatDate(post.publishedAt || post.createdAt);
+  const shareUrl = `https://www.waysorted.com/blogs/${post.slug}`;
+  const linkedInShareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+  const xShareUrl = `https://x.com/intent/post?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(post.title)}`;
+
+  async function copyBlogLink() {
+    await navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  }
 
   return (
     <div className="flex flex-col w-full max-w-[1000px] mx-auto mt-4">
@@ -199,21 +225,44 @@ export default function BlogPostContent() {
 
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => navigator.clipboard?.writeText(window.location.href)}
+            type="button"
+            onClick={copyBlogLink}
             className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
-            aria-label="Copy blog link"
+            aria-label={copied ? "Blog link copied" : "Copy blog link"}
+            title={copied ? "Copied" : "Copy link"}
           >
-            <Link2 className="w-4 h-4" />
+            {copied ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
           </button>
-          <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+          <a
+            href="https://www.instagram.com/waysorted/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Visit Waysorted on Instagram"
+            title="Instagram"
+            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          >
             <Instagram className="w-4 h-4" />
-          </button>
-          <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
+          </a>
+          <a
+            href={linkedInShareUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Share this blog on LinkedIn"
+            title="Share on LinkedIn"
+            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          >
             <Linkedin className="w-4 h-4" />
-          </button>
-          <button className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors">
-            <Twitter className="w-4 h-4" />
-          </button>
+          </a>
+          <a
+            href={xShareUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Share this blog on X"
+            title="Share on X"
+            className="w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+          >
+            <XLogo className="w-4 h-4" />
+          </a>
         </div>
       </div>
 
@@ -223,7 +272,7 @@ export default function BlogPostContent() {
       </h1>
 
       {/* Hero Image */}
-      <div className="relative w-full aspect-[2/1] bg-blue-500 rounded-[20px] overflow-hidden mb-12 shadow-sm">
+      <div className="relative mx-auto w-full max-w-[872px] aspect-[872/518] bg-blue-500 rounded-[20px] overflow-hidden mb-12 shadow-sm">
         <Image
           src={post.coverImage}
           alt={post.coverImageAlt || post.title}
