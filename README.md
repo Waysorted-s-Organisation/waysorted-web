@@ -56,3 +56,25 @@ subscription checkout is created and the deterministic
 `subscription_purchase_completed` event when Razorpay confirms the matching
 purchase or subscription. The newsletter service uses these events to schedule
 and safely cancel the N3 purchase-retention reminder.
+
+## N4 Product Recall Producer
+
+The daily `/api/cron/n4-product-recall` route identifies previously active
+users as they cross seven days without a successful login or committed credited
+tool job. It emits deterministic `product_inactive_7d` events. Successful
+logins emit `product_activity_resumed`; existing `tool_usage_completed` events
+also cancel pending recall work.
+
+Required rollout configuration:
+
+- `CRON_SECRET`: Protects the Vercel Cron route.
+- `NOTIFICATION_N4_PRODUCER_ENABLED=false`: Independent producer kill switch.
+- `NOTIFICATION_N4_PRODUCER_STARTED_AT`: Required ISO timestamp that prevents
+  historical dormant-user backfill.
+- `NOTIFICATION_N4_INACTIVITY_DAYS`: Defaults to `7`.
+- `NOTIFICATION_N4_SCAN_LOOKBACK_HOURS`: Defaults to `50` for one missed-run
+  recovery; deterministic IDs make overlap safe.
+- `NOTIFICATION_N4_SCAN_LIMIT`: Defaults to `100` and is capped at `500`.
+
+This activity definition has partial coverage: it intentionally excludes
+non-credit plugin interactions until their telemetry is reliable.

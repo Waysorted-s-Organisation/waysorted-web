@@ -11,6 +11,7 @@ import { withCors } from "@/lib/cors";
 import { SESSION_COOKIE_NAME, getSessionCookieOptions } from "@/lib/auth-cookies";
 import {
   buildAccountActivatedEvent,
+  buildProductActivityResumedEvent,
   emitNotificationEvent,
 } from "@/lib/notifications";
 
@@ -159,6 +160,17 @@ export async function GET(request: NextRequest) {
         })
       );
     }
+
+    await emitNotificationEvent(
+      buildProductActivityResumedEvent({
+        userId: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        activityId: existingSession.sessionId,
+        activityType: "login",
+        activitySource: existingSession.source || "web",
+      })
+    );
 
     const finalUrl = new URL(redirectPath, urlObj.origin);
     const response = NextResponse.redirect(finalUrl);

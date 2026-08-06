@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/n4-product-recall",
+      "schedule": "0 4 * * *"
+    }
+  ]
+}

@@ -483,6 +483,96 @@ export function buildToolUsageCompletedEvent(input: {
   } satisfies NotificationEventInput;
 }
 
+export function buildProductActivityResumedEvent(input: {
+  userId: string;
+  email: string;
+  name?: string | null;
+  activityId: string;
+  activityType: "login" | "credited_tool";
+  activitySource: string;
+  toolCode?: string | null;
+  featureCode?: string | null;
+  occurredAt?: Date;
+}) {
+  const occurredAt = input.occurredAt || new Date();
+
+  return {
+    eventId: buildEventId("product_activity_resumed", [
+      input.userId,
+      input.activityType,
+      input.activityId,
+    ]),
+    eventType: "product_activity_resumed",
+    occurredAt,
+    profile: buildProfile({
+      userId: input.userId,
+      email: input.email,
+      name: input.name,
+      source: input.activitySource,
+      traits: {
+        last_activity_type: input.activityType,
+        last_activity_source: input.activitySource,
+        last_tool_code: input.toolCode || null,
+        last_feature_code: input.featureCode || null,
+      },
+    }),
+    payload: {
+      activity_id: input.activityId,
+      activity_type: input.activityType,
+      activity_source: input.activitySource,
+      tool_code: input.toolCode || null,
+      feature_code: input.featureCode || null,
+    },
+  } satisfies NotificationEventInput;
+}
+
+export function buildProductInactiveEvent(input: {
+  userId: string;
+  email: string;
+  name?: string | null;
+  lastActivityAt: Date;
+  lastActivityType: "login" | "credited_tool";
+  lastActivitySource: string;
+  toolCode?: string | null;
+  featureCode?: string | null;
+  inactivityDays: number;
+  detectedAt?: Date;
+}) {
+  const detectedAt = input.detectedAt || new Date();
+
+  return {
+    eventId: buildEventId("product_inactive_7d", [
+      input.userId,
+      input.lastActivityAt.toISOString(),
+    ]),
+    eventType: "product_inactive_7d",
+    occurredAt: detectedAt,
+    profile: buildProfile({
+      userId: input.userId,
+      email: input.email,
+      name: input.name,
+      source: "inactivity_scan",
+      traits: {
+        last_activity_at: input.lastActivityAt.toISOString(),
+        last_activity_type: input.lastActivityType,
+        last_activity_source: input.lastActivitySource,
+        last_tool_code: input.toolCode || null,
+        last_feature_code: input.featureCode || null,
+        activity_coverage: "successful_logins_and_credited_tools",
+      },
+    }),
+    payload: {
+      inactivity_days: input.inactivityDays,
+      last_activity_at: input.lastActivityAt.toISOString(),
+      last_activity_type: input.lastActivityType,
+      last_activity_source: input.lastActivitySource,
+      tool_code: input.toolCode || null,
+      feature_code: input.featureCode || null,
+      activity_coverage: "successful_logins_and_credited_tools",
+    },
+  } satisfies NotificationEventInput;
+}
+
 export function buildToolUsageHeavyEvent(input: {
   userId: string;
   email: string;

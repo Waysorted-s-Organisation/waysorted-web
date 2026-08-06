@@ -7,6 +7,7 @@ import Subscriber from "@/models/subscriber";
 import { SESSION_COOKIE_NAME, getSessionCookieOptions } from "@/lib/auth-cookies";
 import {
   buildAccountActivatedEvent,
+  buildProductActivityResumedEvent,
   emitNotificationEvent,
 } from "@/lib/notifications";
 export { OPTIONS } from "@/lib/cors";
@@ -104,6 +105,9 @@ export async function POST(req: Request) {
       sessionId,
       user: user._id,
       expiresAt,
+      completed: true,
+      completedAt: new Date(),
+      source: "otp",
     });
 
     if (isNewUser) {
@@ -116,6 +120,18 @@ export async function POST(req: Request) {
         })
       );
     }
+
+
+    await emitNotificationEvent(
+      buildProductActivityResumedEvent({
+        userId: user._id.toString(),
+        email: user.email,
+        name: user.name,
+        activityId: sessionId,
+        activityType: "login",
+        activitySource: "otp",
+      })
+    );
 
     const res = NextResponse.json({
       ok: true,
