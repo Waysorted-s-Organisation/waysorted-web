@@ -2,7 +2,6 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import products from "@/data/products.json"
-import { useRouter } from 'next/navigation'
 
 export interface ProductsMenuProps {
   isOpen: boolean;
@@ -10,7 +9,6 @@ export interface ProductsMenuProps {
 }
 
 export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className }) => {
-  const router = useRouter()
   return (
     <div
       className={`products-menu absolute top-full w-[780px] 
@@ -48,13 +46,13 @@ export const ProductsMenu: React.FC<ProductsMenuProps> = ({ isOpen, className })
       </div>
 
       <div className="px-4 pb-4">
-        <button
-          onClick={() => router.push('/requests')}
+        <Link
+          href="/requests"
           className="w-full mt-1 inline-flex items-center justify-between rounded-lg bg-primary-way-100 text-white px-4 py-3 text-sm font-semibold active:scale-[0.99] shadow-card"
         >
           <span>Request a feature</span>
           <span aria-hidden className="text-lg leading-none">→</span>
-        </button>
+        </Link>
       </div>
 
     </div>

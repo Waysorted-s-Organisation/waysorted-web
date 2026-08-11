@@ -14,17 +14,7 @@ export default function robots(): MetadataRoute.Robots {
                     '/mobile-redirect',
                     '/_next/',
                     '/admin/',
-                    '/*.png$',
-                    '/*.jpg$',
-                    '/*.jpeg$',
-                    '/*.gif$',
-                    '/*.svg$',
-                    '/*.webp$',
                 ],
-            },
-            {
-                userAgent: 'Googlebot-Image',
-                disallow: '/',
             },
             {
                 userAgent: 'Googlebot',

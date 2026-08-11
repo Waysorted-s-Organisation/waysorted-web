@@ -19,7 +19,15 @@
   --secondary-db-90: #282C32;
   --secondary-db-80: #43474B;
   --secondary-db-70: #565A5E;
+  /* Contrast note: db-60 sits in a dead zone - 4.24:1 on white and 4.43:1 on
+     the #0D1218 dark sections, so it just misses WCAG AA (4.5:1) for small text
+     on BOTH. Darkening it fixes light backgrounds but breaks dark ones, so the
+     value is left alone and the offending call sites pick a side instead:
+       small muted text on white -> db-70 (#565A5E, 6.95:1)
+       small muted text on dark  -> db-40 (#aeb0b2, 8.64:1) or lighter */
   --secondary-db-60: #797B7F;
+  /* NOTE: #939698 is only 2.98:1 on white - fine for large text or non-text UI,
+     but do not use it for small body copy on a light background. */
   --secondary-db-50: #939698;
   --secondary-db-40: #aeb0b2;
   --secondary-db-30: #c9cacc;
@@ -35,6 +43,9 @@
   --tertiary-orange-100: #fff1e8;
   --tertiary-orange-dark: #3d2b21;
   --tertiary-green-500: #01a04e;
+  /* green-500 with white text is only 3.42:1. Keep 500 for dots/accents (non-text,
+     where 3:1 is the bar) and use 600 wherever white text sits on green. */
+  --tertiary-green-600: #01823f;
   --tertiary-green-100: #e5f5ed;
   --tertiary-green-dark: #0a2e23;
   --tertiary-voilet-500: #7531f9;
@@ -178,6 +189,7 @@
   --color-tertiary-orange-100: var(--tertiary-orange-100);
   --color-tertiary-orange-dark: var(--tertiary-orange-dark);
   --color-tertiary-green-500: var(--tertiary-green-500);
+  --color-tertiary-green-600: var(--tertiary-green-600);
   --color-tertiary-green-100: var(--tertiary-green-100);
   --color-tertiary-green-dark: var(--tertiary-green-dark);
   --color-tertiary-voilet-500: var(--tertiary-voilet-500);

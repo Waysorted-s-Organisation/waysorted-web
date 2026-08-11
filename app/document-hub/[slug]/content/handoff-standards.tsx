@@ -1,7 +1,7 @@
 export default function HandoffStandards() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Handoff Standards</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Handoff Standards</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Effective design-to-development handoff is crucial for maintaining design integrity. Follow these standards to ensure smooth collaboration between designers and developers.
       </p>

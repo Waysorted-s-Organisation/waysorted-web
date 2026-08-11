@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState, useMemo, PropsWithChildren } from "react";
 import Image from "next/image";
 import { useBanner } from "@/context/BannerContext";
@@ -76,7 +76,6 @@ export default function DocsShell({
 }: PropsWithChildren<DocsShellInnerProps>) {
   const [searchTerm, setSearchTerm] = useState("");
   const { showBanner, setShowBanner } = useBanner();
-  const router = useRouter();
   const pathname = usePathname();
   const [openSection, setOpenSection] = useState<string | null>("General");
   const [activeLink, setActiveLink] = useState<string | null>(null);
@@ -159,8 +158,8 @@ export default function DocsShell({
           
           {!isMobileSearchOpen && (
             <div className="mt-6 mb-4">
-              <nav className="text-sm font-medium text-secondary-db-100/50 mb-4">
-                <span onClick={() => router.push("/")} className="cursor-pointer">Home</span>
+              <nav aria-label="Breadcrumb" className="text-sm font-medium text-secondary-db-70 mb-4">
+                <Link href="/" className="cursor-pointer">Home</Link>
                 <Image
                   src="/icons/chevron-right.svg"
                   alt="Arrow Right"
@@ -183,7 +182,10 @@ export default function DocsShell({
                  </div>
                  <span className="font-medium text-sm text-secondary-db-100">WayDocs</span>
               </div>
-              <h1 className="text-3xl font-semibold text-secondary-db-100">Document Hub</h1>
+              {/* Section label, not the page heading. Each doc page now carries
+                  its own <h1>; this used to make all 53 doc pages share the
+                  identical "Document Hub" <h1>. Styling unchanged. */}
+              <p className="text-3xl font-semibold text-secondary-db-100">Document Hub</p>
             </div>
           )}
 
@@ -359,13 +361,15 @@ export default function DocsShell({
           <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 
           <div className="max-w-7xl bg-white mx-auto px-5 pt-24 pb-4">
-            <nav className="text-base font-medium text-secondary-db-100/50">
-              <span
+            {/* Crawlable breadcrumb links, and db-70 in place of the /50
+                opacity blend so the text clears WCAG AA on white. */}
+            <nav aria-label="Breadcrumb" className="text-base font-medium text-secondary-db-70">
+              <Link
+                href="/"
                 className="cursor-pointer hover:text-secondary-db-100 hover:border-b-2 hover:border-b-primary-way-10"
-                onClick={() => router.push("/")}
               >
                 Home
-              </span>
+              </Link>
               <Image
                 src="/icons/chevron-right.svg"
                 alt="Arrow Right"
@@ -373,12 +377,12 @@ export default function DocsShell({
                 height={4}
                 className="inline-block mx-2"
               />
-              <span
+              <Link
+                href="/document-hub"
                 className="text-primary-way-100 text-base font-medium cursor-pointer"
-                onClick={() => router.push("/document-hub")}
               >
                 Document Hub
-              </span>
+              </Link>
             </nav>
           </div>
 
@@ -398,9 +402,9 @@ export default function DocsShell({
                   </span>
                 </span>
               </div>
-              <h1 className="text-4xl w-lg font-semibold text-secondary-db-100 leading-tight">
+              <p className="text-4xl w-lg font-semibold text-secondary-db-100 leading-tight">
                 Document Hub
-              </h1>
+              </p>
             </div>
           </div>
 

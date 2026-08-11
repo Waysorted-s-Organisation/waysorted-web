@@ -1,7 +1,7 @@
 export default function WhatsComingNext() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">What&apos;s Coming Next?</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">What&apos;s Coming Next?</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Waysorted is continuously evolving to become a unified smart productivity powerhouse and beyond — for designers, in the industry.
             </p>

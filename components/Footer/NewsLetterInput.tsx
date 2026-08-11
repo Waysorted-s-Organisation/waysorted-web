@@ -33,7 +33,9 @@ export default function NewsletterInput({
           if (e.key === "Enter") handleSubmit();
         }}
         // restored the original compact size you had
-        className="w-full px-3 sm:px-4 py-2 text-secondary-db-60 placeholder:text-secondary-db-40 focus:outline-none"
+        // db-70 for both the typed value and the placeholder: on the white input
+        // db-60 is 4.24:1 and db-40 is 2.18:1, both under WCAG AA. db-70 is 6.95:1.
+        className="w-full px-3 sm:px-4 py-2 text-secondary-db-70 placeholder:text-secondary-db-70 focus:outline-none"
       />
 
       {/* Button kept small and vertically centered; overlaps input using negative margin */}

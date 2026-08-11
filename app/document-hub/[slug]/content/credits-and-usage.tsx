@@ -1,7 +1,7 @@
 export default function CreditsAndUsage() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Credits and Usage</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Credits and Usage</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Waysorted uses a credit-based usage system for the beta phase. It&apos;s simple and easy to use for a fair experience.
             </p>

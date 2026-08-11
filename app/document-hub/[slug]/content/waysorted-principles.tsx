@@ -1,7 +1,7 @@
 export default function WaysortedPrinciples() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Waysorted Principles</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Waysorted Principles</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Our design principles guide every product decision at Waysorted. These core values ensure consistency, quality, and user-centricity across all tools and experiences we create.
       </p>

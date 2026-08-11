@@ -1,7 +1,7 @@
 export default function RateLimits() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Rate Limits</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Rate Limits</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Rate limits protect system resources and align with Waysorted&apos;s credit model. Limits are enforced per API key and reset hourly/daily.
       </p>

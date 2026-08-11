@@ -1,7 +1,7 @@
 export default function EarningCredits() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Earning Credits</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Earning Credits</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         This section explains the Waysorted credit system: how credits work, how to access them, and what to expect during the beta.
       </p>

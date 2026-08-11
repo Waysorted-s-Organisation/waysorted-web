@@ -1,7 +1,7 @@
 export default function AccountSettingsNavigation() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Account Settings Navigation</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Account Settings Navigation</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Use the sidebar to navigate different account areas:
             </p>

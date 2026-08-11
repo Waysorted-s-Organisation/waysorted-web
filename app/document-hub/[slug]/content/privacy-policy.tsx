@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function PrivacyPolicy() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Privacy Policy</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Privacy Policy</h1>
 
             <h3 id="introduction" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">1. Introduction</h3>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">

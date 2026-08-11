@@ -1,7 +1,7 @@
 export default function UpcomingTools() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Upcoming Tools</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Upcoming Tools</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Key features for upcoming tools in the Waysorted suite.
       </p>

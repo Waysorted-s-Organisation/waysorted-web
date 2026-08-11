@@ -1,7 +1,7 @@
 export default function BugReporting() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Bug Reporting</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Bug Reporting</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         A bug is a specific, reproducible error or unexpected behavior within the Waysorted platform. Reporting bugs helps us improve product stability, performance, and overall experience for the entire community.
       </p>

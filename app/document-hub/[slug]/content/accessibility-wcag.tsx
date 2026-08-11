@@ -1,7 +1,7 @@
 export default function AccessibilityWcag() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Accessibility (WCAG)</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Accessibility (WCAG)</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Waysorted is committed to creating accessible digital experiences. This guide covers WCAG compliance standards and how our tools help you build inclusive designs.
       </p>

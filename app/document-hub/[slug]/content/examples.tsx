@@ -1,7 +1,7 @@
 export default function Examples() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">API Examples</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">API Examples</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Learn how to use the Waysorted API with practical examples covering common use cases and integration patterns.
       </p>

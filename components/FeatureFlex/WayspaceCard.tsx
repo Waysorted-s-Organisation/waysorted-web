@@ -174,6 +174,12 @@ export default function WayspaceCard({ className }: { className?: string }) {
 
                 <button
                   onClick={(e) => toggleFavorite(tool.id, e)}
+                  aria-label={
+                    favorites.includes(tool.id)
+                      ? `Remove ${tool.name} from favourites`
+                      : `Add ${tool.name} to favourites`
+                  }
+                  aria-pressed={favorites.includes(tool.id)}
                   className={clsx(
                     "absolute -top-1 -right-1 w-7 h-7 bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-200 cursor-pointer z-10",
                     favorites.includes(tool.id)
@@ -240,7 +246,9 @@ export default function WayspaceCard({ className }: { className?: string }) {
             <div
               key={i}
               // Updated fixed width/height using standard Tailwind arbitrary value
-              className="h-[4.5rem] w-[4.5rem] aspect-square rounded-xl bg-[#ECF2FF] flex items-center justify-center text-[#91adea] text-sm"
+              // #91adea on #ECF2FF was 2.0:1 - well under WCAG AA (4.5:1) for
+              // this placeholder text. #4767AE keeps the muted blue and is 4.9:1.
+              className="h-[4.5rem] w-[4.5rem] aspect-square rounded-xl bg-[#ECF2FF] flex items-center justify-center text-[#4767AE] text-sm"
             >
               {placeholderLabels[i]}
             </div>

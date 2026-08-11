@@ -1,7 +1,7 @@
 export default function Overview() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Overview</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Overview</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 This section provides reference information on how credits work in Waysorted, a multi-platform design tool ecosystem. Credits are designed as a universal, portable value system that can be used across multiple supported software platforms, starting with Figma and expanding to other tools over time.
             </p>

@@ -7,17 +7,24 @@ import Header from "@/components/Header";
 // Statically import Hero as it's the LCP section
 import Hero from '@/components/Hero/index'
 
-// Dynamic Imports for Below-the-Fold components
-const ToolsGrid = dynamic(() => import('@/components/ToolsGrid/index'), { ssr: false });
-const TopSection = dynamic(() => import('@/components/TopSection/index'), { ssr: false });
-const ImpactTop = dynamic(() => import('@/components/ImpactTop'), { ssr: false });
-const InfoCards = dynamic(() => import('@/components/InfoCards').then(mod => mod.InfoCards), { ssr: false });
-const GetStarted = dynamic(() => import('@/components/GetStarted'), { ssr: false });
-const Testimonials = dynamic(() => import('@/components/Testimonials'), { ssr: false });
-const Footer = dynamic(() => import("@/components/Footer"), { ssr: false });
-const SecureAnimation = dynamic(() => import("@/components/SecureAnimation"), { ssr: false });
+// Below-the-fold components. These are still code-split and lazily loaded, but
+// they are NO LONGER `ssr: false`.
+//
+// Why: with `ssr: false` the server HTML contained only the Hero, so Google
+// indexed ~310 words of a page that actually renders ~922, and the footer's
+// nav links did not exist for crawlers at all. All DOM access in these
+// components is inside useEffect/useLayoutEffect/useGSAP, none of which run
+// during SSR, so server rendering them is safe.
+const ToolsGrid = dynamic(() => import('@/components/ToolsGrid/index'));
+const TopSection = dynamic(() => import('@/components/TopSection/index'));
+const ImpactTop = dynamic(() => import('@/components/ImpactTop'));
+const InfoCards = dynamic(() => import('@/components/InfoCards').then(mod => mod.InfoCards));
+const GetStarted = dynamic(() => import('@/components/GetStarted'));
+const Testimonials = dynamic(() => import('@/components/Testimonials'));
+const Footer = dynamic(() => import("@/components/Footer"));
+const SecureAnimation = dynamic(() => import("@/components/SecureAnimation"));
 const SecureCards = dynamic(() => import("@/components/SecureCards/index"));
-const FloatingStatsSection = dynamic(() => import("../FloatingStats"), { ssr: false });
+const FloatingStatsSection = dynamic(() => import("../FloatingStats"));
 
 export default function Home() {
   const { showBanner, setShowBanner } = useBanner();

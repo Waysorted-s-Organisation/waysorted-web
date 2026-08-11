@@ -17,13 +17,10 @@ const hanken = Hanken_Grotesk({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.waysorted.com"),
-  alternates: {
-    canonical: "/",
-    languages: {
-      'en': '/',
-      'x-default': '/',
-    },
-  },
+  // NOTE: Do not set `alternates.canonical` here. Metadata in the App Router is
+  // inherited by every child segment that does not override it, so a canonical
+  // on the root layout makes every page declare itself a duplicate of the
+  // homepage. Each route must declare its own canonical instead.
   title: {
     default: "Waysorted - Accelerate every idea with one powerful suite",
     template: "%s | Waysorted",
@@ -150,10 +147,15 @@ const jsonLd = {
         width: 512,
         height: 512,
       },
+      // All URLs verified reachable. Broken `sameAs` entries stop Google from
+      // consolidating these profiles onto the Waysorted entity:
+      // - linkedin.com/company/waysorted returned 404 (the handle is waysortedhq)
+      // - discord.gg/waysorted was an invalid invite ("Unknown Invite")
       sameAs: [
-        "https://twitter.com/waysorted",
-        "https://www.linkedin.com/company/waysorted",
-        "https://discord.gg/waysorted",
+        "https://x.com/Waysorted",
+        "https://www.linkedin.com/company/waysortedhq",
+        "https://www.instagram.com/waysorted/",
+        "https://discord.com/invite/U2XF76WxNv",
         "https://github.com/Waysorted-s-Organisation",
       ],
       contactPoint: {
@@ -179,14 +181,9 @@ const jsonLd = {
       publisher: {
         "@id": "https://www.waysorted.com/#organization",
       },
-      potentialAction: {
-        "@type": "SearchAction",
-        target: {
-          "@type": "EntryPoint",
-          urlTemplate: "https://www.waysorted.com/docs?q={search_term_string}",
-        },
-        "query-input": "required name=search_term_string",
-      },
+      // NOTE: `potentialAction`/SearchAction intentionally omitted. It pointed at
+      // /docs, which 404s, and the site exposes no `?q=` search endpoint to back
+      // it. Re-add only when a real search URL exists.
     },
     {
       "@type": "SoftwareApplication",
@@ -210,7 +207,7 @@ const jsonLd = {
       screenshot: "https://www.waysorted.com/images/og-image.png",
       softwareHelp: {
         "@type": "CreativeWork",
-        url: "https://www.waysorted.com/docs",
+        url: "https://www.waysorted.com/document-hub/what-is-waysorted",
       },
       offers: {
         "@type": "Offer",
@@ -218,13 +215,9 @@ const jsonLd = {
         priceCurrency: "USD",
         availability: "https://schema.org/InStock",
       },
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: "4.8",
-        ratingCount: "100",
-        bestRating: "5",
-        worstRating: "1",
-      },
+      // NOTE: `aggregateRating` intentionally omitted. Google's review-snippet
+      // policy disallows self-serving ratings that are not backed by reviews
+      // visible on the page. Re-add only alongside real, on-page reviews.
       author: {
         "@id": "https://www.waysorted.com/#organization",
       },

@@ -1,7 +1,7 @@
 export default function AccessingWaysortedInFigma() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Accessing Waysorted in Figma</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Accessing Waysorted in Figma</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Getting started takes only a few seconds.
             </p>

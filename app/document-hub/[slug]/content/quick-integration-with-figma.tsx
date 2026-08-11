@@ -1,7 +1,7 @@
 export default function QuickIntegrationWithFigma() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Quick Integration with Figma</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Quick Integration with Figma</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Waysorted works as a unified plugin inside Figma, giving you access to multiple tools from a single interface within your design workspace.
       </p>

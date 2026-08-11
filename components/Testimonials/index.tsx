@@ -68,12 +68,12 @@ export default function Testimonials() {
                     </span>
                 </span>
 
-                <h1 className="mt-4 mb-4 text-2xl md:text-4xl font-semibold text-secondary-db-100">
+                <h2 className="mt-4 mb-4 text-2xl md:text-4xl font-semibold text-secondary-db-100">
                     Hear From Way{" "}
                     <span className="bg-tertiary-orange-500/12 rounded-lg text-tertiary-orange-500 px-4 py-1">
                         Mavens
                     </span>
-                </h1>
+                </h2>
                 <p className="text-secondary-db-80 max-w-4xl mx-auto font-medium text-base md:text-lg">
                     Reviewed by Figma users who&apos;ve experienced the Wayflow.
                 </p>

@@ -1,7 +1,7 @@
 export default function FigmaSync() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Figma Sync</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Figma Sync</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 The core of Waysorted is its deep, native integration with Figma. This is not a separate application but a unified suite of plugins that operates directly within the Figma environment.
             </p>

@@ -19,11 +19,15 @@ const HeroSection: React.FC = () => {
                 <span className="pl-1 pr-2 py-1 text-secondary-db-100">Way Team</span>
               </span>
         
-              <h2 className="text-3xl md:text-4xl font-bold text-white mb-3">
+              {/* Promoted to <h1>: this is the page's topic heading. It was an
+                  <h2>, which left /about-us with no <h1> of its own - the only
+                  one on the page came from the shared "Join Our Community"
+                  section. Styling is unchanged. */}
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
                 Meet the <span className="bg-[#FF629B]/25 rounded-xl text-[#FF6CA1] px-2">
                   Minds
                 </span> Behind the Magic
-              </h2>
+              </h1>
               <p className="text-secondary-db-30 max-w-xl mx-auto md:mb-16 mb-1 md:text-lg text-base">
                 A small team with a big mission - turning chaotic workflows into seamless creativity.
               </p>

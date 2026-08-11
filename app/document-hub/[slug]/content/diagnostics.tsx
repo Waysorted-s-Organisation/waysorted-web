@@ -1,7 +1,7 @@
 export default function Diagnostics() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Diagnostics</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Diagnostics</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Providing our support team with detailed diagnostic information is the most effective way to accelerate the resolution of your issue. Please gather the following before submitting a report:
       </p>
