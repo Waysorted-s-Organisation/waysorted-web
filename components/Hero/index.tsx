@@ -1,81 +1,121 @@
 'use client';
 
-import Image from "next/image";
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import GlowStarButton from '@/components/GlowStarButton';
 
-const Hero = () => {
+const designerAvatars = [
+  '/icons/Designer1.jpg',
+  '/icons/Designer2.jpg',
+  '/icons/Designer3.jpg',
+];
+
+const recognitions = [
+  {
+    src: '/images/recognitions/nvidia-inception.png',
+    alt: 'NVIDIA Inception Program member',
+    width: 329,
+    height: 89,
+  },
+  {
+    src: '/images/recognitions/founders-inc.png',
+    alt: 'Founders, Inc. member',
+    width: 398,
+    height: 89,
+  },
+  {
+    src: '/images/recognitions/dpiit-startup-india.png',
+    alt: 'DPIIT Startup India recognized',
+    width: 314,
+    height: 89,
+  },
+];
+
+export default function Hero() {
   const router = useRouter();
 
-  const handleFigmaClick = () => {
-    window.open("https://www.figma.com/community/plugin/1532842109377504268/waysorted", "_blank");
-  }; return (
-    <section
-      id="hero"
-      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 mb-8"
-    >
-      <div id="hero-content" className="text-center">
-        {/* Request a feature badge */}
+  const handleSuggestionClick = () => {
+    if (window.matchMedia('(max-width: 1023px)').matches) {
+      router.push('/mobile-redirect');
+      return;
+    }
+
+    router.push('/requests');
+  };
+
+  return (
+    <section id="hero" className="mx-auto max-w-7xl px-4 pb-7 pt-12 sm:px-6 lg:px-8">
+      <div id="hero-content" className="flex flex-col items-center text-center">
         <button
-          className="relative border-white hover:border-[#E9EEFA] cursor-pointer border-2 inline-flex items-center gap-3 bg-white hover:bg-[#265BD1]/4 rounded-2xl px-2 py-2 md:px-2 md:py-2 text-sm font-medium shadow-[0_4px_16.4px_rgba(0,0,0,0.05)] hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)] transition-shadow"
-          onClick={() => {
-            if (typeof window !== 'undefined' && window.matchMedia('(max-width: 1023px)').matches) {
-              router.push('/mobile-redirect');
-            } else {
-              router.push('/requests');
-            }
-          }}
+          type="button"
+          onClick={handleSuggestionClick}
+          className="inline-flex items-center gap-2 rounded-xl bg-[#f4f4f4] p-1.5 pr-3 text-sm font-medium text-secondary-db-100 transition-colors hover:bg-[#ececec] active:scale-[0.98]"
         >
-          <span className="bg-primary-way-100 text-white rounded-2xl px-3 py-1 text-sm font-semibold">
-            Request
+          <span className="rounded-lg bg-primary-way-100 px-3 py-2 font-semibold text-white">
+            Suggest a tool
           </span>
-          <span className="text-secondary-db-100">
-            Tell us what you need in your workflow
-          </span>
-          <Image
-            src="/icons/request-arrow.svg"
-            alt="arrow" 
-            width={12}
-            height={6}
-            className="w-3 h-4 flex-shrink-0"
-          />
+          <span>What should we build next?</span>
+          <Image src="/icons/chevron-right.svg" alt="" width={7} height={12} />
         </button>
 
-        {/* Main heading */}
-        <h1 className="text-4xl md:text-7xl lg:text-8xl font-bold text-secondary-db-100 leading-tight mb-4">
-          Accelerate every idea with
-          <br />
-          <span className="text-primary-way-100">one powerful suite</span>
+        <div className="mt-9 flex items-center text-sm font-medium text-secondary-db-70">
+          <div className="mr-1.5 flex -space-x-2" aria-hidden="true">
+            {designerAvatars.map((avatar, index) => (
+              <Image
+                key={avatar}
+                src={avatar}
+                alt=""
+                width={22}
+                height={22}
+                className="h-[22px] w-[22px] rounded-full border-2 border-white object-cover"
+                priority={index === 0}
+              />
+            ))}
+          </div>
+          <span>Trusted by 500+ Designers</span>
+        </div>
+
+        <h1 className="mt-2 max-w-5xl text-[clamp(2.75rem,5.6vw,4.5rem)] font-medium leading-[1.02] tracking-[-0.045em] text-secondary-db-100">
+          <span className="block">The only toolkit you need</span>
+          <span className="mt-2 block text-[#8f8f8f]">for every design task</span>
         </h1>
 
-        {/* Subheading */}
-        <p className="text-sm md:text-base font-medium max-w-2xl mx-auto mb-12 leading-relaxed">
-          <span className="text-secondary-db-100">
-            Built to replace them all with one unified tool suite which works across softwares.
-          </span>
+        <p className="mx-auto mt-5 max-w-2xl text-sm font-medium leading-relaxed text-secondary-db-80 md:text-base">
+          Built to replace them all with one unified tool suite which works across softwares.
         </p>
 
-        {/* CTA buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <GlowStarButton
-            onClick={handleFigmaClick}
-            className="inline-flex items-center gap-x-2 border bg-secondary-db-100 border-secondary-db-20 text-white font-semibold text-base button-shadow px-5 py-3 rounded-xl active:scale-95 transition-transform cursor-pointer force-hover"
+        <div className="mt-8 flex flex-col items-center">
+          <button
+            type="button"
+            onClick={() => router.push('/signup')}
+            className="rounded-full border border-secondary-db-80 bg-[#111820] px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[#242b33] active:scale-[0.98]"
           >
-            <span className="flex items-center gap-x-2">
-              <Image
-                src="/icons/figma.svg"
-                alt="Figma"
-                title="Figma"
-                width={20}
-                height={20}
-              />
-              <span>Waysorted for Figma</span>
-            </span>
-          </GlowStarButton>
+            Get Started for Free
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push('/pricing')}
+            className="mt-2 text-sm font-medium text-secondary-db-80 underline underline-offset-2 transition-colors hover:text-secondary-db-100"
+          >
+            See our Plans
+          </button>
+        </div>
+
+        <div
+          className="mt-8 flex w-full max-w-[560px] items-center justify-center gap-x-4 sm:gap-x-5"
+          aria-label="Waysorted programs and recognitions"
+        >
+          {recognitions.map((recognition) => (
+            <Image
+              key={recognition.src}
+              src={recognition.src}
+              alt={recognition.alt}
+              width={recognition.width}
+              height={recognition.height}
+              className="h-auto w-[30%] max-w-[172px] object-contain"
+            />
+          ))}
         </div>
       </div>
-    </section >
+    </section>
   );
-};
-
-export default Hero;
+}
