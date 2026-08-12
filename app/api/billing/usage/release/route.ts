@@ -10,7 +10,6 @@ type ReleaseBody = {
   reservationId?: string;
   idempotencyKey?: string;
   reason?: string;
-  compensateCommitted?: boolean;
   bridgeToken?: string;
 };
 
@@ -30,7 +29,6 @@ export async function POST(request: NextRequest) {
       reservationId: body.reservationId?.trim() || null,
       idempotencyKey: body.idempotencyKey?.trim() || null,
       reason: body.reason?.trim() || null,
-      compensateCommitted: body.compensateCommitted === true,
     });
 
     return NextResponse.json({
