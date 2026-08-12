@@ -16,6 +16,70 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Local Docker environment
+
+The Docker development stack runs Next.js against an isolated MongoDB database
+named `waysorted_local`. Production notification producers are disabled by the
+Compose configuration.
+
+1. Create the ignored local environment file:
+
+   ```bash
+   cp .env.docker.example .env.docker.local
+   ```
+
+2. Add localhost Google OAuth credentials and Razorpay **test-mode** credentials
+   only when those flows are being tested. The Google callback URL is:
+
+   ```text
+   http://localhost:3000/api/auth/callback
+   ```
+
+   `DEV_PRICING_COUNTRY` is the explicit local regional-pricing override. In
+   production, it is ignored and pricing trusts only Vercel's
+   `x-vercel-ip-country` header.
+
+3. Start the application and database:
+
+   ```bash
+   docker compose up -d --build web
+   ```
+
+   The development container uses Turbopack and mounts the source tree at
+   runtime. It does not copy the large `public` directory into the development
+   image.
+
+4. Open [http://localhost:3000](http://localhost:3000).
+
+Useful commands:
+
+```bash
+docker compose logs -f web
+docker compose restart web
+docker compose down
+```
+
+`docker compose down` preserves the local MongoDB volume. Running
+`docker compose down -v` permanently deletes the local database copy.
+
+The optional Figma MCP service is started separately:
+
+```bash
+docker compose --profile figma up -d figma-mcp
+```
+
+Do not put production database, Razorpay, email, or notification credentials in
+`.env.docker.local`. Refreshing the local database from production must be a
+controlled owner operation, and the resulting local copy must be treated as
+sensitive data.
+
+After deploying the user-scoped usage-reservation idempotency change, run this
+once against the intended database before enabling traffic:
+
+```bash
+npm run migrate:usage-reservation-index
+```
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.

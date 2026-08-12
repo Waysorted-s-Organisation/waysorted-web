@@ -34,7 +34,11 @@ export async function GET(request: NextRequest) {
 
     await dbConnect();
 
-    const existingSession = await Session.findOne({ sessionId: state });
+    const existingSession = await Session.findOne({
+      oauthState: state,
+      completed: false,
+      pollExpiresAt: { $gt: new Date() },
+    });
     if (!existingSession) {
       return NextResponse.redirect(
         new URL(`/signup?error=${encodeURIComponent("invalid_state")}`, request.url)
@@ -70,7 +74,8 @@ export async function GET(request: NextRequest) {
       { headers: { Authorization: `Bearer ${access_token}` } }
     );
     const callbackSignals = extractRequestSignals(request);
-    const callbackCountry = normalizeCountry(getCountryFromRequest(request) || existingSession.countryCode);
+    const callbackCountrySource = getCountryFromRequest(request) || existingSession.countryCode;
+    const callbackCountry = callbackCountrySource ? normalizeCountry(callbackCountrySource) : null;
 
     const existingUser = await User.findOne({ email: googleUser.email });
     const isNewUser = !existingUser;
@@ -115,8 +120,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    await Session.updateOne(
-      { sessionId: state },
+    const completedSession = await Session.updateOne(
+      { _id: existingSession._id, completed: false, oauthState: state },
       {
         $set: {
           accessToken: access_token,
@@ -131,10 +136,17 @@ export async function GET(request: NextRequest) {
           userAgent: callbackSignals.userAgent || existingSession.userAgent || null,
           deviceId: existingSession.deviceId || callbackSignals.deviceId || null,
           countryCode: callbackCountry,
-          pricingTierAtAuth: getCountryTier(callbackCountry),
+          pricingTierAtAuth: callbackCountry ? getCountryTier(callbackCountry) : null,
         },
+        $unset: { oauthState: 1 },
       }
     );
+
+    if (completedSession.modifiedCount !== 1) {
+      return NextResponse.redirect(
+        new URL(`/signup?error=${encodeURIComponent("oauth_state_already_used")}`, request.url)
+      );
+    }
 
     await ensureStarterGrant({
       user,
@@ -155,7 +167,7 @@ export async function GET(request: NextRequest) {
           sourceContext: {
             auth_source: existingSession.source || "web",
             country_code: callbackCountry,
-            pricing_tier: getCountryTier(callbackCountry),
+            pricing_tier: callbackCountry ? getCountryTier(callbackCountry) : null,
           },
         })
       );
@@ -180,7 +192,7 @@ export async function GET(request: NextRequest) {
 
     response.cookies.set(
       SESSION_COOKIE_NAME,
-      state,
+      existingSession.sessionId,
       getSessionCookieOptions(60 * 60 * 24 * 7)
     );
 

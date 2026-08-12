@@ -24,13 +24,15 @@ import {
 import { createSignedToken } from "@/lib/billing/crypto";
 import { getProcessorCallbackSecret } from "@/lib/billing/env";
 import { buildStarterSignalHashes } from "@/lib/billing/request-signals";
+import { assertReservationReplayAllowed } from "@/lib/billing/reservation-idempotency";
 import {
   applyRegionalPrice,
   createPricingContext,
   getCountryTier,
   getCountryFromRequest,
   getCurrencyForCountry,
-  normalizeCountry,
+  getPricingCountryMismatchRiskFlags,
+  getSafestObservedCountry,
   getTierRank,
   type PricingContext,
   type RegionalPricedProduct,
@@ -488,67 +490,54 @@ export async function resolveUserPricingContext(
     .lean<{ countryCode?: string | null; pricingTierAtAuth?: string | null } | null>()
     .session(session || null);
   const authCountry = recentSession?.countryCode || null;
-  const authTier = authCountry ? getCountryTier(authCountry) : null;
   const lockedContext = createPricingContext({
     detectedCountry,
     lockedCountry: billing.pricingCountry,
     lockedTier: billing.pricingTier,
     lockedCurrency: billing.pricingCurrency,
   });
-  const detectedTier = detectedCountry ? getCountryTier(detectedCountry) : null;
   const currentLockedTier = billing.pricingTier as PricingContext["tier"] | null;
-  const shouldRealignToAuthCountry =
-    !billing.firstSuccessfulPurchaseAt &&
-    authCountry &&
-    normalizeCountry(authCountry) !== normalizeCountry(billing.pricingCountry);
-  const detectedOrDefaultCountry =
-    authCountry &&
-    authTier &&
-    detectedTier &&
-    getTierRank(authTier) > getTierRank(detectedTier)
-      ? authCountry
-      : detectedCountry;
-  const detectedOrDefaultTier = detectedOrDefaultCountry ? getCountryTier(detectedOrDefaultCountry) : null;
+  // Older sessions may have been populated from an untrusted proxy header.
+  // They may raise the price tier conservatively, but must never downgrade an
+  // existing wallet. The current Vercel country header is the trusted signal.
+  const safestObservedCountry = getSafestObservedCountry(detectedCountry, authCountry);
+  const safestObservedTier = safestObservedCountry ? getCountryTier(safestObservedCountry) : null;
   const shouldUpgrade =
-    detectedOrDefaultCountry &&
-    detectedOrDefaultTier &&
+    safestObservedCountry &&
+    safestObservedTier &&
     currentLockedTier &&
-    getTierRank(detectedOrDefaultTier) > getTierRank(currentLockedTier);
+    getTierRank(safestObservedTier) > getTierRank(currentLockedTier);
 
   const shouldLock =
     !billing.pricingCountry ||
     !billing.pricingTier ||
-    shouldRealignToAuthCountry ||
     shouldUpgrade;
 
   if (shouldLock) {
     const countryToLock =
-      shouldRealignToAuthCountry && authCountry
-        ? authCountry
-        : (!billing.pricingCountry || shouldUpgrade) && detectedOrDefaultCountry
-        ? detectedOrDefaultCountry
+      (!billing.pricingCountry || shouldUpgrade) && safestObservedCountry
+        ? safestObservedCountry
         : lockedContext.country;
     const tierToLock =
-      shouldRealignToAuthCountry && authTier
-        ? authTier
-        : (!billing.pricingTier || shouldUpgrade) && detectedOrDefaultTier
-        ? detectedOrDefaultTier
+      (!billing.pricingTier || shouldUpgrade) && safestObservedTier
+        ? safestObservedTier
         : lockedContext.tier;
     billing.pricingCountry = countryToLock;
     billing.pricingTier = tierToLock;
     billing.pricingCurrency = getCurrencyForCountry(countryToLock);
     billing.pricingLockedAt ||= new Date();
-    billing.pricingLockReason = shouldRealignToAuthCountry
-      ? "pre_purchase_auth_alignment"
-      : shouldUpgrade
-        ? "higher_tier_detection"
-        : "initial_detection";
+    billing.pricingLockReason = shouldUpgrade ? "higher_tier_detection" : "initial_detection";
   }
 
-  const riskFlags = [...lockedContext.riskFlags];
-  if (authCountry && detectedCountry && authCountry !== normalizeCountry(detectedCountry)) {
-    riskFlags.push("auth_country_differs_from_checkout_country");
-  }
+  const riskFlags = [
+    ...lockedContext.riskFlags,
+    ...getPricingCountryMismatchRiskFlags({
+      authCountry,
+      trustedRequestCountry: detectedCountry,
+      declaredBillingCountry: billing.billingDetails?.country,
+      lockedPricingCountry: billing.pricingCountry,
+    }),
+  ];
   billing.pricingRiskFlags = Array.from(new Set(riskFlags));
   await billing.save({ session });
 
@@ -926,8 +915,12 @@ export async function reserveCredits(input: {
   ttlMinutes?: number;
 }) {
   return runBillingTransaction(async (session) => {
-    const existing = await UsageReservation.findOne({ idempotencyKey: input.idempotencyKey }).session(session);
+    const existing = await UsageReservation.findOne({
+      user: input.userId,
+      idempotencyKey: input.idempotencyKey,
+    }).session(session);
     if (existing) {
+      assertReservationReplayAllowed(existing, input);
       const billing = await UserBilling.findOne({ user: input.userId })
         .select("availableCredits")
         .session(session);

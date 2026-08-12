@@ -7,10 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test:billing-pricing": "tsx --test test/billing-regional-pricing.test.ts",
+    "test:billing-reservations": "tsx --test test/billing-reservation-idempotency.test.ts",
+    "test:billing-webhooks": "tsx --test test/billing-webhook-payload.test.ts",
     "test:notifications": "tsx --test test/notifications.test.ts",
     "backup": "tsx scripts/backup-db.ts",
     "seed:slides": "tsx scripts/seed-slides.ts",
-    "make-admin": "tsx scripts/make-admin.ts"
+    "make-admin": "tsx scripts/make-admin.ts",
+    "migrate:usage-reservation-index": "tsx scripts/migrate-usage-reservation-index.ts"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.15",

@@ -2,156 +2,103 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import { refreshGoogleToken } from "@/lib/token";
-import axios from "axios";
+import { sessionExpiryFilter } from "@/lib/auth-session";
+
 export { OPTIONS } from "@/lib/cors";
 
 interface SessionDoc {
-    _id: string;
-    sessionId: string;
-    accessToken?: string;
-    refreshToken?: string;
-    accessTokenExpiresAt?: number;
-    user?: unknown;
+  _id: string;
+  sessionId: string;
+  accessToken?: string;
+  refreshToken?: string;
+  accessTokenExpiresAt?: number;
 }
 
-/**
- * POST /api/auth/refresh
- * 
- * Proactively refreshes an access token if expired.
- * Returns the (potentially new) access token to the plugin for storage update.
- * 
- * Request body:
- * - accessToken: Current access token stored in plugin
- * - sessionId: (optional) Session ID for fallback lookup
- */
+function requiresReauth(message: string) {
+  return NextResponse.json(
+    { error: message, requiresReauth: true },
+    { status: 401 },
+  );
+}
+
 export async function POST(request: NextRequest) {
-    try {
-        const body = await request.json();
-        const { accessToken, sessionId } = body;
+  try {
+    const body = await request.json().catch(() => ({}));
+    const accessToken = typeof body.accessToken === "string" ? body.accessToken.trim() : "";
 
-        if (!accessToken && !sessionId) {
-            return NextResponse.json(
-                { error: "Missing accessToken or sessionId" },
-                { status: 400 }
-            );
-        }
-
-        await dbConnect();
-
-        // Find session by accessToken first, fallback to sessionId
-        let session: SessionDoc | null = null;
-
-        if (accessToken) {
-            session = await Session.findOne({ accessToken }).lean() as SessionDoc | null;
-        }
-
-        if (!session && sessionId) {
-            session = await Session.findOne({ sessionId }).lean() as SessionDoc | null;
-        }
-
-        if (!session) {
-            return NextResponse.json(
-                { error: "Session not found", requiresReauth: true },
-                { status: 401 }
-            );
-        }
-
-        // Check if we have a valid access token
-        if (!session.accessToken) {
-            return NextResponse.json(
-                { error: "No access token in session", requiresReauth: true },
-                { status: 401 }
-            );
-        }
-
-        // Check if token is expired or will expire soon (5 minute buffer for proactive refresh)
-        const REFRESH_BUFFER_MS = 5 * 60 * 1000; // 5 minutes
-        const isExpiredOrExpiringSoon =
-            session.accessTokenExpiresAt &&
-            Date.now() > session.accessTokenExpiresAt - REFRESH_BUFFER_MS;
-
-        if (isExpiredOrExpiringSoon) {
-            // Token is expired or expiring soon, attempt refresh
-            let refreshToken = session.refreshToken;
-
-            if (!refreshToken && session.user) {
-                console.log("Session is missing refreshToken. Searching fallbacks for user:", session.user);
-                const prevSession = await Session.findOne({
-                    user: session.user,
-                    refreshToken: { $exists: true, $ne: null }
-                }).sort({ completedAt: -1 }).lean() as SessionDoc | null;
-                if (prevSession?.refreshToken) {
-                    refreshToken = prevSession.refreshToken;
-                    // Persist it back to the current session so future calls are cached
-                    await Session.updateOne({ _id: session._id }, { $set: { refreshToken } });
-                    console.log("Successfully recovered fallback refreshToken from previous session.");
-                }
-            }
-
-            if (!refreshToken) {
-                console.log("Token expired and no refresh token available. Extending local token lifetime.");
-                const newExpiresAt = Date.now() + 3600 * 1000; // Extend by 1 hour
-                await Session.updateOne({ _id: session._id }, { $set: { accessTokenExpiresAt: newExpiresAt } });
-                return NextResponse.json({
-                    accessToken: session.accessToken,
-                    refreshed: false,
-                    expiresAt: newExpiresAt,
-                });
-            }
-
-            try {
-                console.log("Refreshing expired/expiring token for session:", session.sessionId);
-
-                const refreshedTokens = await refreshGoogleToken(refreshToken);
-                const newAccessToken = refreshedTokens.access_token;
-                const newExpiresAt = Date.now() + refreshedTokens.expires_in * 1000;
-
-                // Update session in database
-                const updateFields: Record<string, unknown> = {
-                    accessToken: newAccessToken,
-                    accessTokenExpiresAt: newExpiresAt,
-                };
-
-                // Update refresh token if a new one was provided
-                if (refreshedTokens.refresh_token) {
-                    updateFields.refreshToken = refreshedTokens.refresh_token;
-                }
-
-                await Session.updateOne({ _id: session._id }, { $set: updateFields });
-
-                console.log("Token refreshed successfully for session:", session.sessionId);
-
-                return NextResponse.json({
-                    accessToken: newAccessToken,
-                    refreshed: true,
-                    expiresAt: newExpiresAt,
-                });
-            } catch (refreshError) {
-                console.error("Failed to refresh token:", refreshError);
-
-                // Fall back: extend existing token expiration instead of logging out
-                console.log("Failed to refresh Google token. Falling back to extending existing token lifetime.");
-                const newExpiresAt = Date.now() + 3600 * 1000; // Extend by 1 hour
-                await Session.updateOne({ _id: session._id }, { $set: { accessTokenExpiresAt: newExpiresAt } });
-                return NextResponse.json({
-                    accessToken: session.accessToken,
-                    refreshed: false,
-                    expiresAt: newExpiresAt,
-                });
-            }
-        }
-
-        // Token is still valid, return current token
-        return NextResponse.json({
-            accessToken: session.accessToken,
-            refreshed: false,
-            expiresAt: session.accessTokenExpiresAt,
-        });
-    } catch (error) {
-        console.error("Error in /api/auth/refresh:", error);
-        return NextResponse.json(
-            { error: error instanceof Error ? error.message : String(error) },
-            { status: 500 }
-        );
+    if (!accessToken) {
+      return requiresReauth("Missing access token.");
     }
+
+    await dbConnect();
+    const now = new Date();
+    const session = (await Session.findOne({
+      accessToken,
+      completed: true,
+      user: { $exists: true, $ne: null },
+      ...sessionExpiryFilter(now),
+    }).lean()) as SessionDoc | null;
+
+    if (!session?.accessToken) {
+      return requiresReauth("Session not found or expired.");
+    }
+
+    const refreshBufferMs = 5 * 60 * 1000;
+    const expiresAt = session.accessTokenExpiresAt;
+    if (!expiresAt) {
+      return requiresReauth("Token expiry is unavailable.");
+    }
+
+    if (Date.now() <= expiresAt - refreshBufferMs) {
+      return NextResponse.json({
+        accessToken: session.accessToken,
+        refreshed: false,
+        expiresAt,
+      });
+    }
+
+    if (!session.refreshToken) {
+      return requiresReauth("Token refresh is unavailable.");
+    }
+
+    try {
+      const refreshedTokens = await refreshGoogleToken(session.refreshToken);
+      const newAccessToken = refreshedTokens.access_token;
+      const newExpiresAt = Date.now() + refreshedTokens.expires_in * 1000;
+      const updateFields: Record<string, unknown> = {
+        accessToken: newAccessToken,
+        accessTokenExpiresAt: newExpiresAt,
+      };
+
+      if (refreshedTokens.refresh_token) {
+        updateFields.refreshToken = refreshedTokens.refresh_token;
+      }
+
+      const updated = await Session.updateOne(
+        {
+          _id: session._id,
+          accessToken,
+          completed: true,
+          ...sessionExpiryFilter(new Date()),
+        },
+        { $set: updateFields },
+      );
+
+      if (updated.modifiedCount !== 1) {
+        return requiresReauth("Session changed or expired during refresh.");
+      }
+
+      return NextResponse.json({
+        accessToken: newAccessToken,
+        refreshed: true,
+        expiresAt: newExpiresAt,
+      });
+    } catch (refreshError) {
+      console.error("Google token refresh failed:", refreshError);
+      return requiresReauth("Token refresh failed. Please sign in again.");
+    }
+  } catch (error) {
+    console.error("Error in /api/auth/refresh:", error);
+    return NextResponse.json({ error: "Unable to refresh authentication." }, { status: 500 });
+  }
 }

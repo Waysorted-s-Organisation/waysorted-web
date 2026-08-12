@@ -304,16 +304,73 @@ export function getTierRank(tier: PricingTier) {
   return TIER_RANK[tier];
 }
 
+export function getTrustedPricingCountry(
+  headers: Pick<Headers, "get">,
+  options: {
+    nodeEnv?: string;
+    developmentOverride?: string | null;
+  } = {},
+) {
+  const vercelCountry = headers.get("x-vercel-ip-country")?.trim().toUpperCase();
+  if (vercelCountry && /^[A-Z]{2}$/.test(vercelCountry)) {
+    return vercelCountry;
+  }
+
+  const nodeEnv = options.nodeEnv ?? process.env.NODE_ENV;
+  if (nodeEnv !== "production") {
+    const developmentCountry = (options.developmentOverride ?? process.env.DEV_PRICING_COUNTRY)
+      ?.trim()
+      .toUpperCase();
+    if (developmentCountry && /^[A-Z]{2}$/.test(developmentCountry)) {
+      return developmentCountry;
+    }
+  }
+
+  return null;
+}
+
+export function getSafestObservedCountry(
+  trustedRequestCountry?: string | null,
+  historicalAuthCountry?: string | null,
+) {
+  if (!trustedRequestCountry) return null;
+
+  const trustedCountry = normalizeCountry(trustedRequestCountry);
+  if (!historicalAuthCountry) return trustedCountry;
+
+  const authCountry = normalizeCountry(historicalAuthCountry);
+  return getTierRank(getCountryTier(authCountry)) > getTierRank(getCountryTier(trustedCountry))
+    ? authCountry
+    : trustedCountry;
+}
+
+export function getPricingCountryMismatchRiskFlags(input: {
+  authCountry?: string | null;
+  trustedRequestCountry?: string | null;
+  declaredBillingCountry?: string | null;
+  lockedPricingCountry?: string | null;
+}) {
+  const riskFlags: string[] = [];
+  if (
+    input.authCountry &&
+    input.trustedRequestCountry &&
+    normalizeCountry(input.authCountry) !== normalizeCountry(input.trustedRequestCountry)
+  ) {
+    riskFlags.push("auth_country_differs_from_checkout_country");
+  }
+  if (
+    input.declaredBillingCountry &&
+    input.lockedPricingCountry &&
+    normalizeCountry(input.declaredBillingCountry) !== normalizeCountry(input.lockedPricingCountry)
+  ) {
+    riskFlags.push("billing_country_differs_from_pricing_country");
+  }
+  return riskFlags;
+}
+
 export function getCountryFromRequest(request?: NextRequest | null) {
   if (!request) return null;
-  const country =
-    request.headers.get("cf-ipcountry") ||
-    request.headers.get("x-vercel-ip-country");
-
-  if (!country && process.env.NODE_ENV === "development") {
-    return "IN";
-  }
-  return country || null;
+  return getTrustedPricingCountry(request.headers);
 }
 
 export function withPricingRiskFlags(pricing: PricingContext, riskFlags: string[]): PricingContext {

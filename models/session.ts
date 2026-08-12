@@ -3,6 +3,11 @@ import "./user";
 
 export interface ISession {
   sessionId: string;
+  oauthState?: string;
+  pollId?: string;
+  pollSecretHash?: string;
+  pollExpiresAt?: Date;
+  pollConsumedAt?: Date;
   user?: Types.ObjectId;
   accessToken?: string;
   refreshToken?: string;
@@ -11,6 +16,7 @@ export interface ISession {
   completed?: boolean;
   completedAt?: Date;
   createdAt?: Date;
+  expiresAt?: Date;
   source?: string; // Track where the auth request came from (e.g., "figma", "plugin", "web")
   ipAddress?: string | null;
   ipPrefix?: string | null;
@@ -25,6 +31,11 @@ export type SessionModel = Model<ISession>;
 const SessionSchema = new Schema<ISession>(
   {
     sessionId: { type: String, required: true, unique: true, index: true },
+    oauthState: { type: String, index: true, sparse: true },
+    pollId: { type: String, index: true, sparse: true },
+    pollSecretHash: String,
+    pollExpiresAt: Date,
+    pollConsumedAt: Date,
     user: { type: Schema.Types.ObjectId, ref: "User" },
     accessToken: { type: String, index: true }, // Add index for faster token lookups
     refreshToken: String,
@@ -33,6 +44,7 @@ const SessionSchema = new Schema<ISession>(
     completed: { type: Boolean, default: false },
     completedAt: Date,
     createdAt: { type: Date, default: Date.now },
+    expiresAt: Date,
     source: String,
     ipAddress: { type: String, default: null },
     ipPrefix: { type: String, default: null },

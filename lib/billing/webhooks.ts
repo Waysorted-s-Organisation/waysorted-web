@@ -16,6 +16,7 @@ import {
   recordRefundAdjustment,
   updateBillingSubscriptionState,
 } from "@/lib/billing/db";
+import { resolvePaidSubscriptionCycle } from "@/lib/billing/webhook-payload";
 
 function toDate(epochSeconds?: number | null) {
   return typeof epochSeconds === "number" ? new Date(epochSeconds * 1000) : null;
@@ -217,12 +218,8 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
 
     case "invoice.paid":
     case "subscription.charged": {
-      const invoiceEntity = (bodyPayload.invoice as { entity?: Record<string, unknown> } | undefined)?.entity;
-      const subscriptionId = String(
-        invoiceEntity?.subscription_id ||
-          (bodyPayload.subscription as { entity?: Record<string, unknown> } | undefined)?.entity?.id ||
-          "",
-      );
+      const paidCycle = resolvePaidSubscriptionCycle(bodyPayload);
+      const subscriptionId = paidCycle.subscriptionId;
       if (!subscriptionId) return { ignored: true, reason: "missing_subscription_id" };
 
       const subscription = await Subscription.findOne({
@@ -231,9 +228,12 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
       if (!subscription) return { ignored: true, reason: "subscription_not_found" };
 
       subscription.status = subscription.cancelAtCycleEnd ? "cancel_scheduled" : "active";
-      subscription.currentPeriodStart = toDate((invoiceEntity as { period_start?: number }).period_start);
-      subscription.currentPeriodEnd = toDate((invoiceEntity as { period_end?: number }).period_end);
-      subscription.nextChargeAt = subscription.currentPeriodEnd;
+      subscription.currentPeriodStart =
+        paidCycle.currentPeriodStart || subscription.currentPeriodStart || null;
+      subscription.currentPeriodEnd =
+        paidCycle.currentPeriodEnd || subscription.currentPeriodEnd || null;
+      subscription.nextChargeAt =
+        paidCycle.nextChargeAt || subscription.nextChargeAt || subscription.currentPeriodEnd || null;
       await subscription.save();
 
       await updateBillingSubscriptionState({
@@ -246,10 +246,7 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         cancelAtCycleEnd: subscription.cancelAtCycleEnd,
       });
 
-      const cycleIdentity =
-        String(invoiceEntity?.id || "") ||
-        [invoiceEntity?.period_start || "", invoiceEntity?.period_end || ""].filter(Boolean).join(":") ||
-        String(invoiceEntity?.payment_id || "");
+      const cycleIdentity = paidCycle.cycleIdentity;
       if (!cycleIdentity) {
         return { ignored: true, reason: "missing_cycle_identity" };
       }
@@ -259,7 +256,7 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
       await applySubscriptionCycleCredits({
         subscription,
         cycleKey,
-        paymentId: String(invoiceEntity?.payment_id || ""),
+        paymentId: paidCycle.paymentId,
       });
 
       const purchaseId = String(

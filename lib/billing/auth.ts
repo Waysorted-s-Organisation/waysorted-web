@@ -7,6 +7,7 @@ import { refreshGoogleToken } from "@/lib/token";
 import User from "@/models/user";
 import { getBridgeSecret } from "@/lib/billing/env";
 import { verifySignedToken } from "@/lib/billing/crypto";
+import { sessionExpiryFilter } from "@/lib/auth-session";
 
 type SessionWithUser = {
   _id: string;
@@ -14,12 +15,20 @@ type SessionWithUser = {
   accessToken?: string;
   refreshToken?: string;
   accessTokenExpiresAt?: number;
+  completed?: boolean;
+  expiresAt?: Date;
   source?: string;
   user?: IUser;
 };
 
 async function findBearerSession(accessToken: string) {
-  return (await Session.findOne({ accessToken })
+  return (await Session.findOne({
+    accessToken,
+    accessTokenExpiresAt: { $gt: Date.now() },
+    completed: true,
+    user: { $exists: true, $ne: null },
+    ...sessionExpiryFilter(),
+  })
     .populate<{ user: IUser }>("user")
     .lean()) as SessionWithUser | null;
 }
@@ -45,7 +54,12 @@ export async function getAuthenticatedUser(request?: NextRequest) {
   const sessionId = cookieStore.get("sessionId")?.value;
   if (!sessionId) return null;
 
-  const session = await Session.findOne({ sessionId }).populate<{ user: IUser }>("user").lean();
+  const session = await Session.findOne({
+    sessionId,
+    completed: true,
+    user: { $exists: true, $ne: null },
+    ...sessionExpiryFilter(),
+  }).populate<{ user: IUser }>("user").lean();
   if (!session?.user) return null;
 
   return {
