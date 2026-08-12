@@ -8,6 +8,7 @@ import LanguageDropdown from '../LanguageDropdown';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/hooks/useUser';
 import UserMenu from '@/components/UserMenu';
+import GlowStarButton from '@/components/GlowStarButton';
 import products from "@/data/products.json"
 
 interface HeaderProps {
@@ -36,34 +37,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
   // New: header mode when secure sections touch the header
   const [isSecureSection, setIsSecureSection] = useState(false);
 
-  // Banner CTA variations - picked randomly on mount to avoid hydration mismatch
-  const ctaVariations = [
-    {
-      text: "Create presentation-ready PDFs in one click...",
-      link: "/learning/frames-to-pdf",
-      linkText: "Try Frames to PDF"
-    },
-    {
-      text: "Convert units & prep designs for print instantly...",
-      link: "/learning/unit-converter",
-      linkText: "Use Unit Converter"
-    },
-    {
-      text: "Import external design assets more seamlessly...",
-      link: "/learning/file-importer",
-      linkText: "Start Importing"
-    },
-    {
-      text: "Try Palettable for quick Color schemes and Contrast check...",
-      link: "/learning/palettable",
-      linkText: "Check Contrast"
-    },
-  ];
-  const [ctaIndex, setCtaIndex] = useState<number | null>(null);
-  useEffect(() => {
-    setCtaIndex(Math.floor(Math.random() * ctaVariations.length));
-  }, [ctaVariations.length]);
-
   async function handleLogout() {
     try {
       await fetch('/api/auth/logout', {
@@ -76,6 +49,14 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
       console.error('Logout failed', e);
     }
   }
+
+  const handleFigmaClick = () => {
+    window.open(
+      'https://www.figma.com/community/plugin/1532842109377504268/waysorted',
+      '_blank',
+      'noopener,noreferrer'
+    );
+  };
 
   // Close menus on route change (back/forward)
   useEffect(() => {
@@ -169,7 +150,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
 
   // helper to choose text color based on secure section state
   const textColor = isSecureSection ? 'text-white' : 'text-secondary-db-100';
-  const logoSrc = isSecureSection ? '/icons/logo-white.svg' : '/images/logo.svg';
   const logoLanguage = isSecureSection ? '/icons/language-white.svg' : '/icons/world.svg';
 
   return (
@@ -177,55 +157,43 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
       ref={headerRef}
       className={`w-full fixed top-0 z-40 ${isSecureSection ? 'bg-secondary-db-100' : 'bg-white border-b border-gray-200'}`}
     >
-      {showBanner && ctaIndex !== null && (() => {
-        const cta = ctaVariations[ctaIndex];
-        return (
-          <div className="w-full bg-primary-way-100 text-white text-center py-2 text-sm relative">
-            {cta.text}{' '}
-            <Link href={cta.link} className="underline">
-              {cta.linkText}
+      {showBanner && (
+          <div className="relative flex min-h-9 w-full items-center justify-center bg-[#111820] px-12 py-2 text-center text-xs text-white/80 sm:text-sm">
+            <span>Try Palettable for quick Color schemes and Contrast check...</span>
+            <Link href="/learning/palettable" className="ml-1 underline underline-offset-2 transition-colors hover:text-white">
+              Click here
             </Link>
             <button
               onClick={() => setShowBanner(false)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer"
+              className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer rounded-md bg-white/10 p-2 transition-colors hover:bg-white/15"
               aria-label="Close banner"
             >
-              <div className="bg-white/10 p-2 rounded-lg">
-                <Image src="/icons/close.svg" alt="Close" title="Close" width={10} height={10} />
-              </div>
+              <Image src="/icons/close.svg" alt="" width={10} height={10} />
             </button>
           </div>
-        );
-      })()}
+      )}
 
-      <nav className="mx-auto px-4 md:px-16 z-40">
-        <div className="flex justify-between items-center h-16 md:h-16">
+      <nav className="z-40 mx-auto max-w-[1320px] px-4 md:px-12 lg:px-14">
+        <div className="flex h-16 items-center justify-between lg:grid lg:grid-cols-[1fr_auto_1fr]">
           {/* Logo */}
-          <Link href="/" className="block flex items-center space-x-2" aria-label="Waysorted Home">
-            <div className="relative w-24 h-8 sm:w-28 sm:h-9 md:w-32 md:h-10 lg:w-36 lg:h-11 translate-y-1">
+          <Link href="/" className="flex w-fit items-center gap-2.5 lg:gap-3" aria-label="Waysorted Home">
+            <div className="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-[#181818] lg:h-9 lg:w-9">
               <Image
-                src={logoSrc}
-                alt="WaySorted Logo"
-                title="WaySorted Logo"
-                fill
-                className="hidden md:block object-contain"
-                priority
-              />
-              <Image
-                src={isSecureSection ? '/icons/logo-white.svg' : '/images/blue-logo.png'}
-                alt="WaySorted Logo"
-                title="WaySorted Logo"
-                fill
-                className="block md:hidden object-contain"
-                sizes="(max-width: 768px) 150px, 200px"
+                src="/images/way-mark-black.png"
+                alt=""
+                width={36}
+                height={36}
+                className="h-full w-full object-cover"
                 priority
               />
             </div>
-            <div className='text-xs font-medium text-primary-way-100 border border-primary-way-100 rounded-3xl inline block py-1 px-2 translate-y-[-4px]'>BETA</div>
+            <span className={`text-base font-semibold tracking-[-0.02em] lg:text-[17px] ${isSecureSection ? 'text-white' : 'text-black'}`}>
+              Waysorted
+            </span>
           </Link>
 
           {/* Desktop navigation */}
-          <div className="hidden md:flex items-center space-x-5 pl-6 lg:pl-12">
+          <div className="hidden items-center gap-6 lg:flex">
             <div
               className={`relative flex items-center space-x-1 font-medium text-sm cursor-pointer ${textColor}`}
               onMouseEnter={() => {
@@ -236,6 +204,9 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               onMouseLeave={() => setProductsOpen(false)}
             >
               <span>Products</span>
+              <span className="rounded-md bg-[#ff7a2f] px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white">
+                New
+              </span>
               <Image
                 src="/icons/chevron-down.svg"
                 alt="Chevron Down"
@@ -285,28 +256,20 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               Support
             </button>
 
-            <button
-              className={`flex items-center pr-3 font-medium text-sm cursor-pointer ${textColor}`}
-              onClick={() => router.push('/pricing')}
-            >
-              Pricing
-            </button>
-
-
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-end gap-2 lg:translate-x-6">
             {/* Mobile: user initials chip + menu button (order matches screenshot) */}
             {user && (
-              <div className="md:hidden">
+              <div className="lg:hidden">
                 {/* Renders its own trigger; appears as an initials chip */}
                 <UserMenu user={user} handleLogout={handleLogout} />
               </div>
             )}
 
             {/* Language: hide on mobile, available inside drawer */}
-            <div className="relative hidden md:block">
+            <div className="relative hidden lg:block">
               <button
                 onClick={() => setLanguageOpen((prev) => !prev)}
                 className={`border border-secondary-db-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer ${isSecureSection ? 'border border-secondary-db-80' : ''}`}
@@ -323,18 +286,32 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               />
             </div>
 
+            <GlowStarButton
+              type="button"
+              onClick={handleFigmaClick}
+              starCount={11}
+              randomSeed="header-figma-snow"
+              aria-label="Open Waysorted for Figma"
+              className="force-hover hidden h-10 items-center justify-center rounded-lg border border-white/10 bg-[#171c22] px-3.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#252b33] lg:inline-flex"
+            >
+              <span className="flex items-center gap-2">
+                <Image src="/icons/figma.svg" alt="" width={16} height={24} />
+                <span>Waysorted for Figma</span>
+              </span>
+            </GlowStarButton>
+
             {/* Auth buttons: desktop only */}
             {!user ? (
               <button
-                className={`md:inline-flex md:font-medium text-sm md:text-base border border-secondary-db-20 rounded-lg px-3 py-1.25 md:px-5 md:py-2 cursor-pointer transition-colors active:scale-95 ${isSecureSection ? 'text-white border-secondary-db-80' : 'text-secondary-db-100'}`}
+                className={`hidden text-sm font-medium border border-secondary-db-20 rounded-lg px-5 py-2 cursor-pointer transition-colors active:scale-95 lg:inline-flex ${isSecureSection ? 'text-white border-secondary-db-80' : 'text-secondary-db-100'}`}
                 title="Sign Up"
                 onClick={() => router.push('/signup')}
                 aria-label="Sign Up"
               >
-                Sign Up
+                Sign up
               </button>
             ) : (
-              <div className="hidden md:block">
+              <div className="hidden lg:block">
                 <UserMenu user={user} handleLogout={handleLogout} />
               </div>
             )}
@@ -342,7 +319,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
             {/* Hamburger: mobile only */}
             <button
               type="button"
-              className="md:hidden border border-secondary-db-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer"
+              className="lg:hidden border border-secondary-db-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer"
               aria-label="Open menu"
               aria-controls="mobile-drawer"
               onClick={() => setMobileOpen(true)}
@@ -356,7 +333,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
       {/* Mobile Drawer (centered like user settings) */}
       <div
         id="mobile-drawer"
-        className={`md:hidden fixed inset-0 z-50 ${mobileOpen ? '' : 'pointer-events-none'}`}
+        className={`lg:hidden fixed inset-0 z-50 ${mobileOpen ? '' : 'pointer-events-none'}`}
       >
         {/* Overlay */}
         <div
@@ -535,16 +512,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 </button>
                 <div className="border-t border-primary-way-10" />
               </div>
-              <div className="px-3">
-                <button
-                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
-                  onClick={() => { router.push('/pricing'); setMobileOpen(false); }}
-                >
-                  <span className="font-medium">Pricing</span>
-                </button>
-                <div className="border-t border-primary-way-10" />
-              </div>
-
               {/* Language pill + dropdown */}
               <div className="px-3 py-4">
                 <button
