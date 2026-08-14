@@ -46,26 +46,29 @@ export async function POST(request: NextRequest) {
     if (!allowed) {
       return NextResponse.json({ error: "Product is not currently eligible for this user." }, { status: 403 });
     }
-    // The quote is REQUIRED. It used to be optional, which meant a caller that simply omitted the
-    // field disabled the check entirely and was charged whatever the server computed, with no
-    // error and no confirmation.
-    if (
-      body.quotedAmountSubunits === undefined ||
-      body.quotedCurrency === undefined ||
-      body.pricingVersion === undefined
-    ) {
-      return NextResponse.json(
-        {
-          error: "A price quote is required to start checkout.",
-          code: "missing_price_quote",
-        },
-        { status: 400 },
-      );
+    // A quote is expected, but its ABSENCE must never block a payment. Server and client deploy at
+    // the same instant, so a browser still running the previously cached bundle sends no quote -
+    // rejecting those requests breaks checkout for every open session until they hard-reload.
+    // Warn loudly instead, so stale clients are visible, and enforce strictly whenever a quote
+    // IS supplied (which is the case that actually protects the customer from a silent reprice).
+    const hasQuote =
+      body.quotedAmountSubunits !== undefined &&
+      body.quotedCurrency !== undefined &&
+      body.pricingVersion !== undefined;
+
+    if (!hasQuote) {
+      console.warn("[billing] checkout/order called without a price quote", {
+        userId: String(auth.user._id),
+        productCode: product.code,
+        authType: auth.authType,
+      });
     }
+
     if (
-      body.quotedAmountSubunits !== pricedProduct!.amountPaise ||
-      body.quotedCurrency.toUpperCase() !== pricedProduct!.currency.toUpperCase() ||
-      body.pricingVersion !== snapshot.pricingVersion
+      hasQuote &&
+      (body.quotedAmountSubunits !== pricedProduct!.amountPaise ||
+        body.quotedCurrency!.toUpperCase() !== pricedProduct!.currency.toUpperCase() ||
+        body.pricingVersion !== snapshot.pricingVersion)
     ) {
       return NextResponse.json(
         {
@@ -73,7 +76,7 @@ export async function POST(request: NextRequest) {
           code: "pricing_quote_changed",
           quoted: {
             amountSubunits: body.quotedAmountSubunits,
-            currency: body.quotedCurrency.toUpperCase(),
+            currency: body.quotedCurrency?.toUpperCase(),
           },
           current: {
             amountSubunits: pricedProduct!.amountPaise,

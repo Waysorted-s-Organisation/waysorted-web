@@ -6,12 +6,17 @@ import {
   ensureSubscriptionRecord,
   findCurrentSubscription,
   findPurchaseByUserAndIdempotency,
+  releaseSupersededPendingSubscription,
   syncCatalogProducts,
   updateBillingSubscriptionState,
 } from "@/lib/billing/db";
 import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/auth";
 import { getCatalogProduct } from "@/lib/billing/catalog";
-import { createRazorpayPlan, createRazorpaySubscription } from "@/lib/billing/razorpay";
+import {
+  cancelRazorpaySubscription,
+  createRazorpayPlan,
+  createRazorpaySubscription,
+} from "@/lib/billing/razorpay";
 import { getRazorpayConfig } from "@/lib/billing/env";
 import {
   buildSubscriptionCheckoutStartedEvent,
@@ -93,8 +98,9 @@ export async function POST(request: NextRequest) {
       );
     }
     const existingSubscription = await findCurrentSubscription(String(auth.user._id));
+    const isPendingSubscription = existingSubscription?.status === "payment_pending";
     const isFreshPendingSubscription =
-      existingSubscription?.status === "payment_pending" &&
+      isPendingSubscription &&
       Boolean(
         (existingSubscription.updatedAt || existingSubscription.createdAt) &&
           Date.now() -
@@ -102,42 +108,74 @@ export async function POST(request: NextRequest) {
             PENDING_SUBSCRIPTION_TTL_MS,
       );
 
+    // A payment_pending row is covered by the unique `one_live_subscription_per_user` partial index.
+    // Falling through to create a second one therefore ALWAYS fails with E11000 - after a live,
+    // customer-payable Razorpay subscription has already been created and leaked. The customer sees
+    // "Unable to create subscription" and can never pay again, and every retry leaks another.
+    // A stale pending row for the SAME plan is reusable: the provider subscription is still payable.
+    const isReusablePendingSubscription =
+      isPendingSubscription &&
+      existingSubscription.planCode === product.code &&
+      Boolean(existingSubscription.providerSubscriptionId);
+
+    // A live (paying) subscription is never touched automatically - the customer must cancel it.
     if (
       existingSubscription &&
-      (["active", "cancel_scheduled"].includes(existingSubscription.status) || isFreshPendingSubscription)
+      ["active", "cancel_scheduled"].includes(existingSubscription.status)
     ) {
-      if (existingSubscription.planCode !== product.code) {
-        return NextResponse.json(
-          {
-            error:
-              "A different subscription is already active or awaiting payment. Cancel it before choosing another plan.",
-            code: "subscription_plan_change_required",
-          },
-          { status: 409 },
-        );
-      }
-      // The existing Razorpay subscription is bound to the plan created at its own pricing tier.
-      // Returning the freshly-priced product alongside it would show the customer one amount while
-      // Razorpay charges another, so refuse rather than reuse when the tier has moved.
-      if (
-        existingSubscription.pricingTier &&
-        existingSubscription.pricingTier !== snapshot.pricing.tier
-      ) {
-        return NextResponse.json(
-          {
-            error:
-              "Your pending subscription was created at a different price. Cancel it and start again to continue at the current price.",
-            code: "subscription_pricing_tier_changed",
-          },
-          { status: 409 },
-        );
-      }
+      return NextResponse.json(
+        {
+          error:
+            existingSubscription.planCode === product.code
+              ? "You already have this subscription."
+              : "A different subscription is already active. Cancel it before choosing another plan.",
+          code:
+            existingSubscription.planCode === product.code
+              ? "subscription_already_active"
+              : "subscription_plan_change_required",
+        },
+        { status: 409 },
+      );
+    }
+
+    const pendingTierMatches =
+      !existingSubscription?.pricingTier ||
+      existingSubscription.pricingTier === snapshot.pricing.tier;
+
+    if (
+      existingSubscription &&
+      (isFreshPendingSubscription || isReusablePendingSubscription) &&
+      existingSubscription.planCode === product.code &&
+      // Reusing a provider subscription created at a different tier would show the customer one
+      // amount while Razorpay charges another. When the tier moved, fall through and reclaim.
+      pendingTierMatches
+    ) {
       return NextResponse.json({
         subscriptionId: existingSubscription.providerSubscriptionId,
         key: getRazorpayConfig().publicKeyId,
         product: pricedProduct,
         status: existingSubscription.status,
       });
+    }
+
+    // A pending row that cannot be reused still occupies the unique
+    // `one_live_subscription_per_user` slot. Release it BEFORE creating anything at the provider,
+    // otherwise ensureSubscriptionRecord fails with E11000 after a payable Razorpay subscription
+    // has already been created - which is what permanently blocked checkout.
+    if (existingSubscription && isPendingSubscription) {
+      const staleProviderSubscriptionId = existingSubscription.providerSubscriptionId;
+      await releaseSupersededPendingSubscription(String(existingSubscription._id));
+      if (staleProviderSubscriptionId) {
+        // Best effort: stop the abandoned provider subscription so it can never bill the customer.
+        try {
+          await cancelRazorpaySubscription(staleProviderSubscriptionId, false);
+        } catch (cancelError) {
+          console.error("Failed to cancel superseded pending subscription", {
+            providerSubscriptionId: staleProviderSubscriptionId,
+            error: cancelError instanceof Error ? cancelError.message : String(cancelError),
+          });
+        }
+      }
     }
 
     await syncCatalogProducts();
@@ -246,6 +284,19 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("POST /api/billing/subscriptions/create error:", error);
+    // A duplicate-key error here means another live subscription row still occupies the unique
+    // `one_live_subscription_per_user` slot. Surfacing that as an opaque 500 is what made checkout
+    // look permanently broken; tell the customer what to do instead.
+    if ((error as { code?: number })?.code === 11000) {
+      return NextResponse.json(
+        {
+          error:
+            "You already have a subscription in progress. Refresh this page, or cancel the pending subscription and try again.",
+          code: "subscription_already_in_progress",
+        },
+        { status: 409 },
+      );
+    }
     return billingErrorResponse(error, "Unable to create subscription.", "subscription_create_failed");
   }
 }
