@@ -23,6 +23,7 @@ import {
   isSubscriptionActive,
 } from "@/lib/billing/catalog";
 import { createSignedToken } from "@/lib/billing/crypto";
+import { buildStaleReservationFilter } from "@/lib/billing/reservation-sweep";
 import { getProcessorCallbackSecret } from "@/lib/billing/env";
 import { buildStarterSignalHashes } from "@/lib/billing/request-signals";
 import { assertReservationReplayAllowed } from "@/lib/billing/reservation-idempotency";
@@ -453,16 +454,43 @@ export async function resolveUserPricingContext(
   // existing wallet. The current Vercel country header is the trusted signal.
   const safestObservedCountry = getSafestObservedCountry(detectedCountry, authCountry);
   const safestObservedTier = safestObservedCountry ? getCountryTier(safestObservedCountry) : null;
-  const shouldUpgrade =
+  const observedHigherTier = Boolean(
     safestObservedCountry &&
     safestObservedTier &&
     currentLockedTier &&
-    getTierRank(safestObservedTier) > getTierRank(currentLockedTier);
+    getTierRank(safestObservedTier) > getTierRank(currentLockedTier),
+  );
 
+  // A tier upgrade is permanent - tier_1 is the top rank, so the ratchet below can never move it
+  // back down, and there is no self-service reset. A single request is therefore not enough
+  // evidence: one VPN session, hotel Wi-Fi, or mis-geolocated mobile IP would reprice a genuine
+  // tier_3 customer at up to 3.35x forever. Require the same higher-tier country to be observed on
+  // a second, separate request before acting on it.
+  const upgradeCandidateMatches =
+    observedHigherTier &&
+    billing.pricingUpgradeCandidateCountry === safestObservedCountry;
+  const shouldUpgrade = observedHigherTier && upgradeCandidateMatches;
+
+  if (observedHigherTier && !upgradeCandidateMatches) {
+    // First sighting: record it and keep charging the customer their existing (lower) price.
+    billing.pricingUpgradeCandidateCountry = safestObservedCountry;
+    billing.pricingUpgradeCandidateSeenAt = new Date();
+  } else if (!observedHigherTier && billing.pricingUpgradeCandidateCountry) {
+    // The higher-tier observation did not repeat - discard it so unrelated blips never accumulate.
+    billing.pricingUpgradeCandidateCountry = null;
+    billing.pricingUpgradeCandidateSeenAt = null;
+  }
+
+  // A lock may only be written from a real trusted observation. Without one, `lockedContext` falls
+  // back to the deployment default, and persisting that would freeze a guess permanently: the
+  // ratchet below only ever moves upward, so there is no downgrade path and no reset endpoint.
+  // Serve default pricing for this request instead and lock once a trusted signal actually arrives.
+  const hasTrustedObservation = Boolean(safestObservedCountry && safestObservedTier);
   const shouldLock =
-    !billing.pricingCountry ||
-    !billing.pricingTier ||
-    shouldUpgrade;
+    hasTrustedObservation &&
+    (!billing.pricingCountry ||
+      !billing.pricingTier ||
+      shouldUpgrade);
 
   if (shouldLock) {
     const countryToLock =
@@ -478,6 +506,9 @@ export async function resolveUserPricingContext(
     billing.pricingCurrency = getCurrencyForCountry(countryToLock);
     billing.pricingLockedAt ||= new Date();
     billing.pricingLockReason = shouldUpgrade ? "higher_tier_detection" : "initial_detection";
+    // The candidate has been acted on; clear it so a later observation starts a fresh corroboration.
+    billing.pricingUpgradeCandidateCountry = null;
+    billing.pricingUpgradeCandidateSeenAt = null;
   }
 
   const riskFlags = [
@@ -1345,21 +1376,38 @@ export async function expireStaleReservations(input: {
   userId?: string | null;
   limit?: number;
 } = {}) {
+  // Callers are background jobs with no ambient connection; `bufferCommands: false` makes every
+  // model call throw immediately without this.
+  await dbConnect();
   const limit = Math.max(1, Math.min(input.limit ?? 50, 200));
-  const staleReservations = await UsageReservation.find({
-    status: "reserved",
-    expiresAt: { $lte: new Date() },
-    "metadata.processorStatus": { $ne: "accepted" },
-    ...(input.userId ? { user: input.userId } : {}),
-  }).sort({ expiresAt: 1 }).limit(limit);
+  const now = new Date();
+  const staleReservations = await UsageReservation.find(
+    buildStaleReservationFilter({ now, userId: input.userId }),
+  ).sort({ expiresAt: 1 }).limit(limit);
+
+  const summary = { scanned: staleReservations.length, released: 0, failed: 0 };
 
   for (const reservation of staleReservations) {
-    await releaseReservation({
-      userId: String(reservation.user),
-      reservationId: String(reservation._id),
-      reason: "expired",
-    });
+    // Isolate per reservation: without this, one bad document aborts the whole batch and every
+    // remaining customer's credits stay stranded until the next run - silently.
+    try {
+      await releaseReservation({
+        userId: String(reservation.user),
+        reservationId: String(reservation._id),
+        reason: "expired",
+      });
+      summary.released += 1;
+    } catch (error) {
+      summary.failed += 1;
+      console.error("Failed to expire stale reservation", {
+        reservationId: String(reservation._id),
+        user: String(reservation.user),
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
+
+  return summary;
 }
 
 export async function recordProcessorReservationStatus(input: {
