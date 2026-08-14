@@ -181,9 +181,16 @@ function formatDate(value?: string | null) {
 export default function BillingClient({
   autostart,
   initialProductCode,
+  quotedAmountSubunits = null,
+  quotedCurrency = null,
+  quotedPricingVersion = null,
 }: {
   autostart: boolean;
   initialProductCode: string | null;
+  /** Price the customer was shown on /pricing, if they arrived from there. */
+  quotedAmountSubunits?: number | null;
+  quotedCurrency?: string | null;
+  quotedPricingVersion?: string | null;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -205,6 +212,22 @@ export default function BillingClient({
     () => snapshot?.billing.catalog.find((product) => product.code === selectedCode) || null,
     [selectedCode, snapshot?.billing.catalog],
   );
+
+  /**
+   * True when the price on this page differs from the one the customer was shown on /pricing.
+   *
+   * /pricing may serve the unauthenticated catalog (detected country, no pricing lock) while this
+   * page prices from the authenticated snapshot, so the amount can legitimately change across the
+   * login boundary. When it does, the customer must see the new number and confirm it - never have
+   * a payment modal opened for them at a price they were never shown.
+   */
+  const quoteDrift = useMemo(() => {
+    if (!selectedProduct || quotedAmountSubunits === null || !quotedCurrency) return null;
+    const sameAmount = selectedProduct.amountPaise === quotedAmountSubunits;
+    const sameCurrency = selectedProduct.currency.toUpperCase() === quotedCurrency.toUpperCase();
+    if (sameAmount && sameCurrency) return null;
+    return { amountPaise: quotedAmountSubunits, currency: quotedCurrency.toUpperCase() };
+  }, [quotedAmountSubunits, quotedCurrency, selectedProduct]);
 
   const hasChosenProduct = Boolean(selectedProduct);
   const shouldShowSubscriptionPanel =
@@ -311,6 +334,8 @@ export default function BillingClient({
         body: JSON.stringify({
           productCode: product.code,
           idempotencyKey: `billing-page:${product.code}:${attemptKey}`,
+          // The exact amount rendered on the button the customer just pressed. The server rejects
+          // the order with 409 pricing_quote_changed if its own price no longer matches.
           quotedAmountSubunits: product.amountPaise,
           quotedCurrency: product.currency,
           pricingVersion: snapshot?.billing.pricingVersion,
@@ -328,6 +353,18 @@ export default function BillingClient({
         | { error?: string };
 
       if (!response.ok || !("orderId" in payload)) {
+        // A price change is not a failure - refresh so the page shows the real amount, and let the
+        // customer decide. Throwing a bare string here used to leave the page stuck displaying the
+        // old price with no way forward.
+        if ("code" in payload && payload.code === "pricing_quote_changed") {
+          checkoutAttemptKeysRef.current.delete(product.code);
+          await refreshSnapshot().catch(() => null);
+          setBusyCode(null);
+          setStatus(
+            "The price for this plan changed before checkout. The amount shown has been updated - review it and continue if you agree. Nothing has been charged.",
+          );
+          return;
+        }
         throw new Error(("error" in payload && payload.error) || "Unable to create order.");
       }
 
@@ -427,6 +464,7 @@ export default function BillingClient({
         body: JSON.stringify({
           productCode: product.code,
           idempotencyKey: `billing-page:subscription:${product.code}:${attemptKey}`,
+          // See handleOrderCheckout: pins the charge to the amount the customer was shown.
           quotedAmountSubunits: product.amountPaise,
           quotedCurrency: product.currency,
           pricingVersion: snapshot?.billing.pricingVersion,
@@ -442,6 +480,16 @@ export default function BillingClient({
         | { error?: string };
 
       if (!response.ok || !("subscriptionId" in payload)) {
+        // See handleOrderCheckout: a price change is a decision point, not a failure.
+        if ("code" in payload && payload.code === "pricing_quote_changed") {
+          checkoutAttemptKeysRef.current.delete(product.code);
+          await refreshSnapshot().catch(() => null);
+          setBusyCode(null);
+          setStatus(
+            "The price for this plan changed before checkout. The amount shown has been updated - review it and continue if you agree. Nothing has been charged.",
+          );
+          return;
+        }
         throw new Error(("error" in payload && payload.error) || "Unable to create subscription.");
       }
 
@@ -535,6 +583,21 @@ export default function BillingClient({
   useEffect(() => {
     if (!autostart || autostartedRef.current || !scriptReady || !selectedProduct || busyCode) return;
 
+    // Never auto-open Razorpay at a price the customer has not seen. On drift, stop here and let
+    // the confirmation banner below render both amounts so they can decide.
+    if (quoteDrift) {
+      autostartedRef.current = true;
+      const driftParams = new URLSearchParams(searchParams.toString());
+      if (driftParams.has("autostart")) {
+        driftParams.delete("autostart");
+        router.replace(driftParams.size ? `${pathname}?${driftParams.toString()}` : pathname, {
+          scroll: false,
+        });
+      }
+      setShowCatalog(true);
+      return;
+    }
+
     autostartedRef.current = true;
     const params = new URLSearchParams(searchParams.toString());
     if (params.has("autostart")) {
@@ -550,6 +613,7 @@ export default function BillingClient({
     handleOrderCheckout,
     handleSubscriptionCheckout,
     pathname,
+    quoteDrift,
     router,
     scriptReady,
     searchParams,
@@ -634,6 +698,26 @@ export default function BillingClient({
             ) : null}
           </div>
 
+          {quoteDrift && selectedProduct ? (
+            <div
+              role="alert"
+              className="mt-4 rounded-2xl border border-[#F5D9A8] bg-[#FFF8EC] px-4 py-3 text-xs text-[#7A5B1E]"
+            >
+              <p className="font-semibold text-[#8A5A00]">The price for this plan has changed.</p>
+              <p className="mt-1">
+                You were shown{" "}
+                <span className="font-semibold">
+                  {formatCurrency(quoteDrift.amountPaise, quoteDrift.currency)}
+                </span>
+                . Based on your account it is now{" "}
+                <span className="font-semibold">
+                  {formatCurrency(selectedProduct.amountPaise, selectedProduct.currency)}
+                </span>
+                . Nothing has been charged. Review the amount and continue only if you agree.
+              </p>
+            </div>
+          ) : null}
+
           <div className="mt-4 rounded-2xl border border-[#EEF2FA] bg-[#F8FAFF] px-4 py-3 text-xs text-[#687184]">
             {status}
           </div>
@@ -646,7 +730,9 @@ export default function BillingClient({
             >
               {showCatalog ? "Hide other plans" : "Change plan"}
             </button>
-            {autostart ? <span className="text-xs text-[#7A8499]">Checkout opens automatically when ready.</span> : null}
+            {autostart && !quoteDrift ? (
+              <span className="text-xs text-[#7A8499]">Checkout opens automatically when ready.</span>
+            ) : null}
           </div>
 
           {showCatalog ? (

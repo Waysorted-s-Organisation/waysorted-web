@@ -454,11 +454,32 @@ export async function resolveUserPricingContext(
   // existing wallet. The current Vercel country header is the trusted signal.
   const safestObservedCountry = getSafestObservedCountry(detectedCountry, authCountry);
   const safestObservedTier = safestObservedCountry ? getCountryTier(safestObservedCountry) : null;
-  const shouldUpgrade =
+  const observedHigherTier = Boolean(
     safestObservedCountry &&
     safestObservedTier &&
     currentLockedTier &&
-    getTierRank(safestObservedTier) > getTierRank(currentLockedTier);
+    getTierRank(safestObservedTier) > getTierRank(currentLockedTier),
+  );
+
+  // A tier upgrade is permanent - tier_1 is the top rank, so the ratchet below can never move it
+  // back down, and there is no self-service reset. A single request is therefore not enough
+  // evidence: one VPN session, hotel Wi-Fi, or mis-geolocated mobile IP would reprice a genuine
+  // tier_3 customer at up to 3.35x forever. Require the same higher-tier country to be observed on
+  // a second, separate request before acting on it.
+  const upgradeCandidateMatches =
+    observedHigherTier &&
+    billing.pricingUpgradeCandidateCountry === safestObservedCountry;
+  const shouldUpgrade = observedHigherTier && upgradeCandidateMatches;
+
+  if (observedHigherTier && !upgradeCandidateMatches) {
+    // First sighting: record it and keep charging the customer their existing (lower) price.
+    billing.pricingUpgradeCandidateCountry = safestObservedCountry;
+    billing.pricingUpgradeCandidateSeenAt = new Date();
+  } else if (!observedHigherTier && billing.pricingUpgradeCandidateCountry) {
+    // The higher-tier observation did not repeat - discard it so unrelated blips never accumulate.
+    billing.pricingUpgradeCandidateCountry = null;
+    billing.pricingUpgradeCandidateSeenAt = null;
+  }
 
   // A lock may only be written from a real trusted observation. Without one, `lockedContext` falls
   // back to the deployment default, and persisting that would freeze a guess permanently: the
@@ -485,6 +506,9 @@ export async function resolveUserPricingContext(
     billing.pricingCurrency = getCurrencyForCountry(countryToLock);
     billing.pricingLockedAt ||= new Date();
     billing.pricingLockReason = shouldUpgrade ? "higher_tier_detection" : "initial_detection";
+    // The candidate has been acted on; clear it so a later observation starts a fresh corroboration.
+    billing.pricingUpgradeCandidateCountry = null;
+    billing.pricingUpgradeCandidateSeenAt = null;
   }
 
   const riskFlags = [

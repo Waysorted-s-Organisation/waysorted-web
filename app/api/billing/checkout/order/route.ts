@@ -46,14 +46,40 @@ export async function POST(request: NextRequest) {
     if (!allowed) {
       return NextResponse.json({ error: "Product is not currently eligible for this user." }, { status: 403 });
     }
+    // The quote is REQUIRED. It used to be optional, which meant a caller that simply omitted the
+    // field disabled the check entirely and was charged whatever the server computed, with no
+    // error and no confirmation.
     if (
-      body.quotedAmountSubunits !== undefined &&
-      (body.quotedAmountSubunits !== pricedProduct!.amountPaise ||
-        body.quotedCurrency?.toUpperCase() !== pricedProduct!.currency.toUpperCase() ||
-        body.pricingVersion !== snapshot.pricingVersion)
+      body.quotedAmountSubunits === undefined ||
+      body.quotedCurrency === undefined ||
+      body.pricingVersion === undefined
     ) {
       return NextResponse.json(
-        { error: "Pricing changed before checkout. Review the updated amount.", code: "pricing_quote_changed" },
+        {
+          error: "A price quote is required to start checkout.",
+          code: "missing_price_quote",
+        },
+        { status: 400 },
+      );
+    }
+    if (
+      body.quotedAmountSubunits !== pricedProduct!.amountPaise ||
+      body.quotedCurrency.toUpperCase() !== pricedProduct!.currency.toUpperCase() ||
+      body.pricingVersion !== snapshot.pricingVersion
+    ) {
+      return NextResponse.json(
+        {
+          error: "Pricing changed before checkout. Review the updated amount.",
+          code: "pricing_quote_changed",
+          quoted: {
+            amountSubunits: body.quotedAmountSubunits,
+            currency: body.quotedCurrency.toUpperCase(),
+          },
+          current: {
+            amountSubunits: pricedProduct!.amountPaise,
+            currency: pricedProduct!.currency.toUpperCase(),
+          },
+        },
         { status: 409 },
       );
     }
@@ -66,7 +92,12 @@ export async function POST(request: NextRequest) {
       existingPurchase &&
       existingPurchase.productCode === product.code &&
       ["created", "pending"].includes(existingPurchase.status) &&
-      existingAgeMs < 30 * 60_000,
+      existingAgeMs < 30 * 60_000 &&
+      // The reuse branch returns the ORIGINAL order's amount and currency. Reusing a record whose
+      // price no longer matches the quote just validated would charge the customer an amount they
+      // were never shown - the guard above would pass while the old price is what actually bills.
+      existingPurchase.amountPaise === pricedProduct!.amountPaise &&
+      existingPurchase.currency.toUpperCase() === pricedProduct!.currency.toUpperCase(),
     );
     if (existingPurchase && !canReuseExisting) {
       return NextResponse.json(

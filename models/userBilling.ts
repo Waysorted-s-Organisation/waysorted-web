@@ -26,6 +26,14 @@ export interface IUserBilling {
   pricingCurrency?: string | null;
   pricingLockedAt?: Date | null;
   pricingLockReason?: string | null;
+  /**
+   * Higher-tier country seen once but not yet acted on. A tier upgrade permanently reprices the
+   * customer (up to 3.35x) and cannot be undone by the ratchet, so it requires corroboration from
+   * a second, separate observation rather than a single request that may be a VPN or a
+   * mis-geolocated mobile IP.
+   */
+  pricingUpgradeCandidateCountry?: string | null;
+  pricingUpgradeCandidateSeenAt?: Date | null;
   pricingRiskFlags: string[];
   firstSuccessfulPurchaseAt?: Date | null;
   subscriptionStatus: BillingSubscriptionStatus;
@@ -65,6 +73,8 @@ const UserBillingSchema = new Schema<IUserBilling, UserBillingModel>(
     pricingCurrency: { type: String, default: null },
     pricingLockedAt: { type: Date, default: null },
     pricingLockReason: { type: String, default: null },
+    pricingUpgradeCandidateCountry: { type: String, default: null },
+    pricingUpgradeCandidateSeenAt: { type: Date, default: null },
     pricingRiskFlags: [{ type: String }],
     firstSuccessfulPurchaseAt: { type: Date, default: null },
     subscriptionStatus: {

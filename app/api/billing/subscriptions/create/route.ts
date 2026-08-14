@@ -59,14 +59,36 @@ export async function POST(request: NextRequest) {
     if (!pricedProduct) {
       return NextResponse.json({ error: "Product is not currently eligible for this user." }, { status: 403 });
     }
+    // The quote is REQUIRED. It used to be optional, which meant a caller that simply omitted the
+    // field disabled the check entirely and was charged whatever the server computed.
     if (
-      body.quotedAmountSubunits !== undefined &&
-      (body.quotedAmountSubunits !== pricedProduct.amountPaise ||
-        body.quotedCurrency?.toUpperCase() !== pricedProduct.currency.toUpperCase() ||
-        body.pricingVersion !== snapshot.pricingVersion)
+      body.quotedAmountSubunits === undefined ||
+      body.quotedCurrency === undefined ||
+      body.pricingVersion === undefined
     ) {
       return NextResponse.json(
-        { error: "Pricing changed before checkout. Review the updated amount.", code: "pricing_quote_changed" },
+        { error: "A price quote is required to start checkout.", code: "missing_price_quote" },
+        { status: 400 },
+      );
+    }
+    if (
+      body.quotedAmountSubunits !== pricedProduct.amountPaise ||
+      body.quotedCurrency.toUpperCase() !== pricedProduct.currency.toUpperCase() ||
+      body.pricingVersion !== snapshot.pricingVersion
+    ) {
+      return NextResponse.json(
+        {
+          error: "Pricing changed before checkout. Review the updated amount.",
+          code: "pricing_quote_changed",
+          quoted: {
+            amountSubunits: body.quotedAmountSubunits,
+            currency: body.quotedCurrency.toUpperCase(),
+          },
+          current: {
+            amountSubunits: pricedProduct.amountPaise,
+            currency: pricedProduct.currency.toUpperCase(),
+          },
+        },
         { status: 409 },
       );
     }
@@ -90,6 +112,22 @@ export async function POST(request: NextRequest) {
             error:
               "A different subscription is already active or awaiting payment. Cancel it before choosing another plan.",
             code: "subscription_plan_change_required",
+          },
+          { status: 409 },
+        );
+      }
+      // The existing Razorpay subscription is bound to the plan created at its own pricing tier.
+      // Returning the freshly-priced product alongside it would show the customer one amount while
+      // Razorpay charges another, so refuse rather than reuse when the tier has moved.
+      if (
+        existingSubscription.pricingTier &&
+        existingSubscription.pricingTier !== snapshot.pricing.tier
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Your pending subscription was created at a different price. Cancel it and start again to continue at the current price.",
+            code: "subscription_pricing_tier_changed",
           },
           { status: 409 },
         );

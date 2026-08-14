@@ -26,12 +26,26 @@ import UserBilling from "../models/userBilling";
  */
 
 const DRY_RUN = process.argv.includes("--dry-run");
+/**
+ * Also reset locks written by the upward tier ratchet ("higher_tier_detection").
+ *
+ * Before corroboration was required, a single request from a VPN, hotel Wi-Fi, or mis-geolocated
+ * mobile IP was enough to promote a customer to tier_1 permanently - the ratchet only moves upward,
+ * so returning to their real country never repairs it. Use this to unwind those. Re-derivation is
+ * still safe: a customer genuinely in a tier_1 country simply re-locks there.
+ */
+const INCLUDE_UPGRADES = process.argv.includes("--include-upgrades");
 
-const SUSPECT_LOCK_FILTER = {
-  pricingCountry: "US",
-  pricingTier: "tier_1",
-  pricingLockReason: "initial_detection",
-};
+const SUSPECT_LOCK_FILTER = INCLUDE_UPGRADES
+  ? {
+      pricingTier: "tier_1",
+      pricingLockReason: { $in: ["initial_detection", "higher_tier_detection"] },
+    }
+  : {
+      pricingCountry: "US",
+      pricingTier: "tier_1",
+      pricingLockReason: "initial_detection",
+    };
 
 async function migrate() {
   await dbConnect();
@@ -64,6 +78,8 @@ async function migrate() {
       pricingCurrency: "",
       pricingLockedAt: "",
       pricingLockReason: "",
+      pricingUpgradeCandidateCountry: "",
+      pricingUpgradeCandidateSeenAt: "",
     },
   });
 
