@@ -738,10 +738,16 @@ export async function applyPurchaseCredits(purchase: PurchaseDocument) {
  * Razorpay subscription has been created, so each retry leaks one. Moving the row to `expired` takes
  * it out of the index and lets the customer pay again.
  */
-export async function releaseSupersededPendingSubscription(subscriptionId: string) {
+export async function releaseSupersededPendingSubscription(
+  subscriptionId: string,
+  expectedStatus: string = "payment_pending",
+) {
   await dbConnect();
+  // Conditional on the status we observed, so two concurrent checkouts cannot both claim the row.
+  // A null result means someone else won; the caller must not proceed to create a provider
+  // subscription, or it would be orphaned and payable.
   return Subscription.findOneAndUpdate(
-    { _id: subscriptionId, status: "payment_pending" },
+    { _id: subscriptionId, status: expectedStatus },
     {
       $set: {
         status: "expired",
@@ -750,6 +756,21 @@ export async function releaseSupersededPendingSubscription(subscriptionId: strin
       },
     },
     { new: true },
+  );
+}
+
+/**
+ * Flag a released subscription whose provider-side cancellation failed.
+ *
+ * The local row is already out of the way so checkout can continue, but the provider subscription
+ * is still live and could charge the customer. Recording it lets the reconciler retry the cancel
+ * instead of leaving an untracked, payable subscription behind.
+ */
+export async function markSubscriptionCancellationPending(subscriptionId: string) {
+  await dbConnect();
+  return Subscription.updateOne(
+    { _id: subscriptionId },
+    { $set: { providerCancellationPending: true } },
   );
 }
 
@@ -1235,6 +1256,12 @@ export async function releaseReservation(input: {
   idempotencyKey?: string | null;
   reason?: string | null;
   compensateCommitted?: boolean;
+  /**
+   * Who is releasing. "user" is a customer-initiated cancel and must not be able to free a hold the
+   * processor has already accepted - that would deliver the work and destroy the only record that
+   * it should be billed. "system" is the expiry sweeper and the processor callback.
+   */
+  actor?: "user" | "system";
 }) {
   return runBillingTransaction(async (session) => {
     const reservationQuery = input.reservationId
@@ -1258,6 +1285,17 @@ export async function releaseReservation(input: {
 
     if (["released", "expired", "compensated"].includes(existingReservation.status)) {
       return existingReservation;
+    }
+
+    // A customer cannot release a hold the processor has already picked up: the job is in flight,
+    // so releasing it returns the credits while the work still gets delivered, and the later
+    // completion callback has nothing left to charge against.
+    const processorStatus = (existingReservation.metadata as Record<string, unknown> | undefined)
+      ?.processorStatus;
+    if (input.actor === "user" && processorStatus === "accepted") {
+      const error = new Error("This job is already being processed and cannot be cancelled.");
+      (error as Error & { status?: number }).status = 409;
+      throw error;
     }
 
     if (existingReservation.status === "reserved") {
@@ -1387,6 +1425,7 @@ export async function expireStaleReservations(input: {
         userId: String(reservation.user),
         reservationId: String(reservation._id),
         reason: "expired",
+        actor: "system",
       });
       summary.released += 1;
     } catch (error) {
