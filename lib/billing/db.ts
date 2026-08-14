@@ -35,8 +35,6 @@ import {
   getCountryFromRequest,
   getCurrencyForCountry,
   getPricingCountryMismatchRiskFlags,
-  getSafestObservedCountry,
-  getTierRank,
   type PricingContext,
   type RegionalPricedProduct,
   withPricingRiskFlags,
@@ -442,77 +440,36 @@ export async function resolveUserPricingContext(
     .lean<{ countryCode?: string | null; pricingTierAtAuth?: string | null } | null>()
     .session(session || null);
   const authCountry = recentSession?.countryCode || null;
-  const lockedContext = createPricingContext({
-    detectedCountry,
-    lockedCountry: billing.pricingCountry,
-    lockedTier: billing.pricingTier,
-    lockedCurrency: billing.pricingCurrency,
-  });
-  const currentLockedTier = billing.pricingTier as PricingContext["tier"] | null;
-  // Older sessions may have been populated from an untrusted proxy header.
-  // They may raise the price tier conservatively, but must never downgrade an
-  // existing wallet. The current Vercel country header is the trusted signal.
-  const safestObservedCountry = getSafestObservedCountry(detectedCountry, authCountry);
-  const safestObservedTier = safestObservedCountry ? getCountryTier(safestObservedCountry) : null;
-  const observedHigherTier = Boolean(
-    safestObservedCountry &&
-    safestObservedTier &&
-    currentLockedTier &&
-    getTierRank(safestObservedTier) > getTierRank(currentLockedTier),
-  );
 
-  // A tier upgrade is permanent - tier_1 is the top rank, so the ratchet below can never move it
-  // back down, and there is no self-service reset. A single request is therefore not enough
-  // evidence: one VPN session, hotel Wi-Fi, or mis-geolocated mobile IP would reprice a genuine
-  // tier_3 customer at up to 3.35x forever. Require the same higher-tier country to be observed on
-  // a second, separate request before acting on it.
-  const upgradeCandidateMatches =
-    observedHigherTier &&
-    billing.pricingUpgradeCandidateCountry === safestObservedCountry;
-  const shouldUpgrade = observedHigherTier && upgradeCandidateMatches;
+  // PRICING IS GEO-BASED ONLY.
+  //
+  // The price a visitor is shown must not depend on whether they are signed in. Previously this
+  // resolved from a persisted per-user lock, which meant /pricing (public, geo) and /billing
+  // (authenticated, locked) could quote different amounts for the same plan - the page visibly
+  // repainted from the geo price to the locked one as auth resolved. The lock also ratcheted only
+  // upward, so a single mis-geolocated request repriced a customer permanently with no way back.
+  //
+  // The observed country is still recorded below for support and abuse review, but it no longer
+  // decides the price.
+  const pricingContext = createPricingContext({ detectedCountry });
 
-  if (observedHigherTier && !upgradeCandidateMatches) {
-    // First sighting: record it and keep charging the customer their existing (lower) price.
-    billing.pricingUpgradeCandidateCountry = safestObservedCountry;
-    billing.pricingUpgradeCandidateSeenAt = new Date();
-  } else if (!observedHigherTier && billing.pricingUpgradeCandidateCountry) {
-    // The higher-tier observation did not repeat - discard it so unrelated blips never accumulate.
-    billing.pricingUpgradeCandidateCountry = null;
-    billing.pricingUpgradeCandidateSeenAt = null;
+  // Record what this request was actually priced at. Deliberately NOT getSafestObservedCountry:
+  // that returns whichever of (current country, historical session country) has the HIGHER tier,
+  // and sessions created before the Cloudflare cutover recorded the proxy PoP country (SG for
+  // Indian visitors), so it would keep re-asserting the very value this work removed.
+  if (detectedCountry) {
+    billing.pricingCountry = detectedCountry;
+    billing.pricingTier = getCountryTier(detectedCountry);
+    billing.pricingCurrency = getCurrencyForCountry(detectedCountry);
+    billing.pricingLockReason = "geo_observation";
+    billing.pricingLockedAt = new Date();
   }
-
-  // A lock may only be written from a real trusted observation. Without one, `lockedContext` falls
-  // back to the deployment default, and persisting that would freeze a guess permanently: the
-  // ratchet below only ever moves upward, so there is no downgrade path and no reset endpoint.
-  // Serve default pricing for this request instead and lock once a trusted signal actually arrives.
-  const hasTrustedObservation = Boolean(safestObservedCountry && safestObservedTier);
-  const shouldLock =
-    hasTrustedObservation &&
-    (!billing.pricingCountry ||
-      !billing.pricingTier ||
-      shouldUpgrade);
-
-  if (shouldLock) {
-    const countryToLock =
-      (!billing.pricingCountry || shouldUpgrade) && safestObservedCountry
-        ? safestObservedCountry
-        : lockedContext.country;
-    const tierToLock =
-      (!billing.pricingTier || shouldUpgrade) && safestObservedTier
-        ? safestObservedTier
-        : lockedContext.tier;
-    billing.pricingCountry = countryToLock;
-    billing.pricingTier = tierToLock;
-    billing.pricingCurrency = getCurrencyForCountry(countryToLock);
-    billing.pricingLockedAt ||= new Date();
-    billing.pricingLockReason = shouldUpgrade ? "higher_tier_detection" : "initial_detection";
-    // The candidate has been acted on; clear it so a later observation starts a fresh corroboration.
-    billing.pricingUpgradeCandidateCountry = null;
-    billing.pricingUpgradeCandidateSeenAt = null;
-  }
+  // The upgrade-corroboration state only existed to guard the ratchet, which is gone.
+  billing.pricingUpgradeCandidateCountry = null;
+  billing.pricingUpgradeCandidateSeenAt = null;
 
   const riskFlags = [
-    ...lockedContext.riskFlags,
+    ...pricingContext.riskFlags,
     ...getPricingCountryMismatchRiskFlags({
       authCountry,
       trustedRequestCountry: detectedCountry,
@@ -523,12 +480,8 @@ export async function resolveUserPricingContext(
   billing.pricingRiskFlags = Array.from(new Set(riskFlags));
   await billing.save({ session });
 
-  return withPricingRiskFlags(createPricingContext({
-    detectedCountry,
-    lockedCountry: billing.pricingCountry,
-    lockedTier: billing.pricingTier,
-    lockedCurrency: billing.pricingCurrency,
-  }), billing.pricingRiskFlags);
+  // Geo-only: derived from this request's trusted country, never from the stored record.
+  return withPricingRiskFlags(pricingContext, billing.pricingRiskFlags);
 }
 
 export async function updateLegacyUserCredits(
@@ -645,6 +598,22 @@ export async function createPurchaseRecord(input: {
     idempotencyKey: input.idempotencyKey,
     notes: input.notes || {},
   });
+}
+
+/**
+ * Locate the Purchase backing a provider subscription, so a reused checkout can still be verified.
+ *
+ * /subscriptions/verify requires a purchaseId; without one the customer is charged and then shown
+ * "Missing verification fields.", and the confirmation marker the reconciler relies on is never
+ * written.
+ */
+export async function findPurchaseBySubscriptionId(
+  userId: string,
+  razorpaySubscriptionId?: string | null,
+) {
+  if (!razorpaySubscriptionId) return null;
+  await dbConnect();
+  return Purchase.findOne({ user: userId, razorpaySubscriptionId }).sort({ createdAt: -1 });
 }
 
 export async function findPurchaseByUserAndIdempotency(userId: string, idempotencyKey: string) {

@@ -163,8 +163,12 @@ export default function PricingClient({
     async function loadPricing() {
       setPricingError(null);
       try {
-        const endpoint = user ? "/api/billing/catalog" : "/api/billing/public-catalog";
-        const response = await fetch(`${endpoint}?ts=${Date.now()}`, { cache: "no-store" });
+        // Pricing is geo-based only. Always read the public catalog, never the authenticated one:
+        // signing in must not change the price, and `user` resolves asynchronously, so switching
+        // endpoints on it made the page paint the geo price and then repaint a different one.
+        const response = await fetch(`/api/billing/public-catalog?ts=${Date.now()}`, {
+          cache: "no-store",
+        });
         const payload = (await response.json()) as PricingPayload | { error?: string };
         if (!response.ok || !("catalog" in payload)) {
           throw new Error(("error" in payload && payload.error) || "Unable to load pricing.");
@@ -181,7 +185,8 @@ export default function PricingClient({
     return () => {
       active = false;
     };
-  }, [user]);
+    // Deliberately not keyed on `user`: pricing must not change when auth resolves.
+  }, []);
 
   const subscriptionProducts = useMemo(() => {
     if (!pricingData) return [];
