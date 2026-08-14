@@ -3,7 +3,7 @@ import test from "node:test";
 import Purchase from "../models/purchase";
 import Refund from "../models/refund";
 import RazorpayEventLog from "../models/razorpayEventLog";
-import { resolveCorsOrigin } from "../lib/cors";
+import { buildCorsHeaders, resolveCorsOrigin } from "../lib/cors";
 
 test("purchase idempotency is unique within a user, not globally", () => {
   const indexes = Purchase.schema.indexes();
@@ -33,7 +33,10 @@ test("webhook audit records expire after 180 days", () => {
   ));
 });
 
-test("opaque null origins are never allowed with credentials", () => {
+test("opaque plugin origins are allowed without credentialed cookies", () => {
   const request = { headers: new Headers({ origin: "null" }) };
-  assert.equal(resolveCorsOrigin(request as never), null);
+  assert.equal(resolveCorsOrigin(request as never), "null");
+  const headers = buildCorsHeaders(request as never);
+  assert.equal(headers?.["Access-Control-Allow-Origin"], "null");
+  assert.equal("Access-Control-Allow-Credentials" in (headers || {}), false);
 });

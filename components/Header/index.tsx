@@ -256,6 +256,13 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               Support
             </button>
 
+            <button
+              className={`flex items-center pr-3 font-medium text-sm cursor-pointer ${textColor}`}
+              onClick={() => router.push('/pricing')}
+            >
+              Pricing
+            </button>
+
           </div>
 
           {/* Right actions */}
@@ -509,6 +516,15 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                   onClick={() => { router.push('/support'); setMobileOpen(false); }}
                 >
                   <span className="font-medium">Support</span>
+                </button>
+                <div className="border-t border-primary-way-10" />
+              </div>
+              <div className="px-3">
+                <button
+                  className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
+                  onClick={() => { router.push('/pricing'); setMobileOpen(false); }}
+                >
+                  <span className="font-medium">Pricing</span>
                 </button>
                 <div className="border-t border-primary-way-10" />
               </div>

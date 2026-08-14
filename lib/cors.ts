@@ -4,6 +4,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
   "https://www.waysorted.com",
   "https://waysorted.com",
   "https://swipefolio.waysorted.com",
+  "null",
 ];
 
 const DEVELOPMENT_ALLOWED_ORIGINS = [
@@ -16,7 +17,7 @@ const DEVELOPMENT_ALLOWED_ORIGINS = [
 function getAllowedOrigins() {
   const configured = process.env.ALLOWED_API_ORIGINS?.split(",")
     .map((value) => value.trim())
-    .filter((value) => Boolean(value) && value !== "null");
+    .filter(Boolean);
 
   return new Set([
     ...(configured || []),
@@ -40,7 +41,7 @@ export function buildCorsHeaders(req: NextRequest) {
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers":
       "Content-Type, Authorization, X-Session-Id, X-Waysorted-Device-Id, X-Waysorted-Callback-Signature, X-Waysorted-Processor-Token, x-actor-id, x-actor-handle",
-    "Access-Control-Allow-Credentials": "true",
+    ...(origin === "null" ? {} : { "Access-Control-Allow-Credentials": "true" }),
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   } as const;
