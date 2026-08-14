@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { CATALOG_PRODUCTS, type CatalogProduct } from "@/lib/billing/catalog";
 import { minimumChargeSubunits, minorUnitMultiplier } from "@/lib/billing/money";
+import { safeEqual } from "@/lib/billing/crypto";
 
 export type PricingTier = "tier_1" | "tier_2" | "tier_3";
 export const LEGACY_PRICING_COUNTRY_COOKIE = "ws_pricing_country";
@@ -23,16 +24,49 @@ export function getDefaultPricingCountry(override?: string | null) {
 /**
  * Header that carries an edge-computed country for this deployment.
  *
- * Only the platform's own header may be trusted: anything a client can set (notably `cf-ipcountry`
- * when the app is NOT actually behind Cloudflare) would let a visitor pick their own price tier.
- * Non-Vercel deployments must name their trusted header explicitly via BILLING_TRUSTED_GEO_HEADER
- * and guarantee at the proxy that the header is stripped from inbound requests and re-set by the edge.
+ * `x-vercel-ip-country` is only meaningful when Vercel terminates the connection. Behind a proxy
+ * (Cloudflare, a corporate CDN) Vercel sees the PROXY's address, so the header reports the proxy
+ * PoP's country - e.g. every Indian visitor routed through Cloudflare's Singapore colo is reported
+ * as SG. Vercel's own documentation states the geo headers do not work behind a proxy, and the
+ * Trusted Proxy override is Enterprise-only.
+ *
+ * Such deployments must name the proxy's own geo header (Cloudflare: `cf-ipcountry`) via
+ * BILLING_TRUSTED_GEO_HEADER. See isEdgeAttested for why that alone is not sufficient.
  */
 export const DEFAULT_TRUSTED_GEO_HEADER = "x-vercel-ip-country";
+export const DEFAULT_EDGE_ATTESTATION_HEADER = "x-waysorted-edge-proof";
 
 export function getTrustedGeoHeaderName(override?: string | null) {
   const configured = (override ?? process.env.BILLING_TRUSTED_GEO_HEADER)?.trim().toLowerCase();
   return configured || DEFAULT_TRUSTED_GEO_HEADER;
+}
+
+/**
+ * Confirm the request really arrived through our own edge before believing a proxy's geo header.
+ *
+ * A proxy header such as `cf-ipcountry` is trustworthy only on the path where the proxy sets it.
+ * The origin stays directly reachable (the *.vercel.app URL is public), so anyone can bypass the
+ * proxy and send `cf-ipcountry: IN` to select the cheapest tier for themselves.
+ *
+ * Configure BILLING_EDGE_ATTESTATION_SECRET here and inject the same value at the proxy (Cloudflare
+ * → Rules → Transform Rules → Modify Request Header). Requests that do not present it are treated as
+ * having NO geo signal, which falls back to the deployment's home currency rather than a
+ * caller-chosen one.
+ *
+ * When no secret is configured this returns true, preserving the platform-header behaviour.
+ */
+export function isEdgeAttested(
+  headers: Pick<Headers, "get">,
+  options: { secret?: string | null; headerName?: string | null } = {},
+) {
+  const secret = (options.secret ?? process.env.BILLING_EDGE_ATTESTATION_SECRET)?.trim();
+  if (!secret) return true;
+
+  const headerName =
+    (options.headerName ?? process.env.BILLING_EDGE_ATTESTATION_HEADER)?.trim().toLowerCase() ||
+    DEFAULT_EDGE_ATTESTATION_HEADER;
+  const presented = headers.get(headerName)?.trim();
+  return Boolean(presented) && safeEqual(presented as string, secret);
 }
 
 export type PricingContext = {
@@ -367,10 +401,20 @@ export function getTrustedPricingCountry(
     nodeEnv?: string;
     developmentOverride?: string | null;
     trustedHeader?: string | null;
+    attestationSecret?: string | null;
+    attestationHeader?: string | null;
   } = {},
 ) {
   const trustedHeader = getTrustedGeoHeaderName(options.trustedHeader);
-  const edgeCountry = parseCountryCode(headers.get(trustedHeader));
+  // A geo header is only evidence when it came from a party we trust. If an edge attestation is
+  // configured and absent, ignore the header entirely rather than let a direct-to-origin caller
+  // choose their own price tier.
+  const edgeCountry = isEdgeAttested(headers, {
+    secret: options.attestationSecret,
+    headerName: options.attestationHeader,
+  })
+    ? parseCountryCode(headers.get(trustedHeader))
+    : null;
   if (edgeCountry) {
     return edgeCountry;
   }
