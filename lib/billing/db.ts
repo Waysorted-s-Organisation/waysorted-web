@@ -761,6 +761,29 @@ export async function applyPurchaseCredits(purchase: PurchaseDocument) {
   });
 }
 
+/**
+ * Free the unique `one_live_subscription_per_user` slot held by an unpayable pending subscription.
+ *
+ * That partial index covers `payment_pending`, so a stale pending row makes every subsequent
+ * subscription attempt fail with E11000 - and the failure happens only AFTER a live, customer-payable
+ * Razorpay subscription has been created, so each retry leaks one. Moving the row to `expired` takes
+ * it out of the index and lets the customer pay again.
+ */
+export async function releaseSupersededPendingSubscription(subscriptionId: string) {
+  await dbConnect();
+  return Subscription.findOneAndUpdate(
+    { _id: subscriptionId, status: "payment_pending" },
+    {
+      $set: {
+        status: "expired",
+        cancelAtCycleEnd: false,
+        supersededAt: new Date(),
+      },
+    },
+    { new: true },
+  );
+}
+
 export async function ensureSubscriptionRecord(input: {
   userId: string;
   planCode: string;
