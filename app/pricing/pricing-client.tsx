@@ -12,6 +12,12 @@ import GlowStarButton from "@/components/GlowStarButton";
 import PricingCard from "./components/PricingCard";
 import BillingDetailsModal, { type BillingDetails } from "@/components/BillingDetailsModal";
 import { useUser } from "@/hooks/useUser";
+import {
+  getCreditPresentation,
+  getMinimumAnnualSavingsPercent,
+  getPlanUi,
+} from "./pricing-presentation";
+import { formatMoney } from "@/lib/billing/money";
 
 type CatalogProduct = {
   code: string;
@@ -48,58 +54,6 @@ const monthlyCodes = ["sub_month_1", "sub_month_2", "sub_month_3"];
 const yearlyCodes = ["sub_year_1599", "sub_year_3499", "sub_year_7499"];
 const standardTopupCodes = ["topup_std_50", "topup_std_100", "topup_std_120"];
 const subscriberTopupCodes = ["topup_sub_50", "topup_sub_100", "topup_sub_120"];
-
-const planUi = [
-  {
-    planName: "Discover",
-    description: "Best for individuals getting started with Waysorted.",
-    ctaLabel: "Select Plan",
-    discountTag: "20% OFF",
-    originalAmountLabel: "₹199",
-    monthlyCreditsLabel: "250 credits/month",
-    bonusCreditsLabel: "Plus 25 bonus credits for new users",
-    iconSrc: "/pricingIcons/Discover.png",
-    features: [
-      "Includes all core Waysorted features",
-      "Regular updates with ongoing support",
-      "Lowest cost for credit top-ups",
-      "Credits never expires, no monthly resets.",
-    ],
-  },
-  {
-    planName: "Core",
-    description: "Perfect for designers who need full access to tools, credits & ongoing updates.",
-    ctaLabel: "Get Started",
-    discountTag: "10% OFF",
-    originalAmountLabel: "₹399",
-    monthlyCreditsLabel: "500 credits/month",
-    bonusCreditsLabel: "Plus 50 bonus credits for new users",
-    iconSrc: "/pricingIcons/Core.png",
-    featured: true,
-    features: [
-      "Includes all core Waysorted features",
-      "Regular updates with ongoing support",
-      "Lowest cost for small topups",
-      "Credits never expires, no monthly resets.",
-    ],
-  },
-  {
-    planName: "Pro",
-    description: "Designed for studios and enterprises with more support & credits.",
-    ctaLabel: "Select Plan",
-    discountTag: "5% OFF",
-    originalAmountLabel: "₹799",
-    monthlyCreditsLabel: "1200 credits/month",
-    bonusCreditsLabel: "Plus 100 bonus credits for new users",
-    iconSrc: "/pricingIcons/Pro.png",
-    features: [
-      "Includes all core Waysorted features",
-      "Regular updates with ongoing support",
-      "Lowest cost for credit top-ups",
-      "Credits never expires, no monthly resets.",
-    ],
-  },
-];
 
 const faqs = [
   {
@@ -143,22 +97,8 @@ const faqs = [
   },
 ];
 
-function minorUnitMultiplier(currency: string) {
-  const digits =
-    new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency,
-    }).resolvedOptions().maximumFractionDigits ?? 2;
-  return 10 ** digits;
-}
-
 function formatCurrency(amountSubunits: number, currency: string) {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amountSubunits / minorUnitMultiplier(currency));
+  return formatMoney(amountSubunits, currency);
 }
 
 function sortByCodes(products: CatalogProduct[], codes: string[]) {
@@ -191,6 +131,10 @@ export default function PricingClient({
       action();
       return;
     }
+    if (user.billing?.billingDetails) {
+      action();
+      return;
+    }
     setPendingAction(() => action);
     setIsBillingModalOpen(true);
   };
@@ -219,7 +163,8 @@ export default function PricingClient({
     async function loadPricing() {
       setPricingError(null);
       try {
-        const response = await fetch(`/api/billing/public-catalog?ts=${Date.now()}`, { cache: "no-store" });
+        const endpoint = user ? "/api/billing/catalog" : "/api/billing/public-catalog";
+        const response = await fetch(`${endpoint}?ts=${Date.now()}`, { cache: "no-store" });
         const payload = (await response.json()) as PricingPayload | { error?: string };
         if (!response.ok || !("catalog" in payload)) {
           throw new Error(("error" in payload && payload.error) || "Unable to load pricing.");
@@ -236,12 +181,20 @@ export default function PricingClient({
     return () => {
       active = false;
     };
-  }, [user?._id]);
+  }, [user]);
 
   const subscriptionProducts = useMemo(() => {
     if (!pricingData) return [];
     return sortByCodes(pricingData.catalog, billingCycle === "monthly" ? monthlyCodes : yearlyCodes);
   }, [billingCycle, pricingData]);
+
+  const yearlySavingsPercent = useMemo(() => {
+    if (!pricingData) return null;
+    return getMinimumAnnualSavingsPercent(
+      sortByCodes(pricingData.catalog, monthlyCodes),
+      sortByCodes(pricingData.catalog, yearlyCodes),
+    );
+  }, [pricingData]);
 
   const topupProducts = useMemo(() => {
     if (!pricingData) return [];
@@ -350,9 +303,11 @@ export default function PricingClient({
               >
                 Yearly
               </button>
-              <span className="rounded-[999px] bg-[#2F63D7] px-2 py-[3px] text-[10px] font-semibold text-white">
-                Save 17%
-              </span>
+              {yearlySavingsPercent ? (
+                <span className="rounded-[999px] bg-[#2F63D7] px-2 py-[3px] text-[10px] font-semibold text-white">
+                  Save at least {yearlySavingsPercent}% yearly
+                </span>
+              ) : null}
             </div>
 
             <p className="mt-8 text-[14px] text-[#8A94A6]">
@@ -363,28 +318,24 @@ export default function PricingClient({
           </div>
 
           <section className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
-            {subscriptionProducts.map((product, index) => {
-              const ui = planUi[index] || planUi[0];
+            {subscriptionProducts.map((product) => {
+              const ui = getPlanUi(product.code);
+              if (!ui) return null;
+              const creditPresentation = getCreditPresentation(product);
               return (
                 <PricingCard
                   key={product.code}
                   planName={ui.planName}
                   description={ui.description}
-                  originalAmountLabel={billingCycle === "monthly" ? ui.originalAmountLabel : undefined}
                   amountLabel={formatCurrency(product.amountPaise, product.currency)}
                   cycleLabel={billingCycle}
-                  creditsLabel={
-                    billingCycle === "monthly"
-                      ? ui.monthlyCreditsLabel
-                      : `${(product.creditsGranted + product.bonusCredits).toLocaleString()} credits/year`
-                  }
+                  creditsLabel={creditPresentation.creditsLabel}
                   ctaLabel={ui.ctaLabel}
-                  discountTag={ui.discountTag}
                   iconSrc={ui.iconSrc}
-                  featured={ui.featured}
+                  featured={"featured" in ui ? ui.featured : false}
                   features={ui.features}
                   onSelect={() => goToCheckout(product.code)}
-                  bonusCreditsLabel={ui.bonusCreditsLabel}
+                  bonusCreditsLabel={creditPresentation.bonusCreditsLabel}
                 />
               );
             })}

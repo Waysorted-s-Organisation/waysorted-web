@@ -16,7 +16,10 @@ export async function GET(request: NextRequest) {
   });
 
   const catalog = CATALOG_PRODUCTS.filter(
-    (product) => product.active && product.kind !== "starter",
+    (product) =>
+      product.active &&
+      product.kind !== "starter" &&
+      product.eligibility !== "subscriber",
   ).map((product) => applyRegionalPrice(product, pricing));
 
   return NextResponse.json(

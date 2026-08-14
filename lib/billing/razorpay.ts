@@ -81,8 +81,29 @@ export async function createRazorpayOrder(input: {
 }
 
 export async function fetchRazorpayPayment(paymentId: string) {
-  return razorpayRequest<Record<string, unknown>>({
+  return razorpayRequest<{
+    id: string;
+    order_id: string;
+    subscription_id?: string;
+    status: string;
+    amount: number;
+    currency: string;
+  }>({
     path: `/v1/payments/${paymentId}`,
+  });
+}
+
+export async function fetchRazorpayOrderPayments(orderId: string) {
+  return razorpayRequest<{
+    items?: Array<{
+      id: string;
+      order_id: string;
+      status: string;
+      amount: number;
+      currency: string;
+    }>;
+  }>({
+    path: `/v1/orders/${orderId}/payments`,
   });
 }
 

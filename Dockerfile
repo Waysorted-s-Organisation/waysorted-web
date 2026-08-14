@@ -16,7 +16,17 @@ CMD ["npm", "run", "dev", "--", "--turbopack", "--hostname", "0.0.0.0"]
 
 FROM dependencies AS application
 
-COPY . .
+COPY app ./app
+COPY components ./components
+COPY context ./context
+COPY data ./data
+COPY hooks ./hooks
+COPY lib ./lib
+COPY models ./models
+COPY public ./public
+COPY scripts ./scripts
+COPY types ./types
+COPY middleware.ts next.config.ts next-env.d.ts postcss.config.mjs tailwind.config.ts tsconfig.json ./
 
 ENV NEXT_TELEMETRY_DISABLED=1
 

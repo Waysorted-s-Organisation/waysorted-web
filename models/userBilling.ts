@@ -53,8 +53,8 @@ type UserBillingModel = Model<IUserBilling>;
 const UserBillingSchema = new Schema<IUserBilling, UserBillingModel>(
   {
     user: { type: Schema.Types.ObjectId, ref: "User", required: true, unique: true, index: true },
-    availableCredits: { type: Number, required: true, default: 0 },
-    heldCredits: { type: Number, required: true, default: 0 },
+    availableCredits: { type: Number, required: true, default: 0, min: 0 },
+    heldCredits: { type: Number, required: true, default: 0, min: 0 },
     lifetimePurchasedCredits: { type: Number, required: true, default: 0 },
     lifetimeBonusCredits: { type: Number, required: true, default: 0 },
     lifetimeSpentCredits: { type: Number, required: true, default: 0 },
@@ -104,7 +104,7 @@ const UserBillingSchema = new Schema<IUserBilling, UserBillingModel>(
   },
   {
     timestamps: true,
-    versionKey: false,
+    optimisticConcurrency: true,
   },
 );
 

@@ -25,7 +25,7 @@ const RefundSchema = new Schema<IRefund, RefundModel>(
     user: { type: Schema.Types.ObjectId, ref: "User", required: true, index: true },
     purchase: { type: Schema.Types.ObjectId, ref: "Purchase", required: true, index: true },
     paymentId: { type: String, required: true, index: true },
-    providerRefundId: { type: String, default: null, index: true },
+    providerRefundId: { type: String, default: null },
     amountPaise: { type: Number, required: true, min: 1 },
     status: { type: String, required: true, default: "created", enum: ["created", "processed", "failed"] },
     reason: { type: String, default: null },
@@ -37,6 +37,11 @@ const RefundSchema = new Schema<IRefund, RefundModel>(
     timestamps: true,
     versionKey: false,
   },
+);
+
+RefundSchema.index(
+  { providerRefundId: 1 },
+  { unique: true, sparse: true, name: "providerRefundId_1" },
 );
 
 const Refund =

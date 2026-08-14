@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { formatMoney } from "@/lib/billing/money";
 
 type RazorpaySuccessResponse = {
   razorpay_payment_id: string;
@@ -32,6 +33,19 @@ type RazorpayCheckoutOptions = {
     ondismiss?: () => void;
   };
   handler: (response: RazorpaySuccessResponse) => void | Promise<void>;
+};
+
+type RazorpayFailureResponse = {
+  error?: {
+    code?: string;
+    description?: string;
+    metadata?: { payment_id?: string };
+  };
+};
+
+type RazorpayCheckout = {
+  open: () => void;
+  on: (event: "payment.failed", handler: (response: RazorpayFailureResponse) => void) => void;
 };
 
 type CatalogProduct = {
@@ -107,9 +121,7 @@ let razorpayScriptPromise: Promise<void> | null = null;
 
 function getRazorpayConstructor() {
   return (window as Window & {
-    Razorpay?: new (options: RazorpayCheckoutOptions) => {
-      open: () => void;
-    };
+    Razorpay?: new (options: RazorpayCheckoutOptions) => RazorpayCheckout;
   }).Razorpay;
 }
 
@@ -122,13 +134,20 @@ function loadRazorpayScript() {
 
   if (!razorpayScriptPromise) {
     razorpayScriptPromise = new Promise<void>((resolve, reject) => {
+      const fail = (error: Error) => {
+        razorpayScriptPromise = null;
+        reject(error);
+      };
+      const timer = window.setTimeout(() => {
+        fail(new Error("Razorpay checkout could not load. Disable blockers or try another network."));
+      }, 15_000);
       const existing = document.querySelector<HTMLScriptElement>(
         'script[src="https://checkout.razorpay.com/v1/checkout.js"]',
       );
 
       if (existing) {
-        existing.addEventListener("load", () => resolve(), { once: true });
-        existing.addEventListener("error", () => reject(new Error("Failed to load Razorpay.")), {
+        existing.addEventListener("load", () => { window.clearTimeout(timer); resolve(); }, { once: true });
+        existing.addEventListener("error", () => { window.clearTimeout(timer); fail(new Error("Failed to load Razorpay.")); }, {
           once: true,
         });
         return;
@@ -137,8 +156,8 @@ function loadRazorpayScript() {
       const script = document.createElement("script");
       script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.async = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error("Failed to load Razorpay."));
+      script.onload = () => { window.clearTimeout(timer); resolve(); };
+      script.onerror = () => { window.clearTimeout(timer); fail(new Error("Failed to load Razorpay.")); };
       document.body.appendChild(script);
     });
   }
@@ -146,19 +165,8 @@ function loadRazorpayScript() {
   return razorpayScriptPromise;
 }
 
-function minorUnitMultiplier(currency: string) {
-  const digits = new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency,
-  }).resolvedOptions().maximumFractionDigits ?? 2;
-  return 10 ** digits;
-}
-
 function formatCurrency(amountSubunits: number, currency = "INR") {
-  return new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency,
-  }).format(amountSubunits / minorUnitMultiplier(currency));
+  return formatMoney(amountSubunits, currency);
 }
 
 function formatDate(value?: string | null) {
@@ -171,11 +179,9 @@ function formatDate(value?: string | null) {
 }
 
 export default function BillingClient({
-  bridgeToken,
   autostart,
   initialProductCode,
 }: {
-  bridgeToken: string | null;
   autostart: boolean;
   initialProductCode: string | null;
 }) {
@@ -189,9 +195,10 @@ export default function BillingClient({
   const [busyCode, setBusyCode] = useState<string | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
   const [showCatalog, setShowCatalog] = useState(!initialProductCode);
+  const [paidOrderId, setPaidOrderId] = useState<string | null>(null);
   const autostartedRef = useRef(false);
+  const checkoutAttemptKeysRef = useRef(new Map<string, string>());
 
-  const query = bridgeToken ? `?bridge=${encodeURIComponent(bridgeToken)}` : "";
   const redirectPath = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
 
   const selectedProduct = useMemo(
@@ -204,11 +211,10 @@ export default function BillingClient({
     Boolean(currentSubscription) || Boolean(snapshot && snapshot.billing.subscription.status !== "inactive");
 
   const refreshSnapshot = useCallback(async () => {
-    const separator = query ? "&" : "?";
-    const response = await fetch(`/api/billing/snapshot${query}${separator}ts=${Date.now()}`, { cache: "no-store" });
+    const response = await fetch(`/api/billing/snapshot?ts=${Date.now()}`, { cache: "no-store" });
     const payload = (await response.json()) as BillingSnapshot | { error?: string };
     if (!response.ok || !("billing" in payload)) {
-      if (response.status === 401 && !bridgeToken) {
+      if (response.status === 401) {
         router.replace(`/login?redirect=${encodeURIComponent(redirectPath)}`);
       }
       throw new Error(("error" in payload && payload.error) || "Unable to load billing snapshot.");
@@ -218,32 +224,38 @@ export default function BillingClient({
       setSelectedCode(payload.billing.catalog[0].code);
     }
     return payload;
-  }, [bridgeToken, query, redirectPath, router, selectedCode]);
+  }, [redirectPath, router, selectedCode]);
 
   const refreshCurrentSubscription = useCallback(async () => {
-    const separator = query ? "&" : "?";
-    const response = await fetch(`/api/billing/subscriptions/current${query}${separator}ts=${Date.now()}`, {
+    const response = await fetch(`/api/billing/subscriptions/current?ts=${Date.now()}`, {
       cache: "no-store",
     });
     const payload = (await response.json()) as CurrentSubscription | { error?: string };
     if (response.ok && "subscription" in payload) {
       setCurrentSubscription(payload.subscription);
     }
-  }, [query]);
+  }, []);
 
   useEffect(() => {
-    loadRazorpayScript()
-      .then(() => setScriptReady(true))
-      .catch((error) => {
-        setStatus(error instanceof Error ? error.message : "Unable to load Razorpay.");
-      });
-
-    refreshSnapshot()
-      .then(() => setStatus("Billing ready."))
+    Promise.all([loadRazorpayScript(), refreshSnapshot()])
+      .then(() => {
+        setScriptReady(true);
+        setStatus("Billing ready.");
+      })
       .catch((error) => {
         setStatus(error instanceof Error ? error.message : "Unable to load billing.");
       });
   }, [refreshSnapshot]);
+
+  useEffect(() => {
+    if (!snapshot || !initialProductCode) return;
+    const available = snapshot.billing.catalog.some((product) => product.code === initialProductCode);
+    if (!available) {
+      setSelectedCode(snapshot.billing.catalog[0]?.code || null);
+      setShowCatalog(true);
+      setStatus("That plan is not available on your account. Pick an available option below.");
+    }
+  }, [initialProductCode, snapshot]);
 
   useEffect(() => {
     if (!snapshot) return;
@@ -255,30 +267,42 @@ export default function BillingClient({
   }, [refreshCurrentSubscription, snapshot]);
 
   const waitForWalletUpdate = useCallback(async (baselineCredits: number | null) => {
-    for (let index = 0; index < 6; index += 1) {
-      await new Promise((resolve) => setTimeout(resolve, index === 0 ? 600 : 1000));
-      const latestSnapshot = await refreshSnapshot();
-      if (
-        baselineCredits === null ||
-        latestSnapshot.billing.wallet.availableCredits !== baselineCredits
-      ) {
-        return { latestSnapshot, settled: true };
+    let latestSnapshot: BillingSnapshot | null = null;
+    for (let index = 0; index < 12; index += 1) {
+      await new Promise((resolve) => setTimeout(resolve, Math.min(1000 + index * 500, 5000)));
+      try {
+        latestSnapshot = await refreshSnapshot();
+        if (
+          baselineCredits === null ||
+          latestSnapshot.billing.wallet.availableCredits !== baselineCredits
+        ) {
+          return { latestSnapshot, settled: true };
+        }
+      } catch {
+        // Payment has already been verified. A transient snapshot failure must
+        // not be presented as a failed payment; continue the recovery poll.
       }
     }
-
-    const latestSnapshot = await refreshSnapshot();
     return {
       latestSnapshot,
-      settled:
+      settled: Boolean(latestSnapshot && (
         baselineCredits === null ||
-        latestSnapshot.billing.wallet.availableCredits !== baselineCredits,
+        latestSnapshot.billing.wallet.availableCredits !== baselineCredits
+      )),
     };
   }, [refreshSnapshot]);
 
   const handleOrderCheckout = useCallback(async (product: CatalogProduct) => {
+    const Razorpay = getRazorpayConstructor();
+    if (!Razorpay) {
+      setStatus("Razorpay checkout is unavailable. Disable blockers or try another network.");
+      return;
+    }
     setBusyCode(product.code);
     setStatus(`Creating order for ${product.name}...`);
     const baselineCredits = snapshot?.billing.wallet.availableCredits ?? null;
+    const attemptKey = checkoutAttemptKeysRef.current.get(product.code) || crypto.randomUUID();
+    checkoutAttemptKeysRef.current.set(product.code, attemptKey);
 
     try {
       const response = await fetch("/api/billing/checkout/order", {
@@ -286,8 +310,10 @@ export default function BillingClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productCode: product.code,
-          bridgeToken,
-          idempotencyKey: `billing-page:${product.code}:${Date.now()}`,
+          idempotencyKey: `billing-page:${product.code}:${attemptKey}`,
+          quotedAmountSubunits: product.amountPaise,
+          quotedCurrency: product.currency,
+          pricingVersion: snapshot?.billing.pricingVersion,
         }),
       });
 
@@ -303,11 +329,6 @@ export default function BillingClient({
 
       if (!response.ok || !("orderId" in payload)) {
         throw new Error(("error" in payload && payload.error) || "Unable to create order.");
-      }
-
-      const Razorpay = getRazorpayConstructor();
-      if (!Razorpay) {
-        throw new Error("Razorpay checkout did not initialize.");
       }
 
       const checkout = new Razorpay({
@@ -340,7 +361,6 @@ export default function BillingClient({
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                bridgeToken,
                 purchaseId: payload.purchaseId,
                 orderId: payload.orderId,
                 ...checkoutResponse,
@@ -356,11 +376,14 @@ export default function BillingClient({
               throw new Error(verifyPayload.error || "Unable to verify payment.");
             }
 
+            checkoutAttemptKeysRef.current.delete(product.code);
+            setPaidOrderId(payload.orderId);
+
             const { settled } = await waitForWalletUpdate(baselineCredits);
             setStatus(
               settled
-                ? "Payment confirmed. Credits updated."
-                : "Payment verified. Credits will finalize after webhook confirmation.",
+                ? `Payment confirmed. Credits updated. Order: ${payload.orderId}.`
+                : `Payment received (ref: ${checkoutResponse.razorpay_payment_id}, order: ${payload.orderId}). Credits are pending; keep this reference for support.`,
             );
           } catch (error) {
             setStatus(error instanceof Error ? error.message : "Payment verification failed.");
@@ -370,14 +393,22 @@ export default function BillingClient({
         },
       });
 
+      checkout.on("payment.failed", (failure) => {
+        const description = failure.error?.description || "The payment was declined.";
+        const code = failure.error?.code ? ` (${failure.error.code})` : "";
+        setStatus(`Payment failed: ${description}${code} You can retry this checkout.`);
+        setBusyCode(null);
+      });
+
       checkout.open();
     } catch (error) {
+      checkoutAttemptKeysRef.current.delete(product.code);
       setStatus(error instanceof Error ? error.message : "Checkout failed.");
       setBusyCode(null);
     }
   }, [
-    bridgeToken,
     snapshot?.billing.wallet.availableCredits,
+    snapshot?.billing.pricingVersion,
     snapshot?.email,
     snapshot?.name,
     waitForWalletUpdate,
@@ -386,6 +417,8 @@ export default function BillingClient({
   const handleSubscriptionCheckout = useCallback(async (product: CatalogProduct) => {
     setBusyCode(product.code);
     setStatus(`Creating subscription for ${product.name}...`);
+    const attemptKey = checkoutAttemptKeysRef.current.get(product.code) || crypto.randomUUID();
+    checkoutAttemptKeysRef.current.set(product.code, attemptKey);
 
     try {
       const response = await fetch("/api/billing/subscriptions/create", {
@@ -393,13 +426,16 @@ export default function BillingClient({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productCode: product.code,
-          bridgeToken,
-          idempotencyKey: `billing-page:subscription:${product.code}:${Date.now()}`,
+          idempotencyKey: `billing-page:subscription:${product.code}:${attemptKey}`,
+          quotedAmountSubunits: product.amountPaise,
+          quotedCurrency: product.currency,
+          pricingVersion: snapshot?.billing.pricingVersion,
         }),
       });
 
       const payload = (await response.json()) as
         | {
+            purchaseId: string;
             subscriptionId: string;
             key: string;
           }
@@ -434,9 +470,28 @@ export default function BillingClient({
             setStatus("Subscription checkout closed.");
           },
         },
-        handler: async () => {
+        handler: async (checkoutResponse) => {
           try {
-            setStatus("Subscription payment submitted. Waiting for Razorpay webhook sync...");
+            setStatus("Subscription payment received. Verifying with Razorpay...");
+            const verifyResponse = await fetch("/api/billing/subscriptions/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                purchaseId: payload.purchaseId,
+                ...checkoutResponse,
+              }),
+            });
+            const verification = (await verifyResponse.json().catch(() => ({}))) as {
+              verified?: boolean;
+              paymentId?: string;
+              error?: string;
+            };
+            if (!verifyResponse.ok || verification.verified !== true) {
+              throw new Error(verification.error || "Unable to verify subscription payment.");
+            }
+
+            checkoutAttemptKeysRef.current.delete(product.code);
+            setStatus("Subscription payment verified. Waiting for entitlement sync...");
             let settled = false;
 
             for (let index = 0; index < 6; index += 1) {
@@ -452,7 +507,7 @@ export default function BillingClient({
             setStatus(
               settled
                 ? "Subscription confirmed. Entitlements updated."
-                : "Subscription submitted. Final entitlement remains webhook-driven.",
+                : `Payment received (ref: ${verification.paymentId || checkoutResponse.razorpay_payment_id}). Entitlement sync is pending; keep this reference for support.`,
             );
           } catch (error) {
             setStatus(error instanceof Error ? error.message : "Unable to refresh subscription.");
@@ -462,12 +517,20 @@ export default function BillingClient({
         },
       });
 
+      checkout.on("payment.failed", (failure) => {
+        const description = failure.error?.description || "The payment was declined.";
+        const code = failure.error?.code ? ` (${failure.error.code})` : "";
+        setStatus(`Subscription payment failed: ${description}${code} You can retry this checkout.`);
+        setBusyCode(null);
+      });
+
       checkout.open();
     } catch (error) {
+      checkoutAttemptKeysRef.current.delete(product.code);
       setStatus(error instanceof Error ? error.message : "Subscription checkout failed.");
       setBusyCode(null);
     }
-  }, [bridgeToken, refreshCurrentSubscription, refreshSnapshot, snapshot?.email, snapshot?.name]);
+  }, [refreshCurrentSubscription, refreshSnapshot, snapshot?.billing.pricingVersion, snapshot?.email, snapshot?.name]);
 
   useEffect(() => {
     if (!autostart || autostartedRef.current || !scriptReady || !selectedProduct || busyCode) return;
@@ -501,7 +564,7 @@ export default function BillingClient({
       const response = await fetch("/api/billing/subscriptions/cancel", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bridgeToken }),
+        body: JSON.stringify({}),
       });
       const payload = (await response.json()) as { error?: string; willCancelAt?: string };
       if (!response.ok) {
@@ -559,7 +622,7 @@ export default function BillingClient({
                     ? handleSubscriptionCheckout(selectedProduct)
                     : handleOrderCheckout(selectedProduct)
                 }
-                disabled={busyCode === selectedProduct.code}
+                disabled={busyCode === selectedProduct.code || paidOrderId !== null}
                 className="rounded-2xl bg-[#356DFF] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_20px_rgba(53,109,255,0.22)] transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
               >
                 {busyCode === selectedProduct.code

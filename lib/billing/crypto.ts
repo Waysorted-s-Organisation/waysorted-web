@@ -57,3 +57,21 @@ export function verifyRazorpaySignature({
   const expected = crypto.createHmac("sha256", secret).update(`${orderId}|${paymentId}`).digest("hex");
   return safeEqual(expected, signature);
 }
+
+export function verifyRazorpaySubscriptionSignature({
+  subscriptionId,
+  paymentId,
+  signature,
+  secret,
+}: {
+  subscriptionId: string;
+  paymentId: string;
+  signature: string;
+  secret: string;
+}) {
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(`${subscriptionId}|${paymentId}`)
+    .digest("hex");
+  return safeEqual(expected, signature);
+}

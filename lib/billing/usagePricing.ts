@@ -1,5 +1,6 @@
 import {
   getFeaturePricingRule,
+  resolveMaximumImportPricing,
   resolveImportPricing,
   type FileImportPricingOptions,
 } from "@/lib/billing/catalog";
@@ -38,25 +39,34 @@ export function resolveUsageCredits(body: UsagePricingRequest): ResolvedUsagePri
   const selectedOptions = body.selectedOptions || {};
 
   if (body.featureCode === "import_file") {
-    if (!body.toolCode?.trim() || typeof body.sizeBytes !== "number") {
+    const sizeBytes = body.sizeBytes;
+    if (
+      !body.toolCode?.trim() ||
+      typeof sizeBytes !== "number" ||
+      !Number.isSafeInteger(sizeBytes) ||
+      sizeBytes <= 0
+    ) {
       throw new Error("Import pricing requires toolCode and sizeBytes.");
     }
 
-    const importRule = resolveImportPricing(
-      body.toolCode,
-      body.sizeBytes,
-      selectedOptions as FileImportPricingOptions,
-    );
-    if (!importRule) {
+    const declaredRule = resolveImportPricing(body.toolCode, sizeBytes, selectedOptions as FileImportPricingOptions);
+    const maximumRule = resolveMaximumImportPricing(body.toolCode, selectedOptions as FileImportPricingOptions);
+    if (!declaredRule || !maximumRule) {
       throw new Error("Unsupported import size or tool.");
     }
 
     return {
-      creditsRequired: applyUsageCreditMultiplier(importRule.credits),
-      featureCode: importRule.featureCode,
-      sizeBucket: importRule.sizeLabel,
+      // The client cannot choose the price. Hold the maximum permitted amount;
+      // the authenticated processor callback settles down to the measured size.
+      creditsRequired: applyUsageCreditMultiplier(maximumRule.credits),
+      featureCode: maximumRule.featureCode,
+      sizeBucket: maximumRule.sizeLabel,
       requiresSubscription: false,
-      selectedOptions,
+      selectedOptions: {
+        ...selectedOptions,
+        clientDeclaredSizeBytes: sizeBytes,
+        provisionalMaximumHold: true,
+      },
     };
   }
 

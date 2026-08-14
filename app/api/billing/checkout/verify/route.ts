@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/auth";
 import { getRazorpayConfig } from "@/lib/billing/env";
-import { findPurchaseByUserAndReference } from "@/lib/billing/db";
+import { applyPurchaseCredits, findPurchaseByUserAndReference } from "@/lib/billing/db";
 import { fetchRazorpayPayment } from "@/lib/billing/razorpay";
 import { verifyRazorpaySignature } from "@/lib/billing/crypto";
+import { validateCapturedRazorpayPayment } from "@/lib/billing/payment-verification";
+import { billingErrorResponse } from "@/lib/billing/http-errors";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,7 +17,6 @@ type VerifyBody = {
   razorpay_order_id?: string;
   razorpay_payment_id?: string;
   razorpay_signature?: string;
-  bridgeToken?: string;
 };
 
 export async function POST(request: NextRequest) {
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as VerifyBody;
     const auth =
       (await getAuthenticatedUser(request)) ||
-      (await getBridgeAuthenticatedUser(body.bridgeToken || request.nextUrl.searchParams.get("bridge")));
+      (await getBridgeAuthenticatedUser("billing:checkout"));
 
     if (!auth?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -54,28 +55,36 @@ export async function POST(request: NextRequest) {
       razorpayOrderId: orderId,
     });
 
-    if (purchase) {
-      purchase.razorpayOrderId ||= orderId;
-      purchase.razorpayPaymentId ||= paymentId;
-      if (purchase.status === "created") {
-        purchase.status = "pending";
-      }
-      await purchase.save();
+    if (!purchase) {
+      return NextResponse.json({ error: "Purchase not found." }, { status: 404 });
     }
 
     const payment = await fetchRazorpayPayment(paymentId);
+    const verifiedPayment = validateCapturedRazorpayPayment({
+      payment,
+      purchase,
+      expectedOrderId: orderId,
+      expectedPaymentId: paymentId,
+    });
+
+    purchase.razorpayPaymentId ||= verifiedPayment.paymentId;
+    if (purchase.status !== "refunded" && purchase.status !== "partially_refunded") {
+      purchase.status = "captured";
+      purchase.capturedAt ||= new Date();
+    }
+    await purchase.save();
+
+    const reconciledPurchase = await applyPurchaseCredits(purchase);
 
     return NextResponse.json({
       verified: true,
-      payment,
-      authoritativeSource: "webhook",
+      purchaseId: String(reconciledPurchase._id),
+      status: reconciledPurchase.status,
+      creditsApplied: reconciledPurchase.grantApplied,
+      authoritativeSource: "server_verified_payment",
     });
   } catch (error) {
     console.error("POST /api/billing/checkout/verify error:", error);
-    const status = (error as Error & { status?: number }).status || 500;
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to verify payment." },
-      { status },
-    );
+    return billingErrorResponse(error, "Unable to verify payment.", "payment_verification_failed");
   }
 }

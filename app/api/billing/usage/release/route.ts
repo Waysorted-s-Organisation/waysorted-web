@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/auth";
+import { getAuthenticatedUser } from "@/lib/billing/auth";
 import { releaseReservation } from "@/lib/billing/db";
+import { billingErrorResponse } from "@/lib/billing/http-errors";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -10,15 +11,12 @@ type ReleaseBody = {
   reservationId?: string;
   idempotencyKey?: string;
   reason?: string;
-  bridgeToken?: string;
 };
 
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json().catch(() => ({}))) as ReleaseBody;
-    const auth =
-      (await getAuthenticatedUser(request)) ||
-      (await getBridgeAuthenticatedUser(body.bridgeToken || request.nextUrl.searchParams.get("bridge")));
+    const auth = await getAuthenticatedUser(request);
 
     if (!auth?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -38,10 +36,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("POST /api/billing/usage/release error:", error);
-    const status = (error as Error & { status?: number }).status || 500;
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to release reservation." },
-      { status },
-    );
+    return billingErrorResponse(error, "Unable to release reservation.", "reservation_release_failed");
   }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveUsageCredits, type UsagePricingRequest } from "@/lib/billing/usagePricing";
+import { billingErrorResponse } from "@/lib/billing/http-errors";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -20,10 +21,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("POST /api/billing/usage/quote error:", error);
-    const status = (error as Error & { status?: number }).status || 400;
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to quote usage." },
-      { status },
-    );
+    return billingErrorResponse(error, "Unable to quote usage.", "usage_quote_failed");
   }
 }

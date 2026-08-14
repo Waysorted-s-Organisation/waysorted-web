@@ -850,10 +850,10 @@ const htmlToDesignSlides = [
 // MAIN SEED FUNCTION
 // ============================================================================
 async function seedDatabase() {
-    const mongoUri = process.env.NEXT_PUBLIC_MONGODB_URI_TOOLS;
+    const mongoUri = process.env.MONGODB_URI_TOOLS;
 
     if (!mongoUri) {
-        console.error('Error: No MongoDB URI found. Set NEXT_PUBLIC_MONGODB_URI_TOOLS in .env');
+        console.error('Error: No MongoDB URI found. Set MONGODB_URI_TOOLS in .env');
         process.exit(1);
     }
 

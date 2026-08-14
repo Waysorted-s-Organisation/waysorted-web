@@ -11,10 +11,10 @@ interface PricingCardProps {
   cycleLabel: string;
   creditsLabel: string;
   ctaLabel: string;
-  discountTag: string;
+  discountTag?: string;
   iconSrc: string;
   featured?: boolean;
-  features: string[];
+  features: readonly string[];
   onSelect: () => void;
   bonusCreditsLabel?: string;
 }
@@ -57,9 +57,11 @@ export default function PricingCard({
           </p>
         </div>
 
-        <span className="rounded-[6px] bg-[#10B058] px-2.5 py-1 text-[10px] font-bold leading-none text-white whitespace-nowrap shrink-0 uppercase tracking-wider">
-          {discountTag}
-        </span>
+        {discountTag ? (
+          <span className="rounded-[6px] bg-[#10B058] px-2.5 py-1 text-[10px] font-bold leading-none text-white whitespace-nowrap shrink-0 uppercase tracking-wider">
+            {discountTag}
+          </span>
+        ) : null}
       </div>
 
       <div className="mt-[5px] md:mt-4">

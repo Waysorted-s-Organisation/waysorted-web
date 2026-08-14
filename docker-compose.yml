@@ -1,6 +1,7 @@
 services:
   mongo:
     image: mongo:7.0
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
     ports:
       - "127.0.0.1:27018:27017"
     volumes:
@@ -13,6 +14,20 @@ services:
       start_period: 20s
     restart: unless-stopped
 
+  mongo-init:
+    image: mongo:7.0
+    depends_on:
+      mongo:
+        condition: service_healthy
+    restart: "no"
+    command:
+      - mongosh
+      - --host
+      - mongo:27017
+      - --quiet
+      - --eval
+      - 'try { rs.status().ok } catch (error) { rs.initiate({_id:"rs0",members:[{_id:0,host:"mongo:27017"}]}) }'
+
   web:
     build:
       context: .
@@ -23,10 +38,8 @@ services:
       - path: ./.env.docker.local
         required: true
     environment:
-      MONGODB_URI: mongodb://mongo:27017/waysorted_local
-      MONGODB_URI_TOOLS: mongodb://mongo:27017/waysorted_local
-      NEXT_PUBLIC_MONGODB_URI: ""
-      NEXT_PUBLIC_MONGODB_URI_TOOLS: ""
+      MONGODB_URI: mongodb://mongo:27017/waysorted_local?replicaSet=rs0
+      MONGODB_URI_TOOLS: mongodb://mongo:27017/waysorted_local?replicaSet=rs0
       NOTIFICATION_PRODUCER_ENABLED: "false"
       NOTIFICATION_N4_PRODUCER_ENABLED: "false"
       NOTIFICATION_N4_CANARY_TEST_ENABLED: "false"
@@ -39,6 +52,8 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+      mongo-init:
+        condition: service_completed_successfully
     restart: unless-stopped
 
   figma-mcp:

@@ -17,6 +17,8 @@ import {
   buildSubscriptionCheckoutStartedEvent,
   emitNotificationEvent,
 } from "@/lib/notifications";
+import { randomUUID } from "crypto";
+import { billingErrorResponse } from "@/lib/billing/http-errors";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -27,7 +29,9 @@ type SubscriptionBody = {
   productCode?: string;
   idempotencyKey?: string;
   source?: string;
-  bridgeToken?: string;
+  quotedAmountSubunits?: number;
+  quotedCurrency?: string;
+  pricingVersion?: string;
 };
 
 export async function POST(request: NextRequest) {
@@ -35,14 +39,15 @@ export async function POST(request: NextRequest) {
     const body = (await request.json().catch(() => ({}))) as SubscriptionBody;
     const auth =
       (await getAuthenticatedUser(request)) ||
-      (await getBridgeAuthenticatedUser(body.bridgeToken || request.nextUrl.searchParams.get("bridge")));
+      (await getBridgeAuthenticatedUser("billing:checkout"));
 
     if (!auth?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const productCode = body.productCode?.trim() || "";
-    const idempotencyKey = body.idempotencyKey?.trim() || `subscription:${auth.user._id}:${productCode}`;
+    const clientAttemptKey = body.idempotencyKey?.trim() || randomUUID();
+    const idempotencyKey = `subscription:${auth.user._id}:${clientAttemptKey}`;
     const product = getCatalogProduct(productCode);
 
     if (!product || product.kind !== "subscription") {
@@ -53,6 +58,17 @@ export async function POST(request: NextRequest) {
     const pricedProduct = snapshot.catalog.find((item) => item.code === product.code);
     if (!pricedProduct) {
       return NextResponse.json({ error: "Product is not currently eligible for this user." }, { status: 403 });
+    }
+    if (
+      body.quotedAmountSubunits !== undefined &&
+      (body.quotedAmountSubunits !== pricedProduct.amountPaise ||
+        body.quotedCurrency?.toUpperCase() !== pricedProduct.currency.toUpperCase() ||
+        body.pricingVersion !== snapshot.pricingVersion)
+    ) {
+      return NextResponse.json(
+        { error: "Pricing changed before checkout. Review the updated amount.", code: "pricing_quote_changed" },
+        { status: 409 },
+      );
     }
     const existingSubscription = await findCurrentSubscription(String(auth.user._id));
     const isFreshPendingSubscription =
@@ -68,6 +84,16 @@ export async function POST(request: NextRequest) {
       existingSubscription &&
       (["active", "cancel_scheduled"].includes(existingSubscription.status) || isFreshPendingSubscription)
     ) {
+      if (existingSubscription.planCode !== product.code) {
+        return NextResponse.json(
+          {
+            error:
+              "A different subscription is already active or awaiting payment. Cancel it before choosing another plan.",
+            code: "subscription_plan_change_required",
+          },
+          { status: 409 },
+        );
+      }
       return NextResponse.json({
         subscriptionId: existingSubscription.providerSubscriptionId,
         key: getRazorpayConfig().publicKeyId,
@@ -182,10 +208,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("POST /api/billing/subscriptions/create error:", error);
-    const status = (error as Error & { status?: number }).status || 500;
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to create subscription." },
-      { status },
-    );
+    return billingErrorResponse(error, "Unable to create subscription.", "subscription_create_failed");
   }
 }

@@ -5,6 +5,11 @@ import {
   produceN4InactivityEvents,
 } from "@/lib/n4-product-recall";
 import { validateN4CanaryTestTarget } from "@/lib/n4-canary-test";
+import { reconcilePendingOneTimePurchases } from "@/lib/billing/purchase-reconciliation";
+import { recoverStaleRazorpayWebhooks } from "@/lib/billing/webhook-recovery";
+import { expireStaleReservations } from "@/lib/billing/db";
+import { reconcileStalePendingSubscriptions } from "@/lib/billing/subscription-reconciliation";
+import { inspectCreditLedgerConsistency } from "@/lib/billing/ledger-reconciliation";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -23,7 +28,53 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    return NextResponse.json(await produceN4InactivityEvents());
+    const [n4, billing, webhookRecovery, reservationRecovery, subscriptionRecovery, ledgerAudit] = await Promise.allSettled([
+      produceN4InactivityEvents(),
+      reconcilePendingOneTimePurchases(),
+      recoverStaleRazorpayWebhooks(),
+      expireStaleReservations({ limit: 100 }),
+      reconcileStalePendingSubscriptions(),
+      inspectCreditLedgerConsistency(),
+    ]);
+    if (n4.status === "rejected") throw n4.reason;
+    if (billing.status === "rejected") {
+      console.error("Pending purchase reconciliation failed", {
+        error: billing.reason instanceof Error
+          ? billing.reason.message
+          : String(billing.reason),
+      });
+    }
+    if (webhookRecovery.status === "rejected") {
+      console.error("Stale Razorpay webhook recovery failed", {
+        error: webhookRecovery.reason instanceof Error
+          ? webhookRecovery.reason.message
+          : String(webhookRecovery.reason),
+      });
+    }
+
+    return NextResponse.json({
+      ...n4.value,
+      billingReconciliation:
+        billing.status === "fulfilled"
+          ? billing.value
+          : { unavailable: true },
+      webhookRecovery:
+        webhookRecovery.status === "fulfilled"
+          ? webhookRecovery.value
+          : { unavailable: true },
+      reservationRecovery:
+        reservationRecovery.status === "fulfilled"
+          ? { completed: true }
+          : { unavailable: true },
+      subscriptionRecovery:
+        subscriptionRecovery.status === "fulfilled"
+          ? subscriptionRecovery.value
+          : { unavailable: true },
+      ledgerAudit:
+        ledgerAudit.status === "fulfilled"
+          ? ledgerAudit.value
+          : { unavailable: true },
+    });
   } catch (error) {
     console.error("N4 inactivity scan failed", {
       error: error instanceof Error ? error.message : String(error),

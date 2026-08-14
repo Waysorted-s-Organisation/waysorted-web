@@ -5,6 +5,9 @@ node_modules
 .env
 .env.*
 !.env.example
+.vercel
+backups
+*.pem
 npm-debug.log
 Dockerfile
 docker-compose.override.yml

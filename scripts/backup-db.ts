@@ -3,10 +3,10 @@ import fs from 'fs';
 import path from 'path';
 import 'dotenv/config';
 
-const MONGO_URI = process.env.NEXT_PUBLIC_MONGODB_URI_TOOLS || process.env.MONGODB_URI_TOOLS;
+const MONGO_URI = process.env.MONGODB_URI_TOOLS;
 
 if (!MONGO_URI) {
-    console.error('Error: No MongoDB URI found. Set NEXT_PUBLIC_MONGODB_URI_TOOLS in .env');
+    console.error('Error: No MongoDB URI found. Set MONGODB_URI_TOOLS in .env');
     process.exit(1);
 }
 

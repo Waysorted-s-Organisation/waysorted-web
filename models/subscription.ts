@@ -70,6 +70,16 @@ const SubscriptionSchema = new Schema<ISubscription, SubscriptionModel>(
 );
 
 SubscriptionSchema.index({ user: 1, status: 1 });
+SubscriptionSchema.index(
+  { user: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      status: { $in: ["payment_pending", "active", "cancel_scheduled", "halted"] },
+    },
+    name: "one_live_subscription_per_user",
+  },
+);
 
 const Subscription =
   (models.Subscription as SubscriptionModel) ||

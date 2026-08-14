@@ -3,23 +3,26 @@ import { NextRequest, NextResponse } from "next/server";
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://www.waysorted.com",
   "https://waysorted.com",
-  "https://www.figma.com",
-  "https://figma.com",
-  "https://d94k870h57ivk.cloudfront.net",
   "https://swipefolio.waysorted.com",
+];
+
+const DEVELOPMENT_ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://127.0.0.1:3000",
   "http://127.0.0.1:5173",
-  "null",
 ];
 
 function getAllowedOrigins() {
   const configured = process.env.ALLOWED_API_ORIGINS?.split(",")
     .map((value) => value.trim())
-    .filter(Boolean);
+    .filter((value) => Boolean(value) && value !== "null");
 
-  return new Set([...(configured || []), ...DEFAULT_ALLOWED_ORIGINS]);
+  return new Set([
+    ...(configured || []),
+    ...DEFAULT_ALLOWED_ORIGINS,
+    ...(process.env.NODE_ENV === "production" ? [] : DEVELOPMENT_ALLOWED_ORIGINS),
+  ]);
 }
 
 export function resolveCorsOrigin(req: NextRequest) {

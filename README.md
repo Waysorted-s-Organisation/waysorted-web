@@ -115,6 +115,30 @@ server-side environment variables are configured:
   threshold for proactive `credits_low` events. Defaults to `20`.
 - `NOTIFICATION_PRODUCER_ENABLED=false`: Optional local kill switch.
 
+Purchase-completion delivery is retried through Razorpay when a configured
+Newsletter service is temporarily unreachable or rejects the event. If the
+producer is explicitly disabled or has no configuration, payment processing
+finishes and records a warning because webhook retries cannot repair missing
+deployment configuration.
+
+Razorpay webhook processing uses a two-minute ownership lease. A concurrent
+delivery receives a retryable response instead of being acknowledged as a
+duplicate, and an expired lease can be claimed safely by a later retry. The
+daily maintenance run marks abandoned leases as failed and reconciles captured
+one-time purchases whose original webhook or browser callback did not finish.
+
+After deploying the billing schema hardening, run these one-time migrations
+against the target database before enabling payment traffic:
+
+```bash
+npm run migrate:billing-idempotency-indexes
+npm run migrate:redact-razorpay-event-logs
+```
+
+The first aligns purchase/refund uniqueness with application idempotency. The
+second removes signatures and payer details from historical webhook logs; new
+logs are already stored in redacted form and expire after 180 days.
+
 The billing notification producer emits `subscription_checkout_started` when a
 subscription checkout is created and the deterministic
 `subscription_purchase_completed` event when Razorpay confirms the matching

@@ -297,7 +297,7 @@ export function isSubscriptionActive(
   renewsAt?: Date | null,
 ) {
   if (status === "active" || status === "cancel_scheduled") {
-    return !renewsAt || renewsAt.getTime() >= Date.now();
+    return Boolean(renewsAt) && renewsAt!.getTime() >= Date.now();
   }
   return false;
 }
@@ -351,6 +351,31 @@ export function resolveImportPricing(
   if (!table) return null;
 
   return table.find((rule) => sizeBytes <= rule.maxBytes) || null;
+}
+
+export function resolveMaximumImportPricing(
+  toolCode: string,
+  selectedOptions: FileImportPricingOptions = {},
+) {
+  const normalizedTool = toolCode.trim().toLowerCase();
+  const normalizedPdfImportMode =
+    normalizedTool === "pdf" &&
+    typeof selectedOptions.importMode === "string" &&
+    selectedOptions.importMode.trim().toLowerCase() === "image"
+      ? "image"
+      : "editable";
+  const table = normalizedTool === "ai"
+    ? AI_IMPORT_PRICING
+    : normalizedTool === "eps"
+      ? EPS_IMPORT_PRICING
+      : normalizedTool === "psd"
+        ? PSD_IMPORT_PRICING
+        : normalizedTool === "pdf"
+          ? normalizedPdfImportMode === "image"
+            ? PDF_IMAGE_IMPORT_PRICING
+            : PDF_EDITABLE_IMPORT_PRICING
+          : null;
+  return table?.[table.length - 1] || null;
 }
 
 export function getProductEligibilityLabel(eligibility: BillingEligibility) {

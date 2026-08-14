@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
-import type { CatalogProduct } from "@/lib/billing/catalog";
+import { CATALOG_PRODUCTS, type CatalogProduct } from "@/lib/billing/catalog";
+import { minimumChargeSubunits, minorUnitMultiplier } from "@/lib/billing/money";
 
 export type PricingTier = "tier_1" | "tier_2" | "tier_3";
 export const LEGACY_PRICING_COUNTRY_COOKIE = "ws_pricing_country";
@@ -260,23 +261,38 @@ const CURRENCY_PER_INR: Record<string, number> = {
   UAH: 0.5,
 };
 
+function catalogBasePrice(code: string) {
+  const product = CATALOG_PRODUCTS.find((item) => item.code === code);
+  if (!product) throw new Error(`Missing billing catalog product ${code}.`);
+  return product.priceInr;
+}
+
 const PRICE_MATRIX_INR: Record<string, Record<PricingTier, number>> = {
-  starter_149: { tier_1: 499, tier_2: 249, tier_3: 149 },
-  starter_349: { tier_1: 999, tier_2: 549, tier_3: 349 },
-  starter_749: { tier_1: 1999, tier_2: 1099, tier_3: 749 },
-  sub_month_1: { tier_1: 499, tier_2: 249, tier_3: 149 },
-  sub_month_2: { tier_1: 999, tier_2: 549, tier_3: 349 },
-  sub_month_3: { tier_1: 1999, tier_2: 1099, tier_3: 749 },
-  sub_year_1599: { tier_1: 4999, tier_2: 2499, tier_3: 1499 },
-  sub_year_3499: { tier_1: 9999, tier_2: 5499, tier_3: 3499 },
-  sub_year_7499: { tier_1: 19999, tier_2: 10999, tier_3: 7499 },
-  topup_sub_50: { tier_1: 199, tier_2: 99, tier_3: 50 },
-  topup_std_50: { tier_1: 199, tier_2: 99, tier_3: 50 },
-  topup_sub_100: { tier_1: 399, tier_2: 199, tier_3: 100 },
-  topup_std_100: { tier_1: 399, tier_2: 199, tier_3: 100 },
-  topup_sub_120: { tier_1: 499, tier_2: 249, tier_3: 120 },
-  topup_std_120: { tier_1: 499, tier_2: 249, tier_3: 120 },
+  starter_149: { tier_1: 499, tier_2: 249, tier_3: catalogBasePrice("starter_149") },
+  starter_349: { tier_1: 999, tier_2: 549, tier_3: catalogBasePrice("starter_349") },
+  starter_749: { tier_1: 1999, tier_2: 1099, tier_3: catalogBasePrice("starter_749") },
+  sub_month_1: { tier_1: 499, tier_2: 249, tier_3: catalogBasePrice("sub_month_1") },
+  sub_month_2: { tier_1: 999, tier_2: 549, tier_3: catalogBasePrice("sub_month_2") },
+  sub_month_3: { tier_1: 1999, tier_2: 1099, tier_3: catalogBasePrice("sub_month_3") },
+  sub_year_1599: { tier_1: 4999, tier_2: 2499, tier_3: catalogBasePrice("sub_year_1599") },
+  sub_year_3499: { tier_1: 9999, tier_2: 5499, tier_3: catalogBasePrice("sub_year_3499") },
+  sub_year_7499: { tier_1: 19999, tier_2: 10999, tier_3: catalogBasePrice("sub_year_7499") },
+  topup_sub_50: { tier_1: 199, tier_2: 99, tier_3: catalogBasePrice("topup_sub_50") },
+  topup_std_50: { tier_1: 199, tier_2: 99, tier_3: catalogBasePrice("topup_std_50") },
+  topup_sub_100: { tier_1: 399, tier_2: 199, tier_3: catalogBasePrice("topup_sub_100") },
+  topup_std_100: { tier_1: 399, tier_2: 199, tier_3: catalogBasePrice("topup_std_100") },
+  topup_sub_120: { tier_1: 499, tier_2: 249, tier_3: catalogBasePrice("topup_sub_120") },
+  topup_std_120: { tier_1: 499, tier_2: 249, tier_3: catalogBasePrice("topup_std_120") },
 };
+
+for (const product of CATALOG_PRODUCTS.filter((item) => item.active)) {
+  const matrixPrice = PRICE_MATRIX_INR[product.code]?.tier_3;
+  if (matrixPrice === undefined || matrixPrice !== product.priceInr) {
+    throw new Error(
+      `Billing price configuration mismatch for ${product.code}: catalog=${product.priceInr}, tier_3=${matrixPrice ?? "missing"}.`,
+    );
+  }
+}
 
 export function getCountryTier(country: string): PricingTier {
   const code = normalizeCountry(country);
@@ -437,14 +453,6 @@ export function createPricingContext(input: {
   };
 }
 
-export function minorUnitMultiplier(currency: string) {
-  const digits = new Intl.NumberFormat("en", {
-    style: "currency",
-    currency,
-  }).resolvedOptions().maximumFractionDigits ?? 2;
-  return 10 ** digits;
-}
-
 function roundDisplayAmount(value: number, currency: string) {
   if (currency === "INR") return Math.round(value);
   if (value >= 100) return Math.round(value);
@@ -458,7 +466,7 @@ export function convertInrToCurrencyAmount(inrAmount: number, currency: string) 
 }
 
 export function toSubunits(amount: number, currency: string) {
-  return Math.max(100, Math.round(amount * minorUnitMultiplier(currency)));
+  return Math.max(minimumChargeSubunits(currency), Math.round(amount * minorUnitMultiplier(currency)));
 }
 
 export function getTierPriceInr(productCode: string, tier: PricingTier, fallbackInr: number) {

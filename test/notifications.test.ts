@@ -140,6 +140,17 @@ test("accepted completion notification lets the webhook finish", () => {
   );
 });
 
+test("disabled or unconfigured notifications do not fail a payment webhook", () => {
+  assert.deepEqual(
+    requirePurchaseCompletionNotification({ sent: false, reason: "disabled" }),
+    { sent: false, reason: "disabled" },
+  );
+  assert.deepEqual(
+    requirePurchaseCompletionNotification({ sent: false, reason: "not_configured" }),
+    { sent: false, reason: "not_configured" },
+  );
+});
+
 test("failed completion notification remains retryable", () => {
   assert.throws(
     () => requirePurchaseCompletionNotification({

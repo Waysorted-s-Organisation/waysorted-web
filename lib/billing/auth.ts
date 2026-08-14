@@ -3,7 +3,6 @@ import { NextRequest } from "next/server";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import type { IUser } from "@/types/user";
-import { refreshGoogleToken } from "@/lib/token";
 import User from "@/models/user";
 import { getBridgeSecret } from "@/lib/billing/env";
 import { verifySignedToken } from "@/lib/billing/crypto";
@@ -75,17 +74,23 @@ export async function requireAdminUser(request?: NextRequest) {
   return auth;
 }
 
-export async function getBridgeAuthenticatedUser(bridgeToken?: string | null) {
+export async function getBridgeAuthenticatedUser(requiredScope: "billing:read" | "billing:checkout") {
+  const cookieStore = await cookies();
+  const bridgeToken = cookieStore.get("waysortedBillingBridge")?.value;
   if (!bridgeToken) return null;
 
   const verified = verifySignedToken<{
     userId: string;
-    email?: string;
+    aud: string;
+    scopes: string[];
+    jti: string;
     expiresAt: string;
   }>(bridgeToken, getBridgeSecret());
 
   if (!verified) return null;
   if (Date.parse(verified.payload.expiresAt) <= Date.now()) return null;
+  if (verified.payload.aud !== "billing_checkout") return null;
+  if (!verified.payload.jti || !verified.payload.scopes?.includes(requiredScope)) return null;
 
   await dbConnect();
   const user = await User.findById(verified.payload.userId).lean<IUser | null>();

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { User } from "@/hooks/useUser";
 import BillingHistoryModal from "@/components/BillingHistoryModal";
+import { formatMoney } from "@/lib/billing/money";
 
 type Props = {
   user: User;
@@ -151,7 +152,7 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
                 className="object-contain mt-0.5"
               />
               <p className="text-sm text-primary-way-100 leading-relaxed">
-                Welcome to Waysorted! Your free account starts with 300 credits after the billing checks complete. Upgrade anytime if you need more.
+                Starter credits are granted after your first eligible plugin sign-in. Your current balance is shown above.
               </p>
             </div>
             <Link
@@ -230,9 +231,9 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
               <span className="text-sm font-medium text-secondary-db-80">
                 {getPlanDisplayName()} 
                 {activePlan && (activePlanCode?.startsWith("sub_month_") || activePlanCode?.startsWith("sub_year_")) 
-                  ? ` - ${activePlan.currency} ${activePlan.amountPaise / 100}` 
+                  ? ` - ${formatMoney(activePlan.amountPaise, activePlan.currency)}`
                   : !hasSubscriptionAccess && !hasTopUpHistory
-                    ? ` - 300 starter credits`
+                    ? bonusCredits > 0 ? ` - ${bonusCredits} starter credits` : ""
                   : ""}
               </span>
             </div>
@@ -248,18 +249,18 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
             </div>
           </div>
 
-          {!isFreePlan && billingDetails && (
+          {!isFreePlan && (
             <div className="rounded-lg bg-primary-way-5 p-4 flex items-center justify-between">
               {/* LHS: Info */}
               <div className="flex flex-col gap-4">
                 <span className="text-sm font-semibold text-secondary-db-100">Billing Information</span>
                 <div className="flex flex-col  gap-1">
                   <p className="text-xs font-medium text-secondary-db-100">
-                  {billingDetails.firstName} {billingDetails.lastName}
+                  {billingDetails ? `${billingDetails.firstName} ${billingDetails.lastName}` : "Billing details not added"}
                 </p>
                 
                 <p className="text-xs font-medium text-secondary-db-80">
-                    {billingDetails.email}
+                    {billingDetails?.email || "Add details for future invoices"}
                 </p>
                 </div>
                 
@@ -271,7 +272,7 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
                   onClick={onEditBilling}
                   className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-xs font-medium text-primary-way-100 bg-primary-way-10 cursor-pointer"
                 >
-                  Change Information
+                  {billingDetails ? "Change Information" : "Add Information"}
                 </button>
                 <button 
                   onClick={() => setIsHistoryOpen(true)}

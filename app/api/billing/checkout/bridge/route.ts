@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/billing/auth";
-import { createSignedToken } from "@/lib/billing/crypto";
-import { getBridgeSecret } from "@/lib/billing/env";
+import BillingBridgeGrant from "@/models/billingBridgeGrant";
+import { createHash, randomBytes } from "crypto";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -21,29 +21,23 @@ export async function POST(request: NextRequest) {
     }
 
     const body = (await request.json().catch(() => ({}))) as BridgeRequestBody;
-    const expiresAt = new Date(Date.now() + 10 * 60_000).toISOString();
-    const bridgeToken = createSignedToken(
-      {
-        userId: String(auth.user._id),
-        email: auth.user.email,
-        productCode: body.productCode?.trim() || null,
-        returnPath: body.returnPath?.trim() || "/billing",
-        source: body.source?.trim() || auth.authType,
-        issuedAt: new Date().toISOString(),
-        expiresAt,
-      },
-      getBridgeSecret(),
-    );
+    const expiresAt = new Date(Date.now() + 90_000);
+    const code = randomBytes(32).toString("base64url");
+    const codeHash = createHash("sha256").update(code).digest("hex");
+    await BillingBridgeGrant.create({
+      user: auth.user._id,
+      codeHash,
+      productCode: body.productCode?.trim() || null,
+      returnPath: body.returnPath?.trim() || "/billing",
+      source: body.source?.trim() || auth.authType,
+      expiresAt,
+    });
 
-    const url = new URL("/billing", request.nextUrl.origin);
-    url.searchParams.set("bridge", bridgeToken);
-    if (body.productCode?.trim()) {
-      url.searchParams.set("product", body.productCode.trim());
-    }
+    const url = new URL("/api/billing/checkout/bridge/exchange", request.nextUrl.origin);
+    url.searchParams.set("code", code);
 
     return NextResponse.json({
-      bridgeToken,
-      expiresAt,
+      expiresAt: expiresAt.toISOString(),
       url: url.toString(),
     });
   } catch (error) {

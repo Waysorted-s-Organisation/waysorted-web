@@ -8,6 +8,7 @@ type Transaction = {
   productCode: string;
   kind: string;
   amount: number;
+  formattedAmount?: string;
   currency: string;
   status: string;
   date: string;
@@ -22,17 +23,25 @@ type Props = {
 export default function BillingHistoryModal({ isOpen, onClose }: Props) {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
+      setIsLoading(true);
+      setError(null);
       fetch("/api/billing/history")
-        .then((res) => res.json())
+        .then(async (res) => {
+          const data = await res.json();
+          if (!res.ok || !data.success) throw new Error(data.error || "Could not load transactions.");
+          return data;
+        })
         .then((data) => {
-          if (data.success) setTransactions(data.history);
+          setTransactions(data.history);
           setIsLoading(false);
         })
         .catch((err) => {
           console.error(err);
+          setError(err instanceof Error ? err.message : "Could not load transactions.");
           setIsLoading(false);
         });
     }
@@ -74,6 +83,11 @@ export default function BillingHistoryModal({ isOpen, onClose }: Props) {
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-way-100 border-t-transparent"></div>
               <p className="text-sm text-secondary-db-60 font-medium">Loading transactions...</p>
             </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center gap-3 py-12 text-center">
+              <p role="alert" className="font-medium text-red-700">{error}</p>
+              <p className="text-sm text-secondary-db-60">Close and reopen this panel to retry.</p>
+            </div>
           ) : transactions.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="bg-primary-way-5 p-4 rounded-full mb-4">
@@ -106,7 +120,7 @@ export default function BillingHistoryModal({ isOpen, onClose }: Props) {
                         {new Date(t.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                       </td>
                       <td className="py-4 text-sm font-semibold text-secondary-db-100 text-right">
-                        {t.currency} {t.amount.toFixed(2)}
+                        {t.formattedAmount || `${t.currency} ${t.amount}`}
                       </td>
                       <td className="py-4 text-center">
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(t.status)}`}>
@@ -124,7 +138,7 @@ export default function BillingHistoryModal({ isOpen, onClose }: Props) {
         {/* Footer */}
         <div className="p-5 bg-primary-way-5 border-t border-secondary-db-5">
           <p className="text-[11px] text-secondary-db-60 leading-relaxed">
-            All prices are inclusive of taxes where applicable. For any billing issues, please contact our support team.
+            Tax treatment depends on the final invoice and billing location. Contact support with the receipt reference for billing issues.
           </p>
         </div>
       </div>

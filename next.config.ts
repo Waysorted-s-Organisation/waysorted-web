@@ -39,6 +39,10 @@ const nextConfig: NextConfig = {
         headers: billingApiHeaders,
       },
       {
+        source: "/api/admin/billing/:path*",
+        headers: billingApiHeaders,
+      },
+      {
         // Cache static assets for 1 year
         source: "/icons/:path*",
         headers: [
