@@ -2,6 +2,7 @@ import Purchase from "@/models/purchase";
 import { applyPurchaseCredits } from "@/lib/billing/db";
 import { fetchRazorpayOrderPayments } from "@/lib/billing/razorpay";
 import { validateCapturedRazorpayPayment } from "@/lib/billing/payment-verification";
+import dbConnect from "@/lib/db";
 
 const DEFAULT_MINIMUM_AGE_MS = 15 * 60_000;
 const DEFAULT_LIMIT = 25;
@@ -10,6 +11,9 @@ export async function reconcilePendingOneTimePurchases(input: {
   minimumAgeMs?: number;
   limit?: number;
 } = {}) {
+  // Callers are background jobs with no ambient connection; `bufferCommands: false` makes every
+  // model call throw immediately without this.
+  await dbConnect();
   const cutoff = new Date(Date.now() - (input.minimumAgeMs ?? DEFAULT_MINIMUM_AGE_MS));
   const limit = Math.max(1, Math.min(input.limit ?? DEFAULT_LIMIT, 100));
   const purchases = await Purchase.find({

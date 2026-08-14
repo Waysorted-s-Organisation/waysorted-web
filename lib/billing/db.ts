@@ -459,10 +459,16 @@ export async function resolveUserPricingContext(
     currentLockedTier &&
     getTierRank(safestObservedTier) > getTierRank(currentLockedTier);
 
+  // A lock may only be written from a real trusted observation. Without one, `lockedContext` falls
+  // back to the deployment default, and persisting that would freeze a guess permanently: the
+  // ratchet below only ever moves upward, so there is no downgrade path and no reset endpoint.
+  // Serve default pricing for this request instead and lock once a trusted signal actually arrives.
+  const hasTrustedObservation = Boolean(safestObservedCountry && safestObservedTier);
   const shouldLock =
-    !billing.pricingCountry ||
-    !billing.pricingTier ||
-    shouldUpgrade;
+    hasTrustedObservation &&
+    (!billing.pricingCountry ||
+      !billing.pricingTier ||
+      shouldUpgrade);
 
   if (shouldLock) {
     const countryToLock =
@@ -1341,25 +1347,59 @@ export async function releaseReservation(input: {
   });
 }
 
+/**
+ * Absolute age past which a credit hold is reclaimed even if a processor claimed it.
+ *
+ * `recordProcessorReservationStatus` extends `expiresAt` on every accept, so a processor that
+ * accepts a job and then crashes would otherwise strand the customer's credits permanently -
+ * previously guaranteed by excluding `processorStatus: "accepted"` from the sweep entirely.
+ */
+export const RESERVATION_HARD_RECLAIM_MS = 2 * 60 * 60_000;
+
 export async function expireStaleReservations(input: {
   userId?: string | null;
   limit?: number;
 } = {}) {
+  // Callers are background jobs with no ambient connection; `bufferCommands: false` makes every
+  // model call throw immediately without this.
+  await dbConnect();
   const limit = Math.max(1, Math.min(input.limit ?? 50, 200));
+  const now = new Date();
+  const hardReclaimCutoff = new Date(now.getTime() - RESERVATION_HARD_RECLAIM_MS);
   const staleReservations = await UsageReservation.find({
     status: "reserved",
-    expiresAt: { $lte: new Date() },
-    "metadata.processorStatus": { $ne: "accepted" },
     ...(input.userId ? { user: input.userId } : {}),
+    $or: [
+      // Lapsed hold that no processor ever claimed.
+      { expiresAt: { $lte: now }, "metadata.processorStatus": { $ne: "accepted" } },
+      // Claimed but abandoned well past any plausible job duration.
+      { createdAt: { $lte: hardReclaimCutoff } },
+    ],
   }).sort({ expiresAt: 1 }).limit(limit);
 
+  const summary = { scanned: staleReservations.length, released: 0, failed: 0 };
+
   for (const reservation of staleReservations) {
-    await releaseReservation({
-      userId: String(reservation.user),
-      reservationId: String(reservation._id),
-      reason: "expired",
-    });
+    // Isolate per reservation: without this, one bad document aborts the whole batch and every
+    // remaining customer's credits stay stranded until the next run - silently.
+    try {
+      await releaseReservation({
+        userId: String(reservation.user),
+        reservationId: String(reservation._id),
+        reason: "expired",
+      });
+      summary.released += 1;
+    } catch (error) {
+      summary.failed += 1;
+      console.error("Failed to expire stale reservation", {
+        reservationId: String(reservation._id),
+        user: String(reservation.user),
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
+
+  return summary;
 }
 
 export async function recordProcessorReservationStatus(input: {

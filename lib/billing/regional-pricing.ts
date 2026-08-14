@@ -5,6 +5,36 @@ import { minimumChargeSubunits, minorUnitMultiplier } from "@/lib/billing/money"
 export type PricingTier = "tier_1" | "tier_2" | "tier_3";
 export const LEGACY_PRICING_COUNTRY_COOKIE = "ws_pricing_country";
 
+/**
+ * Country used when no trusted geo signal is available.
+ *
+ * This MUST stay conservative for the business, not for the wallet: Waysorted bills through an
+ * INR-first Razorpay account, so falling back to a foreign currency both overcharges the majority
+ * of real visitors and can hand Razorpay a currency the account cannot settle. Deployments that
+ * genuinely serve a non-Indian majority can override it.
+ */
+export const DEFAULT_PRICING_COUNTRY_FALLBACK = "IN";
+
+export function getDefaultPricingCountry(override?: string | null) {
+  const configured = (override ?? process.env.BILLING_DEFAULT_PRICING_COUNTRY)?.trim().toUpperCase();
+  return configured && /^[A-Z]{2}$/.test(configured) ? configured : DEFAULT_PRICING_COUNTRY_FALLBACK;
+}
+
+/**
+ * Header that carries an edge-computed country for this deployment.
+ *
+ * Only the platform's own header may be trusted: anything a client can set (notably `cf-ipcountry`
+ * when the app is NOT actually behind Cloudflare) would let a visitor pick their own price tier.
+ * Non-Vercel deployments must name their trusted header explicitly via BILLING_TRUSTED_GEO_HEADER
+ * and guarantee at the proxy that the header is stripped from inbound requests and re-set by the edge.
+ */
+export const DEFAULT_TRUSTED_GEO_HEADER = "x-vercel-ip-country";
+
+export function getTrustedGeoHeaderName(override?: string | null) {
+  const configured = (override ?? process.env.BILLING_TRUSTED_GEO_HEADER)?.trim().toLowerCase();
+  return configured || DEFAULT_TRUSTED_GEO_HEADER;
+}
+
 export type PricingContext = {
   country: string;
   countryName: string;
@@ -301,9 +331,20 @@ export function getCountryTier(country: string): PricingTier {
   return "tier_3";
 }
 
-export function normalizeCountry(country?: string | null) {
+/**
+ * Parse an ISO-3166 alpha-2 code, returning null when the input is not one.
+ *
+ * Free text ("India", "United States") is NOT guessable and must not be coerced: the previous
+ * behaviour silently mapped every unparseable value to "US", which promoted Indian customers to
+ * tier_1 USD pricing and saturated the country-mismatch risk flags.
+ */
+export function parseCountryCode(country?: string | null): string | null {
   const code = (country || "").trim().toUpperCase();
-  return /^[A-Z]{2}$/.test(code) ? code : "US";
+  return /^[A-Z]{2}$/.test(code) ? code : null;
+}
+
+export function normalizeCountry(country?: string | null) {
+  return parseCountryCode(country) ?? getDefaultPricingCountry();
 }
 
 export function getCountryName(country: string) {
@@ -325,11 +366,13 @@ export function getTrustedPricingCountry(
   options: {
     nodeEnv?: string;
     developmentOverride?: string | null;
+    trustedHeader?: string | null;
   } = {},
 ) {
-  const vercelCountry = headers.get("x-vercel-ip-country")?.trim().toUpperCase();
-  if (vercelCountry && /^[A-Z]{2}$/.test(vercelCountry)) {
-    return vercelCountry;
+  const trustedHeader = getTrustedGeoHeaderName(options.trustedHeader);
+  const edgeCountry = parseCountryCode(headers.get(trustedHeader));
+  if (edgeCountry) {
+    return edgeCountry;
   }
 
   const nodeEnv = options.nodeEnv ?? process.env.NODE_ENV;
@@ -409,12 +452,16 @@ export function createPricingContext(input: {
   const riskFlags: string[] = [];
 
   if (!detectedCountry && !lockedCountry) {
+    // No trusted geo signal. Bill in the deployment's home currency rather than promoting the
+    // visitor to the most expensive tier in a currency the Razorpay account may not settle.
+    // `source: "default"` marks this context as NOT lockable - see shouldPersistPricingLock.
+    const fallbackCountry = getDefaultPricingCountry();
     return {
-      country: "US",
-      countryName: "United States",
-      tier: "tier_1",
-      currency: "USD",
-      riskFlags: ["missing_country_default_tier_1"],
+      country: fallbackCountry,
+      countryName: getCountryName(fallbackCountry),
+      tier: getCountryTier(fallbackCountry),
+      currency: getCurrencyForCountry(fallbackCountry),
+      riskFlags: ["missing_country_default_pricing"],
       locked: false,
       source: "default",
     };

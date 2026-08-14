@@ -13,6 +13,25 @@ import { inspectCreditLedgerConsistency } from "@/lib/billing/ledger-reconciliat
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
+// Reconciliation walks hundreds of documents and makes provider round trips; the default limit
+// kills the run part-way and the unprocessed tail is never revisited.
+export const maxDuration = 300;
+
+type SettledJob = PromiseSettledResult<unknown>;
+
+/**
+ * Report a rejected background job. Every one of these was previously swallowed into
+ * `{unavailable:true}` on an HTTP 200 response body that nothing reads, which is why a total
+ * failure of the billing recovery layer looked healthy.
+ */
+function reportJobFailure(name: string, job: SettledJob) {
+  if (job.status !== "rejected") return false;
+  console.error(`[billing-cron] ${name} failed`, {
+    error: job.reason instanceof Error ? job.reason.message : String(job.reason),
+    stack: job.reason instanceof Error ? job.reason.stack : undefined,
+  });
+  return true;
+}
 
 function isAuthorized(request: NextRequest) {
   const secret = process.env.CRON_SECRET?.trim();
@@ -37,22 +56,40 @@ export async function GET(request: NextRequest) {
       inspectCreditLedgerConsistency(),
     ]);
     if (n4.status === "rejected") throw n4.reason;
-    if (billing.status === "rejected") {
-      console.error("Pending purchase reconciliation failed", {
-        error: billing.reason instanceof Error
-          ? billing.reason.message
-          : String(billing.reason),
-      });
-    }
-    if (webhookRecovery.status === "rejected") {
-      console.error("Stale Razorpay webhook recovery failed", {
-        error: webhookRecovery.reason instanceof Error
-          ? webhookRecovery.reason.message
-          : String(webhookRecovery.reason),
-      });
+
+    // Every billing job must be reported, not just the first two.
+    const billingFailures = [
+      reportJobFailure("purchase-reconciliation", billing),
+      reportJobFailure("webhook-recovery", webhookRecovery),
+      reportJobFailure("reservation-expiry", reservationRecovery),
+      reportJobFailure("subscription-reconciliation", subscriptionRecovery),
+      reportJobFailure("ledger-audit", ledgerAudit),
+    ].filter(Boolean).length;
+
+    // Ledger drift is the one signal that says "credits and money disagree". Previously it was
+    // computed and dropped into a response body nobody reads.
+    if (ledgerAudit.status === "fulfilled") {
+      const audit = ledgerAudit.value as {
+        mismatched?: number;
+        purchaseGrantLedgerMissing?: number;
+        mismatchedUsers?: string[];
+        missingLedgerPurchases?: string[];
+      };
+      if ((audit?.mismatched ?? 0) > 0 || (audit?.purchaseGrantLedgerMissing ?? 0) > 0) {
+        console.error("[billing-cron] LEDGER DRIFT DETECTED", {
+          mismatched: audit.mismatched,
+          purchaseGrantLedgerMissing: audit.purchaseGrantLedgerMissing,
+          mismatchedUsers: audit.mismatchedUsers,
+          missingLedgerPurchases: audit.missingLedgerPurchases,
+        });
+      }
     }
 
+    // Surface a non-200 so the platform's cron history shows the failure instead of a green run.
+    const responseStatus = billingFailures > 0 ? 500 : 200;
+
     return NextResponse.json({
+      billingFailures,
       ...n4.value,
       billingReconciliation:
         billing.status === "fulfilled"
@@ -64,7 +101,7 @@ export async function GET(request: NextRequest) {
           : { unavailable: true },
       reservationRecovery:
         reservationRecovery.status === "fulfilled"
-          ? { completed: true }
+          ? reservationRecovery.value
           : { unavailable: true },
       subscriptionRecovery:
         subscriptionRecovery.status === "fulfilled"
@@ -74,7 +111,7 @@ export async function GET(request: NextRequest) {
         ledgerAudit.status === "fulfilled"
           ? ledgerAudit.value
           : { unavailable: true },
-    });
+    }, { status: responseStatus });
   } catch (error) {
     console.error("N4 inactivity scan failed", {
       error: error instanceof Error ? error.message : String(error),

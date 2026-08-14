@@ -3,6 +3,7 @@ import Subscription from "@/models/subscription";
 import { updateBillingSubscriptionState } from "@/lib/billing/db";
 import { fetchRazorpaySubscription } from "@/lib/billing/razorpay";
 import { cancelRazorpaySubscription } from "@/lib/billing/razorpay";
+import dbConnect from "@/lib/db";
 
 const DEFAULT_MINIMUM_AGE_MS = 2 * 60 * 60_000;
 
@@ -14,6 +15,9 @@ export async function reconcileStalePendingSubscriptions(input: {
   minimumAgeMs?: number;
   limit?: number;
 } = {}) {
+  // Callers are background jobs with no ambient connection; `bufferCommands: false` makes every
+  // model call throw immediately without this.
+  await dbConnect();
   const cutoff = new Date(Date.now() - (input.minimumAgeMs ?? DEFAULT_MINIMUM_AGE_MS));
   const subscriptions = await Subscription.find({
     status: "payment_pending",
