@@ -834,10 +834,24 @@ export async function updateBillingSubscriptionState(input: {
   if (input.currentPeriodEnd !== undefined) updates.subscriptionEndAt = input.currentPeriodEnd;
   if (input.renewsAt !== undefined) updates.subscriptionRenewsAt = input.renewsAt;
   if (input.cancelAtCycleEnd !== undefined) updates.cancelAtCycleEnd = input.cancelAtCycleEnd;
+  // Upsert rather than require an existing wallet. A user can reach a subscription state change
+  // without ever having had a wallet created - the row is written lazily on first billing activity -
+  // and throwing here made the webhook 500. Razorpay then retried until it gave up, so the
+  // cancellation was never recorded locally and the customer kept entitlements they had stopped
+  // paying for. Observed in production as five permanently-failed subscription.cancelled events.
   const billing = await UserBilling.findOneAndUpdate(
     { user: input.userId },
-    { $set: updates },
-    { new: true, session: input.session },
+    {
+      $set: updates,
+      $setOnInsert: {
+        user: input.userId,
+        availableCredits: 0,
+        heldCredits: 0,
+        pricingVersion: BILLING_PRICING_VERSION,
+        pricingRiskFlags: [],
+      },
+    },
+    { new: true, upsert: true, setDefaultsOnInsert: true, session: input.session },
   );
   if (!billing) throw new Error("Missing billing wallet.");
   return billing;
