@@ -23,6 +23,7 @@ import {
   isSubscriptionActive,
 } from "@/lib/billing/catalog";
 import { createSignedToken } from "@/lib/billing/crypto";
+import { buildStaleReservationFilter } from "@/lib/billing/reservation-sweep";
 import { getProcessorCallbackSecret } from "@/lib/billing/env";
 import { buildStarterSignalHashes } from "@/lib/billing/request-signals";
 import { assertReservationReplayAllowed } from "@/lib/billing/reservation-idempotency";
@@ -1347,15 +1348,6 @@ export async function releaseReservation(input: {
   });
 }
 
-/**
- * Absolute age past which a credit hold is reclaimed even if a processor claimed it.
- *
- * `recordProcessorReservationStatus` extends `expiresAt` on every accept, so a processor that
- * accepts a job and then crashes would otherwise strand the customer's credits permanently -
- * previously guaranteed by excluding `processorStatus: "accepted"` from the sweep entirely.
- */
-export const RESERVATION_HARD_RECLAIM_MS = 2 * 60 * 60_000;
-
 export async function expireStaleReservations(input: {
   userId?: string | null;
   limit?: number;
@@ -1365,17 +1357,9 @@ export async function expireStaleReservations(input: {
   await dbConnect();
   const limit = Math.max(1, Math.min(input.limit ?? 50, 200));
   const now = new Date();
-  const hardReclaimCutoff = new Date(now.getTime() - RESERVATION_HARD_RECLAIM_MS);
-  const staleReservations = await UsageReservation.find({
-    status: "reserved",
-    ...(input.userId ? { user: input.userId } : {}),
-    $or: [
-      // Lapsed hold that no processor ever claimed.
-      { expiresAt: { $lte: now }, "metadata.processorStatus": { $ne: "accepted" } },
-      // Claimed but abandoned well past any plausible job duration.
-      { createdAt: { $lte: hardReclaimCutoff } },
-    ],
-  }).sort({ expiresAt: 1 }).limit(limit);
+  const staleReservations = await UsageReservation.find(
+    buildStaleReservationFilter({ now, userId: input.userId }),
+  ).sort({ expiresAt: 1 }).limit(limit);
 
   const summary = { scanned: staleReservations.length, released: 0, failed: 0 };
 
