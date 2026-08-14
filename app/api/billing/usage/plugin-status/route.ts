@@ -59,6 +59,8 @@ export async function POST(request: NextRequest) {
         source: "plugin",
         ...(body.metadata || {}),
       },
+      // Session-authenticated client: cannot clear a processor acceptance.
+      origin: "plugin",
     });
 
     if (status === "failed") {

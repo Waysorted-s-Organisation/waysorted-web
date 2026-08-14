@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     const reservation = await recordProcessorReservationStatus({
+      origin: "processor",
       userId: verifiedToken.payload.userId,
       reservationId,
       processor: body.processor?.trim() || verifiedToken.payload.processor || null,
