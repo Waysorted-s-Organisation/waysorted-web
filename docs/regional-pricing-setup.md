@@ -98,14 +98,40 @@ step 3, and run the verification in step 4.
 | Stop proxying through Cloudflare (DNS-only / grey cloud) | `x-vercel-ip-country` starts working natively; loses Cloudflare WAF/caching. Vercel already provides a CDN, so double-proxying buys little. |
 | Vercel Trusted Proxy | Native support behind a proxy — Enterprise plan only. |
 
-## Existing customers
+## Pricing is geo-based only
 
-Customers who were detected as `SG`/`US` before this fix may carry a persisted pricing lock, and the
-tier ratchet only moves upward, so it will not correct itself:
+The price depends on the request's trusted country and nothing else. It is **not** affected by
+whether the visitor is signed in, and no per-user pricing lock is consulted.
+
+This removes a whole class of defects that existed while pricing was partly account-based:
+
+- `/pricing` served the public (geo) catalog while `/billing` served an authenticated one that
+  honoured a stored lock, so the page visibly repainted — an Indian visitor watched ₹149 turn into
+  $5.99 as auth resolved.
+- The lock ratcheted only upward (tier_1 is the top rank) with no downgrade path and no reset
+  endpoint, so a single mis-geolocated request repriced a customer permanently.
+- Stale `Session.countryCode` rows recorded before the Cloudflare cutover held the proxy PoP country
+  (`SG` for Indian visitors) and would have re-asserted it even after the lock was cleared.
+
+`UserBilling.pricingCountry/pricingTier/pricingCurrency` are still written, with
+`pricingLockReason: "geo_observation"`, as a record of what each request was priced at. Nothing
+reads them back to decide a price.
+
+**Trade-off, stated plainly:** because nothing is pinned per account, a visitor on a VPN is quoted
+that country's tier for as long as they stay on it. That was already true of the public pricing page.
+If this becomes a problem, the place to enforce residency is at payment time against the payment
+instrument's country — not by pinning a possibly-wrong guess to the account forever.
+
+### Migration scripts
+
+All scripts import `lib/db.ts`, which imports `server-only`. That package throws when loaded outside
+a React Server Component, so the npm scripts pass `--conditions=react-server` to resolve it to its
+no-op export. Run them via npm rather than invoking `tsx` directly:
 
 ```bash
-npm run migrate:reset-default-pricing-locks -- --dry-run --include-upgrades
+npm run migrate:billing-idempotency-indexes
+npm run migrate:usage-reservation-index
 ```
 
-Review the listed accounts, then re-run without `--dry-run`. Clearing is safe: the next request
-re-derives the lock from a real observation.
+`migrate:reset-default-pricing-locks` is retained for clearing historical lock rows, but is no longer
+required for correct pricing.

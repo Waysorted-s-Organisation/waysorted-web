@@ -5,6 +5,7 @@ import {
   createPurchaseRecord,
   ensureSubscriptionRecord,
   findCurrentSubscription,
+  findPurchaseBySubscriptionId,
   findPurchaseByUserAndIdempotency,
   releaseSupersededPendingSubscription,
   syncCatalogProducts,
@@ -150,7 +151,17 @@ export async function POST(request: NextRequest) {
       // amount while Razorpay charges another. When the tier moved, fall through and reclaim.
       pendingTierMatches
     ) {
+      // The reuse branch MUST return a purchaseId. /subscriptions/verify rejects a request without
+      // one ("Missing verification fields."), so omitting it means the customer completes the
+      // mandate, is charged, and then sees a failure - and because verify is the only writer of
+      // notes.clientSubscriptionConfirmation, the nightly reconciler would later read its absence
+      // as "never paid" and cancel the subscription they just authorised.
+      const reusedPurchase = await findPurchaseBySubscriptionId(
+        String(auth.user._id),
+        existingSubscription.providerSubscriptionId,
+      );
       return NextResponse.json({
+        purchaseId: reusedPurchase ? String(reusedPurchase._id) : undefined,
         subscriptionId: existingSubscription.providerSubscriptionId,
         key: getRazorpayConfig().publicKeyId,
         product: pricedProduct,
