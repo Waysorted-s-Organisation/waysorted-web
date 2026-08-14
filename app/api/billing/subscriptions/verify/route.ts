@@ -4,6 +4,10 @@ import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/
 import { getRazorpayConfig } from "@/lib/billing/env";
 import { verifyRazorpaySubscriptionSignature } from "@/lib/billing/crypto";
 import { fetchRazorpayPayment, fetchRazorpaySubscription } from "@/lib/billing/razorpay";
+import {
+  applySubscriptionCycleCredits,
+  findSubscriptionByProviderId,
+} from "@/lib/billing/db";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -90,11 +94,42 @@ export async function POST(request: NextRequest) {
     purchase.markModified("notes");
     await purchase.save();
 
+    // Deliver the first cycle's credits here rather than depending solely on subscription.charged.
+    // That webhook was the ONLY code path granting subscription credits, with no reconciler and no
+    // replay, so a single lost delivery meant the customer was charged and silently received
+    // nothing - while subscription.activated still flipped the UI to "confirmed".
+    //
+    // Safe to do at this point: the payment has just been server-verified as captured, for this
+    // subscription, at exactly the recorded amount and currency. The cycle key matches the one the
+    // webhook would use, so the unique ledger index makes whichever arrives second a no-op.
+    let creditsApplied = false;
+    try {
+      const subscription = await findSubscriptionByProviderId(subscriptionId);
+      if (subscription) {
+        await applySubscriptionCycleCredits({
+          subscription,
+          cycleKey: `${subscriptionId}:payment:${paymentId}`,
+          paymentId,
+        });
+        creditsApplied = true;
+      }
+    } catch (creditError) {
+      // Never fail verification over this - the payment is already captured and the webhook remains
+      // a second chance. Log loudly so a silent zero-credit state is visible.
+      console.error("[billing] first-cycle credit grant failed during subscription verify", {
+        purchaseId: String(purchase._id),
+        subscriptionId,
+        paymentId,
+        error: creditError instanceof Error ? creditError.message : String(creditError),
+      });
+    }
+
     return NextResponse.json({
       verified: true,
       purchaseId: String(purchase._id),
       subscriptionId,
       paymentId,
+      creditsApplied,
       status: providerSubscription.status,
       authoritativeSource: "server_verified_payment",
     });

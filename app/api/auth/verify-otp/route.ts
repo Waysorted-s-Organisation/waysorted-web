@@ -97,6 +97,17 @@ export async function POST(req: Request) {
       console.error("Auto-subscription failed (OTP):", error);
     }
 
+    // Consume the mapping so the same request_id + otp cannot mint a second session before the TTL
+    // lapses. Conditional delete: if another request already consumed it, stop rather than issue a
+    // duplicate session.
+    const consumed = await OtpRequest.findOneAndDelete({ requestId: request_id });
+    if (!consumed) {
+      return NextResponse.json(
+        { ok: false, message: "This code has already been used" },
+        { status: 400 }
+      );
+    }
+
     const sessionId = crypto.randomUUID();
     const maxAgeDays = 30;
     const expiresAt = new Date(Date.now() + maxAgeDays * 24 * 60 * 60 * 1000);

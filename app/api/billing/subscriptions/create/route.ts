@@ -6,6 +6,7 @@ import {
   ensureSubscriptionRecord,
   findCurrentSubscription,
   findPurchaseBySubscriptionId,
+  markSubscriptionCancellationPending,
   findPurchaseByUserAndIdempotency,
   releaseSupersededPendingSubscription,
   syncCatalogProducts,
@@ -65,22 +66,27 @@ export async function POST(request: NextRequest) {
     if (!pricedProduct) {
       return NextResponse.json({ error: "Product is not currently eligible for this user." }, { status: 403 });
     }
-    // The quote is REQUIRED. It used to be optional, which meant a caller that simply omitted the
-    // field disabled the check entirely and was charged whatever the server computed.
-    if (
-      body.quotedAmountSubunits === undefined ||
-      body.quotedCurrency === undefined ||
-      body.pricingVersion === undefined
-    ) {
-      return NextResponse.json(
-        { error: "A price quote is required to start checkout.", code: "missing_price_quote" },
-        { status: 400 },
-      );
+    // Matches checkout/order: a MISSING quote must never block a payment, because server and client
+    // deploy at the same instant and a browser on the previously cached bundle sends none. Warn so
+    // stale clients stay visible, and enforce strictly whenever a quote IS supplied.
+    const hasQuote =
+      body.quotedAmountSubunits !== undefined &&
+      body.quotedCurrency !== undefined &&
+      body.pricingVersion !== undefined;
+
+    if (!hasQuote) {
+      console.warn("[billing] subscriptions/create called without a price quote", {
+        userId: String(auth.user._id),
+        productCode: product.code,
+        authType: auth.authType,
+      });
     }
+
     if (
-      body.quotedAmountSubunits !== pricedProduct.amountPaise ||
-      body.quotedCurrency.toUpperCase() !== pricedProduct.currency.toUpperCase() ||
-      body.pricingVersion !== snapshot.pricingVersion
+      hasQuote &&
+      (body.quotedAmountSubunits !== pricedProduct.amountPaise ||
+        body.quotedCurrency!.toUpperCase() !== pricedProduct.currency.toUpperCase() ||
+        body.pricingVersion !== snapshot.pricingVersion)
     ) {
       return NextResponse.json(
         {
@@ -88,7 +94,7 @@ export async function POST(request: NextRequest) {
           code: "pricing_quote_changed",
           quoted: {
             amountSubunits: body.quotedAmountSubunits,
-            currency: body.quotedCurrency.toUpperCase(),
+            currency: body.quotedCurrency?.toUpperCase(),
           },
           current: {
             amountSubunits: pricedProduct.amountPaise,
@@ -99,9 +105,17 @@ export async function POST(request: NextRequest) {
       );
     }
     const existingSubscription = await findCurrentSubscription(String(auth.user._id));
-    const isPendingSubscription = existingSubscription?.status === "payment_pending";
+
+    // Every status in the unique `one_live_subscription_per_user` partial index occupies the slot,
+    // so ANY of them makes a second create fail with E11000 - after a live, customer-payable
+    // Razorpay subscription has already been created and leaked. "halted" blocks exactly like
+    // "payment_pending" did, and the UI offers no way to clear it, so the customer is locked out
+    // permanently while each retry leaks another payable subscription.
+    const isReclaimableSubscription =
+      existingSubscription?.status === "payment_pending" ||
+      existingSubscription?.status === "halted";
     const isFreshPendingSubscription =
-      isPendingSubscription &&
+      existingSubscription?.status === "payment_pending" &&
       Boolean(
         (existingSubscription.updatedAt || existingSubscription.createdAt) &&
           Date.now() -
@@ -109,13 +123,10 @@ export async function POST(request: NextRequest) {
             PENDING_SUBSCRIPTION_TTL_MS,
       );
 
-    // A payment_pending row is covered by the unique `one_live_subscription_per_user` partial index.
-    // Falling through to create a second one therefore ALWAYS fails with E11000 - after a live,
-    // customer-payable Razorpay subscription has already been created and leaked. The customer sees
-    // "Unable to create subscription" and can never pay again, and every retry leaks another.
     // A stale pending row for the SAME plan is reusable: the provider subscription is still payable.
+    // "halted" is NOT reusable - Razorpay has stopped it, so it must be reclaimed and replaced.
     const isReusablePendingSubscription =
-      isPendingSubscription &&
+      existingSubscription?.status === "payment_pending" &&
       existingSubscription.planCode === product.code &&
       Boolean(existingSubscription.providerSubscriptionId);
 
@@ -139,17 +150,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const pendingTierMatches =
-      !existingSubscription?.pricingTier ||
-      existingSubscription.pricingTier === snapshot.pricing.tier;
+    // The provider plan is keyed by `${currency}:${amountPaise}:${tier}` (see planKey below), so
+    // matching on planCode and tier alone is not enough: a stale row can be bound to a plan at a
+    // different amount or currency and would charge something other than the amount just displayed.
+    // Compare the full identity, and fall through to reclaim whenever any part of it has moved.
+    const reusedPlanIdentityMatches =
+      Boolean(existingSubscription) &&
+      existingSubscription!.planCode === product.code &&
+      (!existingSubscription!.pricingTier ||
+        existingSubscription!.pricingTier === snapshot.pricing.tier) &&
+      (existingSubscription!.amountSubunits === undefined ||
+        existingSubscription!.amountSubunits === null ||
+        existingSubscription!.amountSubunits === pricedProduct.amountPaise) &&
+      (!existingSubscription!.pricingCurrency ||
+        existingSubscription!.pricingCurrency.toUpperCase() ===
+          pricedProduct.currency.toUpperCase());
 
     if (
       existingSubscription &&
       (isFreshPendingSubscription || isReusablePendingSubscription) &&
-      existingSubscription.planCode === product.code &&
-      // Reusing a provider subscription created at a different tier would show the customer one
-      // amount while Razorpay charges another. When the tier moved, fall through and reclaim.
-      pendingTierMatches
+      reusedPlanIdentityMatches
     ) {
       // The reuse branch MUST return a purchaseId. /subscriptions/verify rejects a request without
       // one ("Missing verification fields."), so omitting it means the customer completes the
@@ -173,18 +193,38 @@ export async function POST(request: NextRequest) {
     // `one_live_subscription_per_user` slot. Release it BEFORE creating anything at the provider,
     // otherwise ensureSubscriptionRecord fails with E11000 after a payable Razorpay subscription
     // has already been created - which is what permanently blocked checkout.
-    if (existingSubscription && isPendingSubscription) {
+    if (existingSubscription && isReclaimableSubscription) {
       const staleProviderSubscriptionId = existingSubscription.providerSubscriptionId;
-      await releaseSupersededPendingSubscription(String(existingSubscription._id));
+      const released = await releaseSupersededPendingSubscription(
+        String(existingSubscription._id),
+        existingSubscription.status,
+      );
+      // The release is a conditional update, so a null result means a concurrent request already
+      // claimed this row. Continuing would create a second provider subscription that E11000s on
+      // insert and is then leaked, payable, with nothing tracking it.
+      if (!released) {
+        return NextResponse.json(
+          {
+            error: "Another checkout for this account is already in progress. Refresh and try again.",
+            code: "subscription_already_in_progress",
+          },
+          { status: 409 },
+        );
+      }
+
       if (staleProviderSubscriptionId) {
-        // Best effort: stop the abandoned provider subscription so it can never bill the customer.
         try {
           await cancelRazorpaySubscription(staleProviderSubscriptionId, false);
         } catch (cancelError) {
-          console.error("Failed to cancel superseded pending subscription", {
+          // The local row is already released, so checkout can proceed - but an uncancelled
+          // provider subscription can still charge the customer, and a later charge event would
+          // have no matching live row. Record it so the reconciler can find and cancel it.
+          console.error("[billing] superseded provider subscription could not be cancelled", {
             providerSubscriptionId: staleProviderSubscriptionId,
+            userId: String(auth.user._id),
             error: cancelError instanceof Error ? cancelError.message : String(cancelError),
           });
+          await markSubscriptionCancellationPending(String(existingSubscription._id)).catch(() => null);
         }
       }
     }

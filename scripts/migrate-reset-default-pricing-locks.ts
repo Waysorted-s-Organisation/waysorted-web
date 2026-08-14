@@ -38,11 +38,14 @@ const INCLUDE_UPGRADES = process.argv.includes("--include-upgrades");
 
 const SUSPECT_LOCK_FILTER = INCLUDE_UPGRADES
   ? {
+      // Any tier_1 lock, regardless of country. Pre-cutover detection reported the proxy PoP, which
+      // was SG for Indian visitors, not only US - matching on country would miss them.
       pricingTier: "tier_1",
       pricingLockReason: { $in: ["initial_detection", "higher_tier_detection"] },
     }
   : {
-      pricingCountry: "US",
+      // Default mode also covers SG, the Cloudflare Singapore colo that served Indian traffic.
+      pricingCountry: { $in: ["US", "SG"] },
       pricingTier: "tier_1",
       pricingLockReason: "initial_detection",
     };

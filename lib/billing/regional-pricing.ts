@@ -53,20 +53,47 @@ export function getTrustedGeoHeaderName(override?: string | null) {
  * having NO geo signal, which falls back to the deployment's home currency rather than a
  * caller-chosen one.
  *
- * When no secret is configured this returns true, preserving the platform-header behaviour.
+ * Attestation is REQUIRED whenever the trusted geo header is not the platform's own. Without that
+ * rule a half-applied cutover - BILLING_TRUSTED_GEO_HEADER switched to cf-ipcountry but the secret
+ * missing, blank, or whitespace - would silently accept a caller-supplied country and hand out a
+ * 3.35x self-service discount at the directly reachable origin.
  */
 export function isEdgeAttested(
   headers: Pick<Headers, "get">,
-  options: { secret?: string | null; headerName?: string | null } = {},
+  options: {
+    secret?: string | null;
+    headerName?: string | null;
+    trustedHeader?: string | null;
+  } = {},
 ) {
   const secret = (options.secret ?? process.env.BILLING_EDGE_ATTESTATION_SECRET)?.trim();
-  if (!secret) return true;
+  const trustedHeader = getTrustedGeoHeaderName(options.trustedHeader);
+
+  if (!secret) {
+    // No secret: only the platform's own header may be believed on its own. Any other header is
+    // proxy- or caller-supplied and is worthless without proof of origin.
+    return trustedHeader === DEFAULT_TRUSTED_GEO_HEADER;
+  }
 
   const headerName =
     (options.headerName ?? process.env.BILLING_EDGE_ATTESTATION_HEADER)?.trim().toLowerCase() ||
     DEFAULT_EDGE_ATTESTATION_HEADER;
-  const presented = headers.get(headerName)?.trim();
+  const presented = safeHeaderGet(headers, headerName)?.trim();
   return Boolean(presented) && safeEqual(presented as string, secret);
+}
+
+/**
+ * Headers.get throws a TypeError on an invalid header name. A typo in BILLING_TRUSTED_GEO_HEADER or
+ * BILLING_EDGE_ATTESTATION_HEADER would otherwise 500 the entire pricing and checkout surface, so
+ * a misconfiguration degrades to "no geo signal" instead of taking payments offline.
+ */
+function safeHeaderGet(headers: Pick<Headers, "get">, name: string) {
+  try {
+    return headers.get(name);
+  } catch {
+    console.error("[billing] invalid configured header name", { name });
+    return null;
+  }
 }
 
 export type PricingContext = {
@@ -412,8 +439,9 @@ export function getTrustedPricingCountry(
   const edgeCountry = isEdgeAttested(headers, {
     secret: options.attestationSecret,
     headerName: options.attestationHeader,
+    trustedHeader: options.trustedHeader,
   })
-    ? parseCountryCode(headers.get(trustedHeader))
+    ? parseCountryCode(safeHeaderGet(headers, trustedHeader))
     : null;
   if (edgeCountry) {
     return edgeCountry;

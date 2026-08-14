@@ -35,7 +35,17 @@ export async function GET(request: NextRequest) {
     expiresAt: expiresAt.toISOString(),
   }, getBridgeSecret());
 
-  const target = new URL(grant.returnPath.startsWith("/") ? grant.returnPath : "/billing", request.nextUrl.origin);
+  // `startsWith("/")` alone accepts protocol-relative paths like "//evil.com" and "/\evil.com",
+  // which resolve to a different origin - an open redirect on waysorted.com, immediately after a
+  // billing session cookie has been set.
+  const isInternalPath =
+    grant.returnPath.startsWith("/") &&
+    !grant.returnPath.startsWith("//") &&
+    !grant.returnPath.startsWith("/\\");
+  const target = new URL(isInternalPath ? grant.returnPath : "/billing", request.nextUrl.origin);
+  if (target.origin !== request.nextUrl.origin) {
+    return NextResponse.redirect(new URL("/billing", request.nextUrl.origin));
+  }
   if (grant.productCode) {
     target.searchParams.set("product", grant.productCode);
     target.searchParams.set("autostart", "1");

@@ -72,6 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     const reservation = await recordProcessorReservationStatus({
+      origin: "processor",
       userId: verifiedToken.payload.userId,
       reservationId,
       processor: body.processor?.trim() || verifiedToken.payload.processor || null,
@@ -83,6 +84,7 @@ export async function POST(request: NextRequest) {
 
     if (status === "failed") {
       const releasedReservation = await releaseReservation({
+        actor: "system",
         userId: verifiedToken.payload.userId,
         reservationId,
         reason: body.reason?.trim() || "processor_failed",

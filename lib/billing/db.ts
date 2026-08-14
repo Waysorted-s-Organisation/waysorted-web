@@ -738,10 +738,16 @@ export async function applyPurchaseCredits(purchase: PurchaseDocument) {
  * Razorpay subscription has been created, so each retry leaks one. Moving the row to `expired` takes
  * it out of the index and lets the customer pay again.
  */
-export async function releaseSupersededPendingSubscription(subscriptionId: string) {
+export async function releaseSupersededPendingSubscription(
+  subscriptionId: string,
+  expectedStatus: string = "payment_pending",
+) {
   await dbConnect();
+  // Conditional on the status we observed, so two concurrent checkouts cannot both claim the row.
+  // A null result means someone else won; the caller must not proceed to create a provider
+  // subscription, or it would be orphaned and payable.
   return Subscription.findOneAndUpdate(
-    { _id: subscriptionId, status: "payment_pending" },
+    { _id: subscriptionId, status: expectedStatus },
     {
       $set: {
         status: "expired",
@@ -750,6 +756,21 @@ export async function releaseSupersededPendingSubscription(subscriptionId: strin
       },
     },
     { new: true },
+  );
+}
+
+/**
+ * Flag a released subscription whose provider-side cancellation failed.
+ *
+ * The local row is already out of the way so checkout can continue, but the provider subscription
+ * is still live and could charge the customer. Recording it lets the reconciler retry the cancel
+ * instead of leaving an untracked, payable subscription behind.
+ */
+export async function markSubscriptionCancellationPending(subscriptionId: string) {
+  await dbConnect();
+  return Subscription.updateOne(
+    { _id: subscriptionId },
+    { $set: { providerCancellationPending: true } },
   );
 }
 
@@ -813,13 +834,32 @@ export async function updateBillingSubscriptionState(input: {
   if (input.currentPeriodEnd !== undefined) updates.subscriptionEndAt = input.currentPeriodEnd;
   if (input.renewsAt !== undefined) updates.subscriptionRenewsAt = input.renewsAt;
   if (input.cancelAtCycleEnd !== undefined) updates.cancelAtCycleEnd = input.cancelAtCycleEnd;
+  // Upsert rather than require an existing wallet. A user can reach a subscription state change
+  // without ever having had a wallet created - the row is written lazily on first billing activity -
+  // and throwing here made the webhook 500. Razorpay then retried until it gave up, so the
+  // cancellation was never recorded locally and the customer kept entitlements they had stopped
+  // paying for. Observed in production as five permanently-failed subscription.cancelled events.
   const billing = await UserBilling.findOneAndUpdate(
     { user: input.userId },
-    { $set: updates },
-    { new: true, session: input.session },
+    {
+      $set: updates,
+      $setOnInsert: {
+        user: input.userId,
+        availableCredits: 0,
+        heldCredits: 0,
+        pricingVersion: BILLING_PRICING_VERSION,
+        pricingRiskFlags: [],
+      },
+    },
+    { new: true, upsert: true, setDefaultsOnInsert: true, session: input.session },
   );
   if (!billing) throw new Error("Missing billing wallet.");
   return billing;
+}
+
+export async function findSubscriptionByProviderId(providerSubscriptionId: string) {
+  await dbConnect();
+  return Subscription.findOne({ providerSubscriptionId });
 }
 
 export async function applySubscriptionCycleCredits(input: {
@@ -1235,6 +1275,12 @@ export async function releaseReservation(input: {
   idempotencyKey?: string | null;
   reason?: string | null;
   compensateCommitted?: boolean;
+  /**
+   * Who is releasing. "user" is a customer-initiated cancel and must not be able to free a hold the
+   * processor has already accepted - that would deliver the work and destroy the only record that
+   * it should be billed. "system" is the expiry sweeper and the processor callback.
+   */
+  actor?: "user" | "system";
 }) {
   return runBillingTransaction(async (session) => {
     const reservationQuery = input.reservationId
@@ -1258,6 +1304,22 @@ export async function releaseReservation(input: {
 
     if (["released", "expired", "compensated"].includes(existingReservation.status)) {
       return existingReservation;
+    }
+
+    // A customer cannot release a hold the processor has already picked up: the job is in flight,
+    // so releasing it returns the credits while the work still gets delivered, and the later
+    // completion callback has nothing left to charge against.
+    // Read the monotonic acceptance marker, never the mutable status field: a client-authenticated
+    // route (usage/plugin-status) can write processorStatus, so guarding on it let a user downgrade
+    // their own in-flight job to "failed" and then release the hold - delivered work, no charge.
+    const reservationMetadata = (existingReservation.metadata || {}) as Record<string, unknown>;
+    const processorHasAccepted =
+      Boolean(reservationMetadata.processorAcceptedAt) ||
+      reservationMetadata.processorStatus === "accepted";
+    if (input.actor === "user" && processorHasAccepted) {
+      const error = new Error("This job is already being processed and cannot be cancelled.");
+      (error as Error & { status?: number }).status = 409;
+      throw error;
     }
 
     if (existingReservation.status === "reserved") {
@@ -1387,6 +1449,7 @@ export async function expireStaleReservations(input: {
         userId: String(reservation.user),
         reservationId: String(reservation._id),
         reason: "expired",
+        actor: "system",
       });
       summary.released += 1;
     } catch (error) {
@@ -1410,6 +1473,13 @@ export async function recordProcessorReservationStatus(input: {
   status: "accepted" | "completed" | "failed";
   reason?: string | null;
   metadata?: Record<string, unknown>;
+  /**
+   * Where this report came from. "plugin" is an ordinary session-authenticated client, so it must
+   * never be able to clear an acceptance recorded by the HMAC-verified processor callback -
+   * otherwise a user can downgrade their own in-flight job to "failed", release the hold, and
+   * receive the delivered work for free.
+   */
+  origin?: "plugin" | "processor";
 }) {
   const reservation = await UsageReservation.findOne({
     _id: input.reservationId,
@@ -1431,12 +1501,37 @@ export async function recordProcessorReservationStatus(input: {
     throw error;
   }
 
+  const existingMetadata = (reservation.metadata || {}) as Record<string, unknown>;
+  const alreadyAccepted =
+    existingMetadata.processorStatus === "accepted" || Boolean(existingMetadata.processorAcceptedAt);
+
+  // A plugin report may not clear an acceptance. Keep its claim in a separate field so the
+  // authorization decision never reads a value the client controls.
+  if (input.origin === "plugin" && alreadyAccepted && input.status !== "accepted") {
+    reservation.metadata = {
+      ...existingMetadata,
+      client: { ...(input.metadata || {}) },
+      pluginReportedStatus: input.status,
+      pluginReportedReason: input.reason || null,
+      pluginReportedAt: new Date().toISOString(),
+    };
+    reservation.markModified("metadata");
+    await reservation.save();
+    return reservation;
+  }
+
   reservation.metadata = {
-    ...(reservation.metadata || {}),
+    ...existingMetadata,
     client: { ...(input.metadata || {}) },
     processorStatus: input.status,
     processorReason: input.reason || null,
     processorUpdatedAt: new Date().toISOString(),
+    // Monotonic: once the processor has accepted, this is never cleared, so the release guard
+    // cannot be defeated by any later status write.
+    processorAcceptedAt:
+      input.status === "accepted"
+        ? existingMetadata.processorAcceptedAt || new Date().toISOString()
+        : existingMetadata.processorAcceptedAt || null,
   };
 
   if (input.status === "accepted") {

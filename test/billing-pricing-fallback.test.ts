@@ -73,12 +73,27 @@ test("free-text country names are not silently coerced to US", () => {
   assert.notEqual(normalizeCountry("India"), "US");
 });
 
-test("the trusted geo header is configurable for non-Vercel deployments", () => {
+test("a configured proxy geo header is only honoured with an edge attestation", () => {
+  // A non-platform header is proxy- or caller-supplied, so it is worthless without proof that the
+  // request came through our edge. Without a secret it must be ignored, otherwise a half-applied
+  // cutover hands out a self-service discount at the directly reachable origin.
   assert.equal(
     getTrustedPricingCountry(headers({ "x-geo-country": "IN" }), {
       nodeEnv: "production",
       trustedHeader: "x-geo-country",
     }),
+    null,
+  );
+
+  assert.equal(
+    getTrustedPricingCountry(
+      headers({ "x-geo-country": "IN", "x-waysorted-edge-proof": "s3cret" }),
+      {
+        nodeEnv: "production",
+        trustedHeader: "x-geo-country",
+        attestationSecret: "s3cret",
+      },
+    ),
     "IN",
   );
 });
