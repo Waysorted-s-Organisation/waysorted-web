@@ -69,9 +69,14 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/api/admin/billing/")
   ) {
     applyHeaders(response, API_NO_STORE_HEADERS);
-  } else if (pathname === "/pricing" || pathname === "/billing" || pathname === "/payment") {
+  } else if (pathname === "/billing" || pathname === "/payment") {
+    // These render account-specific state and must never be cached.
     applyHeaders(response, PAGE_NO_STORE_HEADERS);
   }
+  // /pricing is deliberately absent: its HTML shell is static and identical for every visitor
+  // (prices come from the no-store /api/billing/public-catalog call the client makes after
+  // hydration), so forcing no-store only cost every visitor a full round trip for identical markup.
+  // Re-add it if regional pricing is ever moved into the server render.
 
   return clearLegacyPricingCountryCookie(request, response);
 }
