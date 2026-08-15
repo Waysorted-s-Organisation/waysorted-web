@@ -57,7 +57,10 @@ export async function reconcileSubscriptionCycles(
 
   const subscriptions = await Subscription.find({
     status: { $in: ["active", "cancel_scheduled"] },
-    providerSubscriptionId: { $nin: [null, ""] },
+    // Only real Razorpay subscriptions. Admin-granted entitlements carry a synthetic id such as
+    // `manual-premium:<date>:<email>:<plan>`, which the provider knows nothing about - querying it
+    // would fail on every run, permanently reporting the cron as failed and burying real problems.
+    providerSubscriptionId: { $regex: /^sub_/ },
   })
     .sort({ updatedAt: 1 })
     .limit(limit);
