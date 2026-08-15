@@ -50,3 +50,16 @@ export function resolvePaidSubscriptionCycle(bodyPayload: Record<string, unknown
     nextChargeAt: epochDate(subscription?.charge_at) || currentPeriodEnd,
   };
 }
+
+/**
+ * Ledger idempotency key for one paid subscription cycle.
+ *
+ * Shared by the subscription.charged webhook and the renewal backstop so both write the SAME key.
+ * creditledgers.idempotencyKey is uniquely indexed in production, so identical keys make whichever
+ * path arrives second a harmless no-op. A divergent format double-credits instead - which is
+ * exactly what happened to the first paying customer, whose two grants differed only by an
+ * inserted ":payment:" segment.
+ */
+export function buildSubscriptionCycleKey(providerSubscriptionId: string, paymentId: string) {
+  return `${providerSubscriptionId}:payment:${paymentId}`;
+}

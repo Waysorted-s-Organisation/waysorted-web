@@ -10,6 +10,8 @@ import { recoverStaleRazorpayWebhooks } from "@/lib/billing/webhook-recovery";
 import { expireStaleReservations } from "@/lib/billing/db";
 import { reconcileStalePendingSubscriptions } from "@/lib/billing/subscription-reconciliation";
 import { inspectCreditLedgerConsistency } from "@/lib/billing/ledger-reconciliation";
+import { reconcileSubscriptionCycles } from "@/lib/billing/subscription-cycle-reconciliation";
+import { collectPaymentAlerts, emitPaymentAlerts } from "@/lib/billing/payment-alerts";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -47,15 +49,31 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const [n4, billing, webhookRecovery, reservationRecovery, subscriptionRecovery, ledgerAudit] = await Promise.allSettled([
+    const [
+      n4,
+      billing,
+      webhookRecovery,
+      reservationRecovery,
+      subscriptionRecovery,
+      cycleRecovery,
+      ledgerAudit,
+    ] = await Promise.allSettled([
       produceN4InactivityEvents(),
       reconcilePendingOneTimePurchases(),
       recoverStaleRazorpayWebhooks(),
       expireStaleReservations({ limit: 100 }),
       reconcileStalePendingSubscriptions(),
+      // Renewal backstop: renewals are charged with no browser present, so the webhook is their
+      // only delivery path. This asks Razorpay what it actually charged and fills any gaps.
+      reconcileSubscriptionCycles(),
       inspectCreditLedgerConsistency(),
     ]);
-    if (n4.status === "rejected") throw n4.reason;
+
+    // A failure in the unrelated N4 marketing producer must not discard the billing report, which
+    // carries the money-correctness signals. Record it and carry on.
+    if (n4.status === "rejected") {
+      reportJobFailure("n4-inactivity-producer", n4);
+    }
 
     // Every billing job must be reported, not just the first two.
     const billingFailures = [
@@ -63,8 +81,21 @@ export async function GET(request: NextRequest) {
       reportJobFailure("webhook-recovery", webhookRecovery),
       reportJobFailure("reservation-expiry", reservationRecovery),
       reportJobFailure("subscription-reconciliation", subscriptionRecovery),
+      reportJobFailure("subscription-cycle-backstop", cycleRecovery),
       reportJobFailure("ledger-audit", ledgerAudit),
     ].filter(Boolean).length;
+
+    // Turn money-correctness signals into something a human sees.
+    const alerts = await collectPaymentAlerts({
+      cycleSummary: cycleRecovery.status === "fulfilled" ? cycleRecovery.value : null,
+      ledgerAudit: ledgerAudit.status === "fulfilled" ? ledgerAudit.value : null,
+    }).catch((error) => {
+      console.error("[billing-cron] alert collection failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      return [];
+    });
+    const alertResult = await emitPaymentAlerts(alerts);
 
     // Ledger drift is the one signal that says "credits and money disagree". Previously it was
     // computed and dropped into a response body nobody reads.
@@ -86,11 +117,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Surface a non-200 so the platform's cron history shows the failure instead of a green run.
-    const responseStatus = billingFailures > 0 ? 500 : 200;
+    const responseStatus = billingFailures > 0 || alerts.length > 0 ? 500 : 200;
 
     return NextResponse.json({
       billingFailures,
-      ...n4.value,
+      alerts: { raised: alerts.length, delivered: alertResult.delivered },
+      ...(n4.status === "fulfilled" ? n4.value : { n4: { unavailable: true } }),
       billingReconciliation:
         billing.status === "fulfilled"
           ? billing.value
@@ -106,6 +138,10 @@ export async function GET(request: NextRequest) {
       subscriptionRecovery:
         subscriptionRecovery.status === "fulfilled"
           ? subscriptionRecovery.value
+          : { unavailable: true },
+      subscriptionCycleBackstop:
+        cycleRecovery.status === "fulfilled"
+          ? cycleRecovery.value
           : { unavailable: true },
       ledgerAudit:
         ledgerAudit.status === "fulfilled"
