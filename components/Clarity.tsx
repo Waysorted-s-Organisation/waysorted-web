@@ -1,8 +1,18 @@
 "use client";
 
 import Script from "next/script";
+import { useEffect, useState } from "react";
 
 export default function ClarityTracking() {
+    const [enabled, setEnabled] = useState(false);
+
+    useEffect(() => {
+        const timeout = window.setTimeout(() => setEnabled(true), 12_000);
+        return () => window.clearTimeout(timeout);
+    }, []);
+
+    if (!enabled) return null;
+
     return (
         <Script
             id="microsoft-clarity"

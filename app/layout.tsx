@@ -4,14 +4,14 @@ import { Hanken_Grotesk } from "next/font/google";
 import { Providers } from "./providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
-import Script from "next/script";
 import Clarity from "@/components/Clarity";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 
 const GA_TRACKING_ID = "G-KS8MVKMRYV";
 
 const hanken = Hanken_Grotesk({
   subsets: ["latin"],
-  display: "swap",
+  display: "optional",
   variable: "--font-hanken",
 });
 
@@ -304,18 +304,7 @@ export default function RootLayout({
         </Providers>
         <SpeedInsights />
         <Analytics />
-        <Script
-          src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GA_TRACKING_ID}');
-          `}
-        </Script>
+        <GoogleAnalytics trackingId={GA_TRACKING_ID} />
       </body>
     </html>
   );
