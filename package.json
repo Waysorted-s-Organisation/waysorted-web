@@ -24,6 +24,7 @@
     "migrate:redact-razorpay-event-logs": "tsx --conditions=react-server scripts/redact-razorpay-event-logs.ts",
     "migrate:reset-default-pricing-locks": "tsx --conditions=react-server scripts/migrate-reset-default-pricing-locks.ts",
     "migrate:backfill-wallet-seed-ledger": "tsx --conditions=react-server scripts/migrate-backfill-wallet-seed-ledger.ts",
+    "migrate:reconcile-subscription-purchases": "tsx --conditions=react-server scripts/migrate-reconcile-subscription-purchases.ts",
     "test:billing-small-fixes": "tsx --test test/billing-small-fixes.test.ts",
     "test:billing-hardening": "tsx --test test/billing-hardening.test.ts"
   },
