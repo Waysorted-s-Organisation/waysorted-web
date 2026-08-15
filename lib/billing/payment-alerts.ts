@@ -17,11 +17,18 @@ import type { SubscriptionCycleReconciliationSummary } from "@/lib/billing/subsc
 const PAID_BUT_UNFULFILLED_GRACE_MS = 15 * 60_000;
 
 export type PaymentAlert = {
-  kind: "paid_not_fulfilled" | "subscription_cycle_missing" | "ledger_drift";
+  kind:
+    | "paid_not_fulfilled"
+    | "subscription_cycle_missing"
+    | "ledger_drift"
+    | "recovery_job_failing";
   severity: "critical" | "warning";
   message: string;
   details: Record<string, unknown>;
 };
+
+/** Per-item failure counters reported by the reconcilers. */
+export type JobHealth = { name: string; scanned?: number; failed?: number; rejected?: boolean };
 
 /**
  * Purchases where the money was captured but the credits were never applied.
@@ -44,8 +51,30 @@ export async function findPaidButUnfulfilledPurchases(graceMs = PAID_BUT_UNFULFI
 export async function collectPaymentAlerts(input: {
   cycleSummary?: SubscriptionCycleReconciliationSummary | null;
   ledgerAudit?: { mismatched?: number; mismatchedUsers?: string[] } | null;
+  jobs?: JobHealth[];
 }): Promise<PaymentAlert[]> {
   const alerts: PaymentAlert[] = [];
+
+  // A reconciler that catches every per-item error still FULFILLS, so the job never registers as a
+  // rejection and the cron stays green. That means the recovery layer can be entirely dead - a
+  // rotated Razorpay key, an outage, a rate limit - while reporting success every night, which is
+  // precisely the failure mode this whole effort started from.
+  const failingJobs = (input.jobs || []).filter(
+    (job) => job.rejected || (job.failed ?? 0) > 0,
+  );
+  if (failingJobs.length) {
+    const totallyDead = failingJobs.filter(
+      (job) => job.rejected || ((job.scanned ?? 0) > 0 && job.failed === job.scanned),
+    );
+    alerts.push({
+      kind: "recovery_job_failing",
+      severity: totallyDead.length ? "critical" : "warning",
+      message: totallyDead.length
+        ? `${totallyDead.length} recovery job(s) failed completely - the recovery layer is not working`
+        : `${failingJobs.length} recovery job(s) reported item failures`,
+      details: { jobs: failingJobs },
+    });
+  }
 
   const unfulfilled = await findPaidButUnfulfilledPurchases();
   if (unfulfilled.length) {

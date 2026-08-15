@@ -89,8 +89,29 @@ export async function reconcileSubscriptionCycles(
         const paymentId = String(invoice.payment_id);
         const cycleKey = buildSubscriptionCycleKey(providerSubscriptionId, paymentId);
 
+        // Dedupe on the PAYMENT, not on one exact key string.
+        //
+        // The webhook does not always key by payment: resolvePaidSubscriptionCycle falls back to
+        // `invoice:<id>`, `period:<start>:<end>` or `paid-count:<n>` when the payload carries no
+        // payment id, and an older revision keyed as `<sub>:<payment>` with no ":payment:" segment.
+        // Probing a single string would therefore miss an existing grant and credit the cycle twice
+        // - exactly how the first paying customer ended up with two grants for one payment.
+        //
+        // applySubscriptionCycleCredits records paymentId in the ledger row's metadata, so match on
+        // that first, then fall back to the known key shapes.
+        const candidateKeys = [
+          `subscription-cycle:${subscription._id}:${cycleKey}`,
+          `subscription-cycle:${subscription._id}:${providerSubscriptionId}:${paymentId}`,
+          `subscription-cycle:${subscription._id}:${providerSubscriptionId}:invoice:${String(invoice.id)}`,
+        ];
+
         const existing = await CreditLedger.exists({
-          idempotencyKey: `subscription-cycle:${subscription._id}:${cycleKey}`,
+          user: subscription.user,
+          reason: "subscription_cycle_grant",
+          $or: [
+            { idempotencyKey: { $in: candidateKeys } },
+            { "metadata.paymentId": paymentId },
+          ],
         });
         if (existing) {
           summary.alreadyPresent += 1;

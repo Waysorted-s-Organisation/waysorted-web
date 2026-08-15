@@ -839,13 +839,23 @@ export async function updateBillingSubscriptionState(input: {
   // and throwing here made the webhook 500. Razorpay then retried until it gave up, so the
   // cancellation was never recorded locally and the customer kept entitlements they had stopped
   // paying for. Observed in production as five permanently-failed subscription.cancelled events.
+  // Seed the opening balance the same way ensureUserBilling does. Hardcoding 0 here would
+  // permanently destroy a legacy user's credits: they carry the balance on user.creditsRemaining
+  // until their wallet is first created, and $setOnInsert never fires again once a row exists - so
+  // a subscription webhook arriving before their first billing page visit would zero them out.
+  const legacyUser = await User.findById(input.userId)
+    .select("creditsRemaining")
+    .lean<{ creditsRemaining?: number } | null>();
+  const openingCredits =
+    typeof legacyUser?.creditsRemaining === "number" ? legacyUser.creditsRemaining : 0;
+
   const billing = await UserBilling.findOneAndUpdate(
     { user: input.userId },
     {
       $set: updates,
       $setOnInsert: {
         user: input.userId,
-        availableCredits: 0,
+        availableCredits: openingCredits,
         heldCredits: 0,
         pricingVersion: BILLING_PRICING_VERSION,
         pricingRiskFlags: [],

@@ -86,9 +86,24 @@ export async function GET(request: NextRequest) {
     ].filter(Boolean).length;
 
     // Turn money-correctness signals into something a human sees.
+    // Feed every job's health in, not just its return value: a reconciler that swallows per-item
+    // errors still fulfils, so without this a completely dead recovery layer reports a green run.
+    const jobHealth = [
+      { name: "purchase-reconciliation", settled: billing },
+      { name: "webhook-recovery", settled: webhookRecovery },
+      { name: "reservation-expiry", settled: reservationRecovery },
+      { name: "subscription-reconciliation", settled: subscriptionRecovery },
+      { name: "subscription-cycle-backstop", settled: cycleRecovery },
+    ].map(({ name, settled }) => {
+      if (settled.status === "rejected") return { name, rejected: true };
+      const value = (settled.value || {}) as { scanned?: number; failed?: number };
+      return { name, scanned: value.scanned, failed: value.failed };
+    });
+
     const alerts = await collectPaymentAlerts({
       cycleSummary: cycleRecovery.status === "fulfilled" ? cycleRecovery.value : null,
       ledgerAudit: ledgerAudit.status === "fulfilled" ? ledgerAudit.value : null,
+      jobs: jobHealth,
     }).catch((error) => {
       console.error("[billing-cron] alert collection failed", {
         error: error instanceof Error ? error.message : String(error),
