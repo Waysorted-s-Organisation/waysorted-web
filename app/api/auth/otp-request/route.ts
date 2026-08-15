@@ -20,18 +20,46 @@ export async function POST(req: Request) {
 
     await dbConnect();
 
-    const ttlSeconds = typeof expires_in === "number" && expires_in > 0 ? expires_in : 10 * 60;
+    // Cap the caller-supplied TTL: an attacker could otherwise keep a mapping alive indefinitely.
+    const MAX_TTL_SECONDS = 15 * 60;
+    const requestedTtl = typeof expires_in === "number" && expires_in > 0 ? expires_in : 10 * 60;
+    const ttlSeconds = Math.min(requestedTtl, MAX_TTL_SECONDS);
     const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
+    const normalizedEmail = String(email).trim().toLowerCase();
 
-    await OtpRequest.findOneAndUpdate(
+    // The request_id -> email mapping is IMMUTABLE.
+    //
+    // verify-otp treats mapping.email as the authenticated identity and mints a 30-day session for
+    // it. This route is unauthenticated, so allowing an existing mapping to be rewritten meant an
+    // attacker could request an OTP for their own address, rebind that request_id to a victim's
+    // email, then verify with the code they legitimately received - taking over any account,
+    // including an admin. $setOnInsert makes the binding write-once.
+    const existing = await OtpRequest.findOne({ requestId: request_id }).lean<{
+      email?: string;
+    } | null>();
+
+    if (existing && existing.email !== normalizedEmail) {
+      console.warn("[auth] rejected attempt to rebind an OTP request id to a different email", {
+        requestId: String(request_id).slice(0, 12),
+      });
+      return NextResponse.json(
+        { ok: false, message: "request_id is already in use" },
+        { status: 409 }
+      );
+    }
+
+    await OtpRequest.updateOne(
       { requestId: request_id },
       {
-        requestId: request_id,
-        email: String(email).trim().toLowerCase(),
-        name: name ? String(name).trim() : undefined,
-        expiresAt,
+        $setOnInsert: {
+          requestId: request_id,
+          email: normalizedEmail,
+          name: name ? String(name).trim() : undefined,
+        },
+        // Only the expiry may move, and never beyond the cap above.
+        $set: { expiresAt },
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true }
+      { upsert: true, setDefaultsOnInsert: true }
     );
 
     return NextResponse.json({ ok: true });

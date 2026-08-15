@@ -27,6 +27,8 @@ export async function POST(request: NextRequest) {
       reservationId: body.reservationId?.trim() || null,
       idempotencyKey: body.idempotencyKey?.trim() || null,
       reason: body.reason?.trim() || null,
+      // Customer-initiated: cannot free a hold the processor has already accepted.
+      actor: "user",
     });
 
     return NextResponse.json({

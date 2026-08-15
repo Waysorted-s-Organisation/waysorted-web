@@ -163,8 +163,12 @@ export default function PricingClient({
     async function loadPricing() {
       setPricingError(null);
       try {
-        const endpoint = user ? "/api/billing/catalog" : "/api/billing/public-catalog";
-        const response = await fetch(`${endpoint}?ts=${Date.now()}`, { cache: "no-store" });
+        // Pricing is geo-based only. Always read the public catalog, never the authenticated one:
+        // signing in must not change the price, and `user` resolves asynchronously, so switching
+        // endpoints on it made the page paint the geo price and then repaint a different one.
+        const response = await fetch(`/api/billing/public-catalog?ts=${Date.now()}`, {
+          cache: "no-store",
+        });
         const payload = (await response.json()) as PricingPayload | { error?: string };
         if (!response.ok || !("catalog" in payload)) {
           throw new Error(("error" in payload && payload.error) || "Unable to load pricing.");
@@ -181,7 +185,8 @@ export default function PricingClient({
     return () => {
       active = false;
     };
-  }, [user]);
+    // Deliberately not keyed on `user`: pricing must not change when auth resolves.
+  }, []);
 
   const subscriptionProducts = useMemo(() => {
     if (!pricingData) return [];
@@ -241,7 +246,20 @@ export default function PricingClient({
   function goToCheckout(productCode: string | null) {
     if (!productCode) return;
 
-    const target = `/billing?product=${encodeURIComponent(productCode)}&autostart=1`;
+    // Carry the price the customer actually looked at across the hand-off. /pricing may render the
+    // unauthenticated catalog (detected country, no pricing lock) while /billing prices from the
+    // authenticated snapshot (which honours the lock), so the two can legitimately disagree.
+    // Without these fields the billing page re-quotes from its own snapshot and validates that
+    // number against itself, which cannot detect the drift the customer would experience.
+    const quoted = pricingData?.catalog.find((item) => item.code === productCode);
+    const params = new URLSearchParams({ product: productCode, autostart: "1" });
+    if (quoted && pricingData) {
+      params.set("qa", String(quoted.amountPaise));
+      params.set("qc", quoted.currency);
+      params.set("qv", pricingData.pricingVersion);
+    }
+    const target = `/billing?${params.toString()}`;
+
     if (!user && !loading) {
       router.push(`/login?redirect=${encodeURIComponent(target)}`);
       return;
@@ -577,7 +595,12 @@ export default function PricingClient({
               {/* Bottom white gradient inside the button */}
               <div className="absolute inset-x-0 bottom-0 h-[24px] bg-gradient-to-t from-white/20 to-transparent pointer-events-none group-hover:from-white/30 transition-all" />
               <span className="relative z-10 text-center">
-                Get core &mdash; {subscriptionProducts[1] ? formatCurrency(subscriptionProducts[1].amountPaise, subscriptionProducts[1].currency) : "₹349"}/{billingCycle === "monthly" ? "monthly" : "yearly"}
+                {/* Never render a hardcoded amount: before the catalog loads the real price may be
+                    a different tier and currency entirely, so show no price rather than a wrong one. */}
+                Get core
+                {subscriptionProducts[1]
+                  ? ` — ${formatCurrency(subscriptionProducts[1].amountPaise, subscriptionProducts[1].currency)}/${billingCycle === "monthly" ? "monthly" : "yearly"}`
+                  : ""}
               </span>
             </button>
           </section>

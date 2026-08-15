@@ -29,6 +29,10 @@ export interface ISubscription {
   lastCreditsGrantedAt?: Date | null;
   lastPaymentId?: string | null;
   canceledAt?: Date | null;
+  /** Set when an unpayable pending subscription was retired to free the one-live-subscription slot. */
+  supersededAt?: Date | null;
+  /** True when the provider-side cancellation failed and must be retried by the reconciler. */
+  providerCancellationPending?: boolean;
   metadata?: Record<string, unknown>;
   createdAt?: Date;
   updatedAt?: Date;
@@ -61,6 +65,8 @@ const SubscriptionSchema = new Schema<ISubscription, SubscriptionModel>(
     lastCreditsGrantedAt: { type: Date, default: null },
     lastPaymentId: { type: String, default: null },
     canceledAt: { type: Date, default: null },
+    supersededAt: { type: Date, default: null },
+    providerCancellationPending: { type: Boolean, default: false, index: true },
     metadata: { type: Schema.Types.Mixed, default: {} },
   },
   {

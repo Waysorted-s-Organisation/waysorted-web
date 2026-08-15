@@ -46,14 +46,43 @@ export async function POST(request: NextRequest) {
     if (!allowed) {
       return NextResponse.json({ error: "Product is not currently eligible for this user." }, { status: 403 });
     }
-    if (
+    // A quote is expected, but its ABSENCE must never block a payment. Server and client deploy at
+    // the same instant, so a browser still running the previously cached bundle sends no quote -
+    // rejecting those requests breaks checkout for every open session until they hard-reload.
+    // Warn loudly instead, so stale clients are visible, and enforce strictly whenever a quote
+    // IS supplied (which is the case that actually protects the customer from a silent reprice).
+    const hasQuote =
       body.quotedAmountSubunits !== undefined &&
+      body.quotedCurrency !== undefined &&
+      body.pricingVersion !== undefined;
+
+    if (!hasQuote) {
+      console.warn("[billing] checkout/order called without a price quote", {
+        userId: String(auth.user._id),
+        productCode: product.code,
+        authType: auth.authType,
+      });
+    }
+
+    if (
+      hasQuote &&
       (body.quotedAmountSubunits !== pricedProduct!.amountPaise ||
-        body.quotedCurrency?.toUpperCase() !== pricedProduct!.currency.toUpperCase() ||
+        body.quotedCurrency!.toUpperCase() !== pricedProduct!.currency.toUpperCase() ||
         body.pricingVersion !== snapshot.pricingVersion)
     ) {
       return NextResponse.json(
-        { error: "Pricing changed before checkout. Review the updated amount.", code: "pricing_quote_changed" },
+        {
+          error: "Pricing changed before checkout. Review the updated amount.",
+          code: "pricing_quote_changed",
+          quoted: {
+            amountSubunits: body.quotedAmountSubunits,
+            currency: body.quotedCurrency?.toUpperCase(),
+          },
+          current: {
+            amountSubunits: pricedProduct!.amountPaise,
+            currency: pricedProduct!.currency.toUpperCase(),
+          },
+        },
         { status: 409 },
       );
     }
@@ -66,7 +95,12 @@ export async function POST(request: NextRequest) {
       existingPurchase &&
       existingPurchase.productCode === product.code &&
       ["created", "pending"].includes(existingPurchase.status) &&
-      existingAgeMs < 30 * 60_000,
+      existingAgeMs < 30 * 60_000 &&
+      // The reuse branch returns the ORIGINAL order's amount and currency. Reusing a record whose
+      // price no longer matches the quote just validated would charge the customer an amount they
+      // were never shown - the guard above would pass while the old price is what actually bills.
+      existingPurchase.amountPaise === pricedProduct!.amountPaise &&
+      existingPurchase.currency.toUpperCase() === pricedProduct!.currency.toUpperCase(),
     );
     if (existingPurchase && !canReuseExisting) {
       return NextResponse.json(

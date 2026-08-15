@@ -17,6 +17,7 @@ import {
   updateBillingSubscriptionState,
 } from "@/lib/billing/db";
 import { resolvePaidSubscriptionCycle } from "@/lib/billing/webhook-payload";
+import { validateCapturedRazorpayPayment } from "@/lib/billing/payment-verification";
 import { randomUUID } from "crypto";
 import {
   buildWebhookClaimFilter,
@@ -154,10 +155,38 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
 
       if (!purchase) return { ignored: true, reason: "purchase_not_found" };
 
+      // Validate the payment the same way /checkout/verify does. Without this the webhook - the
+      // path that runs when the customer's browser is gone, i.e. the one actually depended on -
+      // grants the full credit allocation for a partial capture, or for an amount or currency that
+      // does not match what was ordered.
+      if (paymentEntity) {
+        try {
+          validateCapturedRazorpayPayment({
+            payment: paymentEntity,
+            purchase,
+            expectedOrderId: orderId,
+            expectedPaymentId: paymentId || null,
+          });
+        } catch (validationError) {
+          console.error("[billing] webhook payment failed validation; not granting credits", {
+            purchaseId: String(purchase._id),
+            orderId,
+            paymentId,
+            error:
+              validationError instanceof Error ? validationError.message : String(validationError),
+          });
+          return { ignored: true, reason: "payment_validation_failed" };
+        }
+      }
+
       purchase.razorpayOrderId ||= orderId;
       purchase.razorpayPaymentId ||= paymentId || null;
-      purchase.status = "captured";
-      purchase.capturedAt ||= new Date();
+      // Never resurrect a refunded purchase: a late or re-delivered capture event would otherwise
+      // flip it back to captured and show a refunded charge as paid.
+      if (purchase.status !== "refunded" && purchase.status !== "partially_refunded") {
+        purchase.status = "captured";
+        purchase.capturedAt ||= new Date();
+      }
       await purchase.save();
 
       await applyPurchaseCredits(purchase);
