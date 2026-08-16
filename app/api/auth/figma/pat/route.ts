@@ -73,8 +73,6 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const pat = body.pat;
-    const fileKey = typeof body.fileKey === "string" ? body.fileKey.trim() : null;
-
     if (!pat || typeof pat !== "string") {
       return patJson(
         request,
@@ -84,27 +82,27 @@ export async function POST(request: NextRequest) {
     }
 
     const trimmedPat = pat.trim();
-    const validation = await validateFigmaToken(trimmedPat, fileKey);
+    // Saving a credential must not depend on a specific file being reachable.
+    // File/comment access is validated by the comments endpoint when comments
+    // are loaded. Coupling it here caused valid PATs to fail with a 502 when
+    // Figma returned a transient error, rate limit, or inaccessible-file error.
+    const validation = await validateFigmaToken(trimmedPat);
 
     if (!validation.ok) {
-      const message =
-        validation.reason === "comments_check_failed"
-          ? "This PAT could not access comments for the provided Figma file. Check the file URL, permissions, and file_comments scope."
-          : validation.status === 401 || validation.status === 403
-          ? "Invalid or expired Figma Personal Access Token."
-          : "Unable to validate Figma Personal Access Token. Please try again.";
+      const isInvalidCredential = validation.status === 401 || validation.status === 403;
+      const message = isInvalidCredential
+        ? "Invalid or expired Figma Personal Access Token."
+        : "Unable to validate Figma Personal Access Token. Please try again.";
 
       return patJson(
         request,
         {
           error: message,
-          reason: validation.reason === "comments_check_failed"
-            ? "file_not_accessible"
-            : validation.status === 401 || validation.status === 403
+          reason: isInvalidCredential
             ? "pat_invalid_or_expired"
             : "figma_unreachable",
         },
-        { status: validation.status === 401 || validation.status === 403 ? 400 : 502 },
+        { status: isInvalidCredential ? 400 : 503 },
       );
     }
 
