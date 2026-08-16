@@ -42,3 +42,31 @@ test("subscription access fails closed when the renewal boundary is missing", ()
   assert.equal(isSubscriptionActive("cancel_scheduled", null), false);
   assert.equal(isSubscriptionActive("active", new Date(Date.now() + 60_000)), true);
 });
+
+test("comment summaries use authoritative fixed single and batch prices", () => {
+  const single = resolveUsageCredits({
+    featureCode: "comment_summarize_single",
+    toolCode: "comment_summarizer",
+    selectedOptions: { creditsRequired: 999, commentCount: 1, artifact: "summary" },
+  });
+  const actionable = resolveUsageCredits({
+    featureCode: "comment_summarize_single",
+    toolCode: "comment_summarizer",
+    selectedOptions: { creditsRequired: 999, commentCount: 1, artifact: "actionable" },
+  });
+  const oneCommentBatch = resolveUsageCredits({
+    featureCode: "comment_summarize_batch",
+    toolCode: "comment_summarizer",
+    selectedOptions: { creditsRequired: 1, commentCount: 1 },
+  });
+  const manyCommentBatch = resolveUsageCredits({
+    featureCode: "comment_summarize_batch",
+    toolCode: "comment_summarizer",
+    selectedOptions: { creditsRequired: 999, commentCount: 250 },
+  });
+
+  assert.equal(single.creditsRequired, 5);
+  assert.equal(actionable.creditsRequired, 5);
+  assert.equal(oneCommentBatch.creditsRequired, 20);
+  assert.equal(manyCommentBatch.creditsRequired, 20);
+});

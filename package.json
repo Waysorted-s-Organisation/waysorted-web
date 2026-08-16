@@ -26,7 +26,8 @@
     "migrate:backfill-wallet-seed-ledger": "tsx --conditions=react-server scripts/migrate-backfill-wallet-seed-ledger.ts",
     "migrate:reconcile-subscription-purchases": "tsx --conditions=react-server scripts/migrate-reconcile-subscription-purchases.ts",
     "test:billing-small-fixes": "tsx --test test/billing-small-fixes.test.ts",
-    "test:billing-hardening": "tsx --test test/billing-hardening.test.ts"
+    "test:billing-hardening": "tsx --test test/billing-hardening.test.ts",
+    "test:figma-plugin-cors": "tsx --test test/figma-plugin-cors.test.ts"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.15",
