@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { buildCorsHeaders } from "@/lib/cors";
+import { buildFigmaPatCorsHeaders } from "@/lib/figma-plugin-cors";
 import { LEGACY_PRICING_COUNTRY_COOKIE } from "@/lib/billing/regional-pricing";
 
 const PAGE_NO_STORE_HEADERS = {
@@ -43,7 +44,11 @@ export function middleware(request: NextRequest) {
 
   // Handle CORS preflight requests (API only)
   if (request.method === "OPTIONS" && pathname.startsWith("/api/")) {
-    const headers = buildCorsHeaders(request);
+    // Middleware runs before route handlers, so the Figma PAT endpoint's
+    // opaque-origin policy must also be applied here.
+    const headers = pathname === "/api/auth/figma/pat"
+      ? buildFigmaPatCorsHeaders(request)
+      : buildCorsHeaders(request);
     if (!headers) {
       return new NextResponse(null, { status: 403 });
     }
