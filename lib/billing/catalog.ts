@@ -256,6 +256,18 @@ export const FEATURE_PRICING: FeaturePricingRule[] = [
     description: "Customizable preset",
     requiresSubscription: true,
   },
+  {
+    featureCode: "comment_summarize_single",
+    // Usage pricing applies the global 2x multiplier: 2.5 -> 5 credits.
+    credits: 2.5,
+    description: "Analyze one comment (Summary and Actionable)",
+  },
+  {
+    featureCode: "comment_summarize_batch",
+    // A batch is always 20 credits, independent of selected comment count.
+    credits: 10,
+    description: "Summarize selected comments",
+  },
 ];
 
 export const AI_IMPORT_PRICING: FileImportPricingRule[] = [

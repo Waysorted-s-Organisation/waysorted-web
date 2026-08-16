@@ -20,7 +20,8 @@
     "migrate:billing-idempotency-indexes": "tsx scripts/migrate-billing-idempotency-indexes.ts",
     "migrate:redact-razorpay-event-logs": "tsx scripts/redact-razorpay-event-logs.ts",
     "test:billing-small-fixes": "tsx --test test/billing-small-fixes.test.ts",
-    "test:billing-hardening": "tsx --test test/billing-hardening.test.ts"
+    "test:billing-hardening": "tsx --test test/billing-hardening.test.ts",
+    "test:figma-plugin-cors": "tsx --test test/figma-plugin-cors.test.ts"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.15",

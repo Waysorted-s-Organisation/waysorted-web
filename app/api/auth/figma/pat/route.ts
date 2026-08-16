@@ -1,48 +1,86 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import User from "@/models/user";
 import type { IUser } from "@/types/user";
 import { REQUIRED_FIGMA_SCOPES, validateFigmaToken } from "@/lib/figma-auth";
+import {
+  buildFigmaPatCorsHeaders,
+  isOpaqueFigmaPluginRequest,
+} from "@/lib/figma-plugin-cors";
 
-export async function POST(request: Request) {
-  // Support both cookie-based sessionId and Bearer accessToken for plugin flexibility
-  const cookieStore = await cookies();
-  const cookieSessionId = cookieStore.get("sessionId")?.value;
+function withPatCors(request: NextRequest, response: NextResponse) {
+  const headers = buildFigmaPatCorsHeaders(request);
+  if (!headers) return response;
 
-  let authToken: string | null = null;
-  const authHeader = request.headers.get("Authorization");
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    authToken = authHeader.split(" ")[1];
-  }
+  Object.entries(headers).forEach(([key, value]) => {
+    response.headers.set(key, value);
+  });
+  return response;
+}
 
-  if (!cookieSessionId && !authToken) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+function patJson(
+  request: NextRequest,
+  body: unknown,
+  init?: ResponseInit,
+) {
+  return withPatCors(request, NextResponse.json(body, init));
+}
 
-  await dbConnect();
+export async function OPTIONS(request: NextRequest) {
+  const headers = buildFigmaPatCorsHeaders(request);
+  return new NextResponse(null, {
+    status: headers ? 200 : 403,
+    headers: headers || undefined,
+  });
+}
 
-  // Try cookie sessionId first, then Bearer accessToken
-  let session = cookieSessionId
-    ? await Session.findOne({ sessionId: cookieSessionId }).populate<{ user: IUser }>("user")
-    : null;
-
-  if (!session && authToken) {
-    session = await Session.findOne({ accessToken: authToken }).populate<{ user: IUser }>("user");
-  }
-  
-  if (!session || !session.user) {
-    return NextResponse.json({ error: "Invalid session" }, { status: 401 });
-  }
-
+export async function POST(request: NextRequest) {
   try {
+    // Support both cookie-based sessionId and Bearer accessToken for plugin flexibility
+    const authHeader = request.headers.get("Authorization");
+    const authToken = authHeader?.startsWith("Bearer ")
+      ? authHeader.slice("Bearer ".length).trim() || null
+      : null;
+    const isOpaquePluginRequest = isOpaqueFigmaPluginRequest(request);
+
+    // Opaque origins are accepted only with explicit bearer authentication.
+    // Never authenticate a `null`-origin request through browser cookies.
+    const cookieStore = await cookies();
+    const cookieSessionId = isOpaquePluginRequest
+      ? null
+      : cookieStore.get("sessionId")?.value;
+
+    if (!cookieSessionId && !authToken) {
+      return patJson(request, { error: "Unauthorized" }, { status: 401 });
+    }
+
+    await dbConnect();
+
+    // Try cookie sessionId first, then Bearer accessToken
+    let session = cookieSessionId
+      ? await Session.findOne({ sessionId: cookieSessionId }).populate<{ user: IUser }>("user")
+      : null;
+
+    if (!session && authToken) {
+      session = await Session.findOne({ accessToken: authToken }).populate<{ user: IUser }>("user");
+    }
+
+    if (!session || !session.user) {
+      return patJson(request, { error: "Invalid session" }, { status: 401 });
+    }
+
     const body = await request.json();
     const pat = body.pat;
     const fileKey = typeof body.fileKey === "string" ? body.fileKey.trim() : null;
 
     if (!pat || typeof pat !== "string") {
-      return NextResponse.json({ error: "Missing or invalid Personal Access Token" }, { status: 400 });
+      return patJson(
+        request,
+        { error: "Missing or invalid Personal Access Token" },
+        { status: 400 },
+      );
     }
 
     const trimmedPat = pat.trim();
@@ -56,7 +94,8 @@ export async function POST(request: Request) {
           ? "Invalid or expired Figma Personal Access Token."
           : "Unable to validate Figma Personal Access Token. Please try again.";
 
-      return NextResponse.json(
+      return patJson(
+        request,
         {
           error: message,
           reason: validation.reason === "comments_check_failed"
@@ -82,9 +121,9 @@ export async function POST(request: Request) {
       figmaConnectedAt: new Date(),
     });
 
-    return NextResponse.json({ success: true });
+    return patJson(request, { success: true });
   } catch (error) {
     console.error("Figma PAT API Error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return patJson(request, { error: "Internal server error" }, { status: 500 });
   }
 }
