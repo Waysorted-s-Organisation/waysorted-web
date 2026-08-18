@@ -27,68 +27,12 @@ export const metadata: Metadata = {
   },
   description:
     "Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.",
-  keywords: [
-    // Brand keywords
-    "Waysorted Infotech Pvt Ltd",
-    "Waysorted Infotech",
-    "Waysorted",
-    "Waysorted plugin",
-    "Waysorted Figma",
-    "Waysorted beta",
-    "Waysorted tools",
-    "waysorted.com",
-    // Product keywords
-    "Figma plugin",
-    "Figma plugin bundle",
-    "Figma plugin marketplace",
-    "Frames to PDF",
-    "File Importer",
-    "PDF exporter Figma",
-    "Palettable color palette",
-    "unit converter plugin",
-    "import tool Figma",
-    "Figma PDF export plugin",
-    "Figma color palette plugin",
-    "px to rem converter Figma",
-    // Category keywords
-    "design tools",
-    "design workflow",
-    "designer productivity tools",
-    "UI/UX tools",
-    "one powerful suite",
-    "unified tool suite",
-    "design plugin collection",
-    "best Figma plugins 2024",
-    "top Figma plugins",
-    // Action keywords
-    "accelerate design workflow",
-    "productivity for designers",
-    "Figma design plugins",
-    "export Figma to PDF",
-    "convert px to rem Figma",
-    // Speed semantic cluster (GEO)
-    "fast design tools",
-    "zero latency",
-    "instant export",
-    "real-time collaboration",
-    "client-side processing",
-    // Security semantic cluster (GEO)
-    "secure design platform",
-    "local-first architecture",
-    "data privacy",
-    "encrypted workflows",
-    "GDPR compliant design tools",
-    // Comparison keywords (GEO)
-    "Figma plugin alternative",
-    "all-in-one design solution",
-    "replace multiple plugins",
-    "Figma plugin to export PDF",
-    "free Figma plugin bundle",
-    // Competitor Alternatives (GEO)
-    "Magicul alternative",
-    "Convertify alternative",
-    "Figma to PDF alternative",
-  ],
+  // `keywords` intentionally removed. Google has ignored the meta keywords tag
+  // since 2009 and it is not a ranking signal on any major engine, so the 52
+  // entries here bought nothing. The list also carried competitor brand names
+  // ("Magicul alternative", "Convertify alternative") and filler like
+  // "zero latency", which is the only part that carried any downside.
+  // Rankings come from the page's actual content, not from a keyword list.
   authors: [{ name: "Waysorted" }],
   creator: "Waysorted",
   publisher: "Waysorted",

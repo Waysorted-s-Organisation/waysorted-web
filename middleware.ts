@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { buildCorsHeaders } from "@/lib/cors";
 import { buildFigmaPatCorsHeaders } from "@/lib/figma-plugin-cors";
 import { LEGACY_PRICING_COUNTRY_COOKIE } from "@/lib/billing/regional-pricing";
+import { isNonCanonicalHost } from "@/lib/canonical-host";
 
 const PAGE_NO_STORE_HEADERS = {
   "Cache-Control": "private, no-store, no-cache, max-age=0, must-revalidate",
@@ -27,6 +28,7 @@ function clearLegacyPricingCountryCookie(request: NextRequest, response: NextRes
   }
   return response;
 }
+
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -82,6 +84,13 @@ export function middleware(request: NextRequest) {
   // (prices come from the no-store /api/billing/public-catalog call the client makes after
   // hydration), so forcing no-store only cost every visitor a full round trip for identical markup.
   // Re-add it if regional pricing is ever moved into the server render.
+
+  // Keep preview/alternate hosts out of the index entirely. Applied last so it
+  // wins over anything set above, and only for non-canonical hosts - the
+  // production site is never touched by this branch.
+  if (isNonCanonicalHost(hostname)) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
 
   return clearLegacyPricingCountryCookie(request, response);
 }
