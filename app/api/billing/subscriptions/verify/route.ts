@@ -8,6 +8,7 @@ import {
   applySubscriptionCycleCredits,
   findSubscriptionByProviderId,
 } from "@/lib/billing/db";
+import { buildSubscriptionCycleKey } from "@/lib/billing/webhook-payload";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -108,7 +109,11 @@ export async function POST(request: NextRequest) {
       if (subscription) {
         await applySubscriptionCycleCredits({
           subscription,
-          cycleKey: `${subscriptionId}:payment:${paymentId}`,
+          // Must come from the shared builder, never a local template literal. The webhook and the
+          // renewal backstop both key off buildSubscriptionCycleKey; a second hand-written copy is
+          // one edit away from diverging, and a diverged cycle key is exactly what credited the
+          // first paying customer twice for a single payment.
+          cycleKey: buildSubscriptionCycleKey(subscriptionId, paymentId),
           paymentId,
         });
         creditsApplied = true;
