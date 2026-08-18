@@ -6,24 +6,24 @@ export default function MainUI() {
         <>
             <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Main UI</h1>
 
-            <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Top Bar</h3>
+            <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Top Bar</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Primary navigation categories, and core application settings.
             </p>
 
-            <h4 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Search Bar</h4>
+            <h2 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Search Bar</h2>
             <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-2">
                 <li><span className="text-secondary-db-100">Appearance:</span> An input field with a search icon on the left and a placeholder for text input.</li>
                 <li><span className="text-secondary-db-100">Function:</span> Allows users to quickly find specific tools, features, or help documentation within the plugin.</li>
             </ul>
 
-            <h4 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">WaySpace & Tools Toggle</h4>
+            <h2 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">WaySpace & Tools Toggle</h2>
             <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-2">
                 <li><span className="text-secondary-db-100">Appearance:</span> Two distinct buttons, Wayspace and Tools, indicating the UI user is on.</li>
                 <li><span className="text-secondary-db-100">Function:</span> Allows users to switch between their Personalised Wayspace and all the tools Waysorted provides.</li>
             </ul>
 
-            <h4 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">UI Style Toggle (Default / Glass)</h4>
+            <h2 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">UI Style Toggle (Default / Glass)</h2>
             <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-2">
                 <li><span className="text-secondary-db-100">Appearance:</span> Two distinct buttons, Default and Glass, indicating different UI visual styles. Glass is typically a translucent, modern look.</li>
                 <li><span className="text-secondary-db-100">Function:</span> Allows users to switch between a standard opaque plugin UI and a &quot;Liquid Glass Mode&quot; for an immersive experience.</li>
@@ -41,24 +41,24 @@ export default function MainUI() {
                 <figcaption className="text-sm text-secondary-db-60 mt-2 italic">Top Bar in the Plugin UI</figcaption>
             </figure>
 
-            <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Left Panel (Credits & Account)</h3>
+            <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Left Panel (Credits & Account)</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Manages user credits, which unlocks premium features & tools.
             </p>
 
-            <h4 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">&quot;Your credits&quot; Section</h4>
+            <h2 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">&quot;Your credits&quot; Section</h2>
             <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-2">
                 <li><span className="text-secondary-db-100">Appearance:</span> A card element with a wallet/credit icon.</li>
                 <li><span className="text-secondary-db-100">Function:</span> A view of credit usage, and ability to purchase more.</li>
             </ul>
 
-            <h4 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Credit Balance & Status</h4>
+            <h2 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Credit Balance & Status</h2>
             <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-2">
                 <li><span className="text-secondary-db-100">Appearance:</span> Displays the numerical amount of credits left with a button/label depending on the credit status.</li>
                 <li><span className="text-secondary-db-100">Function:</span> Informs the user of their remaining credit balance. The Active button confirms the credits are usable. The Low button confirms the credits are low. The No credits left button shows that credit is exhausted.</li>
             </ul>
 
-            <h4 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">&quot;Get more credits&quot; Button</h4>
+            <h2 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">&quot;Get more credits&quot; Button</h2>
             <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-2">
                 <li><span className="text-secondary-db-100">Appearance:</span> A secondary action button.</li>
                 <li><span className="text-secondary-db-100">Function:</span> Directs users to a page where they can purchase additional credits.</li>
@@ -114,7 +114,7 @@ export default function MainUI() {
                 </figure>
             </div>
 
-            <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Central Panel (Wayspace - Customizable Hub)</h3>
+            <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Central Panel (Wayspace - Customizable Hub)</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Acts as the personalized dashboard where users can curate and access their favorite tools. Checkout <Link href="/document-hub/wayspace" className="text-primary-way-100">Wayspace docs</Link> for more info.
             </p>
@@ -131,12 +131,12 @@ export default function MainUI() {
                 <figcaption className="text-sm text-secondary-db-60 mt-2 italic">Wayspace</figcaption>
             </figure>
 
-            <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Right Panel (Engagement & Communication)</h3>
+            <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Right Panel (Engagement & Communication)</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Provides quick access to engagement features, community, and important updates.
             </p>
 
-            <h4 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Way Challenge</h4>
+            <h2 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Way Challenge</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 The flagship game of Waysorted&apos;s Figma plugin.
             </p>

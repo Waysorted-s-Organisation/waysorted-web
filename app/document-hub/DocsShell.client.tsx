@@ -23,7 +23,7 @@ export interface SidebarItem {
 const sidebarData: SidebarItem[] = [
   {
     title: "General",
-    links: ["Getting Started", "What is Waysorted", "Account Creation and Setup", "Quick Integration with Figma", "Accessing Waysorted in Figma", "FAQs"]
+    links: ["Getting Started", "What is Waysorted", "All in One Tools", "Supported Platforms", "Account Creation and Setup", "Quick Integration with Figma", "Accessing Waysorted in Figma", "Whats Coming Next", "FAQs"]
   },
   {
     title: "Waysorted's Plugin Suite",
@@ -35,7 +35,7 @@ const sidebarData: SidebarItem[] = [
   },
   {
     title: "Account and Workspace",
-    links: ["Profile and Settings", "Account Settings Navigation", "Profile and Settings Overview", "Profile Photo", "Linked Accounts and Integrations", "Notifications Preferences", "Beta Features"]
+    links: ["Account and Workspace", "Profile and Settings", "Account Settings Navigation", "Profile and Settings Overview", "Profile Photo", "Linked Accounts and Integrations", "Notifications Preferences", "Beta Features"]
   },
   {
     title: "Tools Reference",
@@ -55,7 +55,14 @@ const sidebarData: SidebarItem[] = [
   },
   {
     title: "Credits and Usage",
-    links: ["Overview", "Earning Credits", "Using Credits", "Managing Credits"]
+    links: ["Credits and Usage", "Overview", "Earning Credits", "Using Credits", "Managing Credits"]
+  },
+  {
+    // These pages already existed with 1,000+ words each but were in the
+    // sitemap with no internal link pointing at them, so Google had no path to
+    // them and no signal that they mattered.
+    title: "Design Standards",
+    links: ["Accessibility WCAG", "Handoff Standards", "Waysorted Principles"]
   },
   {
     title: "Waysorted API Documentation",
@@ -529,7 +536,7 @@ export default function DocsShell({
               </div>
             </main>
 
-            <TableOfContents topOffsetPx={112} maxLevel={4} />
+            <TableOfContents topOffsetPx={112} maxLevel={3} />
           </div>
         </main>
 

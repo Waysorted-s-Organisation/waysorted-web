@@ -9,7 +9,7 @@ export default function ProfileAndSettings() {
         For guided walkthroughs and practical tutorials, visit the Learning Hub.
       </p>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Account Settings Navigation</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Account Settings Navigation</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Use the left sidebar to manage different account areas:
       </p>
@@ -23,7 +23,7 @@ export default function ProfileAndSettings() {
         <li><span className="text-secondary-db-100">Beta Features</span> – Access early and experimental tools</li>
       </ul>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Profile &amp; Settings Overview</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Profile &amp; Settings Overview</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         The Profile &amp; Settings area is the central place to manage your Waysorted account. Here you can update your profile, control preferences, manage credits and subscriptions, configure notifications and integrations, and access beta features.
       </p>
@@ -34,9 +34,9 @@ export default function ProfileAndSettings() {
         Access: Top navigation → Profile icon → Account settings → General
       </p>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Profile Details</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Profile Details</h2>
 
-      <h4 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Profile Photo</h4>
+      <h2 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Profile Photo</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Your profile photo appears across Waysorted in collaborations, comments, and the marketplace.
       </p>
@@ -49,7 +49,7 @@ export default function ProfileAndSettings() {
         Tip: Use a professional photo for public or creator profiles.
       </p>
 
-      <h4 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Name</h4>
+      <h2 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Name</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Your display name is visible across the platform.
       </p>
@@ -59,7 +59,7 @@ export default function ProfileAndSettings() {
         <li>Updates apply instantly</li>
       </ul>
 
-      <h4 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Email</h4>
+      <h2 className="text-lg font-semibold text-secondary-db-100 mt-6 mb-2">Email</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Your primary email is used for login, notifications, billing, and recovery.
       </p>
@@ -72,7 +72,7 @@ export default function ProfileAndSettings() {
         <li>Existing email remains active until verification is complete</li>
       </ul>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Linked Accounts &amp; Integrations</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Linked Accounts &amp; Integrations</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Connect third-party services to enable faster access and enhanced functionality.
       </p>
@@ -93,7 +93,7 @@ export default function ProfileAndSettings() {
         All integrations follow Waysorted&apos;s Privacy Policy, and no data is shared without explicit consent.
       </p>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Notifications Preferences</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Notifications Preferences</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Customize how you receive updates from Waysorted.
       </p>
@@ -117,7 +117,7 @@ export default function ProfileAndSettings() {
         <li>Ensure your email address is verified</li>
       </ul>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Beta Features</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Beta Features</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Beta features allow early access to upcoming tools and experiments.
       </p>

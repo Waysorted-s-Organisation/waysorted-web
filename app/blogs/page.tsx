@@ -14,6 +14,13 @@ export const metadata: Metadata = {
   description,
   alternates: {
     canonical: "/blogs",
+    // Feed autodiscovery: emits <link rel="alternate" type="application/rss+xml">
+    // so readers, aggregators and feed-preferring crawlers can find new posts.
+    types: {
+      "application/rss+xml": [
+        { url: "https://www.waysorted.com/blogs/rss.xml", title: "Waysorted Blog" },
+      ],
+    },
   },
   keywords: [
     "Waysorted blog",
