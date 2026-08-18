@@ -1,7 +1,7 @@
 export default function ProfileAndSettings() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Profile and Settings</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Profile and Settings</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         This section explains how to manage your Waysorted account, profile, subscriptions, integrations, and preferences. These settings help you personalize your workspace, track credits, manage plans, and control how you interact with the Waysorted ecosystem within Figma.
       </p>

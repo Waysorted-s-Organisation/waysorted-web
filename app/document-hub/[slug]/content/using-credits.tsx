@@ -1,7 +1,7 @@
 export default function UsingCredits() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Using Credits</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Using Credits</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Credits represent the relative system cost of using different tools and actions across platforms. This includes operations such as exports, imports, conversions, and advanced processing.
       </p>

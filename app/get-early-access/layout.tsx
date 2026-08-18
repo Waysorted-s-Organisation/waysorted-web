@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
     title: "Try Waysorted Beta for Figma",
     description: "Use Waysorted inside Figma to work smarter with bundled, use-case-based plugins. Get early access to the beta.",
+    alternates: {
+        canonical: "https://www.waysorted.com/get-early-access",
+    },
     keywords: [
         "Waysorted beta",
         "Figma plugin beta",

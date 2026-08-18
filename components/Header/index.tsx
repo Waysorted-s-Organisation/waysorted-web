@@ -242,26 +242,29 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               />
             </div>
 
-            <button
+            {/* These are <Link> rather than <button onClick={router.push}>: Google
+                can only follow an <a> element with an href, so as buttons these
+                nav items passed no crawl path or link equity at all. */}
+            <Link
+              href="/about-us"
               className={`flex items-center pr-3 font-medium text-sm cursor-pointer ${textColor}`}
-              onClick={() => router.push('/about-us')}
             >
               About Us
-            </button>
+            </Link>
 
-            <button
+            <Link
+              href="/support"
               className={`flex items-center pr-3 font-medium text-sm cursor-pointer ${textColor}`}
-              onClick={() => router.push('/support')}
             >
               Support
-            </button>
+            </Link>
 
-            <button
+            <Link
+              href="/pricing"
               className={`flex items-center pr-3 font-medium text-sm cursor-pointer ${textColor}`}
-              onClick={() => router.push('/pricing')}
             >
               Pricing
-            </button>
+            </Link>
 
           </div>
 
@@ -410,9 +413,9 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 <ul className="mt-2 px-3 space-y-2">
                   {products.map((p) => (
                     <li key={p.name}>
-                      <button
+                      <Link
+                        href={p.href}
                         onClick={() => {
-                          router.push(p.href);
                           setMobileOpen(false);
                           setMobileProductsOpen(false);
                         }}
@@ -429,7 +432,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                           <div className="text-sm font-semibold text-secondary-db-100">{p.name}</div>
                           <div className="text-xs text-secondary-db-60 line-clamp-2">{p.description}</div>
                         </div>
-                      </button>
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -472,36 +475,38 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               >
                 <div className="px-3">
                   <div className="mt-2 rounded-xl border border-primary-way-10 bg-primary-way-5 overflow-hidden">
-                    <button
-                      className="w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
+                    {/* `block` replaces the <button> default inline-block so that
+                        `w-full` keeps behaving exactly as it did before. */}
+                    <Link
+                      href="/learning"
+                      className="block w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
                       onClick={() => {
-                        router.push('/learning');
                         setMobileOpen(false);
                         setMobileResourcesOpen(false);
                       }}
                     >
                       Learning Hub
-                    </button>
-                    <button
-                      className="w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
+                    </Link>
+                    <Link
+                      href="/document-hub/getting-started"
+                      className="block w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
                       onClick={() => {
-                        router.push('/document-hub/getting-started');
                         setMobileOpen(false);
                         setMobileResourcesOpen(false);
                       }}
                     >
                       Document Hub
-                    </button>
-                    <button
-                      className="w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
+                    </Link>
+                    <Link
+                      href="/blogs"
+                      className="block w-full text-left px-4 py-3 text-secondary-db-100 border-b border-primary-way-10"
                       onClick={() => {
-                        router.push('/blogs');
                         setMobileOpen(false);
                         setMobileResourcesOpen(false);
                       }}
                     >
                       Blogs
-                    </button>
+                    </Link>
                   </div>
                 </div>
                 <div className="mt-3 px-3">
@@ -509,30 +514,33 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 </div>
               </div>
               <div className="px-3">
-                <button
+                <Link
+                  href="/about-us"
                   className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
-                  onClick={() => { router.push('/about-us'); setMobileOpen(false); }}
+                  onClick={() => setMobileOpen(false)}
                 >
                   <span className="font-medium">About Us</span>
-                </button>
+                </Link>
                 <div className="border-t border-primary-way-10" />
               </div>
               <div className="px-3">
-                <button
+                <Link
+                  href="/support"
                   className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
-                  onClick={() => { router.push('/support'); setMobileOpen(false); }}
+                  onClick={() => setMobileOpen(false)}
                 >
                   <span className="font-medium">Support</span>
-                </button>
+                </Link>
                 <div className="border-t border-primary-way-10" />
               </div>
               <div className="px-3">
-                <button
+                <Link
+                  href="/pricing"
                   className="w-full flex items-center gap-2 px-3 py-4 text-secondary-db-100"
-                  onClick={() => { router.push('/pricing'); setMobileOpen(false); }}
+                  onClick={() => setMobileOpen(false)}
                 >
                   <span className="font-medium">Pricing</span>
-                </button>
+                </Link>
                 <div className="border-t border-primary-way-10" />
               </div>
               {/* Language pill + dropdown */}

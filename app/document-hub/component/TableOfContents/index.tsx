@@ -111,8 +111,10 @@ export default function TableOfContents({
   }, [stopAtSelector]);
 
 
+  // db-70 not db-60: small text on a white background needs 4.5:1;
+  // db-60 is 4.24:1, db-70 is 6.95:1.
   const baseAside = (
-    <div className="text-xs font-medium uppercase tracking-wide text-secondary-db-60 mb-3">
+    <div className="text-xs font-medium uppercase tracking-wide text-secondary-db-70 mb-3">
       On this page
     </div>
   );

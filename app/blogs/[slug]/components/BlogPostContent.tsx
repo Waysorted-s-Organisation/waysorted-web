@@ -90,17 +90,32 @@ function BlogBlock({ block }: { block: BlogContentBlock }) {
   return null;
 }
 
-export default function BlogPostContent() {
+export default function BlogPostContent({
+  initialPost = null,
+}: {
+  initialPost?: BlogPostDetail | null;
+}) {
   const params = useParams<{ slug: string }>();
   const slug = params?.slug;
   const [activeToc, setActiveToc] = useState(0);
-  const [post, setPost] = useState<BlogPostDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [post, setPost] = useState<BlogPostDetail | null>(initialPost);
+  const [loading, setLoading] = useState(!initialPost);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
+
+    // The server component already resolved this post and handed it to us, so
+    // the full article is in the initial HTML where crawlers can read it.
+    // Skip the client refetch: it would be a redundant request, and /api/ is
+    // disallowed in robots.txt so a crawler could never complete it anyway.
+    if (initialPost && initialPost.slug === slug) {
+      setPost(initialPost);
+      setLoading(false);
+      setError(null);
+      return;
+    }
 
     let mounted = true;
     setLoading(true);
@@ -123,7 +138,7 @@ export default function BlogPostContent() {
     return () => {
       mounted = false;
     };
-  }, [slug]);
+  }, [slug, initialPost]);
 
   useEffect(() => {
     if (!post?.tableOfContents.length) return;

@@ -2,20 +2,25 @@ import { MetadataRoute } from 'next'
 import dbConnect from '@/lib/db'
 import BlogPost from '@/models/blogPost'
 
+// Regenerate hourly. Previously this was baked at build time, so a newly
+// published blog post never reached the sitemap until the next deployment.
+export const revalidate = 3600
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://www.waysorted.com'
 
-    // Main pages - sitelink-eligible pages first with high priority
+    // Main pages. Only canonical, 200-status URLs belong here:
+    // - '/docs' was removed (404, no such route).
+    // - '/figma-beta' was removed (it is a permanent redirect to '/learning').
     const mainPages = [
         '',
-        '/figma-beta',
         '/learning',
         '/about-us',
         '/support',
         '/requests',
         '/blogs',
+        '/pricing',
         '/get-early-access',
-        '/docs',
         '/release-notes',
     ]
 
@@ -61,11 +66,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         'contact-support',
         'bug-reporting',
         // Legal
+        // NOTE: 'data-processing', 'cookie-policy' and 'intellectual-property-rights'
+        // were removed - they have no content file in app/document-hub/[slug]/content
+        // and returned 404 to crawlers.
         'privacy-policy',
         'terms-of-service',
-        'data-processing',
-        'cookie-policy',
-        'intellectual-property-rights',
         // Integrations
         'figma-sync',
         'backup-and-recovery',
@@ -92,15 +97,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         'examples',
     ]
 
-    // Learning pages (tools)
+    // Learning pages (tools) - must stay in sync with the tools linked from the
+    // homepage. 'html-to-design' and 'icon-library' were linked but missing here.
     const learningPages = [
         'palettable',
         'frames-to-pdf',
         'unit-converter',
         'file-importer',
+        'html-to-design',
+        'icon-library',
     ]
 
-    const currentDate = new Date()
+    // NOTE: `lastModified` is deliberately omitted for the static routes below.
+    // It used to be `new Date()`, which made all 70+ URLs claim they changed on
+    // every single request - Google learns to distrust and then ignore lastmod
+    // when it is not accurate. Blog posts keep their real DB timestamps.
     let blogPages: MetadataRoute.Sitemap = []
 
     try {
@@ -112,7 +123,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
         blogPages = posts.map((post) => ({
             url: `${baseUrl}/blogs/${post.slug}`,
-            lastModified: post.updatedAt || post.publishedAt || currentDate,
+            lastModified: post.updatedAt || post.publishedAt,
             changeFrequency: 'monthly' as const,
             priority: 0.7,
         }))
@@ -121,25 +132,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     return [
-        // Main pages with high priority
+        // Main pages
         ...mainPages.map((path, index) => ({
             url: `${baseUrl}${path}`,
-            lastModified: currentDate,
             changeFrequency: 'weekly' as const,
-            // Homepage gets 1.0, first 5 sitelink-eligible pages get 0.9, rest 0.8
             priority: path === '' ? 1 : (index <= 5 ? 0.9 : 0.8),
         })),
         // Document Hub pages
         ...docPages.map((slug) => ({
             url: `${baseUrl}/document-hub/${slug}`,
-            lastModified: currentDate,
             changeFrequency: 'monthly' as const,
             priority: 0.6,
         })),
         // Learning pages
         ...learningPages.map((tool) => ({
             url: `${baseUrl}/learning/${tool}`,
-            lastModified: currentDate,
             changeFrequency: 'monthly' as const,
             priority: 0.7,
         })),

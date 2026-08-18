@@ -1,7 +1,7 @@
 export default function AllInOneTools() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">All-in-one Tools</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">All-in-one Tools</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Waysorted brings essential design tools into a single workspace, helping you complete common tasks without switching plugins or breaking focus.
             </p>

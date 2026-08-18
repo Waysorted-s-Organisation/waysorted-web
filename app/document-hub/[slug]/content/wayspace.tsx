@@ -3,7 +3,7 @@ import Image from "next/image";
 export default function Wayspace() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Wayspace</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Wayspace</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Your personalized hub for tools. It&apos;s where you can organize, manage, and instantly access all your essential plugins in a clutter-free, intuitive interface, enhanced by our first-of-its-kind Liquid Glass Mode UI, Shrink UI feature and more.
             </p>

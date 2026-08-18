@@ -1,7 +1,7 @@
 export default function RequestAFeature() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Request a Feature or Plugin</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Request a Feature or Plugin</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 If you have an idea for a new plugin, an improvement to an existing tool, or a new platform feature, we want to hear it. This process ensures our ecosystem grows in a direction that provides maximum value to our users.
             </p>

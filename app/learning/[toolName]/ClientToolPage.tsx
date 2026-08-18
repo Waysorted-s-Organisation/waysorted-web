@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useBanner } from '@/context/BannerContext'
 import Header from '@/components/Header'
 import ToolBriefCarousel from './components/ToolBriefCarousel'
@@ -18,7 +18,6 @@ interface ClientToolPageProps {
 
 export default function ClientToolPage({ initialTool, toolName }: ClientToolPageProps) {
   const { showBanner, setShowBanner } = useBanner()
-  const router = useRouter()
 
   const [tool, setTool] = useState<ITool | null>(initialTool)
   const [slides, setSlides] = useState<ISlide[]>([])
@@ -99,13 +98,15 @@ export default function ClientToolPage({ initialTool, toolName }: ClientToolPage
 
         {/* Breadcrumb */}
         <div className="max-w-7xl mx-auto px-4 sm:px-5 my-6 sm:my-16">
-          <nav className="text-base font-medium text-secondary-db-100/50">
-            <span
+          {/* Crawlable <Link>s, and db-70 instead of the /50 opacity blend
+              (3.55:1) so breadcrumb text clears WCAG AA. */}
+          <nav aria-label="Breadcrumb" className="text-base font-medium text-secondary-db-70">
+            <Link
+              href="/"
               className="cursor-pointer hover:text-secondary-db-100 hover:border-b-2 hover:border-b-primary-way-100"
-              onClick={() => router.push('/')}
             >
               Home
-            </span>
+            </Link>
             <Image
               src="/icons/chevron-right.svg"
               alt="Arrow Right"
@@ -113,12 +114,12 @@ export default function ClientToolPage({ initialTool, toolName }: ClientToolPage
               height={7}
               className="inline-block mx-2"
             />
-            <span
-              className="text-secondary-db-100/50 text-base font-medium hover:text-secondary-db-100 cursor-pointer hover:border-b-2 hover:border-b-primary-way-100"
-              onClick={() => router.push('/learning')}
+            <Link
+              href="/learning"
+              className="text-secondary-db-70 text-base font-medium hover:text-secondary-db-100 cursor-pointer hover:border-b-2 hover:border-b-primary-way-100"
             >
               Learning Hub
-            </span>
+            </Link>
             <Image
               src="/icons/chevron-right.svg"
               alt="Arrow Right"

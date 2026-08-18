@@ -43,6 +43,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         title: `${tool.name} - ${tool.heading}`,
         description: tool.description,
         keywords: [tool.name, tool.category, ...(tool.tags || [])],
+        alternates: {
+            canonical: `https://www.waysorted.com/learning/${toolName}`,
+        },
         openGraph: {
             title: `${tool.name} - Waysorted`,
             description: tool.shortDescription,

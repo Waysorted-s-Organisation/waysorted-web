@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 const designerAvatars = [
@@ -33,20 +34,21 @@ const recognitions = [
 export default function Hero() {
   const router = useRouter();
 
-  const handleSuggestionClick = () => {
+  const handleSuggestionClick = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    // Desktop follows the href to /requests. Mobile keeps its existing detour.
     if (window.matchMedia('(max-width: 1023px)').matches) {
+      event.preventDefault();
       router.push('/mobile-redirect');
-      return;
     }
-
-    router.push('/requests');
   };
 
   return (
     <section id="hero" className="mx-auto max-w-7xl px-4 pb-7 pt-12 sm:px-6 lg:px-8">
       <div id="hero-content" className="flex flex-col items-center text-center">
-        <button
-          type="button"
+        {/* A real <a href> so crawlers can follow it to /requests, with the
+            existing mobile behaviour preserved by intercepting the click. */}
+        <Link
+          href="/requests"
           onClick={handleSuggestionClick}
           className="inline-flex items-center gap-2 rounded-xl bg-[#f4f4f4] p-1.5 pr-3 text-sm font-medium text-secondary-db-100 transition-colors hover:bg-[#ececec] active:scale-[0.98]"
         >
@@ -55,7 +57,7 @@ export default function Hero() {
           </span>
           <span>What should we build next?</span>
           <Image src="/icons/chevron-right.svg" alt="" width={7} height={12} />
-        </button>
+        </Link>
 
         <div className="mt-9 flex items-center text-sm font-medium text-secondary-db-70">
           <div className="mr-1.5 flex -space-x-2" aria-hidden="true">
@@ -91,13 +93,13 @@ export default function Hero() {
           >
             Get Started for Free
           </button>
-          <button
-            type="button"
-            onClick={() => router.push('/pricing')}
+          {/* Crawlable: this is the homepage's only link to /pricing. */}
+          <Link
+            href="/pricing"
             className="mt-2 text-sm font-medium text-secondary-db-80 underline underline-offset-2 transition-colors hover:text-secondary-db-100"
           >
             See our Plans
-          </button>
+          </Link>
         </div>
 
         <div

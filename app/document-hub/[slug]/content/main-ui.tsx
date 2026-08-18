@@ -4,7 +4,7 @@ import Image from "next/image";
 export default function MainUI() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Main UI</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Main UI</h1>
 
             <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Top Bar</h3>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">

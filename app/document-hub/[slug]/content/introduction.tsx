@@ -1,7 +1,7 @@
 export default function Introduction() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Introduction</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Introduction</h1>
 
             <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Your All-in-One Tools Playground in Figma</h3>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">

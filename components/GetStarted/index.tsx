@@ -74,9 +74,9 @@ const GetStarted = () => {
     <section className="bg-white flex flex-col items-center justify-center text-center px-4 py-16 sm:py-24 md:py-30 overflow-hidden md:mb-50">
       {/* Heading and Subtext (z-index ensures they sit above floating elements if they overlap) */}
       <div className="relative z-10">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-secondary-db-100 text-center leading-tight select-none">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-secondary-db-100 text-center leading-tight select-none">
           One tool. Infinite possibilities.
-        </h1>
+        </h2>
         <p className="mt-3 sm:mt-4 text-secondary-db-80 font-medium text-base sm:text-lg md:text-xl text-center max-w-xl sm:max-w-2xl md:max-w-6xl mx-auto select-none">
           Waysorted transforms your workflow,<span className="text-primary-way-100"> Instantly.</span>
         </p>

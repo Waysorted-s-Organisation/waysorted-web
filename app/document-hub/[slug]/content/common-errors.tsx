@@ -1,7 +1,7 @@
 export default function CommonErrors() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Common Errors</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Common Errors</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         This section helps you resolve issues and get support while using Waysorted. We aim to provide clear, actionable steps to help you return to your workflow as quickly as possible.
       </p>

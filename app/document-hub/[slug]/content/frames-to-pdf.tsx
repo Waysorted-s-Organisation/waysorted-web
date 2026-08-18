@@ -1,7 +1,7 @@
 export default function PdfExporter() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">PDF Exporter Specifications</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">PDF Exporter Specifications</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 A streamlined utility for converting Figma frames into high-quality, multi-page PDF documents directly within the design environment.
             </p>

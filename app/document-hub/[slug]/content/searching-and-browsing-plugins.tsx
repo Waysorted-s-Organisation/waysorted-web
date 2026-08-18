@@ -1,7 +1,7 @@
 export default function SearchingAndBrowsingPlugins() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Searching and Browsing Plugins</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Searching and Browsing Plugins</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 The Waysorted Plugin is your central hub for finding tools that solve specific design challenges. It&apos;s engineered to provide a curated and efficient discovery experience, moving beyond the fragmented and overwhelming nature of traditional plugin libraries.
             </p>

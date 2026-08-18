@@ -1,7 +1,7 @@
 export default function ImportTool() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Import Tool Specifications</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Import Tool Specifications</h1>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         A versatile importer that converts various file types into editable Figma elements, streamlining asset migration and data integration.
       </p>

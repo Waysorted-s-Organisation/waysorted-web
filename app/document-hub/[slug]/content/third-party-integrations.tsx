@@ -1,7 +1,7 @@
 export default function ThirdPartyIntegrations() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Third-Party Integrations</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Third-Party Integrations</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 To enhance workflow efficiency and create a truly unified design ecosystem, Waysorted is building a framework for robust integrations with key third-party services. Our approach is to establish a stable core platform first, followed by a strategic rollout of vetted integrations.
             </p>

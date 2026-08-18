@@ -3,7 +3,7 @@ import Link from "next/link";
 export default function TermsOfService() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Terms & Conditions</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Terms & Conditions</h1>
 
             <h3 id="introduction" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">1. Introduction</h3>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
@@ -209,7 +209,7 @@ export default function TermsOfService() {
 
             <h3 id="privacy" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">15. Privacy</h3>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
-                Your privacy is important to us. Our collection, use, storage, and processing of personal data in connection with your use of the Service are governed by our <Link href="/docs/privacy-policy" className="text-primary-way-100 hover:underline">Privacy Policy</Link>, which forms an integral part of these Terms.
+                Your privacy is important to us. Our collection, use, storage, and processing of personal data in connection with your use of the Service are governed by our <Link href="/document-hub/privacy-policy" className="text-primary-way-100 hover:underline">Privacy Policy</Link>, which forms an integral part of these Terms.
             </p>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
                 By accessing or using the Service, you acknowledge that you have read and understood the Privacy Policy and agree to the practices described therein. If you do not agree with the Privacy Policy, you should not use the Service.

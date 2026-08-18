@@ -158,7 +158,9 @@ export default function Footer() {
             // wrapperClassName is optional — default matches your original wrapper.
             />
 
-            <p className="text-xs text-secondary-db-60 mt-2 max-w-sm">
+            {/* db-40 not db-60: this sits on the dark #0D1218 footer where
+                db-60 is only 4.43:1. db-40 is 8.64:1. */}
+            <p className="text-xs text-secondary-db-40 mt-2 max-w-sm">
               Be the first to know about our updates. Unsubscribe anytime.
             </p>
           </div>

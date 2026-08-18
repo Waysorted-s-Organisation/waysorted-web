@@ -132,7 +132,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
       />
-      <BlogPostPageClient />
+      {/* `post` is passed down so the article body is server-rendered. Without
+          it the page shipped an empty shell: the content was fetched client-side
+          from /api/blogs/[slug], which robots.txt disallows, so crawlers only
+          ever saw the header and footer. */}
+      <BlogPostPageClient initialPost={post} />
     </>
   );
 }

@@ -59,11 +59,11 @@ function AccessContent() {
 
                 <p className="mt-4 text-xs text-secondary-db-70 font-medium text-center">
                   By continuing, you agree to let Way use your information according to our{" "}
-                  <Link href="/docs/terms-of-service" className="underline text-primary-way-100">
+                  <Link href="/document-hub/terms-of-service" className="underline text-primary-way-100">
                     Terms
                   </Link>{" "}
                   and{" "}
-                  <Link href="/docs/privacy-policy" className="underline text-primary-way-100">
+                  <Link href="/document-hub/privacy-policy" className="underline text-primary-way-100">
                     Privacy Policy
                   </Link>
                   .

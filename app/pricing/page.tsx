@@ -1,4 +1,27 @@
+import type { Metadata } from "next";
 import PricingClient from "./pricing-client";
+
+// Title, description and canonical are set explicitly. Without them this route
+// inherited the root layout's homepage title AND description verbatim, so /
+// and /pricing were served to Google as duplicates of each other, and the
+// inherited alternates.canonical pointed /pricing at the homepage.
+// This is static metadata, so it does not make the route dynamic.
+export const metadata: Metadata = {
+  title: "Pricing",
+  description:
+    "Waysorted pricing: start free, then pay as you go with credits or upgrade to Pro. One plan covers every tool in the suite - no separate subscription per plugin.",
+  alternates: {
+    canonical: "https://www.waysorted.com/pricing",
+  },
+  openGraph: {
+    title: "Pricing | Waysorted",
+    description:
+      "Start free, then pay as you go with credits or upgrade to Pro. One plan covers every tool in the Waysorted suite.",
+    url: "https://www.waysorted.com/pricing",
+    siteName: "Waysorted",
+    type: "website",
+  },
+};
 
 /**
  * This shell is intentionally static.

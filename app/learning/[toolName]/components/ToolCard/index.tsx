@@ -7,6 +7,9 @@ import { Badge } from "@/app/learning/components/Badge";
 export default function ToolCard({ tool }: { tool: ITool }) {
   const router = useRouter();
   const isDisabled = tool.disabled === true;
+  // A coming-soon tool is not a link, so render a <span> instead of an
+  // <a> with no href.
+  const Comp = (isDisabled ? "span" : "a") as "a";
   const badge = tool.badge;
 
   const onCardClick = () => {
@@ -65,7 +68,7 @@ export default function ToolCard({ tool }: { tool: ITool }) {
         href="https://figma.com/community/plugin/1532842109377504268/waysorted"
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Open in Figma"
+        aria-label="Figma Plugin - opens in Figma Community"
         className={`hidden sm:inline text-xs select-none ${isDisabled
           ? "pointer-events-none opacity-70 text-secondary-db-80"
           : "text-secondary-db-80 hover:text-primary-way-100"
@@ -96,22 +99,25 @@ export default function ToolCard({ tool }: { tool: ITool }) {
         {tool.tagline}
       </p>
 
-      <a
-        href={isDisabled ? undefined : `/learning/${tool.slug}`}
-        onClick={onLearnMore}
-        aria-label={
-          isDisabled
-            ? `${tool.name} is coming soon`
-            : `Learn more about ${tool.name}`
-        }
-        aria-disabled={isDisabled}
-        tabIndex={isDisabled ? -1 : 0}
+      {/* A disabled <a> was rendered with href={undefined}: not a link at all,
+          so Lighthouse/axe flagged it as an uncrawlable anchor. Render a plain
+          <span> when the tool is coming soon, and a real link otherwise.
+          Classes and content are identical in both branches. */}
+      <Comp
+        {...(isDisabled
+          ? { role: "note" as const }
+          : { href: `/learning/${tool.slug}`, onClick: onLearnMore })}
+        {...(isDisabled ? { "aria-label": `${tool.name} is coming soon` } : {})}
         className={`mt-3 sm:mt-4 text-sm font-medium flex items-center ${isDisabled
           ? "text-secondary-db-40 cursor-not-allowed pointer-events-none"
           : "text-secondary-db-100 hover:text-primary-way-100"
           }`}
       >
         Learn more
+        {/* Visible label stays "Learn more". The tool name is exposed to screen
+            readers and, just as importantly, becomes the anchor text search
+            engines read - "Learn more" on its own is a wasted ranking signal. */}
+        <span className="sr-only"> about {tool.name}</span>
         <span className="relative ml-1 w-3 h-2">
           <svg
             width="6"
@@ -130,7 +136,7 @@ export default function ToolCard({ tool }: { tool: ITool }) {
             />
           </svg>
         </span>
-      </a>
+      </Comp>
     </div>
   );
 }

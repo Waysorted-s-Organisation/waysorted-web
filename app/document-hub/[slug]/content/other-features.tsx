@@ -3,7 +3,7 @@ import Image from "next/image";
 export default function OtherFeatures() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Other Features</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Other Features</h1>
 
             <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">All Tools</h3>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">

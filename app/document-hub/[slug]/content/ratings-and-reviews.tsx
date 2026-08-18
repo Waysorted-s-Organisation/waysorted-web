@@ -1,7 +1,7 @@
 export default function RatingsAndReviews() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Ratings and Reviews</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Ratings and Reviews</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Community feedback is the cornerstone. The rating and review system is designed to be transparent and constructive, helping users make informed decisions and enabling creators to improve their tools.
             </p>

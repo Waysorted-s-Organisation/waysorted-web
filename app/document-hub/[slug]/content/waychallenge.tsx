@@ -3,7 +3,7 @@ import Image from "next/image";
 export default function Waychallenge() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Waychallenge</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Waychallenge</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Way Challenge is our series of quick and fun arcade-style games, built directly into the Waysorted platform. The first in the series is Way Fall, a mindful escape designed to sharpen your reflexes and take a break from intense design sessions. Clear your mind and return to your work refreshed and refocused.
             </p>

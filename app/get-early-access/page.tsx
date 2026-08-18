@@ -176,7 +176,7 @@ export default function EarlyAccessPage() {
                 By clicking “continue” you agree to our&nbsp;
                 <span className="inline-block">
                   <Link
-                    href="/docs/privacy-policy"
+                    href="/document-hub/privacy-policy"
                     className="text-primary-way-100 hover:underline"
                   >
                     Privacy Policy
@@ -186,7 +186,7 @@ export default function EarlyAccessPage() {
                 and&nbsp;
                 <span className="inline-block">
                   <Link
-                    href="/docs/terms-of-service"
+                    href="/document-hub/terms-of-service"
                     className="text-primary-way-100 hover:underline"
                   >
                     Terms of Use

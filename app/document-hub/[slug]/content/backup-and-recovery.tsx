@@ -1,7 +1,7 @@
 export default function BackupAndRecovery() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Backup and Recovery</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Backup and Recovery</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Data integrity and recovery are managed through a multi-layered approach that leverages both Figma&apos;s native capabilities and Waysorted&apos;s cloud infrastructure.
             </p>
