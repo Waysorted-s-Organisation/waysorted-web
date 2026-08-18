@@ -158,6 +158,10 @@ export default function PricingClient({
   };
 
   useEffect(() => {
+    // The server normally supplies the country-aware catalog in the initial HTML.
+    // Only use the API as a recovery path if that server render could not build it.
+    if (initialPricingData) return;
+
     let active = true;
 
     async function loadPricing() {
@@ -186,7 +190,7 @@ export default function PricingClient({
       active = false;
     };
     // Deliberately not keyed on `user`: pricing must not change when auth resolves.
-  }, []);
+  }, [initialPricingData]);
 
   const subscriptionProducts = useMemo(() => {
     if (!pricingData) return [];
@@ -336,6 +340,15 @@ export default function PricingClient({
           </div>
 
           <section className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
+            {!pricingData
+              ? Array.from({ length: 3 }, (_, index) => (
+                  <div
+                    key={`pricing-placeholder-${index}`}
+                    aria-hidden="true"
+                    className="min-h-[438px] rounded-[15.31px] border border-[#E7EBF3] bg-white"
+                  />
+                ))
+              : null}
             {subscriptionProducts.map((product) => {
               const ui = getPlanUi(product.code);
               if (!ui) return null;

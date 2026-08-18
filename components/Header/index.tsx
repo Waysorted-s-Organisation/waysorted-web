@@ -299,7 +299,7 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               starCount={11}
               randomSeed="header-figma-snow"
               aria-label="Open Waysorted for Figma"
-              className="force-hover hidden h-10 items-center justify-center rounded-lg border border-white/10 bg-[#171c22] px-3.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#252b33] lg:inline-flex"
+              className="hidden h-10 items-center justify-center rounded-lg border border-white/10 bg-[#171c22] px-3.5 text-sm font-medium text-white shadow-sm transition-colors hover:bg-[#252b33] lg:inline-flex"
             >
               <span className="flex items-center gap-2">
                 <Image src="/icons/figma.svg" alt="" width={16} height={24} />
@@ -331,7 +331,14 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
               aria-controls="mobile-drawer"
               onClick={() => setMobileOpen(true)}
             >
-              <Image src="/icons/menu.svg" alt="Open menu" title="Open menu" width={22} height={22} />
+              <Image
+                src="/icons/menu.svg"
+                alt="Open menu"
+                title="Open menu"
+                width={22}
+                height={22}
+                className="h-[22px] w-[22px]"
+              />
             </button>
           </div>
         </div>
