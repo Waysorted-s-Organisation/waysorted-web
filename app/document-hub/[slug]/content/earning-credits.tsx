@@ -6,7 +6,7 @@ export default function EarningCredits() {
         This section explains the Waysorted credit system: how credits work, how to access them, and what to expect during the beta.
       </p>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Accessing Your Credits Balance</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Accessing Your Credits Balance</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         To view credit-related information:
       </p>
@@ -18,7 +18,7 @@ export default function EarningCredits() {
         Even during beta, this page shows usage indicators and system messages to help you understand how credits will function post-beta.
       </p>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Initial Credits (Post-Beta)</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Initial Credits (Post-Beta)</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         <span className="text-secondary-db-100 font-semibold">Description:</span> After beta, initial credits may be granted upon first-time signup and platform authentication.
       </p>
@@ -29,7 +29,7 @@ export default function EarningCredits() {
         Note: Initial credit limits are not enforced during beta.
       </p>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Referral Credits (Coming Later)</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Referral Credits (Coming Later)</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Referral-based credits may be introduced in future phases to support community-driven growth. When launched, credits earned via referrals will be platform-agnostic, remaining valid across all supported software tools within Waysorted.
       </p>
@@ -37,7 +37,7 @@ export default function EarningCredits() {
         Details will be communicated clearly before activation.
       </p>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Credit Expiry (Not Active in Beta)</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Credit Expiry (Not Active in Beta)</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         During beta, credits do not expire.
       </p>

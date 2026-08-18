@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import BlogPost from "@/models/blogPost";
 import type { BlogContentBlock, BlogPostDetail } from "@/types/blog";
 import BlogPostPageClient from "./BlogPostPageClient";
+import { breadcrumbJsonLd } from "@/lib/breadcrumb-schema";
 
 const siteUrl = "https://www.waysorted.com";
 
@@ -126,11 +127,20 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     wordCount: blocksToText(post.contentBlocks).split(/\s+/).filter(Boolean).length,
   };
 
+  const breadcrumb = breadcrumbJsonLd(`/blogs/${post.slug}`, [
+    { name: "Blogs", path: "/blogs" },
+    { name: post.title, path: `/blogs/${post.slug}` },
+  ]);
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
       {/* `post` is passed down so the article body is server-rendered. Without
           it the page shipped an empty shell: the content was fetched client-side

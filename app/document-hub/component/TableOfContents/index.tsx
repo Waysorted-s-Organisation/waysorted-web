@@ -21,7 +21,9 @@ interface Props {
 
 export default function TableOfContents({
   rootSelector = "[data-doc-content]",
-  minLevel = 3,
+  // Doc content runs h1 (page title) -> h2 (sections) -> h3. It used to
+  // start at h3 because the content skipped h2 entirely.
+  minLevel = 2,
   maxLevel = 3,
   topOffsetPx = 112,
   stopAtSelector = "#footer-sentinel"
