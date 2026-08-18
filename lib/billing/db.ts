@@ -1,4 +1,5 @@
 import mongoose, { ClientSession, HydratedDocument } from "mongoose";
+import { randomUUID } from "crypto";
 import type { NextRequest } from "next/server";
 import dbConnect from "@/lib/db";
 import BillingProduct from "@/models/billingProduct";
@@ -22,16 +23,18 @@ import {
   isSubscriptionActive,
 } from "@/lib/billing/catalog";
 import { createSignedToken } from "@/lib/billing/crypto";
+import { buildStaleReservationFilter } from "@/lib/billing/reservation-sweep";
 import { getProcessorCallbackSecret } from "@/lib/billing/env";
 import { buildStarterSignalHashes } from "@/lib/billing/request-signals";
+import { assertReservationReplayAllowed } from "@/lib/billing/reservation-idempotency";
+import { resolveUsageCredits } from "@/lib/billing/usagePricing";
 import {
   applyRegionalPrice,
   createPricingContext,
   getCountryTier,
   getCountryFromRequest,
   getCurrencyForCountry,
-  normalizeCountry,
-  getTierRank,
+  getPricingCountryMismatchRiskFlags,
   type PricingContext,
   type RegionalPricedProduct,
   withPricingRiskFlags,
@@ -81,7 +84,6 @@ type PurchaseDocument = HydratedDocument<IPurchase>;
 type SubscriptionDocument = HydratedDocument<ISubscription>;
 const LEGACY_STARTER_GRANT_CREDITS = 300;
 const SIGNUP_STARTER_GRANT_CREDITS = 100;
-const PENDING_SUBSCRIPTION_TTL_MS = 30 * 60 * 1000;
 const EXISTING_FREE_PLAN_CUTOFF = new Date("2026-05-03T00:00:00.000Z");
 
 function formatBillingPlanName(planCode: string | null, status: string) {
@@ -179,33 +181,14 @@ export async function syncCatalogProducts() {
 async function runBillingTransaction<T>(work: (session: ClientSession) => Promise<T>) {
   await dbConnect();
 
-  let session: ClientSession | null = null;
-  try {
-    session = await mongoose.startSession();
-  } catch (sessionError) {
-    console.warn("MongoDB sessions not supported, running without session/transaction:", sessionError);
-    return await work(null as unknown as ClientSession);
-  }
+  const session = await mongoose.startSession();
 
   try {
     let result: T | undefined;
-    try {
-      await session.withTransaction(async () => {
-        result = await work(session!);
-      });
-      return result as T;
-    } catch (txError) {
-      const errorMsg = txError instanceof Error ? txError.message : String(txError);
-      if (
-        errorMsg.includes("Transaction numbers") ||
-        errorMsg.includes("replica set") ||
-        errorMsg.includes("mongos")
-      ) {
-        console.warn("MongoDB transactions not supported by this server, falling back to non-transactional execution:", txError);
-        return await work(null as unknown as ClientSession);
-      }
-      throw txError;
-    }
+    await session.withTransaction(async () => {
+      result = await work(session);
+    });
+    return result as T;
   } finally {
     if (session) {
       await session.endSession();
@@ -217,21 +200,47 @@ export async function ensureUserBilling(
   user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
   session?: ClientSession,
 ) {
-  const existing = await UserBilling.findOne({ user: user._id }).session(session || null);
-  if (existing) {
-    return reconcileLegacyBillingState(user, existing, session);
-  }
+  const openingCredits = typeof user.creditsRemaining === "number" ? user.creditsRemaining : 0;
+  const upsertResult = await UserBilling.findOneAndUpdate(
+    { user: user._id },
+    {
+      $setOnInsert: {
+        user: user._id,
+        availableCredits: openingCredits,
+        heldCredits: 0,
+        pricingVersion: BILLING_PRICING_VERSION,
+        pricingRiskFlags: [],
+        subscriptionStatus: "inactive",
+        cancelAtCycleEnd: false,
+      },
+    },
+    {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true,
+      includeResultMetadata: true,
+      session,
+    },
+  );
+  const billing = upsertResult.value;
+  if (!billing) throw new Error("Unable to initialize billing wallet.");
 
-  const billing = new UserBilling({
-    user: user._id,
-    availableCredits: typeof user.creditsRemaining === "number" ? user.creditsRemaining : 0,
-    heldCredits: 0,
-    pricingVersion: BILLING_PRICING_VERSION,
-    pricingRiskFlags: [],
-    subscriptionStatus: "inactive",
-    cancelAtCycleEnd: false,
-  });
-  await billing.save({ session });
+  const inserted = upsertResult.lastErrorObject?.updatedExisting === false;
+  if (inserted && openingCredits > 0) {
+    await appendCreditLedger(
+      {
+        userId: String(user._id),
+        deltaCredits: openingCredits,
+        balanceAfter: openingCredits,
+        reason: "manual_adjustment",
+        idempotencyKey: `wallet-seed:${user._id}`,
+        metadata: { source: "legacy_user_credit_seed" },
+      },
+      session,
+    ).catch((error) => {
+      if ((error as { code?: number }).code !== 11000) throw error;
+    });
+  }
   return reconcileLegacyBillingState(user, billing, session);
 }
 
@@ -240,73 +249,9 @@ async function reconcileLegacyBillingState(
   billing: HydratedDocument<IUserBilling>,
   session?: ClientSession,
 ) {
-  const reconciledBilling = await reconcileStalePendingSubscription(user, billing, session);
-  const normalizedBilling = await normalizeLegacyStarterWallet(user, reconciledBilling, session);
+  const normalizedBilling = await normalizeLegacyStarterWallet(user, billing, session);
   const dedupedBilling = await reconcileDuplicateStarterWallet(user, normalizedBilling, session);
   return backfillExistingFreePlanWallet(user, dedupedBilling, session);
-}
-
-function isPendingSubscriptionStale(subscription: SubscriptionDocument) {
-  const activityAt =
-    subscription.updatedAt ||
-    subscription.createdAt ||
-    subscription.currentPeriodStart ||
-    subscription.currentPeriodEnd ||
-    null;
-  if (!activityAt) return true;
-  return Date.now() - new Date(activityAt).getTime() > PENDING_SUBSCRIPTION_TTL_MS;
-}
-
-async function reconcileStalePendingSubscription(
-  user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
-  billing: HydratedDocument<IUserBilling>,
-  session?: ClientSession,
-) {
-  if (billing.subscriptionStatus !== "payment_pending") {
-    return billing;
-  }
-
-  const pendingSubscription = await Subscription.findOne({
-    user: user._id,
-    status: "payment_pending",
-  })
-    .sort({ updatedAt: -1, createdAt: -1 })
-    .session(session || null);
-
-  if (pendingSubscription && !isPendingSubscriptionStale(pendingSubscription)) {
-    return billing;
-  }
-
-  if (pendingSubscription) {
-    pendingSubscription.status = "expired";
-    pendingSubscription.canceledAt = pendingSubscription.canceledAt || new Date();
-    await pendingSubscription.save({ session });
-
-    await Purchase.updateMany(
-      {
-        user: user._id,
-        razorpaySubscriptionId: pendingSubscription.providerSubscriptionId,
-        status: "pending",
-      },
-      {
-        $set: {
-          status: "failed",
-        },
-      },
-      { session },
-    );
-  }
-
-  billing.subscriptionStatus = "inactive";
-  billing.subscriptionPlanCode = null;
-  billing.subscriptionStartAt = null;
-  billing.subscriptionEndAt = null;
-  billing.subscriptionRenewsAt = null;
-  billing.subscriptionWillCancelAt = null;
-  billing.cancelAtCycleEnd = false;
-  await billing.save({ session });
-
-  return billing;
 }
 
 async function normalizeLegacyStarterWallet(
@@ -360,13 +305,19 @@ async function reconcileDuplicateStarterWallet(
   billing: HydratedDocument<IUserBilling>,
   session?: ClientSession,
 ) {
+  const starterGrant = await StarterGrant.findOne({ user: user._id })
+    .select("grantedCredits")
+    .session(session || null);
+  const grantedCredits = Number(
+    starterGrant?.grantedCredits || LEGACY_STARTER_GRANT_CREDITS,
+  );
   const looksLikeDuplicateStarterGrant =
     !billing.firstSuccessfulPurchaseAt &&
     billing.subscriptionStatus === "inactive" &&
-    billing.availableCredits === LEGACY_STARTER_GRANT_CREDITS * 2 &&
+    billing.availableCredits === grantedCredits * 2 &&
     billing.heldCredits === 0 &&
     billing.lifetimePurchasedCredits === 0 &&
-    billing.lifetimeBonusCredits === LEGACY_STARTER_GRANT_CREDITS * 2 &&
+    billing.lifetimeBonusCredits === grantedCredits * 2 &&
     billing.lifetimeSpentCredits === 0 &&
     billing.lifetimeRefundedCredits === 0;
 
@@ -374,8 +325,8 @@ async function reconcileDuplicateStarterWallet(
     return billing;
   }
 
-  billing.availableCredits = LEGACY_STARTER_GRANT_CREDITS;
-  billing.lifetimeBonusCredits = LEGACY_STARTER_GRANT_CREDITS;
+  billing.availableCredits = grantedCredits;
+  billing.lifetimeBonusCredits = grantedCredits;
   await billing.save({ session });
 
   await updateLegacyUserCredits(String(user._id), billing.availableCredits, session);
@@ -383,13 +334,13 @@ async function reconcileDuplicateStarterWallet(
   await appendCreditLedger(
     {
       userId: String(user._id),
-      deltaCredits: -LEGACY_STARTER_GRANT_CREDITS,
+      deltaCredits: -grantedCredits,
       balanceAfter: billing.availableCredits,
       reason: "manual_adjustment",
       idempotencyKey: `starter-grant-dedupe:${user._id}`,
       metadata: {
         migration: "duplicate_starter_grant_reconciled",
-        normalizedAvailableCredits: LEGACY_STARTER_GRANT_CREDITS,
+        normalizedAvailableCredits: grantedCredits,
       },
     },
     session,
@@ -477,8 +428,9 @@ export async function resolveUserPricingContext(
   user: Pick<IUser, "_id" | "creditsRemaining" | "earlyAccess" | "createdAt">,
   request?: NextRequest | null,
   session?: ClientSession,
+  existingBilling?: HydratedDocument<IUserBilling>,
 ) {
-  const billing = await ensureUserBilling(user, session);
+  const billing = existingBilling || await ensureUserBilling(user, session);
   const detectedCountry = getCountryFromRequest(request);
   const recentSession = await Session.findOne({
     user: user._id,
@@ -488,76 +440,48 @@ export async function resolveUserPricingContext(
     .lean<{ countryCode?: string | null; pricingTierAtAuth?: string | null } | null>()
     .session(session || null);
   const authCountry = recentSession?.countryCode || null;
-  const authTier = authCountry ? getCountryTier(authCountry) : null;
-  const lockedContext = createPricingContext({
-    detectedCountry,
-    lockedCountry: billing.pricingCountry,
-    lockedTier: billing.pricingTier,
-    lockedCurrency: billing.pricingCurrency,
-  });
-  const detectedTier = detectedCountry ? getCountryTier(detectedCountry) : null;
-  const currentLockedTier = billing.pricingTier as PricingContext["tier"] | null;
-  const shouldRealignToAuthCountry =
-    !billing.firstSuccessfulPurchaseAt &&
-    authCountry &&
-    normalizeCountry(authCountry) !== normalizeCountry(billing.pricingCountry);
-  const detectedOrDefaultCountry =
-    authCountry &&
-    authTier &&
-    detectedTier &&
-    getTierRank(authTier) > getTierRank(detectedTier)
-      ? authCountry
-      : detectedCountry;
-  const detectedOrDefaultTier = detectedOrDefaultCountry ? getCountryTier(detectedOrDefaultCountry) : null;
-  const shouldUpgrade =
-    detectedOrDefaultCountry &&
-    detectedOrDefaultTier &&
-    currentLockedTier &&
-    getTierRank(detectedOrDefaultTier) > getTierRank(currentLockedTier);
 
-  const shouldLock =
-    !billing.pricingCountry ||
-    !billing.pricingTier ||
-    shouldRealignToAuthCountry ||
-    shouldUpgrade;
+  // PRICING IS GEO-BASED ONLY.
+  //
+  // The price a visitor is shown must not depend on whether they are signed in. Previously this
+  // resolved from a persisted per-user lock, which meant /pricing (public, geo) and /billing
+  // (authenticated, locked) could quote different amounts for the same plan - the page visibly
+  // repainted from the geo price to the locked one as auth resolved. The lock also ratcheted only
+  // upward, so a single mis-geolocated request repriced a customer permanently with no way back.
+  //
+  // The observed country is still recorded below for support and abuse review, but it no longer
+  // decides the price.
+  const pricingContext = createPricingContext({ detectedCountry });
 
-  if (shouldLock) {
-    const countryToLock =
-      shouldRealignToAuthCountry && authCountry
-        ? authCountry
-        : (!billing.pricingCountry || shouldUpgrade) && detectedOrDefaultCountry
-        ? detectedOrDefaultCountry
-        : lockedContext.country;
-    const tierToLock =
-      shouldRealignToAuthCountry && authTier
-        ? authTier
-        : (!billing.pricingTier || shouldUpgrade) && detectedOrDefaultTier
-        ? detectedOrDefaultTier
-        : lockedContext.tier;
-    billing.pricingCountry = countryToLock;
-    billing.pricingTier = tierToLock;
-    billing.pricingCurrency = getCurrencyForCountry(countryToLock);
-    billing.pricingLockedAt ||= new Date();
-    billing.pricingLockReason = shouldRealignToAuthCountry
-      ? "pre_purchase_auth_alignment"
-      : shouldUpgrade
-        ? "higher_tier_detection"
-        : "initial_detection";
+  // Record what this request was actually priced at. Deliberately NOT getSafestObservedCountry:
+  // that returns whichever of (current country, historical session country) has the HIGHER tier,
+  // and sessions created before the Cloudflare cutover recorded the proxy PoP country (SG for
+  // Indian visitors), so it would keep re-asserting the very value this work removed.
+  if (detectedCountry) {
+    billing.pricingCountry = detectedCountry;
+    billing.pricingTier = getCountryTier(detectedCountry);
+    billing.pricingCurrency = getCurrencyForCountry(detectedCountry);
+    billing.pricingLockReason = "geo_observation";
+    billing.pricingLockedAt = new Date();
   }
+  // The upgrade-corroboration state only existed to guard the ratchet, which is gone.
+  billing.pricingUpgradeCandidateCountry = null;
+  billing.pricingUpgradeCandidateSeenAt = null;
 
-  const riskFlags = [...lockedContext.riskFlags];
-  if (authCountry && detectedCountry && authCountry !== normalizeCountry(detectedCountry)) {
-    riskFlags.push("auth_country_differs_from_checkout_country");
-  }
+  const riskFlags = [
+    ...pricingContext.riskFlags,
+    ...getPricingCountryMismatchRiskFlags({
+      authCountry,
+      trustedRequestCountry: detectedCountry,
+      declaredBillingCountry: billing.billingDetails?.country,
+      lockedPricingCountry: billing.pricingCountry,
+    }),
+  ];
   billing.pricingRiskFlags = Array.from(new Set(riskFlags));
   await billing.save({ session });
 
-  return withPricingRiskFlags(createPricingContext({
-    detectedCountry,
-    lockedCountry: billing.pricingCountry,
-    lockedTier: billing.pricingTier,
-    lockedCurrency: billing.pricingCurrency,
-  }), billing.pricingRiskFlags);
+  // Geo-only: derived from this request's trusted country, never from the stored record.
+  return withPricingRiskFlags(pricingContext, billing.pricingRiskFlags);
 }
 
 export async function updateLegacyUserCredits(
@@ -588,9 +512,8 @@ export async function appendCreditLedger(input: LedgerInput, session?: ClientSes
 }
 
 export async function buildBillingSnapshot(user: IUser, request?: NextRequest | null): Promise<BillingSnapshot> {
-  await syncCatalogProducts();
   const billing = await ensureUserBilling(user);
-  const pricing = await resolveUserPricingContext(user, request);
+  const pricing = await resolveUserPricingContext(user, request, undefined, billing);
   const hasActiveSubscription = isSubscriptionActive(
     billing.subscriptionStatus,
     billing.subscriptionRenewsAt || billing.subscriptionEndAt || null,
@@ -654,7 +577,7 @@ export async function createPurchaseRecord(input: {
   }
 
   const pricedProduct = input.pricedProduct || product;
-  const receipt = `ws_${product.code}_${Date.now()}`;
+  const receipt = `ws_${product.code}_${Date.now()}_${randomUUID().slice(0, 8)}`;
 
   return Purchase.create({
     user: input.userId,
@@ -675,6 +598,22 @@ export async function createPurchaseRecord(input: {
     idempotencyKey: input.idempotencyKey,
     notes: input.notes || {},
   });
+}
+
+/**
+ * Locate the Purchase backing a provider subscription, so a reused checkout can still be verified.
+ *
+ * /subscriptions/verify requires a purchaseId; without one the customer is charged and then shown
+ * "Missing verification fields.", and the confirmation marker the reconciler relies on is never
+ * written.
+ */
+export async function findPurchaseBySubscriptionId(
+  userId: string,
+  razorpaySubscriptionId?: string | null,
+) {
+  if (!razorpaySubscriptionId) return null;
+  await dbConnect();
+  return Purchase.findOne({ user: userId, razorpaySubscriptionId }).sort({ createdAt: -1 });
 }
 
 export async function findPurchaseByUserAndIdempotency(userId: string, idempotencyKey: string) {
@@ -732,17 +671,30 @@ export async function applyPurchaseCredits(purchase: PurchaseDocument) {
       return existingPurchase;
     }
 
-    const billing = await UserBilling.findOne({ user: lockedPurchase.user }).session(session);
-    if (!billing) {
-      throw new Error("Missing billing wallet.");
-    }
-
     const totalGranted = lockedPurchase.creditsGranted + lockedPurchase.bonusCredits;
-    billing.availableCredits += totalGranted;
-    billing.lifetimePurchasedCredits += lockedPurchase.creditsGranted;
-    billing.lifetimeBonusCredits += lockedPurchase.bonusCredits;
-    billing.firstSuccessfulPurchaseAt ||= now;
-    await billing.save({ session });
+    const billing = await UserBilling.findOneAndUpdate(
+      { user: lockedPurchase.user },
+      {
+        $inc: {
+          availableCredits: totalGranted,
+          lifetimePurchasedCredits: lockedPurchase.creditsGranted,
+          lifetimeBonusCredits: lockedPurchase.bonusCredits,
+        },
+      },
+      { new: true, session },
+    );
+    if (!billing) throw new Error("Missing billing wallet.");
+    if (!billing.firstSuccessfulPurchaseAt) {
+      await UserBilling.updateOne(
+        { _id: billing._id, firstSuccessfulPurchaseAt: null },
+        { $set: { firstSuccessfulPurchaseAt: now } },
+        { session },
+      );
+      billing.firstSuccessfulPurchaseAt = now;
+    }
+    const balanceBefore = billing.availableCredits - totalGranted;
+    const afterGrant = balanceBefore + lockedPurchase.creditsGranted;
+    const afterBonus = billing.availableCredits;
 
     await updateLegacyUserCredits(String(lockedPurchase.user), billing.availableCredits, session);
 
@@ -750,7 +702,7 @@ export async function applyPurchaseCredits(purchase: PurchaseDocument) {
       {
         userId: String(lockedPurchase.user),
         deltaCredits: lockedPurchase.creditsGranted,
-        balanceAfter: billing.availableCredits,
+        balanceAfter: afterGrant,
         reason: "purchase_grant",
         purchaseId: String(lockedPurchase._id),
         idempotencyKey: `purchase-grant:${lockedPurchase._id}`,
@@ -764,7 +716,7 @@ export async function applyPurchaseCredits(purchase: PurchaseDocument) {
         {
           userId: String(lockedPurchase.user),
           deltaCredits: lockedPurchase.bonusCredits,
-          balanceAfter: billing.availableCredits,
+          balanceAfter: afterBonus,
           reason: "bonus_grant",
           purchaseId: String(lockedPurchase._id),
           idempotencyKey: `purchase-bonus:${lockedPurchase._id}`,
@@ -776,6 +728,50 @@ export async function applyPurchaseCredits(purchase: PurchaseDocument) {
 
     return lockedPurchase;
   });
+}
+
+/**
+ * Free the unique `one_live_subscription_per_user` slot held by an unpayable pending subscription.
+ *
+ * That partial index covers `payment_pending`, so a stale pending row makes every subsequent
+ * subscription attempt fail with E11000 - and the failure happens only AFTER a live, customer-payable
+ * Razorpay subscription has been created, so each retry leaks one. Moving the row to `expired` takes
+ * it out of the index and lets the customer pay again.
+ */
+export async function releaseSupersededPendingSubscription(
+  subscriptionId: string,
+  expectedStatus: string = "payment_pending",
+) {
+  await dbConnect();
+  // Conditional on the status we observed, so two concurrent checkouts cannot both claim the row.
+  // A null result means someone else won; the caller must not proceed to create a provider
+  // subscription, or it would be orphaned and payable.
+  return Subscription.findOneAndUpdate(
+    { _id: subscriptionId, status: expectedStatus },
+    {
+      $set: {
+        status: "expired",
+        cancelAtCycleEnd: false,
+        supersededAt: new Date(),
+      },
+    },
+    { new: true },
+  );
+}
+
+/**
+ * Flag a released subscription whose provider-side cancellation failed.
+ *
+ * The local row is already out of the way so checkout can continue, but the provider subscription
+ * is still live and could charge the customer. Recording it lets the reconciler retry the cancel
+ * instead of leaving an untracked, payable subscription behind.
+ */
+export async function markSubscriptionCancellationPending(subscriptionId: string) {
+  await dbConnect();
+  return Subscription.updateOne(
+    { _id: subscriptionId },
+    { $set: { providerCancellationPending: true } },
+  );
 }
 
 export async function ensureSubscriptionRecord(input: {
@@ -828,19 +824,52 @@ export async function updateBillingSubscriptionState(input: {
   cancelAtCycleEnd?: boolean;
   session?: ClientSession;
 }) {
-  const billing = await UserBilling.findOne({ user: input.userId }).session(input.session || null);
-  if (!billing) throw new Error("Missing billing wallet.");
+  const updates: Record<string, unknown> = {
+    subscriptionStatus: input.status,
+    subscriptionWillCancelAt:
+      input.cancelAtCycleEnd && input.currentPeriodEnd ? input.currentPeriodEnd : null,
+  };
+  if (input.planCode !== undefined) updates.subscriptionPlanCode = input.planCode;
+  if (input.currentPeriodStart !== undefined) updates.subscriptionStartAt = input.currentPeriodStart;
+  if (input.currentPeriodEnd !== undefined) updates.subscriptionEndAt = input.currentPeriodEnd;
+  if (input.renewsAt !== undefined) updates.subscriptionRenewsAt = input.renewsAt;
+  if (input.cancelAtCycleEnd !== undefined) updates.cancelAtCycleEnd = input.cancelAtCycleEnd;
+  // Upsert rather than require an existing wallet. A user can reach a subscription state change
+  // without ever having had a wallet created - the row is written lazily on first billing activity -
+  // and throwing here made the webhook 500. Razorpay then retried until it gave up, so the
+  // cancellation was never recorded locally and the customer kept entitlements they had stopped
+  // paying for. Observed in production as five permanently-failed subscription.cancelled events.
+  // Seed the opening balance the same way ensureUserBilling does. Hardcoding 0 here would
+  // permanently destroy a legacy user's credits: they carry the balance on user.creditsRemaining
+  // until their wallet is first created, and $setOnInsert never fires again once a row exists - so
+  // a subscription webhook arriving before their first billing page visit would zero them out.
+  const legacyUser = await User.findById(input.userId)
+    .select("creditsRemaining")
+    .lean<{ creditsRemaining?: number } | null>();
+  const openingCredits =
+    typeof legacyUser?.creditsRemaining === "number" ? legacyUser.creditsRemaining : 0;
 
-  billing.subscriptionStatus = input.status as typeof billing.subscriptionStatus;
-  if (input.planCode !== undefined) billing.subscriptionPlanCode = input.planCode;
-  if (input.currentPeriodStart !== undefined) billing.subscriptionStartAt = input.currentPeriodStart;
-  if (input.currentPeriodEnd !== undefined) billing.subscriptionEndAt = input.currentPeriodEnd;
-  if (input.renewsAt !== undefined) billing.subscriptionRenewsAt = input.renewsAt;
-  if (input.cancelAtCycleEnd !== undefined) billing.cancelAtCycleEnd = input.cancelAtCycleEnd;
-  billing.subscriptionWillCancelAt =
-    input.cancelAtCycleEnd && input.currentPeriodEnd ? input.currentPeriodEnd : null;
-  await billing.save({ session: input.session });
+  const billing = await UserBilling.findOneAndUpdate(
+    { user: input.userId },
+    {
+      $set: updates,
+      $setOnInsert: {
+        user: input.userId,
+        availableCredits: openingCredits,
+        heldCredits: 0,
+        pricingVersion: BILLING_PRICING_VERSION,
+        pricingRiskFlags: [],
+      },
+    },
+    { new: true, upsert: true, setDefaultsOnInsert: true, session: input.session },
+  );
+  if (!billing) throw new Error("Missing billing wallet.");
   return billing;
+}
+
+export async function findSubscriptionByProviderId(providerSubscriptionId: string) {
+  await dbConnect();
+  return Subscription.findOne({ providerSubscriptionId });
 }
 
 export async function applySubscriptionCycleCredits(input: {
@@ -854,60 +883,68 @@ export async function applySubscriptionCycleCredits(input: {
       throw new Error("Unknown subscription plan.");
     }
 
-    const lockedSubscription = await Subscription.findOneAndUpdate(
+    const existingSubscription = await Subscription.findById(input.subscription._id).session(session);
+    if (!existingSubscription) throw new Error("Subscription not found.");
+    const ledgerKey = `subscription-cycle:${existingSubscription._id}:${input.cycleKey}`;
+    const totalGranted = product.creditsGranted + product.bonusCredits;
+
+    try {
+      await CreditLedger.create([{
+        user: existingSubscription.user,
+        deltaCredits: totalGranted,
+        balanceAfter: null,
+        reason: "subscription_cycle_grant",
+        subscription: existingSubscription._id,
+        idempotencyKey: ledgerKey,
+        metadata: {
+          cycleKey: input.cycleKey,
+          paymentId: input.paymentId || null,
+          planCode: existingSubscription.planCode,
+          purchasedCredits: product.creditsGranted,
+          bonusCredits: product.bonusCredits,
+        },
+      }], { session });
+    } catch (error) {
+      if ((error as { code?: number }).code === 11000) return existingSubscription;
+      throw error;
+    }
+
+    const lockedSubscription = await Subscription.findByIdAndUpdate(
+      existingSubscription._id,
+      { $set: {
+        lastCreditsGrantCycleKey: input.cycleKey,
+        lastCreditsGrantedAt: new Date(),
+        lastPaymentId: input.paymentId || null,
+      } },
+      { new: true, session },
+    );
+    if (!lockedSubscription) throw new Error("Subscription not found.");
+
+    const billing = await UserBilling.findOneAndUpdate(
+      { user: lockedSubscription.user },
       {
-        _id: input.subscription._id,
-        lastCreditsGrantCycleKey: { $ne: input.cycleKey },
-      },
-      {
+        $inc: {
+          availableCredits: totalGranted,
+          lifetimePurchasedCredits: product.creditsGranted,
+          lifetimeBonusCredits: product.bonusCredits,
+        },
         $set: {
-          lastCreditsGrantCycleKey: input.cycleKey,
-          lastCreditsGrantedAt: new Date(),
-          lastPaymentId: input.paymentId || null,
+          subscriptionStatus: lockedSubscription.status === "cancel_scheduled" ? "cancel_scheduled" : "active",
+          subscriptionPlanCode: lockedSubscription.planCode,
+          subscriptionRenewsAt: lockedSubscription.nextChargeAt || lockedSubscription.currentPeriodEnd || null,
+          subscriptionEndAt: lockedSubscription.currentPeriodEnd || null,
         },
       },
       { new: true, session },
     );
-
-    if (!lockedSubscription) {
-      const existingSubscription = await Subscription.findById(input.subscription._id).session(session);
-      if (!existingSubscription) {
-        throw new Error("Subscription not found.");
-      }
-      return existingSubscription;
-    }
-
-    const billing = await UserBilling.findOne({ user: lockedSubscription.user }).session(session);
-    if (!billing) {
-      throw new Error("Missing billing wallet.");
-    }
-
-    billing.availableCredits += product.creditsGranted;
-    billing.lifetimePurchasedCredits += product.creditsGranted;
-    billing.subscriptionStatus = lockedSubscription.status === "cancel_scheduled" ? "cancel_scheduled" : "active";
-    billing.subscriptionPlanCode = lockedSubscription.planCode;
-    billing.subscriptionRenewsAt =
-      lockedSubscription.nextChargeAt || lockedSubscription.currentPeriodEnd || null;
-    billing.subscriptionEndAt = lockedSubscription.currentPeriodEnd || null;
-    await billing.save({ session });
+    if (!billing) throw new Error("Missing billing wallet.");
 
     await updateLegacyUserCredits(String(lockedSubscription.user), billing.availableCredits, session);
 
-    await appendCreditLedger(
-      {
-        userId: String(lockedSubscription.user),
-        deltaCredits: product.creditsGranted,
-        balanceAfter: billing.availableCredits,
-        reason: "subscription_cycle_grant",
-        subscriptionId: String(lockedSubscription._id),
-        idempotencyKey: `subscription-cycle:${lockedSubscription._id}:${input.cycleKey}`,
-        metadata: {
-          cycleKey: input.cycleKey,
-          paymentId: input.paymentId || null,
-          planCode: lockedSubscription.planCode,
-        },
-      },
-      session,
+    await CreditLedger.updateOne(
+      { idempotencyKey: ledgerKey },
+      { $set: { balanceAfter: billing.availableCredits } },
+      { session },
     );
 
     return lockedSubscription;
@@ -926,8 +963,12 @@ export async function reserveCredits(input: {
   ttlMinutes?: number;
 }) {
   return runBillingTransaction(async (session) => {
-    const existing = await UsageReservation.findOne({ idempotencyKey: input.idempotencyKey }).session(session);
+    const existing = await UsageReservation.findOne({
+      user: input.userId,
+      idempotencyKey: input.idempotencyKey,
+    }).session(session);
     if (existing) {
+      assertReservationReplayAllowed(existing, input);
       const billing = await UserBilling.findOne({ user: input.userId })
         .select("availableCredits")
         .session(session);
@@ -995,8 +1036,8 @@ export async function reserveCredits(input: {
     await appendCreditLedger(
       {
         userId: input.userId,
-        deltaCredits: -input.creditsRequired,
-        balanceAfter: billing.availableCredits,
+        deltaCredits: 0,
+        balanceAfter: billing.availableCredits + billing.heldCredits,
         reason: "reservation_hold",
         featureCode: input.featureCode,
         toolCode: input.toolCode || null,
@@ -1040,7 +1081,62 @@ export async function commitReservation(input: {
       throw error;
     }
 
+    if (
+      existingReservation.featureCode.startsWith("import_") &&
+      existingReservation.metadata?.authoritativePricingApplied !== true
+    ) {
+      const error = new Error("Import pricing has not been verified by the processor.");
+      (error as Error & { status?: number }).status = 409;
+      throw error;
+    }
+
     if (existingReservation.status === "committed") return existingReservation;
+    if (existingReservation.status === "expired") {
+      const billing = await UserBilling.findOneAndUpdate(
+        {
+          user: existingReservation.user,
+          availableCredits: { $gte: existingReservation.creditsReserved },
+        },
+        {
+          $inc: {
+            availableCredits: -existingReservation.creditsReserved,
+            lifetimeSpentCredits: existingReservation.creditsReserved,
+          },
+        },
+        { new: true, session },
+      );
+      if (!billing) {
+        const error = new Error("Insufficient credits to settle completed work.");
+        (error as Error & { status?: number }).status = 409;
+        throw error;
+      }
+
+      const committed = await UsageReservation.findOneAndUpdate(
+        { ...reservationQuery, status: "expired" },
+        { $set: {
+          status: "committed",
+          committedAt: new Date(),
+          processorJobId: input.processorJobId || existingReservation.processorJobId || null,
+          "metadata.settledAfterExpiry": true,
+        } },
+        { new: true, session },
+      );
+      if (!committed) return existingReservation;
+
+      await updateLegacyUserCredits(String(committed.user), billing.availableCredits, session);
+      await appendCreditLedger({
+        userId: String(committed.user),
+        deltaCredits: -committed.creditsReserved,
+        balanceAfter: billing.availableCredits,
+        reason: "reservation_commit",
+        featureCode: committed.featureCode,
+        toolCode: committed.toolCode,
+        reservationId: String(committed._id),
+        idempotencyKey: `reservation-commit:${committed._id}`,
+        metadata: { processorJobId: input.processorJobId || null, settledAfterExpiry: true },
+      }, session);
+      return committed;
+    }
     if (existingReservation.status !== "reserved") {
       const error = new Error(`Cannot commit reservation in status ${existingReservation.status}.`);
       (error as Error & { status?: number }).status = 409;
@@ -1083,8 +1179,8 @@ export async function commitReservation(input: {
     await appendCreditLedger(
       {
         userId: String(reservation.user),
-        deltaCredits: 0,
-        balanceAfter: billing.availableCredits,
+        deltaCredits: -reservation.creditsReserved,
+        balanceAfter: billing.availableCredits + billing.heldCredits,
         reason: "reservation_commit",
         featureCode: reservation.featureCode,
         toolCode: reservation.toolCode,
@@ -1099,12 +1195,102 @@ export async function commitReservation(input: {
   });
 }
 
+export async function settleImportReservationPricing(input: {
+  userId: string;
+  reservationId: string;
+  actualSizeBytes: number;
+  importMode?: string | null;
+}) {
+  if (!Number.isSafeInteger(input.actualSizeBytes) || input.actualSizeBytes <= 0) {
+    const error = new Error("Processor reported an invalid file size.");
+    (error as Error & { status?: number }).status = 400;
+    throw error;
+  }
+  return runBillingTransaction(async (session) => {
+    const reservation = await UsageReservation.findOne({
+      _id: input.reservationId,
+      user: input.userId,
+      status: "reserved",
+    }).session(session);
+    if (!reservation) throw new Error("Reservation not found or no longer adjustable.");
+    if (reservation.metadata?.authoritativePricingApplied === true) return reservation;
+    if (!reservation.toolCode || !reservation.featureCode.startsWith("import_")) {
+      throw new Error("Reservation is not an import job.");
+    }
+
+    const resolved = resolveUsageCredits({
+      featureCode: "import_file",
+      toolCode: reservation.toolCode,
+      sizeBytes: input.actualSizeBytes,
+      selectedOptions: {
+        ...(reservation.selectedOptions || {}),
+        ...(input.importMode ? { importMode: input.importMode } : {}),
+      },
+    });
+    // resolveUsageCredits deliberately returns the maximum hold. Resolve the
+    // authoritative tier directly using the stored table through its declared
+    // size marker, then derive the actual cost from that tier.
+    const { resolveImportPricing } = await import("@/lib/billing/catalog");
+    const actualRule = resolveImportPricing(
+      reservation.toolCode,
+      input.actualSizeBytes,
+      input.importMode ? { importMode: input.importMode } : reservation.selectedOptions || {},
+    );
+    if (!actualRule) {
+      const error = new Error("Processor file exceeds the supported import size.");
+      (error as Error & { status?: number }).status = 409;
+      throw error;
+    }
+    const actualCredits = actualRule.credits * 2;
+    if (actualCredits > reservation.creditsReserved || resolved.creditsRequired < actualCredits) {
+      throw new Error("Authoritative import price exceeds the reserved hold.");
+    }
+    const releaseCredits = reservation.creditsReserved - actualCredits;
+    if (releaseCredits > 0) {
+      const billing = await UserBilling.findOneAndUpdate(
+        { user: reservation.user, heldCredits: { $gte: releaseCredits } },
+        { $inc: { heldCredits: -releaseCredits, availableCredits: releaseCredits } },
+        { new: true, session },
+      );
+      if (!billing) throw new Error("Unable to settle import credit hold.");
+      await updateLegacyUserCredits(String(reservation.user), billing.availableCredits, session);
+      await appendCreditLedger({
+        userId: String(reservation.user),
+        deltaCredits: 0,
+        balanceAfter: billing.availableCredits + billing.heldCredits,
+        reason: "reservation_release",
+        featureCode: reservation.featureCode,
+        toolCode: reservation.toolCode,
+        reservationId: String(reservation._id),
+        idempotencyKey: `reservation-price-settlement:${reservation._id}`,
+        metadata: { releaseCredits, actualSizeBytes: input.actualSizeBytes, actualSizeBucket: actualRule.sizeLabel },
+      }, session);
+    }
+    reservation.creditsReserved = actualCredits;
+    reservation.sizeBucket = actualRule.sizeLabel;
+    reservation.metadata = {
+      ...(reservation.metadata || {}),
+      authoritativePricingApplied: true,
+      actualSizeBytes: input.actualSizeBytes,
+      actualImportMode: input.importMode || null,
+    };
+    await reservation.save({ session });
+    return reservation;
+  });
+}
+
 export async function releaseReservation(input: {
   userId: string;
   reservationId?: string | null;
   idempotencyKey?: string | null;
   reason?: string | null;
   compensateCommitted?: boolean;
+  /**
+   * Who is releasing. "user" is a customer-initiated cancel and must not be able to free a hold the
+   * processor has already accepted - that would deliver the work and destroy the only record that
+   * it should be billed. "system" is the expiry sweeper and the processor callback.
+   */
+  actor?: "user" | "system";
 }) {
   return runBillingTransaction(async (session) => {
     const reservationQuery = input.reservationId
@@ -1128,6 +1314,22 @@ export async function releaseReservation(input: {
 
     if (["released", "expired", "compensated"].includes(existingReservation.status)) {
       return existingReservation;
+    }
+
+    // A customer cannot release a hold the processor has already picked up: the job is in flight,
+    // so releasing it returns the credits while the work still gets delivered, and the later
+    // completion callback has nothing left to charge against.
+    // Read the monotonic acceptance marker, never the mutable status field: a client-authenticated
+    // route (usage/plugin-status) can write processorStatus, so guarding on it let a user downgrade
+    // their own in-flight job to "failed" and then release the hold - delivered work, no charge.
+    const reservationMetadata = (existingReservation.metadata || {}) as Record<string, unknown>;
+    const processorHasAccepted =
+      Boolean(reservationMetadata.processorAcceptedAt) ||
+      reservationMetadata.processorStatus === "accepted";
+    if (input.actor === "user" && processorHasAccepted) {
+      const error = new Error("This job is already being processed and cannot be cancelled.");
+      (error as Error & { status?: number }).status = 409;
+      throw error;
     }
 
     if (existingReservation.status === "reserved") {
@@ -1164,8 +1366,8 @@ export async function releaseReservation(input: {
       await appendCreditLedger(
         {
           userId: String(reservation.user),
-          deltaCredits: reservation.creditsReserved,
-          balanceAfter: billing.availableCredits,
+          deltaCredits: 0,
+          balanceAfter: billing.availableCredits + billing.heldCredits,
           reason: "reservation_release",
           featureCode: reservation.featureCode,
           toolCode: reservation.toolCode,
@@ -1194,8 +1396,16 @@ export async function releaseReservation(input: {
       if (!reservation) return existingReservation;
 
       const billing = await UserBilling.findOneAndUpdate(
-        { user: reservation.user },
-        { $inc: { availableCredits: reservation.creditsReserved } },
+        {
+          user: reservation.user,
+          lifetimeSpentCredits: { $gte: reservation.creditsReserved },
+        },
+        {
+          $inc: {
+            availableCredits: reservation.creditsReserved,
+            lifetimeSpentCredits: -reservation.creditsReserved,
+          },
+        },
         { new: true, session },
       );
       if (!billing) throw new Error("Missing billing wallet.");
@@ -1226,19 +1436,43 @@ export async function releaseReservation(input: {
   });
 }
 
-export async function expireStaleReservations() {
-  const staleReservations = await UsageReservation.find({
-    status: "reserved",
-    expiresAt: { $lte: new Date() },
-  });
+export async function expireStaleReservations(input: {
+  userId?: string | null;
+  limit?: number;
+} = {}) {
+  // Callers are background jobs with no ambient connection; `bufferCommands: false` makes every
+  // model call throw immediately without this.
+  await dbConnect();
+  const limit = Math.max(1, Math.min(input.limit ?? 50, 200));
+  const now = new Date();
+  const staleReservations = await UsageReservation.find(
+    buildStaleReservationFilter({ now, userId: input.userId }),
+  ).sort({ expiresAt: 1 }).limit(limit);
+
+  const summary = { scanned: staleReservations.length, released: 0, failed: 0 };
 
   for (const reservation of staleReservations) {
-    await releaseReservation({
-      userId: String(reservation.user),
-      reservationId: String(reservation._id),
-      reason: "expired",
-    });
+    // Isolate per reservation: without this, one bad document aborts the whole batch and every
+    // remaining customer's credits stay stranded until the next run - silently.
+    try {
+      await releaseReservation({
+        userId: String(reservation.user),
+        reservationId: String(reservation._id),
+        reason: "expired",
+        actor: "system",
+      });
+      summary.released += 1;
+    } catch (error) {
+      summary.failed += 1;
+      console.error("Failed to expire stale reservation", {
+        reservationId: String(reservation._id),
+        user: String(reservation.user),
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
   }
+
+  return summary;
 }
 
 export async function recordProcessorReservationStatus(input: {
@@ -1249,6 +1483,13 @@ export async function recordProcessorReservationStatus(input: {
   status: "accepted" | "completed" | "failed";
   reason?: string | null;
   metadata?: Record<string, unknown>;
+  /**
+   * Where this report came from. "plugin" is an ordinary session-authenticated client, so it must
+   * never be able to clear an acceptance recorded by the HMAC-verified processor callback -
+   * otherwise a user can downgrade their own in-flight job to "failed", release the hold, and
+   * receive the delivered work for free.
+   */
+  origin?: "plugin" | "processor";
 }) {
   const reservation = await UsageReservation.findOne({
     _id: input.reservationId,
@@ -1261,13 +1502,51 @@ export async function recordProcessorReservationStatus(input: {
     throw error;
   }
 
+  if (
+    ["committed", "compensated"].includes(reservation.status) &&
+    input.status === "accepted"
+  ) {
+    const error = new Error("A completed reservation cannot return to accepted status.");
+    (error as Error & { status?: number }).status = 409;
+    throw error;
+  }
+
+  const existingMetadata = (reservation.metadata || {}) as Record<string, unknown>;
+  const alreadyAccepted =
+    existingMetadata.processorStatus === "accepted" || Boolean(existingMetadata.processorAcceptedAt);
+
+  // A plugin report may not clear an acceptance. Keep its claim in a separate field so the
+  // authorization decision never reads a value the client controls.
+  if (input.origin === "plugin" && alreadyAccepted && input.status !== "accepted") {
+    reservation.metadata = {
+      ...existingMetadata,
+      client: { ...(input.metadata || {}) },
+      pluginReportedStatus: input.status,
+      pluginReportedReason: input.reason || null,
+      pluginReportedAt: new Date().toISOString(),
+    };
+    reservation.markModified("metadata");
+    await reservation.save();
+    return reservation;
+  }
+
   reservation.metadata = {
-    ...(reservation.metadata || {}),
+    ...existingMetadata,
+    client: { ...(input.metadata || {}) },
     processorStatus: input.status,
     processorReason: input.reason || null,
     processorUpdatedAt: new Date().toISOString(),
-    ...(input.metadata || {}),
+    // Monotonic: once the processor has accepted, this is never cleared, so the release guard
+    // cannot be defeated by any later status write.
+    processorAcceptedAt:
+      input.status === "accepted"
+        ? existingMetadata.processorAcceptedAt || new Date().toISOString()
+        : existingMetadata.processorAcceptedAt || null,
   };
+
+  if (input.status === "accepted") {
+    reservation.expiresAt = new Date(Date.now() + 20 * 60_000);
+  }
 
   if (input.processor) {
     reservation.processor = input.processor;
@@ -1314,23 +1593,31 @@ export async function recordRefundAdjustment(input: {
     const deltaCreditsToReverse = Math.max(0, targetCreditsToReverse - (purchase.refundedCreditsApplied || 0));
 
     purchase.refundedAmountPaise = cumulativeRefundAmount;
-    purchase.refundedCreditsApplied = (purchase.refundedCreditsApplied || 0) + deltaCreditsToReverse;
+    const appliedCredits = Math.min(
+      deltaCreditsToReverse,
+      Math.max(0, Number(billing.availableCredits)),
+    );
+    const clawbackShortfallCredits = deltaCreditsToReverse - appliedCredits;
+    purchase.refundedCreditsApplied = (purchase.refundedCreditsApplied || 0) + appliedCredits;
     await purchase.save({ session });
 
     if (deltaCreditsToReverse === 0) {
       return purchase;
     }
 
-    billing.availableCredits -= deltaCreditsToReverse;
-    billing.lifetimeRefundedCredits += deltaCreditsToReverse;
-    await billing.save({ session });
-    await updateLegacyUserCredits(String(purchase.user), billing.availableCredits, session);
+    const updatedBilling = await UserBilling.findOneAndUpdate(
+      { user: purchase.user, availableCredits: { $gte: appliedCredits } },
+      { $inc: { availableCredits: -appliedCredits, lifetimeRefundedCredits: appliedCredits } },
+      { new: true, session },
+    );
+    if (!updatedBilling) throw new Error("Unable to apply refund credit adjustment.");
+    await updateLegacyUserCredits(String(purchase.user), updatedBilling.availableCredits, session);
 
     await appendCreditLedger(
       {
         userId: String(purchase.user),
-        deltaCredits: -deltaCreditsToReverse,
-        balanceAfter: billing.availableCredits,
+        deltaCredits: -appliedCredits,
+        balanceAfter: updatedBilling.availableCredits,
         reason: "refund_debit",
         purchaseId: String(purchase._id),
         refundId: input.refundId,
@@ -1339,6 +1626,9 @@ export async function recordRefundAdjustment(input: {
           amountPaise: input.amountPaise,
           productCode: purchase.productCode,
           cumulativeRefundAmount,
+          requestedCreditReversal: deltaCreditsToReverse,
+          appliedCredits,
+          clawbackShortfallCredits,
         },
       },
       session,
@@ -1474,6 +1764,15 @@ export async function ensureStarterGrant(input: {
       },
     });
 
+    try {
+      await grant.save({ session });
+    } catch (error) {
+      if ((error as { code?: number }).code === 11000) {
+        return StarterGrant.findOne({ user: input.user._id }).session(session || null);
+      }
+      throw error;
+    }
+
     if (status === "granted" && isPluginSource) {
       const billing = await ensureUserBilling(input.user, session);
       const alreadyFunded = walletAlreadyReflectsStarterGrant(
@@ -1482,17 +1781,23 @@ export async function ensureStarterGrant(input: {
       );
 
       if (!alreadyFunded) {
-        billing.availableCredits += SIGNUP_STARTER_GRANT_CREDITS;
-        billing.lifetimeBonusCredits += SIGNUP_STARTER_GRANT_CREDITS;
-        await billing.save({ session });
+        const fundedBilling = await UserBilling.findOneAndUpdate(
+          { user: input.user._id },
+          { $inc: {
+            availableCredits: SIGNUP_STARTER_GRANT_CREDITS,
+            lifetimeBonusCredits: SIGNUP_STARTER_GRANT_CREDITS,
+          } },
+          { new: true, session },
+        );
+        if (!fundedBilling) throw new Error("Missing billing wallet.");
 
-        await updateLegacyUserCredits(String(input.user._id), billing.availableCredits, session);
+        await updateLegacyUserCredits(String(input.user._id), fundedBilling.availableCredits, session);
 
         await appendCreditLedger(
           {
             userId: String(input.user._id),
             deltaCredits: SIGNUP_STARTER_GRANT_CREDITS,
-            balanceAfter: billing.availableCredits,
+            balanceAfter: fundedBilling.availableCredits,
             reason: "starter_grant",
             idempotencyKey: `starter-grant:${input.user._id}`,
             metadata: {
@@ -1511,7 +1816,7 @@ export async function ensureStarterGrant(input: {
       }
     }
 
-    await grant.save({ session });
+    if (grant.isModified()) await grant.save({ session });
     return grant;
   });
 }

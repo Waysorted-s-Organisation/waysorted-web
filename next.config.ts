@@ -39,6 +39,10 @@ const nextConfig: NextConfig = {
         headers: billingApiHeaders,
       },
       {
+        source: "/api/admin/billing/:path*",
+        headers: billingApiHeaders,
+      },
+      {
         // Cache static assets for 1 year
         source: "/icons/:path*",
         headers: [
@@ -126,9 +130,6 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  // Keep Next.js default chunking/runtime behavior to avoid
-  // script/style manifest mismatches in App Router.
-  webpack: (config) => config,
   async redirects() {
     return [
       {

@@ -709,7 +709,12 @@ html, body {
   filter:
     drop-shadow(0 0 1px rgba(255, 255, 255, 0.3))
     drop-shadow(0 0 3px rgba(110, 231, 255, 0.15));
-  will-change: transform, filter, opacity, top;
+  /* `will-change` is deliberately NOT set here. These stars only animate on hover, but declaring it
+     in the base rule made the browser create and hold a compositor layer for every star for the
+     whole life of the page - 71 filtered layers on /pricing alone - which the compositor then has
+     to manage on every scroll frame. It is promoted in the hover rule below instead, so the hint
+     applies only while the animation is actually running. This is a pure performance hint and has
+     no visual effect. */
   z-index: 1;
   pointer-events: none;
  
@@ -745,6 +750,8 @@ html, body {
 .btn-glow:hover .btn-star,
 .btn-glow:focus-visible .btn-star,
 .btn-glow.force-hover .btn-star {
+  /* Promote only while the stars are actually animating. */
+  will-change: transform, filter, opacity, top;
   top: var(--top-hover, var(--top, 50%));
   opacity: 1;
   animation:

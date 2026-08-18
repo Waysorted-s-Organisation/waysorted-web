@@ -43,7 +43,7 @@ const UsageReservationSchema = new Schema<IUsageReservation, UsageReservationMod
       default: "reserved",
       enum: ["reserved", "committed", "released", "expired", "compensated"],
     },
-    idempotencyKey: { type: String, required: true, unique: true, index: true, trim: true },
+    idempotencyKey: { type: String, required: true, trim: true },
     processor: { type: String, default: null },
     processorJobId: { type: String, default: null },
     processorToken: { type: String, default: null },
@@ -58,6 +58,12 @@ const UsageReservationSchema = new Schema<IUsageReservation, UsageReservationMod
     versionKey: false,
   },
 );
+
+UsageReservationSchema.index(
+  { user: 1, idempotencyKey: 1 },
+  { unique: true, name: "user_1_idempotencyKey_1" },
+);
+UsageReservationSchema.index({ status: 1, expiresAt: 1 });
 
 const UsageReservation =
   (models.UsageReservation as UsageReservationModel) ||

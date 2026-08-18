@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import PricingClient, { type PricingPayload } from "./pricing-client";
+import PricingClient from "./pricing-client";
 
-// Title and description are set explicitly: with only a canonical here the page
+// Title, description and canonical are set explicitly. Without them this route
 // inherited the root layout's homepage title AND description verbatim, so /
-// and /pricing were served as duplicates of each other.
+// and /pricing were served to Google as duplicates of each other, and the
+// inherited alternates.canonical pointed /pricing at the homepage.
+// This is static metadata, so it does not make the route dynamic.
 export const metadata: Metadata = {
   title: "Pricing",
   description:
@@ -21,22 +23,16 @@ export const metadata: Metadata = {
   },
 };
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
-
-async function loadInitialPricing(): Promise<{
-  initialPricingData: PricingPayload | null;
-  initialPricingError: string | null;
-}> {
-  return {
-    initialPricingData: null,
-    initialPricingError: null,
-  };
-}
-
-export default async function PricingPage() {
-  const { initialPricingData, initialPricingError } = await loadInitialPricing();
-
-  return <PricingClient initialPricingData={initialPricingData} initialPricingError={initialPricingError} />;
+/**
+ * This shell is intentionally static.
+ *
+ * Regional prices are fetched per visitor from the dynamic, no-store public catalog API. The
+ * client keeps fixed-size pricing placeholders in the initial HTML, so the cards can arrive
+ * without shifting the page while this route avoids a serverless cold start on every visit.
+ *
+ * If regional pricing is moved back into the server render, this page must become dynamic again;
+ * otherwise one visitor's cached prices could be served to everyone.
+ */
+export default function PricingPage() {
+  return <PricingClient initialPricingData={null} initialPricingError={null} />;
 }

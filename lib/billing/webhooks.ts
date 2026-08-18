@@ -16,6 +16,15 @@ import {
   recordRefundAdjustment,
   updateBillingSubscriptionState,
 } from "@/lib/billing/db";
+import { resolvePaidSubscriptionCycle } from "@/lib/billing/webhook-payload";
+import { validateCapturedRazorpayPayment } from "@/lib/billing/payment-verification";
+import { randomUUID } from "crypto";
+import {
+  buildWebhookClaimFilter,
+  buildWebhookLeaseTimes,
+  WEBHOOK_PROCESSING_LEASE_MS,
+  sanitizeRazorpayWebhookPayload,
+} from "@/lib/billing/webhook-processing";
 
 function toDate(epochSeconds?: number | null) {
   return typeof epochSeconds === "number" ? new Date(epochSeconds * 1000) : null;
@@ -28,7 +37,8 @@ function resolveSubscriptionStatus(
 ) {
   if (eventType === "subscription.halted") return "halted";
   if (eventType === "subscription.pending") return "payment_pending";
-  if (eventType === "subscription.authenticated" || eventType === "subscription.activated") {
+  if (eventType === "subscription.authenticated") return "payment_pending";
+  if (eventType === "subscription.activated") {
     return Boolean(entity.cancel_at_cycle_end) ? "cancel_scheduled" : "active";
   }
 
@@ -91,8 +101,8 @@ export async function recordIncomingWebhook(input: {
       $setOnInsert: {
         eventId: input.eventId,
         eventType: input.eventType,
-        signature: input.signature || null,
-        payload: input.payload,
+        signature: null,
+        payload: sanitizeRazorpayWebhookPayload(input.payload),
         status: "received",
       },
     },
@@ -100,17 +110,25 @@ export async function recordIncomingWebhook(input: {
   );
 }
 
-export async function claimWebhookForProcessing(eventId: string) {
+export async function claimWebhookForProcessing(
+  eventId: string,
+  input: { now?: Date; leaseMs?: number } = {},
+) {
+  const now = input.now || new Date();
+  const leaseMs = input.leaseMs ?? WEBHOOK_PROCESSING_LEASE_MS;
+  const attemptId = randomUUID();
+  const lease = buildWebhookLeaseTimes(now, leaseMs);
+
   return RazorpayEventLog.findOneAndUpdate(
-    {
-      eventId,
-      status: { $in: ["received", "failed"] },
-    },
+    buildWebhookClaimFilter(eventId, now, leaseMs),
     {
       $set: {
         status: "processing",
         processedAt: null,
         errorMessage: null,
+        resultReason: null,
+        processingAttemptId: attemptId,
+        ...lease,
       },
     },
     { new: true },
@@ -137,10 +155,38 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
 
       if (!purchase) return { ignored: true, reason: "purchase_not_found" };
 
+      // Validate the payment the same way /checkout/verify does. Without this the webhook - the
+      // path that runs when the customer's browser is gone, i.e. the one actually depended on -
+      // grants the full credit allocation for a partial capture, or for an amount or currency that
+      // does not match what was ordered.
+      if (paymentEntity) {
+        try {
+          validateCapturedRazorpayPayment({
+            payment: paymentEntity,
+            purchase,
+            expectedOrderId: orderId,
+            expectedPaymentId: paymentId || null,
+          });
+        } catch (validationError) {
+          console.error("[billing] webhook payment failed validation; not granting credits", {
+            purchaseId: String(purchase._id),
+            orderId,
+            paymentId,
+            error:
+              validationError instanceof Error ? validationError.message : String(validationError),
+          });
+          return { ignored: true, reason: "payment_validation_failed" };
+        }
+      }
+
       purchase.razorpayOrderId ||= orderId;
       purchase.razorpayPaymentId ||= paymentId || null;
-      purchase.status = "captured";
-      purchase.capturedAt ||= new Date();
+      // Never resurrect a refunded purchase: a late or re-delivered capture event would otherwise
+      // flip it back to captured and show a refunded charge as paid.
+      if (purchase.status !== "refunded" && purchase.status !== "partially_refunded") {
+        purchase.status = "captured";
+        purchase.capturedAt ||= new Date();
+      }
       await purchase.save();
 
       await applyPurchaseCredits(purchase);
@@ -179,9 +225,12 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         metadata: { source: "webhook" },
       });
 
-      subscription.currentPeriodStart = toDate((entity as { current_start?: number }).current_start);
-      subscription.currentPeriodEnd = toDate((entity as { current_end?: number }).current_end);
-      subscription.nextChargeAt = toDate((entity as { charge_at?: number }).charge_at);
+      const providerPeriodStart = toDate((entity as { current_start?: number }).current_start);
+      const providerPeriodEnd = toDate((entity as { current_end?: number }).current_end);
+      const providerNextChargeAt = toDate((entity as { charge_at?: number }).charge_at);
+      if (providerPeriodStart) subscription.currentPeriodStart = providerPeriodStart;
+      if (providerPeriodEnd) subscription.currentPeriodEnd = providerPeriodEnd;
+      if (providerNextChargeAt) subscription.nextChargeAt = providerNextChargeAt;
       subscription.cancelAtCycleEnd = Boolean(entity.cancel_at_cycle_end);
       subscription.status = resolveSubscriptionStatus(
         eventType,
@@ -217,12 +266,8 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
 
     case "invoice.paid":
     case "subscription.charged": {
-      const invoiceEntity = (bodyPayload.invoice as { entity?: Record<string, unknown> } | undefined)?.entity;
-      const subscriptionId = String(
-        invoiceEntity?.subscription_id ||
-          (bodyPayload.subscription as { entity?: Record<string, unknown> } | undefined)?.entity?.id ||
-          "",
-      );
+      const paidCycle = resolvePaidSubscriptionCycle(bodyPayload);
+      const subscriptionId = paidCycle.subscriptionId;
       if (!subscriptionId) return { ignored: true, reason: "missing_subscription_id" };
 
       const subscription = await Subscription.findOne({
@@ -231,9 +276,12 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
       if (!subscription) return { ignored: true, reason: "subscription_not_found" };
 
       subscription.status = subscription.cancelAtCycleEnd ? "cancel_scheduled" : "active";
-      subscription.currentPeriodStart = toDate((invoiceEntity as { period_start?: number }).period_start);
-      subscription.currentPeriodEnd = toDate((invoiceEntity as { period_end?: number }).period_end);
-      subscription.nextChargeAt = subscription.currentPeriodEnd;
+      subscription.currentPeriodStart =
+        paidCycle.currentPeriodStart || subscription.currentPeriodStart || null;
+      subscription.currentPeriodEnd =
+        paidCycle.currentPeriodEnd || subscription.currentPeriodEnd || null;
+      subscription.nextChargeAt =
+        paidCycle.nextChargeAt || subscription.nextChargeAt || subscription.currentPeriodEnd || null;
       await subscription.save();
 
       await updateBillingSubscriptionState({
@@ -246,10 +294,7 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         cancelAtCycleEnd: subscription.cancelAtCycleEnd,
       });
 
-      const cycleIdentity =
-        String(invoiceEntity?.id || "") ||
-        [invoiceEntity?.period_start || "", invoiceEntity?.period_end || ""].filter(Boolean).join(":") ||
-        String(invoiceEntity?.payment_id || "");
+      const cycleIdentity = paidCycle.cycleIdentity;
       if (!cycleIdentity) {
         return { ignored: true, reason: "missing_cycle_identity" };
       }
@@ -259,7 +304,7 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
       await applySubscriptionCycleCredits({
         subscription,
         cycleKey,
-        paymentId: String(invoiceEntity?.payment_id || ""),
+        paymentId: paidCycle.paymentId,
       });
 
       const purchaseId = String(
@@ -302,19 +347,24 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
     case "refund.processed":
     case "payment.refunded": {
       const refundEntity = (bodyPayload.refund as { entity?: Record<string, unknown> } | undefined)?.entity;
+      const providerRefundId = String(refundEntity?.id || "");
+      const refundAmount = Number(refundEntity?.amount);
+      if (!providerRefundId || !Number.isFinite(refundAmount) || refundAmount <= 0) {
+        return { ignored: true, reason: "missing_refund_entity" };
+      }
       const paymentId = String(refundEntity?.payment_id || getEntityId(payload));
       if (!paymentId) return { ignored: true, reason: "missing_payment_id" };
 
       const purchase = await Purchase.findOne({ razorpayPaymentId: paymentId });
       if (!purchase) return { ignored: true, reason: "purchase_not_found" };
 
-      let refund = await Refund.findOne({ providerRefundId: String(refundEntity?.id || "") });
+      let refund = await Refund.findOne({ providerRefundId });
       if (!refund) {
         refund = await createRefundRecord({
           purchase,
-          amountPaise: Number(refundEntity?.amount || purchase.amountPaise),
+          amountPaise: refundAmount,
           paymentId,
-          providerRefundId: String(refundEntity?.id || ""),
+          providerRefundId,
           reason: String(((refundEntity?.notes as Record<string, unknown> | undefined) || {}).reason || ""),
         });
       }
@@ -330,10 +380,14 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         await refund.save();
       }
 
-      purchase.status =
-        refund.amountPaise >= purchase.amountPaise ? "refunded" : "partially_refunded";
-      purchase.refundedAt = new Date();
-      await purchase.save();
+      const updatedPurchase = await Purchase.findById(purchase._id);
+      if (!updatedPurchase) throw new Error("Purchase not found after refund adjustment.");
+      updatedPurchase.status =
+        updatedPurchase.refundedAmountPaise >= updatedPurchase.amountPaise
+          ? "refunded"
+          : "partially_refunded";
+      updatedPurchase.refundedAt = new Date();
+      await updatedPurchase.save();
 
       return { processed: true, type: eventType, refundId: String(refund._id) };
     }

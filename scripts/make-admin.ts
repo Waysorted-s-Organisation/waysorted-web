@@ -6,9 +6,7 @@ dotenv.config({ path: ".env" });
 
 const MONGODB_URI =
     process.env.MONGODB_URI_TOOLS ||
-    process.env.NEXT_PUBLIC_MONGODB_URI_TOOLS ||
-    process.env.MONGODB_URI ||
-    process.env.NEXT_PUBLIC_MONGODB_URI;
+    process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
     console.error("Error: MONGODB_URI not set in environment variables.");

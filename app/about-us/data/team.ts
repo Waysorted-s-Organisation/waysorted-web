@@ -5,13 +5,13 @@ export const teams = [
         image: "/icons/rishabh.jpg",
     },
     {
-        name: "Sudhanshu Singh",
-        role: "CPO and Co-Founder",
-        image: "/icons/sudhanshu.jpg",
-    },
-    {
         name: "Aviral Garg",
         role: "CTO and Co-Founder",
         image: "/icons/aviral.jpg",
+    },
+    {
+        name: "Ayush Singh",
+        role: "Head of Growth",
+        image: "/icons/ayush.jpg",
     },
 ];

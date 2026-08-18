@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { buildCorsHeaders } from "@/lib/cors";
+import { buildFigmaPatCorsHeaders } from "@/lib/figma-plugin-cors";
 import { LEGACY_PRICING_COUNTRY_COOKIE } from "@/lib/billing/regional-pricing";
 
 const PAGE_NO_STORE_HEADERS = {
@@ -43,7 +44,11 @@ export function middleware(request: NextRequest) {
 
   // Handle CORS preflight requests (API only)
   if (request.method === "OPTIONS" && pathname.startsWith("/api/")) {
-    const headers = buildCorsHeaders(request);
+    // Middleware runs before route handlers, so the Figma PAT endpoint's
+    // opaque-origin policy must also be applied here.
+    const headers = pathname === "/api/auth/figma/pat"
+      ? buildFigmaPatCorsHeaders(request)
+      : buildCorsHeaders(request);
     if (!headers) {
       return new NextResponse(null, { status: 403 });
     }
@@ -64,11 +69,19 @@ export function middleware(request: NextRequest) {
     });
   }
 
-  if (pathname.startsWith("/api/billing/")) {
+  if (
+    pathname.startsWith("/api/billing/") ||
+    pathname.startsWith("/api/admin/billing/")
+  ) {
     applyHeaders(response, API_NO_STORE_HEADERS);
-  } else if (pathname === "/pricing" || pathname === "/billing" || pathname === "/payment") {
+  } else if (pathname === "/billing" || pathname === "/payment") {
+    // These render account-specific state and must never be cached.
     applyHeaders(response, PAGE_NO_STORE_HEADERS);
   }
+  // /pricing is deliberately absent: its HTML shell is static and identical for every visitor
+  // (prices come from the no-store /api/billing/public-catalog call the client makes after
+  // hydration), so forcing no-store only cost every visitor a full round trip for identical markup.
+  // Re-add it if regional pricing is ever moved into the server render.
 
   return clearLegacyPricingCountryCookie(request, response);
 }

@@ -1,140 +1,90 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
+import { opaqueSecretMatches } from "@/lib/auth-session";
 import { OPTIONS, withCors } from "@/lib/cors";
-import { refreshGoogleToken } from "@/lib/token";
+
 export { OPTIONS };
 
-interface SessionDoc {
-  _id: unknown;
-  sessionId: string;
-  accessToken?: string;
-  refreshToken?: string;
-  accessTokenExpiresAt?: number;
-  user?: unknown;
-}
+type PollBody = {
+  sessionId?: string;
+  pollSecret?: string;
+};
 
-async function getOrRefreshAccessToken(session: SessionDoc): Promise<string> {
-  if (!session.accessToken) return "";
-
-  const REFRESH_BUFFER_MS = 5 * 60 * 1000; // 5 minutes
-  const isExpiredOrExpiringSoon =
-    session.accessTokenExpiresAt &&
-    Date.now() > session.accessTokenExpiresAt - REFRESH_BUFFER_MS;
-
-  if (isExpiredOrExpiringSoon) {
-    let refreshToken = session.refreshToken;
-    if (!refreshToken && session.user) {
-      const prevSession = await Session.findOne({
-        user: session.user,
-        refreshToken: { $exists: true, $ne: null }
-      }).sort({ completedAt: -1 }).lean() as SessionDoc | null;
-      if (prevSession?.refreshToken) {
-        refreshToken = prevSession.refreshToken;
-        await Session.updateOne({ _id: session._id }, { $set: { refreshToken } });
-        console.log("Recovered fallback refreshToken from previous session during poll.");
-      }
-    }
-
-    if (refreshToken) {
-      try {
-        console.log("Proactively refreshing expired/expiring token during poll for session:", session.sessionId);
-        const refreshedTokens = await refreshGoogleToken(refreshToken);
-        const newAccessToken = refreshedTokens.access_token;
-        const newExpiresAt = Date.now() + refreshedTokens.expires_in * 1000;
-
-        const updateFields: Record<string, unknown> = {
-          accessToken: newAccessToken,
-          accessTokenExpiresAt: newExpiresAt,
-        };
-        if (refreshedTokens.refresh_token) {
-          updateFields.refreshToken = refreshedTokens.refresh_token;
-        }
-
-        await Session.updateOne({ _id: session._id }, { $set: updateFields });
-        console.log("Token refreshed successfully during poll for session:", session.sessionId);
-        return newAccessToken;
-      } catch (err) {
-        console.error("Failed to proactively refresh token during poll:", err);
-        // Extend token lifetime locally
-        const newExpiresAt = Date.now() + 3600 * 1000;
-        await Session.updateOne({ _id: session._id }, { $set: { accessTokenExpiresAt: newExpiresAt } });
-      }
-    } else {
-      // Extend token lifetime locally
-      const newExpiresAt = Date.now() + 3600 * 1000;
-      await Session.updateOne({ _id: session._id }, { $set: { accessTokenExpiresAt: newExpiresAt } });
-    }
-  }
-
-  return session.accessToken;
+function pollResponse(request: NextRequest, body: unknown, status = 200) {
+  return withCors(request, NextResponse.json(body, { status }));
 }
 
 export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const sessionId = searchParams.get("sessionId");
-
-    if (!sessionId) {
-      return withCors(request, NextResponse.json({ error: "Missing sessionId" }, { status: 400 }));
-    }
-
-    await dbConnect();
-    const session = await Session.findOne({ sessionId });
-
-    if (!session) {
-      return withCors(request, NextResponse.json({ error: "Invalid session" }, { status: 404 }));
-    }
-
-    if (session.accessToken && session.completed) {
-      const token = await getOrRefreshAccessToken(session);
-      return withCors(request, NextResponse.json({ accessToken: token }));
-    }
-
-    // Still waiting for user to complete OAuth flow
-    return withCors(request, NextResponse.json({ pending: true }));
-  } catch (error) {
-    console.error("Error in /api/auth/poll:", error);
-    return withCors(
-      request,
-      NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 }),
-    );
-  }
+  return pollResponse(
+    request,
+    { error: "Use POST with the polling credentials returned by /api/auth/start." },
+    405,
+  );
 }
 
 export async function POST(request: NextRequest) {
   try {
-    let sessionId: string | null = null;
-    try {
-      const body = await request.json();
-      sessionId = body.sessionId || null;
-    } catch {
-      const { searchParams } = new URL(request.url);
-      sessionId = searchParams.get("sessionId");
-    }
+    const body = (await request.json().catch(() => ({}))) as PollBody;
+    const pollId = body.sessionId?.trim();
+    const pollSecret = body.pollSecret?.trim();
 
-    if (!sessionId) {
-      return withCors(request, NextResponse.json({ error: "Missing sessionId" }, { status: 400 }));
+    if (!pollId || !pollSecret) {
+      return pollResponse(request, { error: "Missing polling credentials." }, 400);
     }
 
     await dbConnect();
-    const session = await Session.findOne({ sessionId });
+    const now = new Date();
+    const session = await Session.findOne({
+      pollId,
+      pollExpiresAt: { $gt: now },
+      pollConsumedAt: { $exists: false },
+    }).lean();
 
-    if (!session) {
-      return withCors(request, NextResponse.json({ error: "Invalid session" }, { status: 404 }));
+    if (
+      !session?.pollSecretHash ||
+      !opaqueSecretMatches(pollSecret, session.pollSecretHash)
+    ) {
+      return pollResponse(request, { error: "Invalid or expired polling credentials." }, 401);
     }
 
-    if (session.accessToken && session.completed) {
-      const token = await getOrRefreshAccessToken(session);
-      return withCors(request, NextResponse.json({ accessToken: token }));
+    if (!session.completed) {
+      return pollResponse(request, { pending: true });
     }
 
-    return withCors(request, NextResponse.json({ pending: true }));
+    if (!session.user || !session.accessToken) {
+      return pollResponse(request, { error: "Authentication did not complete correctly." }, 401);
+    }
+
+    if (!session.accessTokenExpiresAt || session.accessTokenExpiresAt <= Date.now()) {
+      return pollResponse(
+        request,
+        { error: "Authentication token expired. Please sign in again.", requiresReauth: true },
+        401,
+      );
+    }
+
+    const consumed = await Session.findOneAndUpdate(
+      {
+        _id: session._id,
+        pollId,
+        pollConsumedAt: { $exists: false },
+        pollExpiresAt: { $gt: now },
+      },
+      {
+        $set: { pollConsumedAt: now },
+        $unset: { pollSecretHash: 1 },
+      },
+      { new: true },
+    ).lean();
+
+    if (!consumed) {
+      return pollResponse(request, { error: "Polling credentials were already consumed." }, 409);
+    }
+
+    return pollResponse(request, { accessToken: session.accessToken });
   } catch (error) {
-    console.error("Error in /api/auth/poll POST:", error);
-    return withCors(
-      request,
-      NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 }),
-    );
+    console.error("Error in /api/auth/poll:", error);
+    return pollResponse(request, { error: "Unable to check authentication status." }, 500);
   }
 }

@@ -1,8 +1,100 @@
 import type { NextRequest } from "next/server";
-import type { CatalogProduct } from "@/lib/billing/catalog";
+import { CATALOG_PRODUCTS, type CatalogProduct } from "@/lib/billing/catalog";
+import { minimumChargeSubunits, minorUnitMultiplier } from "@/lib/billing/money";
+import { safeEqual } from "@/lib/billing/crypto";
 
 export type PricingTier = "tier_1" | "tier_2" | "tier_3";
 export const LEGACY_PRICING_COUNTRY_COOKIE = "ws_pricing_country";
+
+/**
+ * Country used when no trusted geo signal is available.
+ *
+ * This MUST stay conservative for the business, not for the wallet: Waysorted bills through an
+ * INR-first Razorpay account, so falling back to a foreign currency both overcharges the majority
+ * of real visitors and can hand Razorpay a currency the account cannot settle. Deployments that
+ * genuinely serve a non-Indian majority can override it.
+ */
+export const DEFAULT_PRICING_COUNTRY_FALLBACK = "IN";
+
+export function getDefaultPricingCountry(override?: string | null) {
+  const configured = (override ?? process.env.BILLING_DEFAULT_PRICING_COUNTRY)?.trim().toUpperCase();
+  return configured && /^[A-Z]{2}$/.test(configured) ? configured : DEFAULT_PRICING_COUNTRY_FALLBACK;
+}
+
+/**
+ * Header that carries an edge-computed country for this deployment.
+ *
+ * `x-vercel-ip-country` is only meaningful when Vercel terminates the connection. Behind a proxy
+ * (Cloudflare, a corporate CDN) Vercel sees the PROXY's address, so the header reports the proxy
+ * PoP's country - e.g. every Indian visitor routed through Cloudflare's Singapore colo is reported
+ * as SG. Vercel's own documentation states the geo headers do not work behind a proxy, and the
+ * Trusted Proxy override is Enterprise-only.
+ *
+ * Such deployments must name the proxy's own geo header (Cloudflare: `cf-ipcountry`) via
+ * BILLING_TRUSTED_GEO_HEADER. See isEdgeAttested for why that alone is not sufficient.
+ */
+export const DEFAULT_TRUSTED_GEO_HEADER = "x-vercel-ip-country";
+export const DEFAULT_EDGE_ATTESTATION_HEADER = "x-waysorted-edge-proof";
+
+export function getTrustedGeoHeaderName(override?: string | null) {
+  const configured = (override ?? process.env.BILLING_TRUSTED_GEO_HEADER)?.trim().toLowerCase();
+  return configured || DEFAULT_TRUSTED_GEO_HEADER;
+}
+
+/**
+ * Confirm the request really arrived through our own edge before believing a proxy's geo header.
+ *
+ * A proxy header such as `cf-ipcountry` is trustworthy only on the path where the proxy sets it.
+ * The origin stays directly reachable (the *.vercel.app URL is public), so anyone can bypass the
+ * proxy and send `cf-ipcountry: IN` to select the cheapest tier for themselves.
+ *
+ * Configure BILLING_EDGE_ATTESTATION_SECRET here and inject the same value at the proxy (Cloudflare
+ * → Rules → Transform Rules → Modify Request Header). Requests that do not present it are treated as
+ * having NO geo signal, which falls back to the deployment's home currency rather than a
+ * caller-chosen one.
+ *
+ * Attestation is REQUIRED whenever the trusted geo header is not the platform's own. Without that
+ * rule a half-applied cutover - BILLING_TRUSTED_GEO_HEADER switched to cf-ipcountry but the secret
+ * missing, blank, or whitespace - would silently accept a caller-supplied country and hand out a
+ * 3.35x self-service discount at the directly reachable origin.
+ */
+export function isEdgeAttested(
+  headers: Pick<Headers, "get">,
+  options: {
+    secret?: string | null;
+    headerName?: string | null;
+    trustedHeader?: string | null;
+  } = {},
+) {
+  const secret = (options.secret ?? process.env.BILLING_EDGE_ATTESTATION_SECRET)?.trim();
+  const trustedHeader = getTrustedGeoHeaderName(options.trustedHeader);
+
+  if (!secret) {
+    // No secret: only the platform's own header may be believed on its own. Any other header is
+    // proxy- or caller-supplied and is worthless without proof of origin.
+    return trustedHeader === DEFAULT_TRUSTED_GEO_HEADER;
+  }
+
+  const headerName =
+    (options.headerName ?? process.env.BILLING_EDGE_ATTESTATION_HEADER)?.trim().toLowerCase() ||
+    DEFAULT_EDGE_ATTESTATION_HEADER;
+  const presented = safeHeaderGet(headers, headerName)?.trim();
+  return Boolean(presented) && safeEqual(presented as string, secret);
+}
+
+/**
+ * Headers.get throws a TypeError on an invalid header name. A typo in BILLING_TRUSTED_GEO_HEADER or
+ * BILLING_EDGE_ATTESTATION_HEADER would otherwise 500 the entire pricing and checkout surface, so
+ * a misconfiguration degrades to "no geo signal" instead of taking payments offline.
+ */
+function safeHeaderGet(headers: Pick<Headers, "get">, name: string) {
+  try {
+    return headers.get(name);
+  } catch {
+    console.error("[billing] invalid configured header name", { name });
+    return null;
+  }
+}
 
 export type PricingContext = {
   country: string;
@@ -260,23 +352,38 @@ const CURRENCY_PER_INR: Record<string, number> = {
   UAH: 0.5,
 };
 
+function catalogBasePrice(code: string) {
+  const product = CATALOG_PRODUCTS.find((item) => item.code === code);
+  if (!product) throw new Error(`Missing billing catalog product ${code}.`);
+  return product.priceInr;
+}
+
 const PRICE_MATRIX_INR: Record<string, Record<PricingTier, number>> = {
-  starter_149: { tier_1: 499, tier_2: 249, tier_3: 149 },
-  starter_349: { tier_1: 999, tier_2: 549, tier_3: 349 },
-  starter_749: { tier_1: 1999, tier_2: 1099, tier_3: 749 },
-  sub_month_1: { tier_1: 499, tier_2: 249, tier_3: 149 },
-  sub_month_2: { tier_1: 999, tier_2: 549, tier_3: 349 },
-  sub_month_3: { tier_1: 1999, tier_2: 1099, tier_3: 749 },
-  sub_year_1599: { tier_1: 4999, tier_2: 2499, tier_3: 1499 },
-  sub_year_3499: { tier_1: 9999, tier_2: 5499, tier_3: 3499 },
-  sub_year_7499: { tier_1: 19999, tier_2: 10999, tier_3: 7499 },
-  topup_sub_50: { tier_1: 199, tier_2: 99, tier_3: 50 },
-  topup_std_50: { tier_1: 199, tier_2: 99, tier_3: 50 },
-  topup_sub_100: { tier_1: 399, tier_2: 199, tier_3: 100 },
-  topup_std_100: { tier_1: 399, tier_2: 199, tier_3: 100 },
-  topup_sub_120: { tier_1: 499, tier_2: 249, tier_3: 120 },
-  topup_std_120: { tier_1: 499, tier_2: 249, tier_3: 120 },
+  starter_149: { tier_1: 499, tier_2: 249, tier_3: catalogBasePrice("starter_149") },
+  starter_349: { tier_1: 999, tier_2: 549, tier_3: catalogBasePrice("starter_349") },
+  starter_749: { tier_1: 1999, tier_2: 1099, tier_3: catalogBasePrice("starter_749") },
+  sub_month_1: { tier_1: 499, tier_2: 249, tier_3: catalogBasePrice("sub_month_1") },
+  sub_month_2: { tier_1: 999, tier_2: 549, tier_3: catalogBasePrice("sub_month_2") },
+  sub_month_3: { tier_1: 1999, tier_2: 1099, tier_3: catalogBasePrice("sub_month_3") },
+  sub_year_1599: { tier_1: 4999, tier_2: 2499, tier_3: catalogBasePrice("sub_year_1599") },
+  sub_year_3499: { tier_1: 9999, tier_2: 5499, tier_3: catalogBasePrice("sub_year_3499") },
+  sub_year_7499: { tier_1: 19999, tier_2: 10999, tier_3: catalogBasePrice("sub_year_7499") },
+  topup_sub_50: { tier_1: 199, tier_2: 99, tier_3: catalogBasePrice("topup_sub_50") },
+  topup_std_50: { tier_1: 199, tier_2: 99, tier_3: catalogBasePrice("topup_std_50") },
+  topup_sub_100: { tier_1: 399, tier_2: 199, tier_3: catalogBasePrice("topup_sub_100") },
+  topup_std_100: { tier_1: 399, tier_2: 199, tier_3: catalogBasePrice("topup_std_100") },
+  topup_sub_120: { tier_1: 499, tier_2: 249, tier_3: catalogBasePrice("topup_sub_120") },
+  topup_std_120: { tier_1: 499, tier_2: 249, tier_3: catalogBasePrice("topup_std_120") },
 };
+
+for (const product of CATALOG_PRODUCTS.filter((item) => item.active)) {
+  const matrixPrice = PRICE_MATRIX_INR[product.code]?.tier_3;
+  if (matrixPrice === undefined || matrixPrice !== product.priceInr) {
+    throw new Error(
+      `Billing price configuration mismatch for ${product.code}: catalog=${product.priceInr}, tier_3=${matrixPrice ?? "missing"}.`,
+    );
+  }
+}
 
 export function getCountryTier(country: string): PricingTier {
   const code = normalizeCountry(country);
@@ -285,9 +392,20 @@ export function getCountryTier(country: string): PricingTier {
   return "tier_3";
 }
 
-export function normalizeCountry(country?: string | null) {
+/**
+ * Parse an ISO-3166 alpha-2 code, returning null when the input is not one.
+ *
+ * Free text ("India", "United States") is NOT guessable and must not be coerced: the previous
+ * behaviour silently mapped every unparseable value to "US", which promoted Indian customers to
+ * tier_1 USD pricing and saturated the country-mismatch risk flags.
+ */
+export function parseCountryCode(country?: string | null): string | null {
   const code = (country || "").trim().toUpperCase();
-  return /^[A-Z]{2}$/.test(code) ? code : "US";
+  return /^[A-Z]{2}$/.test(code) ? code : null;
+}
+
+export function normalizeCountry(country?: string | null) {
+  return parseCountryCode(country) ?? getDefaultPricingCountry();
 }
 
 export function getCountryName(country: string) {
@@ -304,16 +422,86 @@ export function getTierRank(tier: PricingTier) {
   return TIER_RANK[tier];
 }
 
+export function getTrustedPricingCountry(
+  headers: Pick<Headers, "get">,
+  options: {
+    nodeEnv?: string;
+    developmentOverride?: string | null;
+    trustedHeader?: string | null;
+    attestationSecret?: string | null;
+    attestationHeader?: string | null;
+  } = {},
+) {
+  const trustedHeader = getTrustedGeoHeaderName(options.trustedHeader);
+  // A geo header is only evidence when it came from a party we trust. If an edge attestation is
+  // configured and absent, ignore the header entirely rather than let a direct-to-origin caller
+  // choose their own price tier.
+  const edgeCountry = isEdgeAttested(headers, {
+    secret: options.attestationSecret,
+    headerName: options.attestationHeader,
+    trustedHeader: options.trustedHeader,
+  })
+    ? parseCountryCode(safeHeaderGet(headers, trustedHeader))
+    : null;
+  if (edgeCountry) {
+    return edgeCountry;
+  }
+
+  const nodeEnv = options.nodeEnv ?? process.env.NODE_ENV;
+  if (nodeEnv !== "production") {
+    const developmentCountry = (options.developmentOverride ?? process.env.DEV_PRICING_COUNTRY)
+      ?.trim()
+      .toUpperCase();
+    if (developmentCountry && /^[A-Z]{2}$/.test(developmentCountry)) {
+      return developmentCountry;
+    }
+  }
+
+  return null;
+}
+
+export function getSafestObservedCountry(
+  trustedRequestCountry?: string | null,
+  historicalAuthCountry?: string | null,
+) {
+  if (!trustedRequestCountry) return null;
+
+  const trustedCountry = normalizeCountry(trustedRequestCountry);
+  if (!historicalAuthCountry) return trustedCountry;
+
+  const authCountry = normalizeCountry(historicalAuthCountry);
+  return getTierRank(getCountryTier(authCountry)) > getTierRank(getCountryTier(trustedCountry))
+    ? authCountry
+    : trustedCountry;
+}
+
+export function getPricingCountryMismatchRiskFlags(input: {
+  authCountry?: string | null;
+  trustedRequestCountry?: string | null;
+  declaredBillingCountry?: string | null;
+  lockedPricingCountry?: string | null;
+}) {
+  const riskFlags: string[] = [];
+  if (
+    input.authCountry &&
+    input.trustedRequestCountry &&
+    normalizeCountry(input.authCountry) !== normalizeCountry(input.trustedRequestCountry)
+  ) {
+    riskFlags.push("auth_country_differs_from_checkout_country");
+  }
+  if (
+    input.declaredBillingCountry &&
+    input.lockedPricingCountry &&
+    normalizeCountry(input.declaredBillingCountry) !== normalizeCountry(input.lockedPricingCountry)
+  ) {
+    riskFlags.push("billing_country_differs_from_pricing_country");
+  }
+  return riskFlags;
+}
+
 export function getCountryFromRequest(request?: NextRequest | null) {
   if (!request) return null;
-  const country =
-    request.headers.get("cf-ipcountry") ||
-    request.headers.get("x-vercel-ip-country");
-
-  if (!country && process.env.NODE_ENV === "development") {
-    return "IN";
-  }
-  return country || null;
+  return getTrustedPricingCountry(request.headers);
 }
 
 export function withPricingRiskFlags(pricing: PricingContext, riskFlags: string[]): PricingContext {
@@ -336,12 +524,16 @@ export function createPricingContext(input: {
   const riskFlags: string[] = [];
 
   if (!detectedCountry && !lockedCountry) {
+    // No trusted geo signal. Bill in the deployment's home currency rather than promoting the
+    // visitor to the most expensive tier in a currency the Razorpay account may not settle.
+    // `source: "default"` marks this context as NOT lockable - see shouldPersistPricingLock.
+    const fallbackCountry = getDefaultPricingCountry();
     return {
-      country: "US",
-      countryName: "United States",
-      tier: "tier_1",
-      currency: "USD",
-      riskFlags: ["missing_country_default_tier_1"],
+      country: fallbackCountry,
+      countryName: getCountryName(fallbackCountry),
+      tier: getCountryTier(fallbackCountry),
+      currency: getCurrencyForCountry(fallbackCountry),
+      riskFlags: ["missing_country_default_pricing"],
       locked: false,
       source: "default",
     };
@@ -380,14 +572,6 @@ export function createPricingContext(input: {
   };
 }
 
-export function minorUnitMultiplier(currency: string) {
-  const digits = new Intl.NumberFormat("en", {
-    style: "currency",
-    currency,
-  }).resolvedOptions().maximumFractionDigits ?? 2;
-  return 10 ** digits;
-}
-
 function roundDisplayAmount(value: number, currency: string) {
   if (currency === "INR") return Math.round(value);
   if (value >= 100) return Math.round(value);
@@ -401,7 +585,7 @@ export function convertInrToCurrencyAmount(inrAmount: number, currency: string) 
 }
 
 export function toSubunits(amount: number, currency: string) {
-  return Math.max(100, Math.round(amount * minorUnitMultiplier(currency)));
+  return Math.max(minimumChargeSubunits(currency), Math.round(amount * minorUnitMultiplier(currency)));
 }
 
 export function getTierPriceInr(productCode: string, tier: PricingTier, fallbackInr: number) {

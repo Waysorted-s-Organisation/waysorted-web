@@ -63,8 +63,8 @@ const PurchaseSchema = new Schema<IPurchase, PurchaseModel>(
     pricingRiskFlags: [{ type: String }],
     creditsGranted: { type: Number, required: true, min: 0 },
     bonusCredits: { type: Number, required: true, default: 0, min: 0 },
-    razorpayOrderId: { type: String, default: null, index: true },
-    razorpayPaymentId: { type: String, default: null, index: true },
+    razorpayOrderId: { type: String, default: null },
+    razorpayPaymentId: { type: String, default: null },
     razorpaySubscriptionId: { type: String, default: null, index: true },
     receipt: { type: String, required: true, unique: true, index: true },
     grantApplied: { type: Boolean, required: true, default: false },
@@ -73,12 +73,34 @@ const PurchaseSchema = new Schema<IPurchase, PurchaseModel>(
     refundedAmountPaise: { type: Number, required: true, default: 0, min: 0 },
     refundedCreditsApplied: { type: Number, required: true, default: 0, min: 0 },
     checkoutSource: { type: String, default: null },
-    idempotencyKey: { type: String, required: true, unique: true, index: true, trim: true },
+    idempotencyKey: { type: String, required: true, trim: true },
     notes: { type: Schema.Types.Mixed, default: {} },
   },
   {
     timestamps: true,
     versionKey: false,
+  },
+);
+
+PurchaseSchema.index(
+  { user: 1, idempotencyKey: 1 },
+  { unique: true, name: "user_1_idempotencyKey_1" },
+);
+PurchaseSchema.index({ status: 1, grantApplied: 1, createdAt: -1 });
+PurchaseSchema.index(
+  { razorpayOrderId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { razorpayOrderId: { $type: "string" } },
+    name: "razorpayOrderId_unique",
+  },
+);
+PurchaseSchema.index(
+  { razorpayPaymentId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { razorpayPaymentId: { $type: "string" } },
+    name: "razorpayPaymentId_unique",
   },
 );
 

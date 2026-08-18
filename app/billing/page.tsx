@@ -13,15 +13,26 @@ export const metadata: Metadata = {
 export default async function BillingPage({
   searchParams,
 }: {
-  searchParams: Promise<{ bridge?: string; product?: string; autostart?: string }>;
+  searchParams: Promise<{
+    product?: string;
+    autostart?: string;
+    qa?: string;
+    qc?: string;
+    qv?: string;
+  }>;
 }) {
   const params = await searchParams;
+  // The price the customer was shown on /pricing, carried across the hand-off so checkout can
+  // refuse to auto-open the payment modal at a different amount.
+  const quotedAmountSubunits = Number(params.qa);
 
   return (
     <BillingClient
-      bridgeToken={params.bridge || null}
       autostart={params.autostart === "1"}
       initialProductCode={params.product || null}
+      quotedAmountSubunits={Number.isSafeInteger(quotedAmountSubunits) ? quotedAmountSubunits : null}
+      quotedCurrency={params.qc || null}
+      quotedPricingVersion={params.qv || null}
     />
   );
 }

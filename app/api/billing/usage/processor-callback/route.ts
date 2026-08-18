@@ -4,9 +4,11 @@ import {
   commitReservation,
   recordProcessorReservationStatus,
   releaseReservation,
+  settleImportReservationPricing,
 } from "@/lib/billing/db";
 import { getProcessorCallbackSecret } from "@/lib/billing/env";
 import { safeEqual, signValue, verifySignedToken } from "@/lib/billing/crypto";
+import { billingErrorResponse } from "@/lib/billing/http-errors";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -20,6 +22,8 @@ type ProcessorCallbackBody = {
   reason?: string;
   compensateCommitted?: boolean;
   metadata?: Record<string, unknown>;
+  actualSizeBytes?: number;
+  importMode?: string;
 };
 
 export async function POST(request: NextRequest) {
@@ -68,6 +72,7 @@ export async function POST(request: NextRequest) {
     }
 
     const reservation = await recordProcessorReservationStatus({
+      origin: "processor",
       userId: verifiedToken.payload.userId,
       reservationId,
       processor: body.processor?.trim() || verifiedToken.payload.processor || null,
@@ -79,6 +84,7 @@ export async function POST(request: NextRequest) {
 
     if (status === "failed") {
       const releasedReservation = await releaseReservation({
+        actor: "system",
         userId: verifiedToken.payload.userId,
         reservationId,
         reason: body.reason?.trim() || "processor_failed",
@@ -93,6 +99,14 @@ export async function POST(request: NextRequest) {
     }
 
     if (status === "completed") {
+      if (reservation.featureCode.startsWith("import_")) {
+        await settleImportReservationPricing({
+          userId: verifiedToken.payload.userId,
+          reservationId,
+          actualSizeBytes: Number(body.actualSizeBytes),
+          importMode: body.importMode?.trim() || null,
+        });
+      }
       const committedReservation = await commitReservation({
         userId: verifiedToken.payload.userId,
         reservationId,
@@ -113,13 +127,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("POST /api/billing/usage/processor-callback error:", error);
-    const status = (error as Error & { status?: number }).status || 500;
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error ? error.message : "Unable to reconcile processor callback.",
-      },
-      { status },
-    );
+    return billingErrorResponse(error, "Unable to reconcile processor callback.", "processor_callback_failed");
   }
 }

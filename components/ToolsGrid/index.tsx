@@ -208,7 +208,7 @@ export default function ToolsGrid() {
         {/* Icons row */}
         <div
           ref={iconsContainerRef}
-          className="grid grid-cols-2 md:flex items-center justify-center gap-4 md:gap-8 relative"
+          className="relative grid grid-cols-2 items-center justify-center gap-3 md:flex"
         >
           {icons.map((icon, index) => (
             <div
@@ -222,10 +222,10 @@ export default function ToolsGrid() {
                 src={icon.src}
                 alt={icon.alt}
                 title={icon.alt}
-                width={120}
-                height={120}
-                className="w-full h-full object-contain"
-                sizes="(max-width: 768px) 40vw, 120px"
+                width={176}
+                height={176}
+                className="h-auto w-full max-w-[176px] object-contain"
+                sizes="(max-width: 768px) 42vw, 176px"
               />
             </div>
           ))}

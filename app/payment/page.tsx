@@ -13,13 +13,12 @@ export const metadata: Metadata = {
 export default async function PaymentPage({
   searchParams,
 }: {
-  searchParams: Promise<{ bridge?: string; product?: string; autostart?: string }>;
+  searchParams: Promise<{ product?: string; autostart?: string }>;
 }) {
   const params = await searchParams;
 
   return (
     <BillingClient
-      bridgeToken={params.bridge || null}
       autostart={params.autostart === "1"}
       initialProductCode={params.product || null}
     />

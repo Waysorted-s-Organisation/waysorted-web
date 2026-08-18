@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/auth";
-import { buildBillingSnapshot, expireStaleReservations, reserveCredits } from "@/lib/billing/db";
+import { getAuthenticatedUser } from "@/lib/billing/auth";
+import { buildBillingSnapshot, reserveCredits } from "@/lib/billing/db";
 import { resolveUsageCredits } from "@/lib/billing/usagePricing";
 import dbConnect from "@/lib/db";
 import {
@@ -9,6 +9,7 @@ import {
   emitNotificationEvent,
   getLowCreditThreshold,
 } from "@/lib/notifications";
+import { billingErrorResponse } from "@/lib/billing/http-errors";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -21,7 +22,6 @@ type ReserveBody = {
   selectedOptions?: Record<string, unknown>;
   processor?: string;
   idempotencyKey?: string;
-  bridgeToken?: string;
 };
 
 type ReserveNotificationContext = {
@@ -47,12 +47,8 @@ export async function POST(request: NextRequest) {
 
   try {
     await dbConnect();
-    await expireStaleReservations();
-
     const body = (await request.json().catch(() => ({}))) as ReserveBody;
-    const auth =
-      (await getAuthenticatedUser(request)) ||
-      (await getBridgeAuthenticatedUser(body.bridgeToken || request.nextUrl.searchParams.get("bridge")));
+    const auth = await getAuthenticatedUser(request);
 
     if (!auth?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -169,9 +165,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json(
-      { error: message },
-      { status },
-    );
+    return billingErrorResponse(error, "Unable to reserve credits.", "reservation_create_failed");
   }
 }

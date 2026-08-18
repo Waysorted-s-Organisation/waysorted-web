@@ -1,12 +1,11 @@
+import "server-only";
 import mongoose, { Mongoose } from "mongoose";
 
 // For feedback and tools, prefer MONGODB_URI_TOOLS (waysorted database)
 // Falls back to general MONGODB_URI for other uses
 const MONGODB_URI =
   process.env.MONGODB_URI_TOOLS ||
-  process.env.NEXT_PUBLIC_MONGODB_URI_TOOLS ||
-  process.env.MONGODB_URI ||
-  process.env.NEXT_PUBLIC_MONGODB_URI;
+  process.env.MONGODB_URI;
 
 if (!MONGODB_URI) {
   throw new Error("MONGODB_URI not set");

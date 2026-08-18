@@ -6,6 +6,7 @@ import {
   buildToolUsageFailedEvent,
   emitNotificationEvent,
 } from "@/lib/notifications";
+import { billingErrorResponse } from "@/lib/billing/http-errors";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -43,6 +44,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid processor status." }, { status: 400 });
     }
 
+    if (JSON.stringify(body.metadata || {}).length > 4096) {
+      return NextResponse.json({ error: "Processor metadata is too large." }, { status: 413 });
+    }
+
     const reservation = await recordProcessorReservationStatus({
       userId: String(auth.user._id),
       reservationId,
@@ -54,6 +59,8 @@ export async function POST(request: NextRequest) {
         source: "plugin",
         ...(body.metadata || {}),
       },
+      // Session-authenticated client: cannot clear a processor acceptance.
+      origin: "plugin",
     });
 
     if (status === "failed") {
@@ -78,10 +85,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("POST /api/billing/usage/plugin-status error:", error);
-    const status = (error as Error & { status?: number }).status || 500;
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to record plugin processor status." },
-      { status },
-    );
+    return billingErrorResponse(error, "Unable to record plugin processor status.", "processor_status_failed");
   }
 }

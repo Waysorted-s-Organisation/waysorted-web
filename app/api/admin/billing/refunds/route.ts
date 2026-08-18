@@ -74,9 +74,6 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("POST /api/admin/billing/refunds error:", error);
     const status = (error as Error & { status?: number }).status || 500;
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to create refund." },
-      { status },
-    );
+    return NextResponse.json({ error: "Unable to create refund." }, { status });
   }
 }

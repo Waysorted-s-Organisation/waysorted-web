@@ -8,9 +8,8 @@ export const fetchCache = "force-no-store";
 
 export async function GET(request: NextRequest) {
   try {
-    const bridgeToken = request.nextUrl.searchParams.get("bridge");
     const auth =
-      (await getAuthenticatedUser(request)) || (await getBridgeAuthenticatedUser(bridgeToken));
+      (await getAuthenticatedUser(request)) || (await getBridgeAuthenticatedUser("billing:read"));
 
     if (!auth?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

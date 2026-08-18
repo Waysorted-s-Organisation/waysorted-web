@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import { SESSION_COOKIE_NAME } from "@/lib/auth-cookies";
+import { sessionExpiryFilter } from "@/lib/auth-session";
 
 export interface CurrentUser {
   id: string;
@@ -25,7 +26,12 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     // Connect to DB and fetch session -> user
     await dbConnect();
 
-    const session = await Session.findOne({ sessionId }).populate("user");
+    const session = await Session.findOne({
+      sessionId,
+      completed: true,
+      user: { $exists: true, $ne: null },
+      ...sessionExpiryFilter(),
+    }).populate("user");
 
     if (!session || !session.user) return null;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

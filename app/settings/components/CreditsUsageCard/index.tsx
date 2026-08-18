@@ -128,7 +128,7 @@ export default function CreditsUsageCard({ user }: Props) {
                 className="object-contain"
               />
               {totalCredits === 0 && !hasSubscriptionAccess
-                ? "Your free account starts with 300 credits after the billing checks complete."
+                ? "Starter credits are granted after your first eligible plugin sign-in."
                 : isAboutToExpire
                   ? "Your subscription is about to expire soon. Upgrade now to keep your premium benefits."
                   : "Your credits are over. Upgrade to a plan to continue."

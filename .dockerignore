@@ -1,6 +1,17 @@
 node_modules
 .next
 .git
+.gitignore
+.env
+.env.*
+!.env.example
+.vercel
+backups
+*.pem
 npm-debug.log
 Dockerfile
 docker-compose.override.yml
+coverage
+out
+build
+*.tsbuildinfo

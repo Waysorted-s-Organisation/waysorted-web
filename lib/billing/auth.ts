@@ -3,10 +3,10 @@ import { NextRequest } from "next/server";
 import dbConnect from "@/lib/db";
 import Session from "@/models/session";
 import type { IUser } from "@/types/user";
-import { refreshGoogleToken } from "@/lib/token";
 import User from "@/models/user";
 import { getBridgeSecret } from "@/lib/billing/env";
 import { verifySignedToken } from "@/lib/billing/crypto";
+import { sessionExpiryFilter } from "@/lib/auth-session";
 
 type SessionWithUser = {
   _id: string;
@@ -14,12 +14,20 @@ type SessionWithUser = {
   accessToken?: string;
   refreshToken?: string;
   accessTokenExpiresAt?: number;
+  completed?: boolean;
+  expiresAt?: Date;
   source?: string;
   user?: IUser;
 };
 
 async function findBearerSession(accessToken: string) {
-  return (await Session.findOne({ accessToken })
+  return (await Session.findOne({
+    accessToken,
+    accessTokenExpiresAt: { $gt: Date.now() },
+    completed: true,
+    user: { $exists: true, $ne: null },
+    ...sessionExpiryFilter(),
+  })
     .populate<{ user: IUser }>("user")
     .lean()) as SessionWithUser | null;
 }
@@ -45,7 +53,12 @@ export async function getAuthenticatedUser(request?: NextRequest) {
   const sessionId = cookieStore.get("sessionId")?.value;
   if (!sessionId) return null;
 
-  const session = await Session.findOne({ sessionId }).populate<{ user: IUser }>("user").lean();
+  const session = await Session.findOne({
+    sessionId,
+    completed: true,
+    user: { $exists: true, $ne: null },
+    ...sessionExpiryFilter(),
+  }).populate<{ user: IUser }>("user").lean();
   if (!session?.user) return null;
 
   return {
@@ -61,17 +74,23 @@ export async function requireAdminUser(request?: NextRequest) {
   return auth;
 }
 
-export async function getBridgeAuthenticatedUser(bridgeToken?: string | null) {
+export async function getBridgeAuthenticatedUser(requiredScope: "billing:read" | "billing:checkout") {
+  const cookieStore = await cookies();
+  const bridgeToken = cookieStore.get("waysortedBillingBridge")?.value;
   if (!bridgeToken) return null;
 
   const verified = verifySignedToken<{
     userId: string;
-    email?: string;
+    aud: string;
+    scopes: string[];
+    jti: string;
     expiresAt: string;
   }>(bridgeToken, getBridgeSecret());
 
   if (!verified) return null;
   if (Date.parse(verified.payload.expiresAt) <= Date.now()) return null;
+  if (verified.payload.aud !== "billing_checkout") return null;
+  if (!verified.payload.jti || !verified.payload.scopes?.includes(requiredScope)) return null;
 
   await dbConnect();
   const user = await User.findById(verified.payload.userId).lean<IUser | null>();

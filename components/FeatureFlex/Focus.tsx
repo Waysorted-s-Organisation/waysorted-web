@@ -1,7 +1,6 @@
 "use client";
 import clsx from "clsx";
-import { useRef, useLayoutEffect, useState, useEffect, useMemo } from "react";
-import gsap from "gsap";
+import { useRef, useState, useEffect, useMemo } from "react";
 import { ITool } from "@/models/tool";
 import Image from "next/image";
 
@@ -38,7 +37,7 @@ export default function Focus({ className }: { className?: string }) {
     };
   }, []);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const container = containerRef.current;
     if (!container || loading || displayTools.length === 0) return;
 
@@ -62,8 +61,6 @@ export default function Focus({ className }: { className?: string }) {
       }
     };
 
-    container.addEventListener("scroll", handleScroll);
-
     const updateAnimations = () => {
       if (!container) return;
 
@@ -82,18 +79,30 @@ export default function Focus({ className }: { className?: string }) {
 
         const scaleFactor = 1 - progress;
 
-        gsap.set(card, {
-          scale: 0.9 + (0.1 * scaleFactor),
-          opacity: 0.7 + (0.3 * scaleFactor)
-        });
+        card.style.transform = `scale(${0.9 + (0.1 * scaleFactor)})`;
+        card.style.opacity = String(0.7 + (0.3 * scaleFactor));
       });
     };
 
-    gsap.ticker.add(updateAnimations);
+    let animationFrame: number | null = null;
+    const scheduleUpdate = () => {
+      if (animationFrame !== null) return;
+      animationFrame = window.requestAnimationFrame(() => {
+        animationFrame = null;
+        updateAnimations();
+      });
+    };
+
+    container.addEventListener("scroll", handleScroll, { passive: true });
+    container.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
+    scheduleUpdate();
 
     return () => {
       container.removeEventListener("scroll", handleScroll);
-      gsap.ticker.remove(updateAnimations);
+      container.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+      if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
     };
   }, [loading, displayTools]); // Now stable thanks to useMemo
 
@@ -150,7 +159,7 @@ export default function Focus({ className }: { className?: string }) {
                   }}
                   className={clsx(
                     "scroll-card group flex items-center gap-3",
-                    "rounded-lg border border-gray-200 bg-white px-1 py-1"
+                    "rounded-lg border border-gray-200 bg-white px-1 py-1 transition-[transform,opacity] duration-150"
                   )}
                 >
                   <div className="w-12 h-12 flex items-center justify-center rounded-md bg-primary-way-10">

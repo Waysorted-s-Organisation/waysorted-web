@@ -28,7 +28,7 @@ export default function UpcomingTools() {
         <li><span className="text-secondary-db-100">Export</span>: Summaries can be exported as text for use in reports or project management tools.</li>
       </ul>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">GIF Exporter</h3>
+      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Heatmap Analytics</h3>
       <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed">
         <li><span className="text-secondary-db-100">Frame Selection</span>: Users can select a sequence of frames to compile into an animated GIF.</li>
         <li><span className="text-secondary-db-100">Animation Settings</span>: Controls for animation speed (frame delay), loop count (including infinite loop), and frame order.</li>

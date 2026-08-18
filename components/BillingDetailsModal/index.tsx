@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 
 export type BillingDetails = {
@@ -31,14 +31,27 @@ export default function BillingDetailsModal({ isOpen, onClose, onSubmit, initial
     zipCode: initialData?.zipCode || "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!initialData) return;
+    setFormData(initialData);
+  }, [initialData]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
     try {
       await onSubmit(formData);
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Could not save billing details.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -160,6 +173,12 @@ export default function BillingDetailsModal({ isOpen, onClose, onSubmit, initial
               className="mt-0.5 block w-full border-none bg-transparent p-0 text-xs font-regular text-secondary-db-50 placeholder-secondary-db-40 outline-none focus:ring-0"
             />
           </div>
+
+          {error ? (
+            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+              {error}
+            </p>
+          ) : null}
 
           <div className="pt-2">
             <button

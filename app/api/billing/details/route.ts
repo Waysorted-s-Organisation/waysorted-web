@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/billing/auth";
 import UserBilling from "@/models/userBilling";
 import dbConnect from "@/lib/db";
+import { ensureUserBilling } from "@/lib/billing/db";
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +17,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    await UserBilling.findOneAndUpdate(
+    await ensureUserBilling(auth.user);
+    const updated = await UserBilling.findOneAndUpdate(
       { user: auth.user._id },
       {
         $set: {
@@ -31,13 +33,15 @@ export async function POST(request: NextRequest) {
           },
         },
       },
-      { upsert: true }
+      { new: true }
     );
+    if (!updated) throw new Error("Billing wallet was not initialized.");
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error("POST /api/billing/details error:", error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Unable to save billing details" },
+      { error: "Unable to save billing details" },
       { status: 500 },
     );
   }

@@ -16,6 +16,70 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+## Local Docker environment
+
+The Docker development stack runs Next.js against an isolated MongoDB database
+named `waysorted_local`. Production notification producers are disabled by the
+Compose configuration.
+
+1. Create the ignored local environment file:
+
+   ```bash
+   cp .env.docker.example .env.docker.local
+   ```
+
+2. Add localhost Google OAuth credentials and Razorpay **test-mode** credentials
+   only when those flows are being tested. The Google callback URL is:
+
+   ```text
+   http://localhost:3000/api/auth/callback
+   ```
+
+   `DEV_PRICING_COUNTRY` is the explicit local regional-pricing override. In
+   production, it is ignored and pricing trusts only Vercel's
+   `x-vercel-ip-country` header.
+
+3. Start the application and database:
+
+   ```bash
+   docker compose up -d --build web
+   ```
+
+   The development container uses Turbopack and mounts the source tree at
+   runtime. It does not copy the large `public` directory into the development
+   image.
+
+4. Open [http://localhost:3000](http://localhost:3000).
+
+Useful commands:
+
+```bash
+docker compose logs -f web
+docker compose restart web
+docker compose down
+```
+
+`docker compose down` preserves the local MongoDB volume. Running
+`docker compose down -v` permanently deletes the local database copy.
+
+The optional Figma MCP service is started separately:
+
+```bash
+docker compose --profile figma up -d figma-mcp
+```
+
+Do not put production database, Razorpay, email, or notification credentials in
+`.env.docker.local`. Refreshing the local database from production must be a
+controlled owner operation, and the resulting local copy must be treated as
+sensitive data.
+
+After deploying the user-scoped usage-reservation idempotency change, run this
+once against the intended database before enabling traffic:
+
+```bash
+npm run migrate:usage-reservation-index
+```
+
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
@@ -50,6 +114,30 @@ server-side environment variables are configured:
 - `NOTIFICATION_LOW_CREDIT_THRESHOLD`: Optional post-reservation balance
   threshold for proactive `credits_low` events. Defaults to `20`.
 - `NOTIFICATION_PRODUCER_ENABLED=false`: Optional local kill switch.
+
+Purchase-completion delivery is retried through Razorpay when a configured
+Newsletter service is temporarily unreachable or rejects the event. If the
+producer is explicitly disabled or has no configuration, payment processing
+finishes and records a warning because webhook retries cannot repair missing
+deployment configuration.
+
+Razorpay webhook processing uses a two-minute ownership lease. A concurrent
+delivery receives a retryable response instead of being acknowledged as a
+duplicate, and an expired lease can be claimed safely by a later retry. The
+daily maintenance run marks abandoned leases as failed and reconciles captured
+one-time purchases whose original webhook or browser callback did not finish.
+
+After deploying the billing schema hardening, run these one-time migrations
+against the target database before enabling payment traffic:
+
+```bash
+npm run migrate:billing-idempotency-indexes
+npm run migrate:redact-razorpay-event-logs
+```
+
+The first aligns purchase/refund uniqueness with application idempotency. The
+second removes signatures and payer details from historical webhook logs; new
+logs are already stored in redacted form and expire after 180 days.
 
 The billing notification producer emits `subscription_checkout_started` when a
 subscription checkout is created and the deterministic

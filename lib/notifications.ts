@@ -66,9 +66,12 @@ function buildProfile(input: {
   };
 }
 
-function getNotificationProducerConfig(): NotificationProducerConfig | null {
+function getNotificationProducerConfig(): {
+  config: NotificationProducerConfig | null;
+  unavailableReason?: "disabled" | "not_configured";
+} {
   if (process.env.NOTIFICATION_PRODUCER_ENABLED?.trim() === "false") {
-    return null;
+    return { config: null, unavailableReason: "disabled" };
   }
 
   const ingestUrl = process.env.NOTIFICATION_INGEST_URL?.trim();
@@ -76,17 +79,19 @@ function getNotificationProducerConfig(): NotificationProducerConfig | null {
   const source = process.env.NOTIFICATION_EVENT_SOURCE?.trim();
 
   if (!ingestUrl || !ingestToken || !source) {
-    return null;
+    return { config: null, unavailableReason: "not_configured" };
   }
 
   return {
-    ingestUrl,
-    ingestToken,
-    source,
-    timeoutMs: parsePositiveInt(
-      process.env.NOTIFICATION_INGEST_TIMEOUT_MS,
-      DEFAULT_TIMEOUT_MS
-    ),
+    config: {
+      ingestUrl,
+      ingestToken,
+      source,
+      timeoutMs: parsePositiveInt(
+        process.env.NOTIFICATION_INGEST_TIMEOUT_MS,
+        DEFAULT_TIMEOUT_MS
+      ),
+    },
   };
 }
 
@@ -659,9 +664,13 @@ export function buildToolUsageFailedEvent(input: {
 }
 
 export async function emitNotificationEvent(input: NotificationEventInput) {
-  const config = getNotificationProducerConfig();
+  const producer = getNotificationProducerConfig();
+  const config = producer.config;
   if (!config) {
-    return { sent: false, reason: "not_configured" };
+    return {
+      sent: false,
+      reason: producer.unavailableReason || "not_configured",
+    };
   }
 
   const controller = new AbortController();
@@ -715,6 +724,16 @@ export function requirePurchaseCompletionNotification(input: {
   status?: number;
 }) {
   if (input.sent) return input;
+
+  // Missing or deliberately disabled notification configuration is not a
+  // transient delivery failure. Retrying the payment webhook cannot repair it,
+  // so payment processing must finish and operators get an explicit warning.
+  if (input.reason === "disabled" || input.reason === "not_configured") {
+    console.error("Subscription completion notification unavailable", {
+      reason: input.reason,
+    });
+    return input;
+  }
 
   const details = [
     input.reason || "unknown",

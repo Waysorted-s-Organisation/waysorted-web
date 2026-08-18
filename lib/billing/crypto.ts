@@ -57,3 +57,24 @@ export function verifyRazorpaySignature({
   const expected = crypto.createHmac("sha256", secret).update(`${orderId}|${paymentId}`).digest("hex");
   return safeEqual(expected, signature);
 }
+
+export function verifyRazorpaySubscriptionSignature({
+  subscriptionId,
+  paymentId,
+  signature,
+  secret,
+}: {
+  subscriptionId: string;
+  paymentId: string;
+  signature: string;
+  secret: string;
+}) {
+  // Razorpay signs subscriptions as `payment_id|subscription_id` - the OPPOSITE operand order to
+  // orders (`order_id|payment_id`, see verifyRazorpaySignature above). Reversing these makes every
+  // subscription payment fail verification after the customer has already been charged.
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(`${paymentId}|${subscriptionId}`)
+    .digest("hex");
+  return safeEqual(expected, signature);
+}

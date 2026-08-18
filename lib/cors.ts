@@ -3,15 +3,15 @@ import { NextRequest, NextResponse } from "next/server";
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://www.waysorted.com",
   "https://waysorted.com",
-  "https://www.figma.com",
-  "https://figma.com",
-  "https://d94k870h57ivk.cloudfront.net",
   "https://swipefolio.waysorted.com",
+  "null",
+];
+
+const DEVELOPMENT_ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://127.0.0.1:3000",
   "http://127.0.0.1:5173",
-  "null",
 ];
 
 function getAllowedOrigins() {
@@ -19,7 +19,11 @@ function getAllowedOrigins() {
     .map((value) => value.trim())
     .filter(Boolean);
 
-  return new Set([...(configured || []), ...DEFAULT_ALLOWED_ORIGINS]);
+  return new Set([
+    ...(configured || []),
+    ...DEFAULT_ALLOWED_ORIGINS,
+    ...(process.env.NODE_ENV === "production" ? [] : DEVELOPMENT_ALLOWED_ORIGINS),
+  ]);
 }
 
 export function resolveCorsOrigin(req: NextRequest) {
@@ -37,7 +41,7 @@ export function buildCorsHeaders(req: NextRequest) {
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers":
       "Content-Type, Authorization, X-Session-Id, X-Waysorted-Device-Id, X-Waysorted-Callback-Signature, X-Waysorted-Processor-Token, x-actor-id, x-actor-handle",
-    "Access-Control-Allow-Credentials": "true",
+    ...(origin === "null" ? {} : { "Access-Control-Allow-Credentials": "true" }),
     "Access-Control-Max-Age": "86400",
     Vary: "Origin",
   } as const;

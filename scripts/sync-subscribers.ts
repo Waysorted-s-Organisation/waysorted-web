@@ -18,13 +18,12 @@ const loadEnv = (filePath: string) => {
 loadEnv(path.resolve(process.cwd(), '.env'));
 loadEnv(path.resolve(process.cwd(), '.env.local'));
 
-const SOURCE_URI = process.env.NEXT_PUBLIC_MONGODB_URI;
-const DEST_URI = process.env.NEXT_PUBLIC_MONGODB_URI_TOOLS || process.env.MONGODB_URI_TOOLS;
+const SOURCE_URI = process.env.MONGODB_URI;
+const DEST_URI = process.env.MONGODB_URI_TOOLS;
 
 if (!SOURCE_URI || !DEST_URI) {
     console.error("❌ Missing DB URIs in .env");
-    console.error("Source (NEXT_PUBLIC_MONGODB_URI):", SOURCE_URI);
-    console.error("Dest (NEXT_PUBLIC_MONGODB_URI_TOOLS):", DEST_URI);
+    console.error("Set MONGODB_URI and MONGODB_URI_TOOLS.");
     process.exit(1);
 }
 

@@ -81,8 +81,55 @@ export async function createRazorpayOrder(input: {
 }
 
 export async function fetchRazorpayPayment(paymentId: string) {
-  return razorpayRequest<Record<string, unknown>>({
+  return razorpayRequest<{
+    id: string;
+    order_id: string;
+    subscription_id?: string;
+    status: string;
+    amount: number;
+    currency: string;
+  }>({
     path: `/v1/payments/${paymentId}`,
+  });
+}
+
+export async function fetchRazorpayOrderPayments(orderId: string) {
+  return razorpayRequest<{
+    items?: Array<{
+      id: string;
+      order_id: string;
+      status: string;
+      amount: number;
+      currency: string;
+    }>;
+  }>({
+    path: `/v1/orders/${orderId}/payments`,
+  });
+}
+
+/**
+ * Invoices raised against a subscription, newest first.
+ *
+ * Used by the renewal backstop to ask Razorpay what it actually charged, rather than waiting to be
+ * told by a webhook that may never arrive.
+ */
+export async function fetchRazorpaySubscriptionInvoices(
+  subscriptionId: string,
+  count = 20,
+) {
+  return razorpayRequest<{
+    items?: Array<{
+      id: string;
+      subscription_id?: string;
+      payment_id?: string | null;
+      status?: string;
+      amount?: number;
+      amount_paid?: number;
+      currency?: string;
+      paid_at?: number | null;
+    }>;
+  }>({
+    path: `/v1/invoices?subscription_id=${encodeURIComponent(subscriptionId)}&count=${count}`,
   });
 }
 
