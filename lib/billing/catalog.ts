@@ -268,6 +268,26 @@ export const FEATURE_PRICING: FeaturePricingRule[] = [
     credits: 10,
     description: "Summarize selected comments",
   },
+  {
+    featureCode: "comment_page_scope",
+    // Page scopes cost 5 * 2 = 10 credits and require a paid plan.
+    credits: 5,
+    description: "Process one Comment Summarizer Page scope",
+    requiresSubscription: true,
+  },
+  {
+    featureCode: "comment_section_scope_paid",
+    // Paid Section runs cost 2.5 * 2 = 5 credits.
+    credits: 2.5,
+    description: "Process one paid Comment Summarizer Section scope",
+    requiresSubscription: true,
+  },
+  {
+    featureCode: "comment_section_scope_free",
+    // Free Section runs cost 5 * 2 = 10 credits and remain limited in-plugin.
+    credits: 5,
+    description: "Process one free Comment Summarizer Section scope",
+  },
 ];
 
 export const AI_IMPORT_PRICING: FileImportPricingRule[] = [
