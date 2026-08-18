@@ -11,7 +11,7 @@ export const teams = [
     },
     {
         name: "Ayush Singh",
-        role: "UX Researcher",
+        role: "Head of Growth",
         image: "/icons/ayush.jpg",
     },
 ];

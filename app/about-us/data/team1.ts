@@ -15,14 +15,4 @@ export const team1 = [
         image: "/icons/ansh-bhatt.jpg",
         imageClassName: "object-top",
     },
-    {
-        name: "Vineet Singh Negi",
-        role: "DevOps Engineer",
-        image: "/icons/vineet.jpg",
-    },
-    {
-        name: "Anshika Mishra",
-        role: "Full Stack Developer",
-        image: "/icons/anshika.jpg",
-    },
 ]
