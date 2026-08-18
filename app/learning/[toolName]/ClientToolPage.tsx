@@ -14,14 +14,24 @@ import type { ITool, ISlide } from '@/models/tool'
 interface ClientToolPageProps {
   initialTool: ITool | null
   toolName: string
+  initialSlides?: ISlide[]
+  initialTools?: ITool[]
 }
 
-export default function ClientToolPage({ initialTool, toolName }: ClientToolPageProps) {
+export default function ClientToolPage({
+  initialTool,
+  toolName,
+  initialSlides = [],
+  initialTools = [],
+}: ClientToolPageProps) {
   const { showBanner, setShowBanner } = useBanner()
 
+  // Seeded from the server so the slides and the "Explore More" links are in the
+  // initial HTML. They used to be fetched from /api/tools/*, which robots.txt
+  // disallows, so crawlers never saw them.
   const [tool, setTool] = useState<ITool | null>(initialTool)
-  const [slides, setSlides] = useState<ISlide[]>([])
-  const [allTools, setAllTools] = useState<ITool[]>([])
+  const [slides, setSlides] = useState<ISlide[]>(initialSlides)
+  const [allTools, setAllTools] = useState<ITool[]>(initialTools)
   const [loading, setLoading] = useState(!initialTool)
 
   useEffect(() => {
@@ -70,8 +80,13 @@ export default function ClientToolPage({ initialTool, toolName }: ClientToolPage
       }
     }
 
-    if (toolName) {
+    const alreadyHydrated =
+      Boolean(initialTool) && initialSlides.length > 0 && initialTools.length > 0
+
+    if (toolName && !alreadyHydrated) {
       fetchData()
+    } else if (toolName) {
+      setLoading(false)
     } else {
       setTool(null)
       setSlides([])
@@ -82,7 +97,7 @@ export default function ClientToolPage({ initialTool, toolName }: ClientToolPage
     return () => {
       mounted = false
     }
-  }, [toolName, initialTool])
+  }, [toolName, initialTool, initialSlides, initialTools])
 
   if (!tool && !loading) {
     return null
