@@ -70,3 +70,32 @@ test("comment summaries use authoritative fixed single and batch prices", () => 
   assert.equal(oneCommentBatch.creditsRequired, 20);
   assert.equal(manyCommentBatch.creditsRequired, 20);
 });
+
+test("comment page scopes cost 10 credits per reservation", () => {
+  const pageScope = resolveUsageCredits({
+    featureCode: "comment_page_scope",
+    toolCode: "comment_summarizer",
+    selectedOptions: { creditsRequired: 1, pageCount: 999 },
+  });
+
+  assert.equal(pageScope.creditsRequired, 10);
+  assert.equal(pageScope.requiresSubscription, true);
+});
+
+test("comment Section scopes use plan-aware authoritative prices", () => {
+  const paidSection = resolveUsageCredits({
+    featureCode: "comment_section_scope_paid",
+    toolCode: "comment_summarizer",
+    selectedOptions: { creditsRequired: 999 },
+  });
+  const freeSection = resolveUsageCredits({
+    featureCode: "comment_section_scope_free",
+    toolCode: "comment_summarizer",
+    selectedOptions: { creditsRequired: 1 },
+  });
+
+  assert.equal(paidSection.creditsRequired, 5);
+  assert.equal(paidSection.requiresSubscription, true);
+  assert.equal(freeSection.creditsRequired, 10);
+  assert.equal(freeSection.requiresSubscription, false);
+});
