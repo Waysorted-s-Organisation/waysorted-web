@@ -6,12 +6,12 @@ export default function ThirdPartyIntegrations() {
                 To enhance workflow efficiency and create a truly unified design ecosystem, Waysorted is building a framework for robust integrations with key third-party services. Our approach is to establish a stable core platform first, followed by a strategic rollout of vetted integrations.
             </p>
 
-            <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Current Integrations</h3>
+            <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Current Integrations</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 At the time of our initial launch in October 2025, Waysorted did not feature any public-facing third-party integrations. This ensures we can focus on delivering a stable, high-performance, and secure core plugin suite as our foundation.
             </p>
 
-            <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Future Integrations</h3>
+            <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Future Integrations</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Building a connected ecosystem is a high priority in our development roadmap. The following integrations are planned for future releases:
             </p>

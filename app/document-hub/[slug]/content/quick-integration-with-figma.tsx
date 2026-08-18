@@ -6,7 +6,7 @@ export default function QuickIntegrationWithFigma() {
         Waysorted works as a unified plugin inside Figma, giving you access to multiple tools from a single interface within your design workspace.
       </p>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Accessing Waysorted in Figma</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Accessing Waysorted in Figma</h2>
       <ul className="list-disc list-inside text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
         <li>Open Figma and launch the Waysorted plugin from your plugins panel</li>
         <li>Sign in to your Waysorted account when prompted</li>
@@ -16,7 +16,7 @@ export default function QuickIntegrationWithFigma() {
         No separate installation is required for individual tools, and access is managed through your Waysorted account.
       </p>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Compatibility and Tips</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Compatibility and Tips</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Waysorted is compatible with the latest supported versions of Figma and is designed to run as a unified toolset to minimize plugin overhead. If you experience issues, verify Figma permissions, restart the application, or contact support for assistance.
       </p>

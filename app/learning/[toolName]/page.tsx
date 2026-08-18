@@ -3,6 +3,7 @@ import dbConnect from '@/lib/toolsdb'
 import Tool, { ITool } from '@/models/tool'
 import ClientToolPage from './ClientToolPage'
 import { applyToolIconOverride } from '@/lib/tool-icon-overrides'
+import { breadcrumbJsonLd } from '@/lib/breadcrumb-schema'
 
 // Ensure Tool model is registered
 import '@/models/tool'
@@ -80,5 +81,20 @@ export default async function ToolPage({ params }: PageProps) {
     // The client component usually fetches slides too. 
     // We can fetch slides here if we want perfect SEO for content, but metadata is step 1.
 
-    return <ClientToolPage initialTool={tool} toolName={toolName} />
+    // Home > Learning Hub > {tool}, matching the breadcrumb already shown on
+    // the page. Google renders this trail in place of the raw URL.
+    const breadcrumb = breadcrumbJsonLd(`/learning/${toolName}`, [
+        { name: 'Learning Hub', path: '/learning' },
+        { name: tool?.name ?? toolName, path: `/learning/${toolName}` },
+    ])
+
+    return (
+        <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+            />
+            <ClientToolPage initialTool={tool} toolName={toolName} />
+        </>
+    )
 }

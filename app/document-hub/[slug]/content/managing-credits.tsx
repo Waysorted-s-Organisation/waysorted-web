@@ -11,7 +11,7 @@ export default function ManagingCredits() {
         <li>System-level notices related to credits</li>
       </ul>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Future options</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Future options</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Future options such as subscriptions, credit packs, or unlimited plans will apply across all supported software platforms, not just a single tool.
       </p>

@@ -166,18 +166,10 @@ const jsonLd = {
         "@id": "https://www.waysorted.com/#organization",
       },
     },
-    {
-      "@type": "BreadcrumbList",
-      "@id": "https://www.waysorted.com/#breadcrumb",
-      itemListElement: [
-        {
-          "@type": "ListItem",
-          position: 1,
-          name: "Home",
-          item: "https://www.waysorted.com",
-        },
-      ],
-    },
+    // NOTE: no BreadcrumbList here. A global one emitted the same single
+    // "Home" item on every page, which produces no breadcrumb rich result and
+    // reused the homepage's @id across every URL. Real trails are emitted
+    // per-page via lib/breadcrumb-schema.ts.
     {
       "@type": "ItemList",
       itemListElement: [
