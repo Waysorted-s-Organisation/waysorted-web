@@ -30,7 +30,7 @@ export async function reconcileStalePendingSubscriptions(input: {
     status: "payment_pending",
     updatedAt: { $lte: cutoff },
   }).sort({ updatedAt: 1 }).limit(Math.max(1, Math.min(input.limit ?? 25, 100)));
-  const summary = { scanned: subscriptions.length, activated: 0, expired: 0, pending: 0, failed: 0 };
+  const summary = { scanned: subscriptions.length, activated: 0, scheduled: 0, expired: 0, pending: 0, failed: 0 };
 
   for (const subscription of subscriptions) {
     try {
@@ -68,6 +68,34 @@ export async function reconcileStalePendingSubscriptions(input: {
         });
         summary.expired += 1;
       } else if (["created", "pending", "authenticated"].includes(provider.status)) {
+        // A mandate that is authorised with its first charge booked for a future date is NOT an
+        // abandoned checkout - it is a subscription deliberately starting later, and `authenticated`
+        // is its correct resting state for the whole first cycle. Cancelling it would kill a live,
+        // paid-for subscription roughly two hours after the customer signed up.
+        //
+        // Promote it out of `payment_pending` rather than merely skipping it: this sweep takes the
+        // oldest 25 rows per run, so rows that are skipped without being updated would sit at the
+        // front of the queue forever and starve the genuinely abandoned checkouts it exists to find.
+        const chargeAt = epochDate(provider.charge_at);
+        if (provider.status === "authenticated" && chargeAt && chargeAt.getTime() > Date.now()) {
+          subscription.status = "scheduled";
+          subscription.nextChargeAt = chargeAt;
+          subscription.currentPeriodStart = epochDate(provider.current_start);
+          subscription.currentPeriodEnd = epochDate(provider.current_end);
+          await subscription.save();
+          await updateBillingSubscriptionState({
+            userId: String(subscription.user),
+            planCode: subscription.planCode,
+            status: "scheduled",
+            currentPeriodStart: subscription.currentPeriodStart,
+            currentPeriodEnd: subscription.currentPeriodEnd,
+            renewsAt: chargeAt,
+            cancelAtCycleEnd: false,
+          });
+          summary.scheduled += 1;
+          continue;
+        }
+
         const confirmedPurchase = await Purchase.exists({
           razorpaySubscriptionId: subscription.providerSubscriptionId,
           status: "captured",

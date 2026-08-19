@@ -3,6 +3,16 @@ import "./user";
 
 export type SubscriptionStatus =
   | "payment_pending"
+  /**
+   * Mandate authorised, first plan charge deliberately scheduled for a future date.
+   *
+   * Distinct from `payment_pending`, which means "checkout started, never completed" and is what the
+   * 2h reconciler cancels. A future-dated subscription rests in the provider's `authenticated` state
+   * for an entire cycle by design, so without its own status the reconciler would cancel it - and it
+   * would also permanently occupy the reconciler's limited per-run window, starving the genuinely
+   * abandoned checkouts that sweep exists to clean up.
+   */
+  | "scheduled"
   | "active"
   | "cancel_scheduled"
   | "cancelled"
@@ -48,7 +58,7 @@ const SubscriptionSchema = new Schema<ISubscription, SubscriptionModel>(
       type: String,
       required: true,
       default: "payment_pending",
-      enum: ["payment_pending", "active", "cancel_scheduled", "cancelled", "halted", "expired", "refunded"],
+      enum: ["payment_pending", "scheduled", "active", "cancel_scheduled", "cancelled", "halted", "expired", "refunded"],
     },
     providerPlanId: { type: String, default: null },
     providerSubscriptionId: { type: String, required: true, unique: true, index: true },
@@ -81,7 +91,9 @@ SubscriptionSchema.index(
   {
     unique: true,
     partialFilterExpression: {
-      status: { $in: ["payment_pending", "active", "cancel_scheduled", "halted"] },
+      // `scheduled` is a live subscription: the mandate is authorised and a charge is booked, so it
+      // must occupy the one-live-subscription slot exactly like the others.
+      status: { $in: ["payment_pending", "scheduled", "active", "cancel_scheduled", "halted"] },
     },
     name: "one_live_subscription_per_user",
   },

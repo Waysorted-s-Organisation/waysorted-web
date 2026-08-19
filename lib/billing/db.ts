@@ -1563,7 +1563,11 @@ export async function recordProcessorReservationStatus(input: {
 export async function findCurrentSubscription(userId: string) {
   return Subscription.findOne({
     user: userId,
-    status: { $in: ["payment_pending", "active", "cancel_scheduled", "halted"] },
+    // MUST match the one_live_subscription_per_user partial index in models/subscription.ts. If a
+    // live status is missing here, the create route cannot see the existing subscription, proceeds
+    // to make a second one, and the unique index rejects the insert with an opaque E11000 - after a
+    // payable provider subscription has already been created and leaked.
+    status: { $in: ["payment_pending", "scheduled", "active", "cancel_scheduled", "halted"] },
   }).sort({ updatedAt: -1 });
 }
 

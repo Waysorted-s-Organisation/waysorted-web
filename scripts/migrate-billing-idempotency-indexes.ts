@@ -28,14 +28,30 @@ async function replacePurchaseIndex() {
 async function dropIfOptionsDiffer(
   collection: { indexes: () => Promise<Record<string, unknown>[]>; dropIndex: (n: string) => Promise<unknown> },
   name: string,
-  want: { unique?: boolean; sparse?: boolean; partial?: boolean },
+  want: {
+    unique?: boolean;
+    sparse?: boolean;
+    partial?: boolean;
+    /** Exact partial filter required. Compared by VALUE, not merely by presence. */
+    partialFilterExpression?: Record<string, unknown>;
+  },
 ) {
   const existing = (await collection.indexes()).find((index) => index.name === name);
   if (!existing) return false;
+
+  // Compare the partial filter's CONTENT, not just whether one exists. A filter whose value changed
+  // - for instance adding a new live subscription status - leaves an index that still enforces the
+  // OLD predicate. MongoDB would not complain, createIndex would be a silent no-op, and the
+  // invariant the index is supposed to guarantee would quietly stop covering the new status.
+  const filterMatches = want.partialFilterExpression
+    ? JSON.stringify(existing.partialFilterExpression ?? null) ===
+      JSON.stringify(want.partialFilterExpression)
+    : Boolean(existing.partialFilterExpression) === Boolean(want.partial);
+
   const matches =
     Boolean(existing.unique) === Boolean(want.unique) &&
     Boolean(existing.sparse) === Boolean(want.sparse) &&
-    Boolean(existing.partialFilterExpression) === Boolean(want.partial);
+    filterMatches;
   if (matches) return false;
   await collection.dropIndex(name);
   console.log(`Dropped ${name} (options differed from required definition).`);
@@ -94,9 +110,17 @@ async function createUniquePurchaseProviderIndexes() {
   }
 }
 
+const LIVE_SUBSCRIPTION_STATUSES = [
+  "payment_pending",
+  "scheduled",
+  "active",
+  "cancel_scheduled",
+  "halted",
+];
+
 async function createLiveSubscriptionIndex() {
   const duplicate = await Subscription.aggregate([
-    { $match: { status: { $in: ["payment_pending", "active", "cancel_scheduled", "halted"] } } },
+    { $match: { status: { $in: LIVE_SUBSCRIPTION_STATUSES } } },
     { $group: { _id: "$user", count: { $sum: 1 } } },
     { $match: { count: { $gt: 1 } } },
     { $limit: 1 },
@@ -106,15 +130,13 @@ async function createLiveSubscriptionIndex() {
   }
   await dropIfOptionsDiffer(Subscription.collection, "one_live_subscription_per_user", {
     unique: true,
-    partial: true,
+    partialFilterExpression: { status: { $in: LIVE_SUBSCRIPTION_STATUSES } },
   });
   await Subscription.collection.createIndex(
     { user: 1 },
     {
       unique: true,
-      partialFilterExpression: {
-        status: { $in: ["payment_pending", "active", "cancel_scheduled", "halted"] },
-      },
+      partialFilterExpression: { status: { $in: LIVE_SUBSCRIPTION_STATUSES } },
       name: "one_live_subscription_per_user",
     },
   );
