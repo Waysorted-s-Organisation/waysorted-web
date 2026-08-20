@@ -210,7 +210,22 @@ export async function ensureUserBilling(
   session?: ClientSession,
 ) {
   const openingCredits = typeof user.creditsRemaining === "number" ? user.creditsRemaining : 0;
-  const upsertResult = await UserBilling.findOneAndUpdate(
+
+  /**
+   * Two of these can run at once, and the loser used to 500.
+   *
+   * `user` carries a unique index. When a page fires several billing calls
+   * together - the checkout page asks for the snapshot, the current
+   * subscription and the profile on mount - concurrent upserts BOTH match
+   * nothing and BOTH attempt the insert. Mongo lets one through and rejects the
+   * other with E11000, which surfaced as a 500 from whichever endpoint lost:
+   * /api/billing/snapshot, /api/billing/subscriptions/current and /api/me all
+   * failed intermittently, and checkout cannot render without the snapshot.
+   *
+   * The loser's row exists by definition - the winner just created it - so the
+   * duplicate key is not a failure, it is the answer. Read it back.
+   */
+  const upsert = async () => UserBilling.findOneAndUpdate(
     { user: user._id },
     {
       $setOnInsert: {
@@ -231,6 +246,18 @@ export async function ensureUserBilling(
       session,
     },
   );
+
+  let upsertResult;
+  try {
+    upsertResult = await upsert();
+  } catch (error) {
+    if ((error as { code?: number })?.code !== 11000) throw error;
+    const existing = await UserBilling.findOne({ user: user._id }).session(session ?? null);
+    if (!existing) throw error;
+    // The winner seeds the opening ledger entry; the loser must not seed it again.
+    return existing;
+  }
+
   const billing = upsertResult.value;
   if (!billing) throw new Error("Unable to initialize billing wallet.");
 
@@ -487,7 +514,40 @@ export async function resolveUserPricingContext(
     }),
   ];
   billing.pricingRiskFlags = Array.from(new Set(riskFlags));
-  await billing.save({ session });
+
+  /**
+   * Written with updateOne, NOT save(), and that is load-bearing.
+   *
+   * UserBilling sets `optimisticConcurrency: true` so that credit writes cannot
+   * silently clobber each other - that protection must stay. But it applies to
+   * every save(), and this function persists a geo OBSERVATION on every read.
+   * The checkout page asks for the snapshot, the current subscription and the
+   * profile on mount; all three land here, all three save(), and the version
+   * check rejected the losers with a VersionError that surfaced as a 500. The
+   * result was an intermittently blank checkout - "Unable to load billing
+   * snapshot." - on a page where nothing was actually wrong.
+   *
+   * None of these fields is derived from the document's prior state: they come
+   * from this request's country. Last writer wins is the correct semantic, and
+   * a concurrent request writing the same observed country writes the same
+   * values anyway. Money is untouched here.
+   */
+  await UserBilling.updateOne(
+    { _id: billing._id },
+    {
+      $set: {
+        pricingCountry: billing.pricingCountry,
+        pricingTier: billing.pricingTier,
+        pricingCurrency: billing.pricingCurrency,
+        pricingLockReason: billing.pricingLockReason,
+        pricingLockedAt: billing.pricingLockedAt,
+        pricingUpgradeCandidateCountry: billing.pricingUpgradeCandidateCountry,
+        pricingUpgradeCandidateSeenAt: billing.pricingUpgradeCandidateSeenAt,
+        pricingRiskFlags: billing.pricingRiskFlags,
+      },
+    },
+    { session },
+  );
 
   // Geo-only: derived from this request's trusted country, never from the stored record.
   return withPricingRiskFlags(pricingContext, billing.pricingRiskFlags);
