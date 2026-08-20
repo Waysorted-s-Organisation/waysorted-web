@@ -34,11 +34,17 @@ test("codes are normalised, so a lowercase link still works", async () => {
   assert.equal(url.searchParams.get("coupon"), "BOOST20");
 });
 
-test("a plan and autostart are carried through", async () => {
+test("a plan is carried through, but never autostart", async () => {
   const url = locationOf(await claim("/claim/UNLOCK30?product=sub_month_2&autostart=1"));
   assert.equal(url.searchParams.get("coupon"), "UNLOCK30");
   assert.equal(url.searchParams.get("product"), "sub_month_2");
-  assert.equal(url.searchParams.get("autostart"), "1");
+
+  // These links are shared - in a modal, an email, a message - and nothing on
+  // this path shows a price first: the code advertises a percentage, no quote is
+  // carried, so the drift guard has nothing to compare against and is inert.
+  // Forwarding autostart let a shared link open a payment sheet at an amount the
+  // customer had never been shown.
+  assert.equal(url.searchParams.get("autostart"), null);
 });
 
 test("only known parameters are forwarded", async () => {

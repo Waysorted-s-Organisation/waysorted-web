@@ -805,7 +805,12 @@ export default function BillingClient({
             const applied = payload.coupon;
             setCompletedOrder({
               orderNumber: orderNumberFrom(payload.subscriptionId),
-              itemName: product.name,
+              // The name the customer chose it by. product.name is the
+              // catalogue's internal label ("Monthly 2"), so the receipt named
+              // the plan something they had never seen on /pricing or checkout.
+              itemName: getPlanUi(product.code)?.planName
+                ? `Waysorted ${getPlanUi(product.code)?.planName}`
+                : product.name,
               amount: formatCurrency(product.amountPaise, product.currency),
               total: applied
                 ? formatCurrency(applied.upfrontSubunits, applied.currency)

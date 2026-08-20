@@ -1,4 +1,5 @@
 import Purchase, { type IPurchase } from "@/models/purchase";
+import { cancelRazorpaySubscription } from "@/lib/billing/razorpay";
 import RazorpayEventLog from "@/models/razorpayEventLog";
 import Refund from "@/models/refund";
 import Subscription from "@/models/subscription";
@@ -619,6 +620,50 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
           : "partially_refunded";
       updatedPurchase.refundedAt = new Date();
       await updatedPurchase.save();
+
+      /**
+       * A refunded subscription must also stop being able to charge.
+       *
+       * The admin refund route cancels the mandate on a full refund; this path
+       * did not. A refund issued from the RAZORPAY DASHBOARD - which is how a
+       * support refund actually happens - therefore reversed the money and left
+       * the mandate live. At the start date Razorpay would debit the FULL plan
+       * price from a customer who had been refunded in full, with no purchase
+       * row to record it, and applySubscriptionCycleCredits would re-grant the
+       * credits and force the subscription back to active.
+       *
+       * Failures are logged and swallowed: the refund itself has already been
+       * issued, and a throw here would have Razorpay retry an event that has
+       * already reversed credits. An uncancelled mandate is what the reconciler
+       * exists to catch.
+       */
+      if (
+        updatedPurchase.status === "refunded" &&
+        updatedPurchase.kind === "subscription" &&
+        updatedPurchase.razorpaySubscriptionId
+      ) {
+        const providerSubscriptionId = updatedPurchase.razorpaySubscriptionId;
+        try {
+          await cancelRazorpaySubscription(providerSubscriptionId, false);
+        } catch (cancelError) {
+          console.error("[billing] could not cancel a refunded subscription from the webhook", {
+            purchaseId: String(updatedPurchase._id),
+            subscriptionId: providerSubscriptionId,
+            error: cancelError instanceof Error ? cancelError.message : String(cancelError),
+          });
+        }
+        await Subscription.updateOne(
+          { providerSubscriptionId },
+          { $set: { status: "cancelled", canceledAt: new Date() } },
+        ).catch(() => null);
+        await updateBillingSubscriptionState({
+          userId: String(updatedPurchase.user),
+          planCode: updatedPurchase.productCode,
+          status: "cancelled",
+          renewsAt: null,
+          cancelAtCycleEnd: false,
+        }).catch(() => null);
+      }
 
       // Give the promotional allowance back on a FULL refund, the way the admin refund route
       // already does. This path did not, so a refund issued from the Razorpay dashboard left the

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cancelRazorpaySubscription, fetchRazorpaySubscription } from "@/lib/billing/razorpay";
-import { getAuthenticatedUser } from "@/lib/billing/auth";
+import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/auth";
 import { findCurrentSubscription, updateBillingSubscriptionState } from "@/lib/billing/db";
 import {
   buildSubscriptionCancelledEvent,
@@ -16,7 +16,14 @@ export const fetchCache = "force-no-store";
 export async function POST(request: NextRequest) {
   try {
     await request.json().catch(() => ({}));
-    const auth = await getAuthenticatedUser(request);
+    // Bridge auth too. A customer arriving from the plugin holds only the
+    // bridge cookie, and checkout now renders a Cancel button for them - a
+    // subscription in "scheduled", which is where every discounted one rests for
+    // its whole first cycle. Without this the button was there and answered 401:
+    // a subscription they could see and could not end.
+    const auth =
+      (await getAuthenticatedUser(request)) ||
+      (await getBridgeAuthenticatedUser("billing:checkout"));
 
     if (!auth?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

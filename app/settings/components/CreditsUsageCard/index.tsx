@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { hasSubscriptionEntitlement } from "@/lib/billing/subscription-status";
 import Link from "next/link";
 import type { User } from "@/hooks/useUser";
 
@@ -12,7 +13,10 @@ export default function CreditsUsageCard({ user }: Props) {
   const wallet = user.billing?.wallet;
   const subscription = user.billing?.subscription;
   const subscriptionStatus = subscription?.status || "inactive";
-  const hasSubscriptionAccess = ["active", "cancel_scheduled"].includes(subscriptionStatus);
+  // Shared definition. This list omitted "scheduled", so a customer who had just
+  // paid with a discount code was greeted with "You're on the Free plan!" for
+  // their whole first cycle.
+  const hasSubscriptionAccess = hasSubscriptionEntitlement(subscriptionStatus);
   const activePlanCode = hasSubscriptionAccess ? subscription?.planCode || null : null;
   const activePlan = activePlanCode ? user.billing?.catalog?.find((plan) => plan.code === activePlanCode) : null;
 

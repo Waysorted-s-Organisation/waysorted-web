@@ -50,11 +50,19 @@ export async function GET(
     target.searchParams.set("coupon", normalized);
   }
 
-  // Carried through so a link can name a specific plan, or open checkout
-  // directly. Copied by name rather than wholesale: only these are meaningful
-  // downstream, and forwarding everything would let a crafted link set the
-  // price parameters the checkout guard relies on.
-  for (const key of ["product", "autostart", "qa", "qc", "qv"]) {
+  // Carried through so a link can name a specific plan. Copied by name rather
+  // than wholesale: only these are meaningful downstream, and forwarding
+  // everything would let a crafted link set the price parameters the checkout
+  // guard relies on.
+  //
+  // `autostart` is deliberately NOT forwarded. These links are shared - in a
+  // modal, an email, a message - and nothing on this path shows a price first:
+  // the code advertises a percentage, and no quote is carried, so the drift
+  // guard has nothing to compare against and is inert. Forwarding it let a
+  // shared link open a payment sheet at an amount the customer had never been
+  // shown. The plugin's own bridge stopped arming it for the same reason. They
+  // land on checkout, see both figures, and press Continue themselves.
+  for (const key of ["product", "qa", "qc", "qv"]) {
     const value = request.nextUrl.searchParams.get(key);
     if (value) target.searchParams.set(key, value);
   }

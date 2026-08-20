@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthenticatedUser } from "@/lib/billing/auth";
+import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/auth";
 import Purchase from "@/models/purchase";
 import CreditLedger from "@/models/creditLedger";
 import dbConnect from "@/lib/db";
@@ -8,7 +8,11 @@ import { formatMoney, minorUnitMultiplier } from "@/lib/billing/money";
 export async function GET(request: NextRequest) {
   try {
     await dbConnect();
-    const auth = await getAuthenticatedUser(request);
+    // Bridge auth too, so a customer who arrived from the plugin can read
+    // their own history rather than being told they are not signed in.
+    const auth =
+      (await getAuthenticatedUser(request)) ||
+      (await getBridgeAuthenticatedUser("billing:read"));
     if (!auth?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     // Include in-flight states. Hiding them meant a customer whose payment was captured but not yet
