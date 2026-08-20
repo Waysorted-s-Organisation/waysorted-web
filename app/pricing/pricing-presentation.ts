@@ -109,3 +109,32 @@ export function getMinimumAnnualSavingsPercent(
 
   return percentages.length ? Math.min(...percentages) : null;
 }
+
+/**
+ * What to call a one-time product on screen.
+ *
+ * The catalogue's `name` is an internal label - "Standard Top-up 100",
+ * "Starter 149" - and the number in it is the PRICE, not the credits. Showing
+ * it at checkout put "Standard Top-up 100" above a ₹100.00 price and a
+ * "75 credits" pill, which reads as three different numbers for one product.
+ *
+ * /pricing has never shown those names: it labels a top-up by its credits with
+ * the price alongside. This is that same presentation, shared so the two pages
+ * cannot drift.
+ */
+export function getOneTimeProductDisplay(product: {
+  code: string;
+  creditsGranted: number;
+  bonusCredits: number;
+}) {
+  const totalCredits = product.creditsGranted + product.bonusCredits;
+  const isStarter = product.code.startsWith("starter");
+  return {
+    /** The row label: what the customer actually receives. */
+    creditsLabel: `${totalCredits.toLocaleString("en-US")} credits`,
+    /** The heading: what kind of thing this is. */
+    kindLabel: isStarter ? "Starter pack" : "Credit top-up",
+    /** Surfaced separately so a bonus is never silently folded into the total. */
+    bonusCredits: product.bonusCredits,
+  };
+}
