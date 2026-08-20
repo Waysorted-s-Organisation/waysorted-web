@@ -222,3 +222,54 @@ subscription is also the first real end-to-end test of the repaired verify path.
 A real cycle-2 debit. Razorpay's minimum interval is 7 days, so it needs calendar time. `charge_at`
 and the checkout copy both state the full amount, but neither is a debit. Verify on the first real
 renewal before scaling the codes.
+
+---
+
+## 9. Confirmed with Razorpay support — ticket 20407158 (2026-08-20)
+
+The mechanism was queried directly. Razorpay's answer, for UPI AutoPay with
+`start_at` +30 days, an addon of ₹279.20 and a monthly plan of ₹349:
+
+| When | What is charged |
+|---|---|
+| Day 0, at setup | **₹279.20** — the addon, collected when the customer approves the mandate |
+| Day 30 (the `start_at`) | **₹349** — the first plan cycle. The addon is NOT charged again |
+| Every cycle after | ₹349 |
+
+Their words: *"Your current create-time addon setup is the supported approach for
+UPI."* There is no combined ₹628.20 charge, and the first plan charge is on Day
+30 — the subscription start date — not Day 60. The same timing applies to
+eMandate.
+
+**This settles the deprecation concern** raised in
+`razorpay-coupon-real-world-patterns.md`: addons on Create Subscription are
+supported. It also confirms the 30-day `start_at` used by
+`app/api/billing/subscriptions/create/route.ts` lines up with the plan's own
+first charge rather than landing a cycle early or late.
+
+### One behaviour this changed in the code
+
+> *"the addon payment is processed when the customer actually approves the
+> mandate in their UPI app, so the debit may happen a few minutes after the
+> subscription is created rather than immediately."*
+
+So for UPI the payment may not be captured when `/subscriptions/verify` runs.
+Verify used to reject any non-captured status with a 409, which would have told
+a customer their payment failed while it was in flight — and invited them to pay
+twice. It now returns **202 `payment_processing`** for anything that is not
+`captured` and not `failed`, and the client shows it as confirming rather than
+failed. `reconcileSubscriptionCycles` settles the purchase and grants the
+credits when the capture lands.
+
+Razorpay also noted that deferring the addon to the start date is **not**
+supported for UPI, so collecting it at setup is the only option — which is what
+this design does.
+
+### Still unanswered by that reply
+
+The three questions asked were about auto-capture/retention of the upfront,
+the deprecation notice, and currency restrictions on the addon for non-INR
+subscriptions. The reply covers timing thoroughly and states the approach is
+supported, but does not explicitly confirm **non-INR currency behaviour**. USD
+was verified in test mode; treat a non-INR live sale as unproven until one has
+completed.

@@ -68,8 +68,32 @@ export async function POST(request: NextRequest) {
     if (payment.id !== paymentId || payment.subscription_id !== subscriptionId) {
       return conflict("Razorpay payment belongs to a different subscription.");
     }
-    if (String(payment.status).toLowerCase() !== "captured") {
-      return conflict("Razorpay payment is not captured.");
+    const paymentStatus = String(payment.status).toLowerCase();
+    if (paymentStatus !== "captured") {
+      // "Not captured yet" is not "failed", and for UPI AutoPay it is expected.
+      // Razorpay (ticket 20407158): the addon "is processed when the customer
+      // actually approves the mandate in their UPI app, so the debit may happen
+      // a few minutes after the subscription is created". Treating that as a
+      // failure would tell a customer their payment did not work while it was
+      // in flight, and INR/UPI is the primary market.
+      //
+      // 202, not 409: the checkout is genuinely accepted and in progress. The
+      // cycle reconciler settles the purchase and grants the credits when the
+      // capture lands, so nothing is lost by waiting.
+      if (paymentStatus !== "failed") {
+        return NextResponse.json(
+          {
+            verified: false,
+            pending: true,
+            code: "payment_processing",
+            error:
+              "Your payment is being confirmed. This can take a few minutes with UPI - your subscription will activate automatically.",
+            paymentStatus,
+          },
+          { status: 202 },
+        );
+      }
+      return conflict("Razorpay payment failed.");
     }
     // purchase.amountPaise holds the amount CHARGED, so with a coupon this is
     // the discounted upfront and the exact-equality check stays correct.

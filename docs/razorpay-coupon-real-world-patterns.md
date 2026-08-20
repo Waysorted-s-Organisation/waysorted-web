@@ -1,3 +1,11 @@
+> **UPDATE 2026-08-20 — the add-on deprecation concern below is resolved.**
+>
+> Razorpay support confirmed in ticket 20407158 that create-time addons on
+> Create Subscription are supported, and described the exact charge timeline for
+> UPI AutoPay with a future `start_at`. See `docs/coupon-codes-spec.md` §9.
+> The deprecation notice referenced in this document applies to a different
+> add-on surface, not to `addons` supplied at subscription creation.
+
 ## What teams actually do
 
 Ranked by how much real evidence supports each. I verified the load-bearing documentation myself rather than inheriting it; where a claim rests on one weak repo I say so.

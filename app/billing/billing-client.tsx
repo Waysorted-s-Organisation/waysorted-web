@@ -678,9 +678,29 @@ export default function BillingClient({
             });
             const verification = (await verifyResponse.json().catch(() => ({}))) as {
               verified?: boolean;
+              pending?: boolean;
+              code?: string;
               paymentId?: string;
               error?: string;
             };
+
+            // A payment still in flight is not a failure. With UPI AutoPay the
+            // debit is processed when the customer approves the mandate in
+            // their UPI app, which Razorpay says can land a few minutes after
+            // the subscription is created - so telling them it failed would be
+            // wrong, and they might pay twice. The cycle reconciler settles the
+            // purchase and grants credits when the capture arrives.
+            if (verification.pending || verification.code === "payment_processing") {
+              checkoutAttemptKeysRef.current.delete(product.code);
+              setBusyCode(null);
+              setStatus(
+                verification.error ||
+                  "Your payment is being confirmed. This can take a few minutes with UPI - your subscription will activate automatically.",
+              );
+              await refreshSnapshot().catch(() => null);
+              return;
+            }
+
             if (!verifyResponse.ok || verification.verified !== true) {
               throw new Error(verification.error || "Unable to verify subscription payment.");
             }
