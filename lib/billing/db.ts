@@ -87,7 +87,16 @@ const SIGNUP_STARTER_GRANT_CREDITS = 100;
 const EXISTING_FREE_PLAN_CUTOFF = new Date("2026-05-03T00:00:00.000Z");
 
 function formatBillingPlanName(planCode: string | null, status: string) {
-  if (!(status === "active" || status === "cancel_scheduled" || status === "payment_pending")) {
+  if (
+    !(
+      status === "active" ||
+      status === "cancel_scheduled" ||
+      status === "payment_pending" ||
+      // A discounted subscription rests here for its entire first cycle.
+      // Returning null showed the customer no plan name at all for 30 days.
+      status === "scheduled"
+    )
+  ) {
     return null;
   }
   if (planCode === "sub_month_1" || planCode === "sub_year_1599") return "Discover";

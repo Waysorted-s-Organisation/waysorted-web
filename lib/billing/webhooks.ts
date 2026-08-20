@@ -2,6 +2,7 @@ import Purchase from "@/models/purchase";
 import RazorpayEventLog from "@/models/razorpayEventLog";
 import Refund from "@/models/refund";
 import Subscription from "@/models/subscription";
+import { redeemCoupon, releaseCoupon } from "@/lib/billing/coupon";
 import User from "@/models/user";
 import {
   buildSubscriptionPurchaseCompletedEvent,
@@ -225,6 +226,20 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         metadata: { source: "webhook" },
       });
 
+      // Halted and cancelled both end the checkout without any other flow
+      // concluding it: the reconciler scans only payment_pending, so a claim
+      // left reserved here would block the code for this customer forever.
+      await releaseCoupon({
+        subscriptionId: String(entity.id),
+        reason: `subscription_${eventType.split(".")[1]}`,
+      }).catch((error) => {
+        console.error("[billing] coupon release on subscription end failed", {
+          subscriptionId: String(entity.id),
+          eventType,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+
       const providerPeriodStart = toDate((entity as { current_start?: number }).current_start);
       const providerPeriodEnd = toDate((entity as { current_end?: number }).current_end);
       const providerNextChargeAt = toDate((entity as { charge_at?: number }).charge_at);
@@ -274,6 +289,16 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         providerSubscriptionId: subscriptionId,
       });
       if (!subscription) return { ignored: true, reason: "subscription_not_found" };
+
+      // A charge on a discounted subscription means the first cycle was paid,
+      // so the claim is spent. Idempotent: only a reserved row transitions, and
+      // verify may already have done it.
+      await redeemCoupon({ subscriptionId }).catch((error) => {
+        console.error("[billing] coupon redemption on subscription.charged failed", {
+          subscriptionId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
 
       subscription.status = subscription.cancelAtCycleEnd ? "cancel_scheduled" : "active";
       subscription.currentPeriodStart =

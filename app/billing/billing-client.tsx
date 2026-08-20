@@ -178,6 +178,23 @@ function formatDate(value?: string | null) {
   });
 }
 
+function couponMessage(reason?: string): string {
+  switch (reason) {
+    case "coupon_already_used":
+      return "You have already used this code.";
+    case "coupon_exhausted":
+      return "This code has reached its limit.";
+    case "coupon_expired":
+      return "This code has expired.";
+    case "coupon_not_started":
+      return "This code is not active yet.";
+    case "coupon_not_applicable":
+      return "This code does not apply to this plan.";
+    default:
+      return "That code cannot be applied to this plan.";
+  }
+}
+
 export default function BillingClient({
   autostart,
   initialProductCode,
@@ -200,6 +217,20 @@ export default function BillingClient({
   const [selectedCode, setSelectedCode] = useState<string | null>(initialProductCode);
   const [status, setStatus] = useState("Loading billing...");
   const [busyCode, setBusyCode] = useState<string | null>(null);
+  // Prefilled from ?coupon=, so the plugin's "Claim Now" carries the code the
+  // customer was actually shown rather than asking them to retype it. The
+  // server still validates it; this only saves the typing.
+  const [couponInput, setCouponInput] = useState("");
+  const [couponError, setCouponError] = useState<string | null>(null);
+  const [couponChecking, setCouponChecking] = useState(false);
+  const [couponQuote, setCouponQuote] = useState<{
+    code: string;
+    percent: number;
+    discountSubunits: number;
+    upfrontSubunits: number;
+    recurringSubunits: number;
+    currency: string;
+  } | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
   const [showCatalog, setShowCatalog] = useState(!initialProductCode);
   const [paidOrderId, setPaidOrderId] = useState<string | null>(null);
@@ -207,6 +238,11 @@ export default function BillingClient({
   const checkoutAttemptKeysRef = useRef(new Map<string, string>());
 
   const redirectPath = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
+
+  const urlCoupon = searchParams.get("coupon")?.trim().toUpperCase() || "";
+  useEffect(() => {
+    if (urlCoupon) setCouponInput(urlCoupon);
+  }, [urlCoupon]);
 
   const selectedProduct = useMemo(
     () => snapshot?.billing.catalog.find((product) => product.code === selectedCode) || null,
@@ -451,7 +487,78 @@ export default function BillingClient({
     waitForWalletUpdate,
   ]);
 
-  const handleSubscriptionCheckout = useCallback(async (product: CatalogProduct) => {
+  /**
+   * Asks the server what a code is worth.
+   *
+   * The client cannot compute this. The checkout quote guard compares the
+   * client's figure against the server's own upfront, so any locally-derived
+   * number — a hardcoded percent table, a stale prior response — is rejected on
+   * every attempt. Debounced, and the in-flight code is tracked so a slow
+   * response for an earlier code cannot overwrite a newer one.
+   */
+  const couponRequestRef = useRef(0);
+  const checkCoupon = useCallback(
+    async (product: CatalogProduct, code: string) => {
+      const normalized = code.trim().toUpperCase();
+      const requestId = ++couponRequestRef.current;
+      if (!normalized) {
+        setCouponQuote(null);
+        setCouponError(null);
+        return null;
+      }
+      setCouponChecking(true);
+      try {
+        const response = await fetch("/api/billing/coupons/preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productCode: product.code, couponCode: normalized }),
+        });
+        const payload = (await response.json()) as {
+          valid?: boolean;
+          reason?: string;
+          coupon?: {
+            code: string;
+            percent: number;
+            discountSubunits: number;
+            upfrontSubunits: number;
+            recurringSubunits: number;
+            currency: string;
+          };
+        };
+        if (requestId !== couponRequestRef.current) return null;
+
+        if (!response.ok || !payload.valid || !payload.coupon) {
+          setCouponQuote(null);
+          setCouponError(couponMessage(payload.reason));
+          return null;
+        }
+        setCouponQuote(payload.coupon);
+        setCouponError(null);
+        return payload.coupon;
+      } catch {
+        if (requestId !== couponRequestRef.current) return null;
+        setCouponQuote(null);
+        setCouponError("Could not check that code. You can still continue at the full price.");
+        return null;
+      } finally {
+        if (requestId === couponRequestRef.current) setCouponChecking(false);
+      }
+    },
+    [],
+  );
+
+  const handleSubscriptionCheckout = useCallback(async (
+    product: CatalogProduct,
+    couponCode?: string,
+    /**
+     * The server's own quote for this code, passed in rather than read from
+     * state. Reading it from state was the defect: setCouponQuote is only
+     * written FROM a successful create response, so on the first submit it was
+     * always null, the client quoted the list price, and the server 409'd its
+     * own upfront. Every coupon checkout failed, always.
+     */
+    appliedQuote?: { upfrontSubunits: number } | null,
+  ) => {
     setBusyCode(product.code);
     setStatus(`Creating subscription for ${product.name}...`);
     const attemptKey = checkoutAttemptKeysRef.current.get(product.code) || crypto.randomUUID();
@@ -465,9 +572,13 @@ export default function BillingClient({
           productCode: product.code,
           idempotencyKey: `billing-page:subscription:${product.code}:${attemptKey}`,
           // See handleOrderCheckout: pins the charge to the amount the customer was shown.
-          quotedAmountSubunits: product.amountPaise,
+          // With a coupon the customer is charged the discounted upfront, so
+          // that is what must be quoted. Quoting the list price would 409
+          // against the server's own upfront on every coupon checkout.
+          quotedAmountSubunits: appliedQuote?.upfrontSubunits ?? product.amountPaise,
           quotedCurrency: product.currency,
           pricingVersion: snapshot?.billing.pricingVersion,
+          ...(couponCode ? { couponCode } : {}),
         }),
       });
 
@@ -476,11 +587,37 @@ export default function BillingClient({
             purchaseId: string;
             subscriptionId: string;
             key: string;
+            coupon?: {
+              code: string;
+              percent: number;
+              discountSubunits: number;
+              upfrontSubunits: number;
+              recurringSubunits: number;
+              currency: string;
+            };
           }
-        | { error?: string };
+        | { error?: string; code?: string; reason?: string };
 
       if (!response.ok || !("subscriptionId" in payload)) {
         // See handleOrderCheckout: a price change is a decision point, not a failure.
+        // A rejected code is its own outcome, not a checkout failure: the
+        // customer can continue at full price, and telling them "checkout
+        // failed" would hide that.
+        if ("code" in payload && payload.code === "coupon_invalid") {
+          checkoutAttemptKeysRef.current.delete(product.code);
+          setBusyCode(null);
+          setCouponError(
+            payload.reason === "coupon_already_used"
+              ? "You have already used this code."
+              : payload.reason === "coupon_exhausted"
+                ? "This code has reached its limit."
+                : payload.reason === "coupon_expired"
+                  ? "This code has expired."
+                  : "That code cannot be applied to this plan.",
+          );
+          setStatus("Nothing has been charged.");
+          return;
+        }
         if ("code" in payload && payload.code === "pricing_quote_changed") {
           checkoutAttemptKeysRef.current.delete(product.code);
           await refreshSnapshot().catch(() => null);
@@ -491,6 +628,11 @@ export default function BillingClient({
           return;
         }
         throw new Error(("error" in payload && payload.error) || "Unable to create subscription.");
+      }
+
+      if ("coupon" in payload && payload.coupon) {
+        setCouponQuote(payload.coupon);
+        setCouponError(null);
       }
 
       const Razorpay = getRazorpayConstructor();
@@ -514,6 +656,11 @@ export default function BillingClient({
         theme: { color: "#265BD1" },
         modal: {
           ondismiss: () => {
+            // Clear the cached attempt key. It is folded into the idempotency
+            // key together with the coupon, so leaving it would let an
+            // abandoned full-price attempt bind the customer's next attempt
+            // with a code applied.
+            checkoutAttemptKeysRef.current.delete(product.code);
             setBusyCode(null);
             setStatus("Subscription checkout closed.");
           },
@@ -604,9 +751,25 @@ export default function BillingClient({
       params.delete("autostart");
       router.replace(params.size ? `${pathname}?${params.toString()}` : pathname, { scroll: false });
     }
-    void (selectedProduct.kind === "subscription"
-      ? handleSubscriptionCheckout(selectedProduct)
-      : handleOrderCheckout(selectedProduct));
+    void (async () => {
+      if (selectedProduct.kind !== "subscription") {
+        await handleOrderCheckout(selectedProduct);
+        return;
+      }
+      if (!urlCoupon) {
+        await handleSubscriptionCheckout(selectedProduct, undefined, null);
+        return;
+      }
+      // A deep link from the plugin modal carries the code but no price. Resolve
+      // it before opening checkout, or the quote guard rejects it and the
+      // customer sees "the price changed" for a link we sent them.
+      const quote = await checkCoupon(selectedProduct, urlCoupon);
+      if (!quote) {
+        setShowCatalog(true);
+        return;
+      }
+      await handleSubscriptionCheckout(selectedProduct, urlCoupon, quote);
+    })();
   }, [
     autostart,
     busyCode,
@@ -615,7 +778,9 @@ export default function BillingClient({
     pathname,
     quoteDrift,
     router,
+    checkCoupon,
     scriptReady,
+    urlCoupon,
     searchParams,
     selectedProduct,
   ]);
@@ -678,14 +843,81 @@ export default function BillingClient({
                   : "Choose a plan below to continue."}
               </div>
             </div>
+            {selectedProduct?.kind === "subscription" ? (
+              <div className="w-full sm:w-auto">
+                <label
+                  htmlFor="coupon-code"
+                  className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7A8499]"
+                >
+                  Have a code?
+                </label>
+                <div className="mt-2 flex gap-2">
+                  <input
+                    id="coupon-code"
+                    value={couponInput}
+                    onChange={(event) => {
+                      setCouponInput(event.target.value.toUpperCase());
+                      setCouponError(null);
+                      setCouponQuote(null);
+                    }}
+                    onBlur={() => {
+                      if (selectedProduct) void checkCoupon(selectedProduct, couponInput);
+                    }}
+                    placeholder="WELCOME15"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="w-full rounded-2xl border border-[#E7EDF7] px-4 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-secondary-db-100 outline-none focus:border-[#356DFF] sm:w-[200px]"
+                  />
+                </div>
+                {couponError ? (
+                  <div className="mt-2 text-sm text-[#C0392B]">{couponError}</div>
+                ) : null}
+                {/*
+                  Both numbers, stated before checkout. Razorpay's own sheet
+                  repeats them, so the customer sees the arrangement twice and
+                  cannot mistake the discounted first cycle for the recurring
+                  price.
+                */}
+                {couponChecking ? (
+                  <div className="mt-2 text-sm text-[#687184]">Checking...</div>
+                ) : couponQuote ? (
+                  /*
+                    Both numbers, from the server, stated before checkout.
+                    Razorpay's own sheet repeats them, so the customer sees the
+                    arrangement twice and cannot mistake the discounted first
+                    cycle for the recurring price.
+                  */
+                  <div className="mt-2 text-sm text-[#687184]">
+                    {`${couponQuote.percent}% off: ${formatCurrency(
+                      couponQuote.upfrontSubunits,
+                      couponQuote.currency,
+                    )} for your first ${
+                      selectedProduct.billingCycle === "monthly" ? "month" : "year"
+                    }, then ${formatCurrency(couponQuote.recurringSubunits, couponQuote.currency)}.`}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             {selectedProduct ? (
               <button
                 type="button"
-                onClick={() =>
-                  selectedProduct.kind === "subscription"
-                    ? handleSubscriptionCheckout(selectedProduct)
-                    : handleOrderCheckout(selectedProduct)
-                }
+                onClick={async () => {
+                  if (selectedProduct.kind !== "subscription") {
+                    void handleOrderCheckout(selectedProduct);
+                    return;
+                  }
+                  const code = couponInput.trim().toUpperCase();
+                  if (!code) {
+                    void handleSubscriptionCheckout(selectedProduct, undefined, null);
+                    return;
+                  }
+                  // Re-checked at click time, not trusted from earlier state: a
+                  // balance can move, and a stale quote is exactly what the
+                  // server's guard rejects.
+                  const quote = couponQuote?.code === code ? couponQuote : await checkCoupon(selectedProduct, code);
+                  if (!quote) return;
+                  void handleSubscriptionCheckout(selectedProduct, code, quote);
+                }}
                 disabled={busyCode === selectedProduct.code || paidOrderId !== null}
                 className="rounded-2xl bg-[#356DFF] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_20px_rgba(53,109,255,0.22)] transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
               >

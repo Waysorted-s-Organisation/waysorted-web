@@ -4,6 +4,7 @@ import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/
 import { getRazorpayConfig } from "@/lib/billing/env";
 import { verifyRazorpaySubscriptionSignature } from "@/lib/billing/crypto";
 import { fetchRazorpayPayment, fetchRazorpaySubscription } from "@/lib/billing/razorpay";
+import { redeemCoupon } from "@/lib/billing/coupon";
 import {
   applySubscriptionCycleCredits,
   findSubscriptionByProviderId,
@@ -70,8 +71,28 @@ export async function POST(request: NextRequest) {
     if (String(payment.status).toLowerCase() !== "captured") {
       return conflict("Razorpay payment is not captured.");
     }
+    // purchase.amountPaise holds the amount CHARGED, so with a coupon this is
+    // the discounted upfront and the exact-equality check stays correct.
     if (Number(payment.amount) !== purchase.amountPaise ||
         String(payment.currency).toUpperCase() !== String(purchase.currency).toUpperCase()) {
+      // One case deserves more than a generic mismatch: the customer was shown
+      // a discount, the addon did not apply, and they were charged full price.
+      // Never silently accept that - it is a real overcharge against a promise
+      // the UI made.
+      if (purchase.couponCode && Number(payment.amount) === purchase.originalAmountPaise) {
+        console.error("[billing] coupon addon did not apply; customer charged full price", {
+          purchaseId: String(purchase._id),
+          userId: String(purchase.user),
+          couponCode: purchase.couponCode,
+          expectedUpfront: purchase.amountPaise,
+          chargedAmount: Number(payment.amount),
+          paymentId,
+          subscriptionId,
+        });
+        return conflict(
+          "You were charged the full price instead of the discounted amount. We have flagged this for immediate correction.",
+        );
+      }
       return conflict("Razorpay payment amount does not match this purchase.");
     }
     if (
@@ -79,6 +100,16 @@ export async function POST(request: NextRequest) {
       String(providerSubscription.notes?.productCode || "") !== purchase.productCode
     ) {
       return conflict("Razorpay subscription does not match the selected plan.");
+    }
+
+    if (purchase.couponCode) {
+      // The money has moved, so the claim is spent rather than merely held.
+      await redeemCoupon({ purchaseId: String(purchase._id) }).catch((error) => {
+        console.error("[billing] coupon redemption transition failed", {
+          purchaseId: String(purchase._id),
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
     }
 
     purchase.razorpayPaymentId ||= paymentId;

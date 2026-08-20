@@ -328,7 +328,11 @@ export function isSubscriptionActive(
   status: string | null | undefined,
   renewsAt?: Date | null,
 ) {
-  if (status === "active" || status === "cancel_scheduled") {
+  // "scheduled" is a paid, authorised mandate whose first charge is booked for a
+  // future date - which is exactly what a discounted first cycle looks like for
+  // its whole first period. Excluding it showed a paying customer as having no
+  // subscription, withheld their capabilities and swapped their top-up pricing.
+  if (status === "active" || status === "cancel_scheduled" || status === "scheduled") {
     return Boolean(renewsAt) && renewsAt!.getTime() >= Date.now();
   }
   return false;
