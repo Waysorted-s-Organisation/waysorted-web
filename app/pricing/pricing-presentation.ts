@@ -76,15 +76,30 @@ export function getCreditPresentation(product: PricingDisplayProduct) {
   };
 }
 
+/**
+ * Which yearly plan is the same tier as which monthly one.
+ *
+ * Exported because checkout needs it too: pairing a yearly plan against
+ * whichever monthly happened to come first in the catalogue compares Discover's
+ * yearly price to Discover's monthly price for one row and to nothing sensible
+ * for the rest, so only the first tier ever showed a saving.
+ */
+export const ANNUAL_PLAN_PAIRS = [
+  ["sub_month_1", "sub_year_1599"],
+  ["sub_month_2", "sub_year_3499"],
+  ["sub_month_3", "sub_year_7499"],
+] as const;
+
+/** The monthly plan of the same tier, for a yearly product code. */
+export function getMonthlyCounterpartCode(yearlyCode: string): string | null {
+  return ANNUAL_PLAN_PAIRS.find(([, yearly]) => yearly === yearlyCode)?.[0] ?? null;
+}
+
 export function getMinimumAnnualSavingsPercent(
   monthlyProducts: PricingDisplayProduct[],
   yearlyProducts: PricingDisplayProduct[],
 ) {
-  const pairs = [
-    ["sub_month_1", "sub_year_1599"],
-    ["sub_month_2", "sub_year_3499"],
-    ["sub_month_3", "sub_year_7499"],
-  ] as const;
+  const pairs = ANNUAL_PLAN_PAIRS;
   const percentages = pairs.flatMap(([monthlyCode, yearlyCode]) => {
     const monthly = monthlyProducts.find((product) => product.code === monthlyCode);
     const yearly = yearlyProducts.find((product) => product.code === yearlyCode);

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatMoney } from "@/lib/billing/money";
 import { yearlySavingPercent } from "@/lib/billing/plan-savings";
+import { getMonthlyCounterpartCode, getPlanUi } from "@/app/pricing/pricing-presentation";
 import Image from "next/image";
 import OrderComplete, { type OrderCompleteProps } from "@/components/OrderComplete";
 import BillingDetailsModal, { type BillingDetails } from "@/components/BillingDetailsModal";
@@ -975,19 +976,22 @@ export default function BillingClient({
     const catalog = snapshot?.billing.catalog || [];
     const wantSubscription = selectedProduct ? selectedProduct.kind === "subscription" : true;
     const members = catalog.filter((product) => (product.kind === "subscription") === wantSubscription);
-    const cycleCounts = new Map<string, number>();
-    for (const product of members) {
-      cycleCounts.set(product.billingCycle, (cycleCounts.get(product.billingCycle) || 0) + 1);
-    }
-    const monthly = members.find((product) => product.billingCycle === "monthly");
+    const byCode = new Map(catalog.map((product) => [product.code, product]));
 
     return members.map((product) => {
-      const unique = cycleCounts.get(product.billingCycle) === 1;
-      const cycleLabel =
-        product.billingCycle === "monthly" ? "Monthly" : product.billingCycle === "yearly" ? "Yearly" : null;
+      // The name the customer already read on /pricing - Discover, Core, Pro.
+      // The catalogue's own `name` is an internal label ("Monthly 2"), and
+      // showing it here meant the plan someone picked on the pricing page was
+      // called something else the moment they reached checkout.
+      const planName = getPlanUi(product.code)?.planName || product.name;
 
-      // Computed from the two prices actually on offer, rounded down, so the
-      // badge cannot claim a saving the checkout will not give.
+      // Paired by TIER, not by whichever monthly plan came first in the
+      // catalogue. Comparing every yearly against Discover's monthly meant only
+      // the Discover row ever showed a saving, and the other two silently
+      // showed none despite being discounted by the same amount.
+      const counterpart =
+        product.billingCycle === "yearly" ? getMonthlyCounterpartCode(product.code) : null;
+      const monthly = counterpart ? byCode.get(counterpart) : null;
       const savingPercent =
         product.billingCycle === "yearly"
           ? yearlySavingPercent(
@@ -998,7 +1002,7 @@ export default function BillingClient({
 
       return {
         product,
-        label: cycleLabel && unique ? cycleLabel : product.name,
+        label: planName,
         price: formatCurrency(product.amountPaise, product.currency),
         suffix:
           product.billingCycle === "monthly"
@@ -1151,7 +1155,13 @@ export default function BillingClient({
   const selectedCredits = selectedProduct
     ? selectedProduct.creditsGranted + selectedProduct.bonusCredits
     : null;
-  const benefits = selectedProduct?.kind === "subscription" ? SUBSCRIPTION_BENEFITS : TOPUP_BENEFITS;
+  // The same four lines the customer read on the plan card they clicked. The
+  // hardcoded list here described a generic plan, so the benefits changed
+  // wording between /pricing and checkout for no reason.
+  const benefits =
+    selectedProduct?.kind === "subscription"
+      ? getPlanUi(selectedProduct.code)?.features ?? SUBSCRIPTION_BENEFITS
+      : TOPUP_BENEFITS;
   const isSubscription = selectedProduct?.kind === "subscription";
 
   return (
@@ -1182,7 +1192,7 @@ export default function BillingClient({
               <h1 className="text-[19px] font-semibold leading-[24px] tracking-[-0.01em] text-[#17171C]">
                 {selectedProduct
                   ? isSubscription
-                    ? `Subscribing to ${selectedProduct.name}`
+                    ? `Subscribing to ${getPlanUi(selectedProduct.code)?.planName || selectedProduct.name}`
                     : selectedProduct.name
                   : "Choose a plan"}
               </h1>
@@ -1210,7 +1220,7 @@ export default function BillingClient({
               {isSubscription ? "Plan Benefits" : "What you get"}
             </div>
             <ul className="mt-[16px] space-y-[10px]">
-              {benefits.map((benefit) => (
+              {benefits.map((benefit: string) => (
                 <li key={benefit} className="flex items-start gap-[10px] text-[15px] leading-[18px] text-[#3E3E49]">
                   <BenefitCheck />
                   <span>{benefit}</span>
