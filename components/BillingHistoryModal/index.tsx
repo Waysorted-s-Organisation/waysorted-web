@@ -1,18 +1,30 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getPlanUi } from "@/app/pricing/pricing-presentation";
 import Image from "next/image";
 
+/**
+ * Mirrors what /api/billing/history actually returns.
+ *
+ * Everything money-shaped is nullable, and that is not defensive typing - a
+ * subscription cycle grant is billed by Razorpay against the mandate, so there
+ * is no local purchase row and no amount to report. This type claimed they were
+ * always present, which is how `productCode.startsWith` shipped and threw for
+ * every customer who had renewed.
+ */
 type Transaction = {
   id: string;
-  productCode: string;
+  productCode: string | null;
   kind: string;
-  amount: number;
-  formattedAmount?: string;
-  currency: string;
+  amount: number | null;
+  amountSubunits?: number | null;
+  formattedAmount?: string | null;
+  currency: string | null;
   status: string;
   date: string;
-  receipt: string;
+  receipt?: string | null;
+  creditsGranted?: number | null;
 };
 
 type Props = {
@@ -57,10 +69,23 @@ export default function BillingHistoryModal({ isOpen, onClose }: Props) {
     }
   };
 
-  const getPlanName = (code: string) => {
-    if (code === "sub_month_1" || code === "sub_year_1599") return "Discover Plan";
-    if (code === "sub_month_2" || code === "sub_year_3499") return "Core Plan";
-    if (code === "sub_month_3" || code === "sub_year_7499") return "Pro Plan";
+  /**
+   * Names a row the way /pricing and checkout name it.
+   *
+   * `code` is nullable: the history route emits `productCode: null` for a
+   * subscription cycle grant, because a renewal is billed by Razorpay against
+   * the mandate and there is no local purchase row to name. This function used
+   * to take `string` and call `.startsWith` on it, so the modal threw a
+   * TypeError and rendered nothing for every customer who had ever renewed.
+   *
+   * The plan names come from getPlanUi rather than a second copy of the
+   * mapping, so a rename cannot leave history disagreeing with the rest of the
+   * product.
+   */
+  const getPlanName = (code: string | null | undefined, kind?: string) => {
+    if (!code) return kind === "subscription_renewal" ? "Subscription renewal" : "Credits";
+    const planName = getPlanUi(code)?.planName;
+    if (planName) return `${planName} Plan`;
     if (code.startsWith("topup")) return "Credit Top-up";
     return code;
   };
@@ -112,15 +137,30 @@ export default function BillingHistoryModal({ isOpen, onClose }: Props) {
                     <tr key={t.id} className="hover:bg-primary-way-5/30 transition-colors">
                       <td className="py-4">
                         <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-secondary-db-100">{getPlanName(t.productCode)}</span>
-                          <span className="text-[10px] text-secondary-db-40 font-medium tracking-tight">#{t.receipt}</span>
+                          <span className="text-sm font-semibold text-secondary-db-100">{getPlanName(t.productCode, t.kind)}</span>
+                          {t.receipt ? (
+                            <span className="text-[10px] text-secondary-db-40 font-medium tracking-tight">#{t.receipt}</span>
+                          ) : null}
                         </div>
                       </td>
                       <td className="py-4 text-sm text-secondary-db-80">
                         {new Date(t.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
                       </td>
                       <td className="py-4 text-sm font-semibold text-secondary-db-100 text-right">
-                        {t.formattedAmount || `${t.currency} ${t.amount}`}
+                        {/*
+                          A renewal carries no local money record - Razorpay
+                          bills it against the mandate - so it reports the
+                          credits delivered instead. `formattedAmount || currency
+                          + amount` rendered the literal "null null" for those
+                          rows.
+                        */}
+                        {t.formattedAmount
+                          ? t.formattedAmount
+                          : t.currency && t.amount !== null && t.amount !== undefined
+                            ? `${t.currency} ${t.amount}`
+                            : t.creditsGranted
+                              ? `${t.creditsGranted.toLocaleString()} credits`
+                              : "\u2014"}
                       </td>
                       <td className="py-4 text-center">
                         <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${getStatusColor(t.status)}`}>

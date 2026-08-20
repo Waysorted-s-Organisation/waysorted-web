@@ -1,4 +1,6 @@
 import mongoose, { ClientSession, HydratedDocument } from "mongoose";
+import { LIVE_SUBSCRIPTION_STATUSES } from "@/lib/billing/subscription-status";
+import { getPlanUi } from "@/app/pricing/pricing-presentation";
 import { randomUUID } from "crypto";
 import type { NextRequest } from "next/server";
 import dbConnect from "@/lib/db";
@@ -99,10 +101,9 @@ function formatBillingPlanName(planCode: string | null, status: string) {
   ) {
     return null;
   }
-  if (planCode === "sub_month_1" || planCode === "sub_year_1599") return "Discover";
-  if (planCode === "sub_month_2" || planCode === "sub_year_3499") return "Core";
-  if (planCode === "sub_month_3" || planCode === "sub_year_7499") return "Pro";
-  return "Active";
+  // Same source as /pricing, checkout and billing history, rather than a fourth
+  // copy of the mapping that can drift from the other three.
+  return (planCode ? getPlanUi(planCode)?.planName : null) || "Active";
 }
 
 function buildSubscriptionPresentation(input: {
@@ -129,6 +130,26 @@ function buildSubscriptionPresentation(input: {
       description: effectiveDate
         ? `${planName || "Subscription"} stays active until ${effectiveDate.toISOString()}.`
         : `${planName || "Subscription"} cancellation is scheduled for period end.`,
+    };
+  }
+
+  /**
+   * A paid mandate whose first charge is booked ahead.
+   *
+   * Every discounted subscription rests here for its ENTIRE first cycle: the
+   * plan is created full-price with `start_at` one cycle out, and the discount
+   * is collected on day 0 as an addon. Without this branch the customer fell
+   * through to the default below and was told "Free / Inactive / No active
+   * subscription" for thirty days after paying us - and the same status drove
+   * whether /billing even offered them a Cancel button.
+   */
+  if (input.status === "scheduled") {
+    return {
+      planName,
+      statusLabel: "Active",
+      description: input.renewsAt
+        ? `${planName || "Subscription"} plan active. First full charge on ${input.renewsAt.toISOString()}.`
+        : `${planName || "Subscription"} plan active.`,
     };
   }
 
@@ -1636,7 +1657,7 @@ export async function findCurrentSubscription(userId: string) {
     // live status is missing here, the create route cannot see the existing subscription, proceeds
     // to make a second one, and the unique index rejects the insert with an opaque E11000 - after a
     // payable provider subscription has already been created and leaked.
-    status: { $in: ["payment_pending", "scheduled", "active", "cancel_scheduled", "halted"] },
+    status: { $in: [...LIVE_SUBSCRIPTION_STATUSES] },
   }).sort({ updatedAt: -1 });
 }
 

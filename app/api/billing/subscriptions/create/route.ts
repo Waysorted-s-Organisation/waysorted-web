@@ -332,6 +332,65 @@ export async function POST(request: NextRequest) {
     // has already been created - which is what permanently blocked checkout.
     if (existingSubscription && isReclaimableSubscription) {
       const staleProviderSubscriptionId = existingSubscription.providerSubscriptionId;
+
+      /**
+       * Ask the provider FIRST, and only then touch the local row.
+       *
+       * This used to release the local subscription and consult Razorpay
+       * afterwards, so the "you already have one" 409 below returned with the
+       * customer's row already retired: their mandate stayed live and payable at
+       * Razorpay with nothing tracking it locally. findCurrentSubscription could
+       * not see it, /settings showed no subscription, and the reconcilers scan by
+       * live status so none of them would find it either. The customer had paid
+       * for a subscription that, as far as this system was concerned, no longer
+       * existed.
+       *
+       * Reading the provider creates nothing, so doing it before the release
+       * costs nothing and removes the need to unwind a partial change at all.
+       */
+      let staleIsLivePaidMandate = false;
+      if (staleProviderSubscriptionId) {
+        try {
+          const provider = await fetchRazorpaySubscription(staleProviderSubscriptionId);
+          const providerStatus = String(provider.status);
+          const chargeAt = provider.charge_at ? new Date(provider.charge_at * 1000) : null;
+
+          // `active` means Razorpay has already charged at least one cycle -
+          // the strongest possible proof money moved - and it was NOT protected:
+          // it fell through to an immediate cancellation of a subscription the
+          // customer had paid for. `authenticated` with a future charge_at is
+          // the discounted case, where the addon has been captured and the first
+          // full charge is booked ahead.
+          staleIsLivePaidMandate =
+            providerStatus === "active" ||
+            (providerStatus === "authenticated" &&
+              Boolean(chargeAt && chargeAt.getTime() > Date.now()));
+        } catch (lookupError) {
+          // Unreachable provider is not permission to destroy a mandate.
+          console.error("[billing] could not verify superseded subscription before reclaim", {
+            providerSubscriptionId: staleProviderSubscriptionId,
+            error: lookupError instanceof Error ? lookupError.message : String(lookupError),
+          });
+          staleIsLivePaidMandate = true;
+        }
+      }
+
+      if (staleIsLivePaidMandate) {
+        // Nothing has been released, so the customer's subscription is intact.
+        return NextResponse.json(
+          {
+            error:
+              "You already have a subscription starting shortly. Refresh this page to see it.",
+            code: "subscription_already_active",
+          },
+          { status: 409 },
+        );
+      }
+
+      // Only now is the row released. It still has to happen BEFORE anything is
+      // created at the provider, or ensureSubscriptionRecord fails with E11000
+      // after a payable Razorpay subscription already exists - which is what
+      // permanently blocked checkout.
       const released = await releaseSupersededPendingSubscription(
         String(existingSubscription._id),
         existingSubscription.status,
@@ -344,43 +403,6 @@ export async function POST(request: NextRequest) {
           {
             error: "Another checkout for this account is already in progress. Refresh and try again.",
             code: "subscription_already_in_progress",
-          },
-          { status: 409 },
-        );
-      }
-
-      // Ask the provider before discarding anything. A discounted subscription
-      // rests in `authenticated` with a future `charge_at` for its whole first
-      // cycle, and its addon may ALREADY have been captured - so reclaiming it
-      // blind would both cancel a subscription the customer has paid for and
-      // hand back a coupon whose money moved, letting the same one-per-user
-      // code be taken again. The sibling path in subscription-reconciliation
-      // consults the provider for exactly this reason; this one consulted
-      // nothing.
-      let staleIsLivePaidMandate = false;
-      if (staleProviderSubscriptionId) {
-        try {
-          const provider = await fetchRazorpaySubscription(staleProviderSubscriptionId);
-          const chargeAt = provider.charge_at ? new Date(provider.charge_at * 1000) : null;
-          staleIsLivePaidMandate =
-            String(provider.status) === "authenticated" &&
-            Boolean(chargeAt && chargeAt.getTime() > Date.now());
-        } catch (lookupError) {
-          // Unreachable provider is not permission to destroy a mandate.
-          console.error("[billing] could not verify superseded subscription before reclaim", {
-            providerSubscriptionId: staleProviderSubscriptionId,
-            error: lookupError instanceof Error ? lookupError.message : String(lookupError),
-          });
-          staleIsLivePaidMandate = true;
-        }
-      }
-
-      if (staleIsLivePaidMandate) {
-        return NextResponse.json(
-          {
-            error:
-              "You already have a subscription starting shortly. Refresh this page to see it.",
-            code: "subscription_already_active",
           },
           { status: 409 },
         );

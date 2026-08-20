@@ -13,15 +13,19 @@ export type CouponResolution =
   | { ok: false; reason: CouponRejection | "coupon_not_found" | "coupon_exhausted" | "coupon_already_used" };
 
 /**
- * How many credits a customer may hold and still be offered each code.
+ * Seed values for the per-code balance ceiling.
  *
- * The four codes are surfaced by credit-threshold modals — WELCOME15 at a
- * healthy balance, UNLOCK30 at zero. Nothing about a static string binds it to
- * the state that produced it, and these codes will circulate. Enforcing the
+ * The ceiling now lives on the coupon document, because it is the number that
+ * decides who is offered which code and an operator must be able to change it
+ * without a deploy. This map is ONLY the default used when seeding a code and
+ * the value a pre-existing row falls back to until it is migrated - it is not
+ * consulted for any coupon that carries its own.
+ *
+ * The four codes are surfaced by credit-threshold modals: WELCOME15 at a
+ * healthy balance, UNLOCK30 at zero. Nothing about a static string binds a code
+ * to the state that produced it, and these codes circulate - enforcing the
  * threshold server-side at redemption is what makes "exclusively for you" true
  * rather than decorative.
- *
- * A code absent from this map has no balance requirement.
  */
 export const COUPON_MAX_CREDITS: Readonly<Record<string, number>> = Object.freeze({
   WELCOME15: Number.POSITIVE_INFINITY,
@@ -30,9 +34,25 @@ export const COUPON_MAX_CREDITS: Readonly<Record<string, number>> = Object.freez
   UNLOCK30: 0,
 });
 
-export function creditThresholdFor(code: string): number {
+/** The seeded default for a code, for `scripts/seed-coupons.ts`. */
+export function seedThresholdFor(code: string): number {
   const limit = COUPON_MAX_CREDITS[code.trim().toUpperCase()];
   return limit === undefined ? Number.POSITIVE_INFINITY : limit;
+}
+
+/**
+ * The ceiling actually enforced for a coupon.
+ *
+ * Reads the stored value; falls back to the seed map only for a row written
+ * before `maxCredits` existed, so an unmigrated code keeps behaving exactly as
+ * it did rather than silently becoming unrestricted.
+ */
+export function creditThresholdFor(
+  coupon: Pick<ICoupon, "code"> & { maxCredits?: number | null },
+): number {
+  if (coupon.maxCredits === null) return Number.POSITIVE_INFINITY;
+  if (typeof coupon.maxCredits === "number") return coupon.maxCredits;
+  return seedThresholdFor(coupon.code);
 }
 
 /**
@@ -70,8 +90,13 @@ export async function resolveBestOfferForUser(options: {
   const candidates = await Coupon.find({
     active: true,
     $and: [
-      { $or: [{ startsAt: null }, { startsAt: { $lte: now } }] },
-      { $or: [{ endsAt: null }, { endsAt: { $gt: now } }] },
+      // validFrom / validUntil, matching the schema. These were startsAt /
+      // endsAt - fields that do not exist - and in MongoDB `{missing: null}`
+      // matches every document, so the window was not filtered at all. The
+      // resolveCoupon call below rejected expired codes anyway, so nothing was
+      // ever mis-offered; it just resolved every code to discard most of them.
+      { $or: [{ validFrom: null }, { validFrom: { $lte: now } }] },
+      { $or: [{ validUntil: null }, { validUntil: { $gt: now } }] },
     ],
   })
     .select("code percent")
@@ -117,7 +142,7 @@ export async function resolveCoupon(options: {
   //
   // Checked before the global cap so someone simply not eligible is told that,
   // rather than being told the code ran out.
-  const threshold = creditThresholdFor(normalized);
+  const threshold = creditThresholdFor(coupon);
   const effectiveCredits =
     typeof options.creditsRemaining === "number"
       ? options.creditsRemaining + (options.heldCredits ?? 0)

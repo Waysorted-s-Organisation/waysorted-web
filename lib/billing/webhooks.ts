@@ -344,7 +344,19 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         }
       }
 
-      matchedPurchase.razorpayOrderId ||= orderId;
+      // Only ever a real order id.
+      //
+      // `orderId` is `String(payment.order_id || order.id || "")`, and a
+      // SUBSCRIPTION payment carries neither - it is identified by
+      // subscription_id and invoice_id - so this resolved to "". A subscription
+      // purchase legitimately has razorpayOrderId null, so `||=` assigned the
+      // empty string, and the partial unique index on razorpayOrderId covers
+      // `{$type: "string"}` - which "" satisfies. The first subscription to
+      // settle would take "", and every one after it would fail the index with
+      // E11000, throw out of the webhook, and be retried by Razorpay forever
+      // without ever settling. One customer's sale would silently poison the
+      // next.
+      if (orderId) matchedPurchase.razorpayOrderId ||= orderId;
       matchedPurchase.razorpayPaymentId ||= paymentId || null;
       // Never resurrect a refunded purchase: a late or re-delivered capture event would otherwise
       // flip it back to captured and show a refunded charge as paid.

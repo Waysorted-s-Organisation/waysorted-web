@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatMoney } from "@/lib/billing/money";
 import { yearlySavingPercent } from "@/lib/billing/plan-savings";
+import { isLiveSubscriptionStatus } from "@/lib/billing/subscription-status";
 import { getMonthlyCounterpartCode, getPlanUi } from "@/app/pricing/pricing-presentation";
 import Image from "next/image";
 import OrderComplete, { type OrderCompleteProps } from "@/components/OrderComplete";
@@ -374,7 +375,12 @@ export default function BillingClient({
 
   useEffect(() => {
     if (!snapshot) return;
-    if (!["active", "cancel_scheduled", "payment_pending"].includes(snapshot.billing.subscription.status)) return;
+    // One shared definition rather than a fourth hand-written copy. This list
+    // had drifted: it omitted "scheduled", where every discounted subscription
+    // rests for its whole first cycle, so refreshCurrentSubscription never ran
+    // and the Cancel button never rendered for the customers who had just paid
+    // with a code. It also omitted "halted".
+    if (!isLiveSubscriptionStatus(snapshot.billing.subscription.status)) return;
 
     refreshCurrentSubscription().catch(() => {
       // Snapshot already contains the current entitlement state; this panel is supplemental.
