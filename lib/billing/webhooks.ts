@@ -294,9 +294,22 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         (subscriptionId
           ? await Purchase.findOne({
               razorpaySubscriptionId: subscriptionId,
-              status: { $in: ["created", "pending"] },
+              // "captured" with grantApplied false is included so this branch is
+              // RE-ENTRANT. The row is marked captured before the grant runs, so
+              // if the grant threw - a transient database error, a provider
+              // timeout - Razorpay's retry could no longer match its own
+              // purchase and the customer was left paid, uncredited, and
+              // unreachable by this path forever.
+              $or: [
+                { status: { $in: ["created", "pending"] } },
+                { status: "captured", grantApplied: false },
+              ],
             })
           : null);
+
+      // Whether the row was found BY order id, which is the only case where an
+      // order id may be enforced against it.
+      const matchedByOrderId = Boolean(purchase);
 
       if (!subscriptionPurchase) {
         // Terminal, not retryable, when this is a subscription payment we have
@@ -327,10 +340,18 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
           validateCapturedRazorpayPayment({
             payment: paymentEntity,
             purchase: matchedPurchase,
-            // A subscription payment legitimately carries no order id; the
-            // match was made on subscription_id instead, so there is nothing to
-            // compare here.
-            expectedOrderId: orderId || null,
+            // Enforced ONLY when the purchase was matched by order id.
+            //
+            // A subscription purchase has razorpayOrderId null, but Razorpay's
+            // subscription invoices do carry an order_id on the payment - so
+            // when one arrived, this compared that order id against the
+            // purchase's null and threw "Payment order does not match the
+            // purchase". The event was dropped as payment_validation_failed and
+            // the customer never settled: paid, uncredited, no receipt. The
+            // amount, currency, status and payment-identity checks below still
+            // apply in full, so nothing about what was actually charged is
+            // relaxed.
+            expectedOrderId: matchedByOrderId ? orderId || null : null,
             expectedPaymentId: paymentId || null,
           });
         } catch (validationError) {
