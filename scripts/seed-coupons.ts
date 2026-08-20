@@ -2,6 +2,7 @@ import "./load-env";
 import mongoose from "mongoose";
 import dbConnect from "../lib/db";
 import Coupon from "../models/coupon";
+import { seedThresholdFor } from "../lib/billing/coupon";
 
 /**
  * The four codes surfaced by the in-plugin credit-threshold modals.
@@ -100,12 +101,17 @@ async function main() {
       console.log(`    (left untouched - edit it deliberately, not by re-seeding)`);
       continue;
     }
+    // The balance ceiling is seeded onto the document, so it can be changed
+    // later without a deploy. Infinity is not representable in BSON, so "no
+    // balance requirement" is stored as null.
+    const threshold = seedThresholdFor(definition.code);
     await Coupon.create({
       code: definition.code,
       percent: definition.percent,
       appliesToProductCodes: applicable,
       maxRedemptions: definition.maxRedemptions,
       maxPerUser: 1,
+      maxCredits: Number.isFinite(threshold) ? threshold : null,
       description: definition.description,
       active: false,
     });

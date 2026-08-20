@@ -17,6 +17,17 @@ export interface ICoupon {
   appliesToProductCodes: string[];
   maxRedemptions: number | null;
   maxPerUser: number;
+  /**
+   * Largest credit balance a customer may hold and still redeem this code.
+   *
+   * `null` means no balance requirement. Stored here rather than in a map in
+   * source, because it is the one number that decides who is offered which
+   * code, it differs per code, and changing it is an operator decision - it
+   * should not require a deploy.
+   *
+   * `Infinity` is not representable in BSON, so "no requirement" is null.
+   */
+  maxCredits: number | null;
   validFrom?: Date | null;
   validUntil?: Date | null;
   active: boolean;
@@ -57,6 +68,15 @@ const CouponSchema = new Schema<ICoupon, CouponModel>(
      * that is a deliberate change, not a config edit.
      */
     maxPerUser: { type: Number, required: true, default: 1, min: 1, max: 1 },
+    // Deliberately NO default.
+    //
+    // A `default: null` is applied by Mongoose when hydrating a document whose
+    // field was never written, which makes an unmigrated row indistinguishable
+    // from one an operator set to "no limit" - and the fallback in
+    // creditThresholdFor would then read every pre-existing code as
+    // unrestricted. UNLOCK30 requires a zero balance; that would have handed it
+    // to anyone. Absent stays absent until the backfill writes a real value.
+    maxCredits: { type: Number, min: 0 },
     validFrom: { type: Date, default: null },
     validUntil: { type: Date, default: null },
     active: { type: Boolean, required: true, default: false },

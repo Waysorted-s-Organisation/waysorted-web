@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { hasSubscriptionEntitlement, isLiveSubscriptionStatus } from "@/lib/billing/subscription-status";
 import Image from "next/image";
 import Link from "next/link";
 import type { User } from "@/hooks/useUser";
@@ -17,7 +18,14 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
   const subscription = user.billing?.subscription;
   const subscriptionStatus = subscription?.status || "inactive";
   const subscriptionPlanCode = subscription?.planCode || null;
-  const hasSubscriptionAccess = ["active", "cancel_scheduled"].includes(subscriptionStatus);
+  // Entitlement, not existence. This omitted "scheduled" - where every
+  // discounted subscription rests for its entire first cycle - so a customer who
+  // had just paid with a code saw no plan, no start date, and no way to cancel.
+  const hasSubscriptionAccess = hasSubscriptionEntitlement(subscriptionStatus);
+  // Cancelling is a separate question: payment_pending and halted have NOT
+  // earned the plan's benefits but are both still cancellable, so gating the
+  // control on entitlement stranded those customers too.
+  const canCancelSubscription = isLiveSubscriptionStatus(subscriptionStatus);
   const activePlanCode = hasSubscriptionAccess ? subscriptionPlanCode : null;
   const activePlan = activePlanCode ? user.billing?.catalog?.find((plan) => plan.code === activePlanCode) : null;
 
@@ -335,7 +343,7 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
         </div>
 
         {/* Cancel Subscription Accordion */}
-        {hasSubscriptionAccess && (
+        {canCancelSubscription && (
           <div className="mt-8 rounded-md bg-[#FEEAEB] border border-red-100 overflow-hidden">
             <button 
               onClick={() => setIsCancelOpen(!isCancelOpen)}

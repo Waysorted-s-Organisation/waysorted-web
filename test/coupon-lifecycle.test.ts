@@ -35,17 +35,28 @@ const alerts = read("lib/billing/payment-alerts.ts");
 test("each code is bound to the credit state that produced it", () => {
   // The modals promise "exclusively for you" at a credit threshold. Nothing
   // about a static string enforces that, and these codes will circulate.
-  assert.equal(creditThresholdFor("UNLOCK30"), 0, "shown at zero credits");
-  assert.equal(creditThresholdFor("TOPUP25"), 25);
-  assert.equal(creditThresholdFor("BOOST20"), 50);
+  // The ceiling now lives on the coupon document. These are the seeded
+  // defaults, which an unmigrated row still falls back to.
+  assert.equal(creditThresholdFor({ code: "UNLOCK30" }), 0, "shown at zero credits");
+  assert.equal(creditThresholdFor({ code: "TOPUP25" }), 25);
+  assert.equal(creditThresholdFor({ code: "BOOST20" }), 50);
   assert.equal(COUPON_MAX_CREDITS.WELCOME15, Number.POSITIVE_INFINITY, "upgrade prompt, any balance");
+
+  // A stored value wins over the seed map - that is the whole point of moving it.
+  assert.equal(creditThresholdFor({ code: "UNLOCK30", maxCredits: 40 }), 40);
+  assert.equal(
+    creditThresholdFor({ code: "UNLOCK30", maxCredits: null }),
+    Number.POSITIVE_INFINITY,
+    "null means no balance requirement - Infinity is not representable in BSON",
+  );
+  assert.equal(creditThresholdFor({ code: "UNLOCK30", maxCredits: 0 }), 0, "zero is a real ceiling, not absent");
 
   // An unknown code has no balance requirement rather than accidentally
   // inheriting the strictest one.
-  assert.equal(creditThresholdFor("SOMETHING_ELSE"), Number.POSITIVE_INFINITY);
+  assert.equal(creditThresholdFor({ code: "SOMETHING_ELSE" }), Number.POSITIVE_INFINITY);
 
   // Case and padding must not defeat the gate.
-  assert.equal(creditThresholdFor("  unlock30 "), 0);
+  assert.equal(creditThresholdFor({ code: "  unlock30 " }), 0);
 });
 
 test("the discount is quoted before the reuse branch decides", () => {
@@ -337,4 +348,21 @@ test("the only code an arbitrary account can take is capped", () => {
   const welcome = seed.slice(seed.indexOf('code: "WELCOME15"'), seed.indexOf('code: "BOOST20"'));
   assert.doesNotMatch(welcome, /maxRedemptions: null/, "WELCOME15 must not seed uncapped");
   assert.match(welcome, /maxRedemptions: \d+/);
+});
+
+test("an unmigrated coupon keeps its ceiling instead of becoming unrestricted", () => {
+  // The field carries NO schema default on purpose. Mongoose applies a default
+  // when hydrating a document whose field was never written, which would make an
+  // unmigrated row indistinguishable from one an operator deliberately set to
+  // "no limit" - and the fallback would then read every pre-existing code as
+  // unrestricted. UNLOCK30 requires a zero balance; that would have handed it to
+  // anyone with any balance at all.
+  const model = fs.readFileSync(path.join(process.cwd(), "models/coupon.ts"), "utf8");
+  const field = model.slice(model.indexOf("maxCredits:"), model.indexOf("maxCredits:") + 80);
+  assert.doesNotMatch(field, /default:/, "maxCredits must not carry a schema default");
+
+  // Absent falls back to the seeded value; null is a real "no limit".
+  assert.equal(creditThresholdFor({ code: "UNLOCK30" }), 0);
+  assert.equal(creditThresholdFor({ code: "UNLOCK30", maxCredits: undefined }), 0);
+  assert.equal(creditThresholdFor({ code: "UNLOCK30", maxCredits: null }), Number.POSITIVE_INFINITY);
 });
