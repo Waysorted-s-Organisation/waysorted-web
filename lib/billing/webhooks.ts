@@ -38,7 +38,20 @@ function resolveSubscriptionStatus(
 ) {
   if (eventType === "subscription.halted") return "halted";
   if (eventType === "subscription.pending") return "payment_pending";
-  if (eventType === "subscription.authenticated") return "payment_pending";
+  if (eventType === "subscription.authenticated") {
+    // For a FUTURE-DATED subscription, `authenticated` is the success state, not
+    // a pending checkout: the mandate is approved and the first charge is booked
+    // for `charge_at`. Mapping it to payment_pending overwrote the `active` that
+    // verify had just written — updateBillingSubscriptionState is an unguarded
+    // $set — and production ordering shows authenticated is processed LAST.
+    //
+    // The customer had paid, and was shown "Finish your pending checkout", lost
+    // customizablePresets and was served standard top-up pricing instead of
+    // subscriber pricing, until the next 04:00 cron promoted them.
+    const chargeAt = toDate((entity as { charge_at?: number }).charge_at);
+    if (chargeAt && chargeAt.getTime() > Date.now()) return "scheduled";
+    return "payment_pending";
+  }
   if (eventType === "subscription.activated") {
     return Boolean(entity.cancel_at_cycle_end) ? "cancel_scheduled" : "active";
   }
@@ -148,13 +161,51 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
       const orderId = String(paymentEntity?.order_id || orderEntity?.id || "");
       const paymentId = String(paymentEntity?.id || "");
 
-      if (!orderId) return { ignored: true, reason: "missing_order_id" };
+      // A SUBSCRIPTION payment carries subscription_id and invoice_id, not an
+      // order. Matching only on order id/receipt could never find its purchase
+      // row - every subscription purchase has razorpayOrderId null - so the
+      // day-0 addon payment was unmatchable and its money went unrecorded.
+      const subscriptionId = String(paymentEntity?.subscription_id || "");
+      const invoiceId = String(paymentEntity?.invoice_id || "");
 
-      const purchase = await Purchase.findOne({
-        $or: [{ razorpayOrderId: orderId }, { receipt: String(orderEntity?.receipt || "") }],
-      });
+      if (!orderId && !subscriptionId) {
+        return { ignored: true, reason: "missing_order_id" };
+      }
 
-      if (!purchase) return { ignored: true, reason: "purchase_not_found" };
+      const purchase = orderId
+        ? await Purchase.findOne({
+            $or: [{ razorpayOrderId: orderId }, { receipt: String(orderEntity?.receipt || "") }],
+          })
+        : null;
+
+      const subscriptionPurchase =
+        purchase ||
+        (subscriptionId
+          ? await Purchase.findOne({
+              razorpaySubscriptionId: subscriptionId,
+              status: { $in: ["created", "pending"] },
+            })
+          : null);
+
+      if (!subscriptionPurchase) {
+        // Terminal, not retryable, when this is a subscription payment we have
+        // no local row for. `purchase_not_found` is in RETRYABLE_IGNORED_REASONS
+        // (webhook-processing.ts:3), so returning it here made Razorpay retry a
+        // permanently unmatchable event for ~24h and 503 the endpoint twice per
+        // sale - risking deactivation of the endpoint that also carries
+        // cancellations and renewals.
+        if (subscriptionId) {
+          console.warn("[billing] subscription payment with no local purchase", {
+            subscriptionId,
+            invoiceId,
+            paymentId,
+          });
+          return { ignored: true, reason: "subscription_purchase_not_tracked" };
+        }
+        return { ignored: true, reason: "purchase_not_found" };
+      }
+
+      const matchedPurchase = subscriptionPurchase!;
 
       // Validate the payment the same way /checkout/verify does. Without this the webhook - the
       // path that runs when the customer's browser is gone, i.e. the one actually depended on -
@@ -164,13 +215,16 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         try {
           validateCapturedRazorpayPayment({
             payment: paymentEntity,
-            purchase,
-            expectedOrderId: orderId,
+            purchase: matchedPurchase,
+            // A subscription payment legitimately carries no order id; the
+            // match was made on subscription_id instead, so there is nothing to
+            // compare here.
+            expectedOrderId: orderId || null,
             expectedPaymentId: paymentId || null,
           });
         } catch (validationError) {
           console.error("[billing] webhook payment failed validation; not granting credits", {
-            purchaseId: String(purchase._id),
+            purchaseId: String(matchedPurchase._id),
             orderId,
             paymentId,
             error:
@@ -180,27 +234,27 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         }
       }
 
-      purchase.razorpayOrderId ||= orderId;
-      purchase.razorpayPaymentId ||= paymentId || null;
+      matchedPurchase.razorpayOrderId ||= orderId;
+      matchedPurchase.razorpayPaymentId ||= paymentId || null;
       // Never resurrect a refunded purchase: a late or re-delivered capture event would otherwise
       // flip it back to captured and show a refunded charge as paid.
-      if (purchase.status !== "refunded" && purchase.status !== "partially_refunded") {
-        purchase.status = "captured";
-        purchase.capturedAt ||= new Date();
+      if (matchedPurchase.status !== "refunded" && matchedPurchase.status !== "partially_refunded") {
+        matchedPurchase.status = "captured";
+        matchedPurchase.capturedAt ||= new Date();
       }
-      await purchase.save();
+      await matchedPurchase.save();
 
-      await applyPurchaseCredits(purchase);
-      if (purchase.kind === "subscription" && purchase.razorpaySubscriptionId) {
+      await applyPurchaseCredits(matchedPurchase);
+      if (matchedPurchase.kind === "subscription" && matchedPurchase.razorpaySubscriptionId) {
         await emitSubscriptionPurchaseCompleted({
-          userId: String(purchase.user),
-          purchaseId: String(purchase._id),
-          subscriptionId: purchase.razorpaySubscriptionId,
-          productCode: purchase.productCode,
+          userId: String(matchedPurchase.user),
+          purchaseId: String(matchedPurchase._id),
+          subscriptionId: matchedPurchase.razorpaySubscriptionId,
+          productCode: matchedPurchase.productCode,
           completionSource: eventType,
         });
       }
-      return { processed: true, type: eventType, purchaseId: String(purchase._id) };
+      return { processed: true, type: eventType, purchaseId: String(matchedPurchase._id) };
     }
 
     case "subscription.authenticated":

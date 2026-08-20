@@ -5,6 +5,7 @@ import dbConnect from "@/lib/db";
 import { applySubscriptionCycleCredits } from "@/lib/billing/db";
 import { fetchRazorpaySubscriptionInvoices } from "@/lib/billing/razorpay";
 import { buildSubscriptionCycleKey } from "@/lib/billing/webhook-payload";
+import { claimRedemptionForSettledPurchase } from "@/lib/billing/coupon";
 
 /**
  * Renewal backstop: deliver subscription credits Razorpay charged for but never told us about.
@@ -104,6 +105,20 @@ async function settlePaidSubscriptionPurchases(
       providerSubscriptionId,
       paymentId,
       userId: String(subscription.user),
+    });
+
+    // Claim the coupon too. This recovery path had no coupon awareness at all -
+    // redeemCoupon was only ever called by verify and the charged webhook - so a
+    // subscription rescued here kept a merely RESERVED redemption, which the
+    // orphan sweep then released two hours later even though the money had
+    // moved. The allowance went back to the customer and the code became
+    // repeatable. `claimRedemptionForSettledPurchase` accepts a released row for
+    // the same reason: the sweep may already have won the race.
+    await claimRedemptionForSettledPurchase(providerSubscriptionId).catch((error) => {
+      console.error("[billing] could not claim the coupon for a settled purchase", {
+        providerSubscriptionId,
+        error: error instanceof Error ? error.message : String(error),
+      });
     });
   }
   return result.modifiedCount;

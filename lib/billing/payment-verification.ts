@@ -21,7 +21,8 @@ function verificationError(message: string) {
 export function validateCapturedRazorpayPayment(input: {
   payment: RazorpayPaymentProof;
   purchase: PurchasePaymentExpectation;
-  expectedOrderId: string;
+  /** null for a subscription payment, which carries subscription_id instead of an order. */
+  expectedOrderId: string | null;
   expectedPaymentId?: string | null;
 }) {
   const paymentId = String(input.payment.id || "");
@@ -31,11 +32,18 @@ export function validateCapturedRazorpayPayment(input: {
   const paymentCurrency = String(input.payment.currency || "").toUpperCase();
   const purchaseCurrency = input.purchase.currency.toUpperCase();
 
-  if (!input.purchase.razorpayOrderId || input.purchase.razorpayOrderId !== input.expectedOrderId) {
-    throw verificationError("Payment order does not match the purchase.");
-  }
-  if (paymentOrderId !== input.expectedOrderId) {
-    throw verificationError("Razorpay payment belongs to a different order.");
+  // A subscription payment is identified by subscription_id and invoice_id, not
+  // by an order — its purchase row legitimately has razorpayOrderId null. The
+  // order checks are skipped in that case ONLY; the amount, currency, status and
+  // payment-identity checks below still apply in full, so nothing is relaxed
+  // about what the customer was actually charged.
+  if (input.expectedOrderId !== null) {
+    if (!input.purchase.razorpayOrderId || input.purchase.razorpayOrderId !== input.expectedOrderId) {
+      throw verificationError("Payment order does not match the purchase.");
+    }
+    if (paymentOrderId !== input.expectedOrderId) {
+      throw verificationError("Razorpay payment belongs to a different order.");
+    }
   }
   if (input.expectedPaymentId && paymentId !== input.expectedPaymentId) {
     throw verificationError("Razorpay payment identity does not match.");

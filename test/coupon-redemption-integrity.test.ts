@@ -22,6 +22,7 @@ import Coupon from "@/models/coupon";
 import CouponRedemption from "@/models/couponRedemption";
 import Purchase from "@/models/purchase";
 import {
+  claimRedemptionForSettledPurchase,
   releaseCoupon,
   releaseRedeemedCoupon,
   redeemCoupon,
@@ -303,4 +304,66 @@ test("one purchase can never carry two redemptions", async () => {
   });
   assert.equal(b.ok, false, "coupons must not stack on one purchase");
   assert.equal(await CouponRedemption.countDocuments({ purchase }), 1);
+});
+
+test("settlement claims a redemption the sweep already released", async () => {
+  // The recovery path had no coupon awareness: a subscription rescued by the
+  // reconciler kept a merely RESERVED claim, which the orphan sweep then freed
+  // two hours later even though the money had moved. The customer got the
+  // discount and kept the allowance, making the code repeatable.
+  const coupon = await makeCoupon("UNLOCK30", 30);
+  const purchase = String(purchaseId());
+  await reserveCoupon({
+    couponId: coupon._id, userId: String(USER), purchaseId: purchase,
+    code: "UNLOCK30", discountPaise: 4470, currency: "INR",
+  });
+  await CouponRedemption.updateOne({ purchase }, { $set: { subscriptionId: "sub_recovered" } });
+
+  // The sweep wins the race first.
+  await releaseCoupon({ purchaseId: purchase, reason: "orphaned_reservation" });
+  assert.equal((await CouponRedemption.findOne({ purchase }))?.status, "released");
+
+  // Settlement then confirms the money moved and must reclaim it.
+  assert.equal(await claimRedemptionForSettledPurchase("sub_recovered"), true);
+  const after = await CouponRedemption.findOne({ purchase });
+  assert.equal(after?.status, "redeemed");
+  // null or undefined both mean cleared — the schema declares `default: null`,
+  // so an $unset field reads back as null rather than absent.
+  assert.ok(
+    after?.releaseReason == null,
+    `the release must be cleared, not left alongside a redeemed status (got ${JSON.stringify(after?.releaseReason)})`,
+  );
+
+  // And the allowance is genuinely spent afterwards.
+  const again = await reserveCoupon({
+    couponId: coupon._id, userId: String(USER), purchaseId: String(purchaseId()),
+    code: "UNLOCK30", discountPaise: 4470, currency: "INR",
+  });
+  assert.equal(again.ok, false, "a paid claim must not be reusable");
+});
+
+test("the sweep never frees a claim whose subscription was paid", async () => {
+  const coupon = await makeCoupon("BOOST20", 20);
+  // The retry pattern: the reservation points at subscription X, and a purchase
+  // under a DIFFERENT id has since been captured against that same subscription.
+  const stalePurchase = await Purchase.create({
+    user: USER, productCode: "sub_month_1", kind: "subscription",
+    amountPaise: 11920, creditsGranted: 200, receipt: "r9", idempotencyKey: "k9",
+    status: "pending",
+  });
+  await Purchase.create({
+    user: USER, productCode: "sub_month_1", kind: "subscription",
+    amountPaise: 11920, creditsGranted: 200, receipt: "r10", idempotencyKey: "k10",
+    status: "captured", razorpaySubscriptionId: "sub_paid",
+  });
+  await CouponRedemption.create({
+    coupon: coupon._id, user: USER, purchase: stalePurchase._id,
+    code: "BOOST20", discountPaise: 2980, currency: "INR",
+    subscriptionId: "sub_paid",
+    status: "reserved", reservedAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
+  });
+
+  const result = await sweepOrphanedReservations({ olderThanMs: 2 * 60 * 60 * 1000 });
+  assert.equal(result.released, 0, "a claim against a paid subscription must survive the sweep");
+  assert.equal((await CouponRedemption.findOne({ user: USER }))?.status, "reserved");
 });

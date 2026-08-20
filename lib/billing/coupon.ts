@@ -257,6 +257,29 @@ export async function releaseRedeemedCoupon(options: {
 }
 
 /**
+ * Marks a redemption spent once its money is confirmed to have moved.
+ *
+ * Accepts a `released` row as well as a `reserved` one. The orphan sweep frees
+ * any reservation older than the grace window whose purchase is not yet
+ * captured, and it can legitimately win that race against a recovery that is
+ * still in flight - so by the time settlement confirms the payment, the claim
+ * may already have been handed back. Leaving it released would make the code
+ * repeatable for a customer who has been charged.
+ *
+ * Never touches a wallet: this only records that the allowance was consumed.
+ */
+export async function claimRedemptionForSettledPurchase(
+  subscriptionId: string,
+): Promise<boolean> {
+  if (!subscriptionId) return false;
+  const result = await CouponRedemption.updateOne(
+    { subscriptionId, status: { $in: ["reserved", "released"] } },
+    { $set: { status: "redeemed", redeemedAt: new Date() }, $unset: { releasedAt: "", releaseReason: "" } },
+  );
+  return result.modifiedCount > 0;
+}
+
+/**
  * Frees reservations that no path will ever conclude.
  *
  * Every targeted release keys on a purchase or a subscription that some other
@@ -284,7 +307,7 @@ export async function sweepOrphanedReservations(options: {
   })
     .sort({ reservedAt: 1 })
     .limit(options.limit ?? 100)
-    .select({ _id: 1, purchase: 1 })
+    .select({ _id: 1, purchase: 1, subscriptionId: 1 })
     .lean();
 
   if (!stale.length) return { scanned: 0, released: 0 };
@@ -301,7 +324,28 @@ export async function sweepOrphanedReservations(options: {
     .lean();
   const settledIds = new Set(settled.map((row) => String(row._id)));
 
-  const releasable = stale.filter((row) => !settledIds.has(String(row.purchase)));
+  // Also exclude anything already attached to a subscription that has a
+  // captured purchase under a DIFFERENT id - a retry creates a new purchase, and
+  // the old reservation must not be freed while the customer is paying on the
+  // new one.
+  const subscriptionIds = stale.map((row) => row.subscriptionId).filter(Boolean);
+  const paidSubscriptions = subscriptionIds.length
+    ? await Purchase.find({
+        razorpaySubscriptionId: { $in: subscriptionIds },
+        status: { $in: ["captured", "refunded", "partially_refunded"] },
+      })
+        .select({ razorpaySubscriptionId: 1 })
+        .lean()
+    : [];
+  const paidSubscriptionIds = new Set(
+    paidSubscriptions.map((row) => String(row.razorpaySubscriptionId)),
+  );
+
+  const releasable = stale.filter(
+    (row) =>
+      !settledIds.has(String(row.purchase)) &&
+      !(row.subscriptionId && paidSubscriptionIds.has(String(row.subscriptionId))),
+  );
   if (!releasable.length) return { scanned: stale.length, released: 0 };
 
   const result = await CouponRedemption.updateMany(
