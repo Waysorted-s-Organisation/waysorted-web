@@ -8,7 +8,7 @@ import { isLiveSubscriptionStatus } from "@/lib/billing/subscription-status";
 import { getMonthlyCounterpartCode, getPlanUi } from "@/app/pricing/pricing-presentation";
 import Image from "next/image";
 import OrderComplete, { type OrderCompleteProps } from "@/components/OrderComplete";
-import BillingDetailsModal, { type BillingDetails } from "@/components/BillingDetailsModal";
+import { unlockPrinterAudio } from "@/components/OrderComplete/printer-sound";
 
 type RazorpaySuccessResponse = {
   razorpay_payment_id: string;
@@ -98,8 +98,6 @@ type BillingSnapshot = {
       canPurchaseStarterPack: boolean;
     };
     catalog: CatalogProduct[];
-    /** Already returned by the snapshot; declared here so checkout can gate on it. */
-    billingDetails?: BillingDetails | null;
     pricingVersion: string;
     pricing: {
       country: string;
@@ -276,8 +274,6 @@ export default function BillingClient({
   } | null>(null);
   const [planMenuOpen, setPlanMenuOpen] = useState(false);
   const planMenuRef = useRef<HTMLDivElement | null>(null);
-  const [billingModalOpen, setBillingModalOpen] = useState(false);
-  const pendingCheckoutRef = useRef<(() => void) | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
   const [paidOrderId, setPaidOrderId] = useState<string | null>(null);
   const autostartedRef = useRef(false);
@@ -922,24 +918,6 @@ export default function BillingClient({
       return;
     }
 
-    // An autostart link must not skip the gate either. /pricing collects these
-    // before it hands off, but a /claim link with ?autostart=1 comes straight
-    // here, so without this the one path that opens Razorpay by itself is also
-    // the one that never asks.
-    if (snapshot && !snapshot.billing.billingDetails) {
-      autostartedRef.current = true;
-      const detailParams = new URLSearchParams(searchParams.toString());
-      if (detailParams.has("autostart")) {
-        detailParams.delete("autostart");
-        router.replace(detailParams.size ? `${pathname}?${detailParams.toString()}` : pathname, {
-          scroll: false,
-        });
-      }
-      pendingCheckoutRef.current = null;
-      setBillingModalOpen(true);
-      return;
-    }
-
     autostartedRef.current = true;
     const params = new URLSearchParams(searchParams.toString());
     if (params.has("autostart")) {
@@ -1074,43 +1052,6 @@ export default function BillingClient({
    * balance can move between applying a code and pressing this, and a stale
    * quote is exactly what the server's guard rejects.
    */
-  /**
-   * Collects billing details before the first purchase, the way /pricing does.
-   *
-   * /pricing gated on this and /billing never did. That was invisible while
-   * /pricing was the only way in - but the plugin's checkout bridge and every
-   * /claim link now land here directly, so without this a customer can buy
-   * without ever giving the details that go on their invoice and into the
-   * country-mismatch risk check.
-   */
-  function requireBillingDetails(action: () => void) {
-    if (!snapshot || snapshot.billing.billingDetails) {
-      action();
-      return;
-    }
-    pendingCheckoutRef.current = action;
-    setBillingModalOpen(true);
-  }
-
-  async function handleBillingDetailsSubmit(details: BillingDetails) {
-    const response = await fetch("/api/billing/details", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(details),
-    });
-    if (!response.ok) {
-      const payload = (await response.json().catch(() => ({}))) as { error?: string };
-      throw new Error(payload.error || "Unable to save billing details.");
-    }
-    setBillingModalOpen(false);
-    // Re-read rather than assume: the server trims and normalises what it
-    // stored, and the next gate check must see what is actually on file.
-    await refreshSnapshot().catch(() => null);
-    const pending = pendingCheckoutRef.current;
-    pendingCheckoutRef.current = null;
-    pending?.();
-  }
-
   async function handleContinue() {
     if (!selectedProduct) return;
     if (selectedProduct.kind !== "subscription") {
@@ -1240,15 +1181,6 @@ export default function BillingClient({
 
   return (
     <main className="min-h-screen bg-[#F5F5F7] px-4 py-8 text-secondary-db-100">
-      <BillingDetailsModal
-        isOpen={billingModalOpen}
-        onClose={() => {
-          pendingCheckoutRef.current = null;
-          setBillingModalOpen(false);
-        }}
-        onSubmit={handleBillingDetailsSubmit}
-        initialData={snapshot?.billing.billingDetails ?? null}
-      />
 
       <Image
         src="/icons/logo-black.svg"
@@ -1477,7 +1409,14 @@ export default function BillingClient({
 
           <button
             type="button"
-            onClick={() => requireBillingDetails(() => void handleContinue())}
+            onClick={() => {
+              // Inside the gesture, which is the only place a browser will let
+              // an AudioContext start. The receipt's printer sound is created
+              // minutes later, by which time no gesture is in scope and the
+              // context would be refused - so it is warmed here and reused.
+              unlockPrinterAudio();
+              void handleContinue();
+            }}
             disabled={!selectedProduct || busyCode !== null || paidOrderId !== null}
             className="mt-[25px] flex h-[40px] w-full items-center justify-center gap-2 rounded-[12px] bg-gradient-to-b from-[#2C2450] to-[#191233] text-[15px] font-medium text-white transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
           >
@@ -1696,28 +1635,19 @@ function PlanRadio({ selected }: { selected: boolean }) {
 }
 
 /**
- * The processor's mark on the button that hands the customer over to it.
+ * The processor's name on the button that hands the customer over to it.
  *
- * Drawn inline rather than fetched so the button cannot render wordless if an
- * asset request fails - it names where the money is going, and a blank there is
- * worse than an approximate glyph. Replace with Razorpay's own brand asset when
- * one is added to `public/`.
+ * Deliberately the WORDMARK ONLY. This drew a hand-approximated version of
+ * Razorpay's symbol, which was simply wrong - and a wrong trademark on a
+ * payment button is worse than no symbol at all, because it undermines exactly
+ * the trust the logo is there to provide.
+ *
+ * To restore the symbol, export `razorpay-icon` from the checkout frame in
+ * Figma to `public/icons/razorpay.svg` and render it here beside the word. The
+ * wordmark is upright, not italic.
  */
 function RazorpayWordmark() {
-  return (
-    <span className="inline-flex items-center gap-[6px]">
-      {/*
-        Reversed (all-white) treatment of the processor's mark, which is how it
-        is meant to sit on a dark button. Inlined so the button cannot render
-        wordless if an asset request fails - it names where the money is going.
-      */}
-      <svg width="14" height="15" viewBox="0 0 30 32" fill="none" aria-hidden="true">
-        <path d="M22.4 0L18.4 15l9.1 5.4L22.4 0z" fill="#FFFFFF" fillOpacity="0.72" />
-        <path d="M14.3 8.4L2.2 32h11.6l4.3-16.2-3.8-7.4z" fill="#FFFFFF" />
-      </svg>
-      <span className="text-[15px] font-bold italic tracking-[-0.01em]">Razorpay</span>
-    </span>
-  );
+  return <span className="text-[15px] font-bold tracking-[-0.01em]">Razorpay</span>;
 }
 
 /** The soft sparkle graphic in the corner of the offer banner. */
