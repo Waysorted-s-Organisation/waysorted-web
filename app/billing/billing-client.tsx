@@ -13,6 +13,7 @@ import {
 import Image from "next/image";
 import OrderComplete, { type OrderCompleteProps } from "@/components/OrderComplete";
 import { unlockPrinterAudio } from "@/components/OrderComplete/printer-sound";
+import WaysortedLogo from "@/components/WaysortedLogo";
 
 type RazorpaySuccessResponse = {
   razorpay_payment_id: string;
@@ -1201,14 +1202,7 @@ export default function BillingClient({
   return (
     <main className="min-h-screen bg-[#F5F5F7] px-4 py-8 text-secondary-db-100">
 
-      <Image
-        src="/icons/logo-black.svg"
-        alt="Waysorted"
-        width={132}
-        height={32}
-        priority
-        className="h-8 w-auto"
-      />
+      <WaysortedLogo />
 
       <div className="mx-auto mt-6 w-full max-w-[400px] pb-10">
         <section className="rounded-[20px] bg-white p-5 shadow-[0_10px_40px_rgba(15,18,28,0.06)]">
