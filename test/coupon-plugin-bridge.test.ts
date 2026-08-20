@@ -16,6 +16,8 @@ import path from "node:path";
 import test from "node:test";
 import { COUPON_MAX_CREDITS } from "@/lib/billing/coupon";
 import { normalizeCouponCode } from "@/lib/billing/coupon-code";
+import { yearlySavingPercent } from "@/lib/billing/plan-savings";
+import { getMonthlyCounterpartCode, getPlanUi } from "@/app/pricing/pricing-presentation";
 
 const read = (file: string) => readFileSync(path.join(process.cwd(), file), "utf8");
 
@@ -172,4 +174,34 @@ test("every code the plugin ships is a valid shape", () => {
   for (const code of Object.keys(COUPON_MAX_CREDITS)) {
     assert.equal(normalizeCouponCode(code), code, `${code} must survive normalisation`);
   }
+});
+
+test("checkout names a plan the same way /pricing does", () => {
+  // The catalogue's own `name` is an internal label - "Monthly 2" - and using it
+  // here meant the plan someone chose on the pricing page was called something
+  // else the moment they reached checkout.
+  assert.match(billingClient, /getPlanUi\(selectedProduct\.code\)\?\.planName/);
+  assert.match(billingClient, /const planName = getPlanUi\(product\.code\)\?\.planName/);
+  assert.equal(getPlanUi("sub_month_2")?.planName, "Core");
+  assert.equal(getPlanUi("sub_year_3499")?.planName, "Core");
+});
+
+test("the yearly saving is paired by tier, not by catalogue order", () => {
+  // Comparing every yearly plan against whichever monthly came first meant only
+  // the Discover row ever showed a saving; Core and Pro are discounted by the
+  // same amount and silently showed none.
+  assert.equal(getMonthlyCounterpartCode("sub_year_1599"), "sub_month_1");
+  assert.equal(getMonthlyCounterpartCode("sub_year_3499"), "sub_month_2");
+  assert.equal(getMonthlyCounterpartCode("sub_year_7499"), "sub_month_3");
+  assert.equal(getMonthlyCounterpartCode("sub_month_1"), null, "a monthly plan has no counterpart");
+  assert.match(billingClient, /getMonthlyCounterpartCode\(product\.code\)/);
+});
+
+test("every tier's real prices produce the same saving the pricing page claims", () => {
+  // /pricing advertises "Save at least N% yearly" from the same pairs. If the
+  // two ever disagree, one page is lying about a price.
+  const inr = (amountSubunits: number) => ({ amountSubunits, currency: "INR" });
+  assert.equal(yearlySavingPercent(inr(14900), inr(149900)), 16, "Discover");
+  assert.equal(yearlySavingPercent(inr(34900), inr(349900)), 16, "Core");
+  assert.equal(yearlySavingPercent(inr(74900), inr(749900)), 16, "Pro");
 });
