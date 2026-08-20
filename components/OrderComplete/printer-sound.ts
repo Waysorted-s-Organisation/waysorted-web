@@ -18,6 +18,59 @@ export interface PrinterSoundHandle {
 }
 
 /**
+ * The context, created once and kept warm.
+ *
+ * Browsers start an AudioContext SUSPENDED unless it was created during a user
+ * gesture, and `resume()` from a later effect is refused. The receipt mounts
+ * after a payment completes - long after the click that started it - so a
+ * context created there was silently suspended and the printer made no sound at
+ * all, which is what "it does not play" was.
+ *
+ * `unlockPrinterAudio` is called from the checkout button's own click handler,
+ * where a gesture is in scope, and the same context is reused when the receipt
+ * arrives.
+ */
+let sharedContext: AudioContext | null = null;
+
+function audioContextConstructor(): typeof AudioContext | null {
+  if (typeof window === "undefined") return null;
+  return (
+    window.AudioContext ||
+    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext ||
+    null
+  );
+}
+
+function acquireContext(): AudioContext | null {
+  if (sharedContext && sharedContext.state !== "closed") return sharedContext;
+  const AudioCtx = audioContextConstructor();
+  if (!AudioCtx) return null;
+  try {
+    sharedContext = new AudioCtx();
+  } catch {
+    return null;
+  }
+  return sharedContext;
+}
+
+/**
+ * Call from inside a user gesture, before the sound is needed.
+ *
+ * Cheap and idempotent. Never throws: audio is decoration on a payment receipt
+ * and must not be able to interfere with the payment.
+ */
+export function unlockPrinterAudio(): void {
+  const context = acquireContext();
+  if (!context) return;
+  void context.resume?.().catch(() => {});
+}
+
+/** Whether a sound started now would actually be audible. */
+export function isPrinterAudioReady(): boolean {
+  return Boolean(sharedContext && sharedContext.state === "running");
+}
+
+/**
  * Paper advanced per audible step, in px.
  *
  * The step rate is DERIVED from the feed speed rather than fixed, because a
@@ -59,17 +112,16 @@ export function playPrinterFeed(options: {
   const { durationMs, pxPerSecond } = options;
   if (typeof window === "undefined") return null;
 
-  const AudioCtx =
-    window.AudioContext ||
-    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-  if (!AudioCtx) return null;
+  const context = acquireContext();
+  if (!context) return null;
 
-  let context: AudioContext;
-  try {
-    context = new AudioCtx();
-  } catch {
-    return null;
-  }
+  // Suspended means the browser refused it - no gesture reached us. Starting
+  // anyway would schedule the whole envelope against a clock that is not
+  // running, so it would play late and out of step with the paper if the
+  // context ever resumed. Better to stay silent and let the caller offer a
+  // replay.
+  void context.resume?.().catch(() => {});
+  if (context.state !== "running") return null;
 
   const seconds = Math.max(0.2, durationMs / 1000);
   const stepHz = Math.max(4, pxPerSecond / PX_PER_STEP);
@@ -136,9 +188,8 @@ export function playPrinterFeed(options: {
     } catch {
       // Already stopped.
     }
-    // Closing frees the hardware output. Delayed past the fade so the release is
-    // heard rather than cut off.
-    window.setTimeout(() => void context.close().catch(() => {}), 120);
+    // The context is shared and reused; closing it here would mean the next
+    // feed had to create one without a gesture and be refused.
   };
 
   try {
@@ -148,16 +199,11 @@ export function playPrinterFeed(options: {
     motor.stop(endsAt);
     stepper.stop(endsAt);
     noise.stop(endsAt);
-    window.setTimeout(() => void context.close().catch(() => {}), durationMs + 200);
+
   } catch {
     stop();
     return null;
   }
-
-  // Autoplay policy suspends a context created without a gesture. The receipt
-  // follows a click through a payment sheet, so this usually succeeds; when it
-  // does not, the screen is simply silent.
-  void context.resume?.().catch(() => {});
 
   return { stop };
 }

@@ -105,26 +105,24 @@ test("autostart is only ever honoured for the product the link named", () => {
   );
 });
 
-test("checkout collects billing details, the way /pricing does", () => {
-  // /pricing gated on this and /billing never did. That was invisible while
-  // /pricing was the only way in - the plugin bridge and every /claim link now
-  // land here directly.
-  assert.match(billingClient, /requireBillingDetails/);
-  assert.match(billingClient, /BillingDetailsModal/);
-  assert.match(
-    billingClient,
-    /requireBillingDetails\(\(\) => void handleContinue\(\)\)/,
-    "the Continue button must go through the gate",
-  );
+test("checkout does not gate on billing details", () => {
+  // It did briefly, mirroring /pricing. But nothing functional consumes them:
+  // Razorpay owns the invoice, and the only reader in the whole repo feeds
+  // `declaredBillingCountry` into an ADVISORY risk flag that no code path
+  // blocks, reprices or refuses on. Settings calls them "details for future
+  // invoices" and treats them as optional.
+  //
+  // So the gate was pure friction on the path the plugin's discount links use -
+  // and it briefly broke that path outright, because /api/billing/details was
+  // the one billing route that did not accept the plugin's bridge session.
+  assert.doesNotMatch(billingClient, /requireBillingDetails/);
+  assert.doesNotMatch(billingClient, /BillingDetailsModal/);
 });
 
-test("a bridged customer can actually clear the billing-details gate", () => {
-  // The gate existing is not enough. A customer arriving from the plugin holds
-  // ONLY the bridge cookie - that is the entire point of the bridge - and
-  // /api/billing/details was the one route on the checkout path that did not
-  // accept it. The modal opened, they filled in seven fields, and Save answered
-  // 401 with no way past: the flagship flow was unusable for exactly the people
-  // it targets.
+test("the details route accepts the plugin's bridge session", () => {
+  // Checkout no longer asks for these, but the customer can still add them from
+  // settings while holding only the bridge cookie - and this was the one billing
+  // route that refused it, answering 401 after seven fields were filled in.
   assert.match(detailsRoute, /getBridgeAuthenticatedUser\("billing:checkout"\)/);
   assert.match(
     detailsRoute,

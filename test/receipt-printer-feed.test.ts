@@ -46,9 +46,28 @@ test("reduced motion silences the sound as well as the movement", () => {
   assert.match(component, /if \(!fed \|\| reducedMotion \|\| muted/);
 });
 
-test("the sound can be refused", () => {
-  assert.match(component, /aria-pressed=\{muted\}/);
+test("the sound can be refused, and a refused sound can be replayed", () => {
   assert.match(component, /toggleMute/);
+  assert.match(component, /aria-pressed=\{soundBlocked \? false : muted\}/);
+
+  // A browser refuses audio when no user gesture reached it, and the receipt is
+  // created long after the click that paid for it. When that happens the control
+  // becomes a replay rather than a mute - pressing it IS the gesture - and the
+  // paper is rewound so the motor starts with it. Resuming a sound partway
+  // through a finished animation is exactly the desync this avoids.
+  assert.match(component, /soundBlocked/);
+  assert.match(component, /setFed\(false\)/, "a replay must rewind the paper, not just restart audio");
+  assert.match(component, /unlockPrinterAudio\(\)/);
+});
+
+test("audio is unlocked from a real user gesture", () => {
+  // An AudioContext created outside a gesture starts SUSPENDED and resume() is
+  // refused, so the printer was silent. The checkout button's own click handler
+  // is the one place a gesture is guaranteed.
+  const checkout = read("app/billing/billing-client.tsx");
+  assert.match(checkout, /unlockPrinterAudio\(\);/);
+  assert.match(sound, /export function unlockPrinterAudio/);
+  assert.match(sound, /if \(context\.state !== "running"\) return null;/);
 });
 
 test("audio can never break the receipt", () => {

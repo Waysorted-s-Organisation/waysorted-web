@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { playPrinterFeed, type PrinterSoundHandle } from "./printer-sound";
+import { isPrinterAudioReady, playPrinterFeed, unlockPrinterAudio, type PrinterSoundHandle } from "./printer-sound";
 
 /**
  * The screen a customer lands on the moment a payment settles.
@@ -42,6 +42,14 @@ export interface OrderCompleteProps {
  * destroys the whole illusion - and overflows the viewport.
  */
 const RECEIPT_WIDTH = 344;
+/**
+ * The paper shades toward this at the torn edge.
+ *
+ * Both the gradient and the teeth are drawn from it, so the two can never
+ * disagree - a tooth in a different tone from the paper it hangs off reads as a
+ * rendering bug rather than a shadow.
+ */
+const PAPER_EDGE = "#C2C2C2";
 /** Horizontal padding of the printer card, doubled. Kept here so the two cannot drift. */
 const PRINTER_PADDING_X = 44;
 
@@ -88,7 +96,7 @@ function TornEdge() {
       preserveAspectRatio="none"
       className="block w-full"
     >
-      <polygon points={points} fill="#FFFFFF" />
+      <polygon points={points} fill={PAPER_EDGE} />
     </svg>
   );
 }
@@ -208,15 +216,20 @@ export default function OrderComplete({
   );
 
   const [muted, setMuted] = useState(false);
+  // Set when the browser refused the audio: no gesture ever reached us, so the
+  // paper printed in silence. The control then becomes a replay rather than a
+  // mute, because pressing it IS the gesture.
+  const [soundBlocked, setSoundBlocked] = useState(false);
+  const [replayKey, setReplayKey] = useState(0);
   const soundRef = useRef<PrinterSoundHandle | null>(null);
 
   useEffect(() => {
     if (!paperHeight) return;
     // One frame after the height is known, so the transition has a 0 -> H change
-    // to animate rather than starting already open.
+    // to animate rather than starting already open. Re-armed on replay.
     const timer = window.setTimeout(() => setFed(true), 180);
     return () => window.clearTimeout(timer);
-  }, [paperHeight]);
+  }, [paperHeight, replayKey]);
 
   // Started with the feed and given the same duration, so the motor stops when
   // the paper does. Skipped entirely when motion is reduced - someone who has
@@ -224,13 +237,35 @@ export default function OrderComplete({
   useEffect(() => {
     if (!fed || reducedMotion || muted || !feedMs) return;
     soundRef.current = playPrinterFeed({ durationMs: feedMs, pxPerSecond: FEED_PX_PER_SECOND });
+    // null means the context is suspended - the browser refused it. Never treat
+    // that as "played": scheduling the envelope against a stopped clock is what
+    // makes a sound arrive late and out of step with the paper.
+    setSoundBlocked(soundRef.current === null && !isPrinterAudioReady());
     return () => {
       soundRef.current?.stop();
       soundRef.current = null;
     };
-  }, [fed, reducedMotion, muted, feedMs]);
+  }, [fed, reducedMotion, muted, feedMs, replayKey]);
 
+  /**
+   * Mute, or - when the browser refused the audio - replay with sound.
+   *
+   * The click is a user gesture, which is the one thing a suspended
+   * AudioContext needs. The paper is rewound and fed again so the motor starts
+   * with it: resuming a sound partway through a finished animation is exactly
+   * the "not synced" failure this avoids.
+   */
   const toggleMute = useCallback(() => {
+    if (soundBlocked) {
+      unlockPrinterAudio();
+      setSoundBlocked(false);
+      setMuted(false);
+      soundRef.current?.stop();
+      soundRef.current = null;
+      setFed(false);
+      setReplayKey((key) => key + 1);
+      return;
+    }
     setMuted((value) => {
       if (!value) {
         soundRef.current?.stop();
@@ -238,7 +273,7 @@ export default function OrderComplete({
       }
       return !value;
     });
-  }, []);
+  }, [soundBlocked]);
 
   const clipHeight = fed || reducedMotion ? paperHeight : 0;
 
@@ -279,12 +314,18 @@ export default function OrderComplete({
                     <button
                       type="button"
                       onClick={toggleMute}
-                      aria-pressed={muted}
-                      aria-label={muted ? "Unmute the printer" : "Mute the printer"}
-                      title={muted ? "Unmute" : "Mute"}
+                      aria-pressed={soundBlocked ? false : muted}
+                      aria-label={
+                        soundBlocked
+                          ? "Print again with sound"
+                          : muted
+                            ? "Unmute the printer"
+                            : "Mute the printer"
+                      }
+                      title={soundBlocked ? "Print again with sound" : muted ? "Unmute" : "Mute"}
                       className="inline-flex h-[41px] w-[41px] items-center justify-center rounded-[12px] bg-white text-[#16171B] transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99]"
                     >
-                      <SpeakerIcon muted={muted} />
+                      <SpeakerIcon muted={soundBlocked ? true : muted} />
                     </button>
                   ) : null}
                   <Link
@@ -328,7 +369,15 @@ export default function OrderComplete({
               }}
             >
               <div ref={paperRef} className="w-full font-[family-name:var(--font-roboto-mono)] text-[#16171B]">
-                <div className="bg-white px-[18px] pb-[105px] pt-[17px] sm:px-[26px]">
+                <div
+                  className="px-[18px] pb-[105px] pt-[17px] sm:px-[26px]"
+                  style={{
+                    // Paper falling away from the light as it leaves the
+                    // printer. Held flat for the printed area so no figure ever
+                    // sits on a tint, then shaded into the tear.
+                    backgroundImage: `linear-gradient(180deg, #FFFFFF 0%, #FFFFFF 58%, ${PAPER_EDGE} 100%)`,
+                  }}
+                >
                   <div className="text-[20px] font-bold tracking-[-0.01em]">Waysorted</div>
 
                   <div className="mt-[8px] flex items-baseline justify-between gap-3 text-[13px] text-[#7A7A80]">
