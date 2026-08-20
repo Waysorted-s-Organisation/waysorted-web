@@ -1,4 +1,4 @@
-import "dotenv/config";
+import "./load-env";
 import mongoose from "mongoose";
 import dbConnect from "../lib/db";
 import Purchase from "../models/purchase";

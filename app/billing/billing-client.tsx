@@ -265,6 +265,16 @@ export default function BillingClient({
   // for the receipt screen, so it must never be set on a pending or unverified
   // payment - a receipt is a statement that money moved.
   const [completedOrder, setCompletedOrder] = useState<OrderCompleteProps | null>(null);
+  // The discount this customer could actually use, resolved server-side.
+  const [bestOffer, setBestOffer] = useState<{
+    code: string;
+    percent: number;
+    upfrontSubunits: number;
+    recurringSubunits: number;
+    currency: string;
+  } | null>(null);
+  const [planMenuOpen, setPlanMenuOpen] = useState(false);
+  const planMenuRef = useRef<HTMLDivElement | null>(null);
   const [billingModalOpen, setBillingModalOpen] = useState(false);
   const pendingCheckoutRef = useRef<(() => void) | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
@@ -1039,6 +1049,11 @@ export default function BillingClient({
     };
   }, [snapshot?.billing.catalog, selectedProduct]);
 
+  const selectedOption = useMemo(
+    () => planOptions.find((option) => option.product.code === selectedCode) || null,
+    [planOptions, selectedCode],
+  );
+
   const planSubtitle = useMemo(() => {
     if (!selectedProduct) return "Pick a plan or top up credits.";
     if (selectedProduct.billingCycle === "monthly") return "Monthly Plan";
@@ -1118,6 +1133,59 @@ export default function BillingClient({
     }
     void handleSubscriptionCheckout(selectedProduct, code, quote);
   }
+
+  /**
+   * Ask what this customer could use, for the plan they have selected.
+   *
+   * Re-asked on every plan change because the discount is priced against one
+   * product, and skipped entirely once a code is applied - the applied banner
+   * replaces this one, and re-querying would be work whose answer is discarded.
+   */
+  useEffect(() => {
+    if (!selectedProduct || selectedProduct.kind !== "subscription" || couponQuote) {
+      setBestOffer(null);
+      return;
+    }
+    let live = true;
+    void (async () => {
+      try {
+        const response = await fetch("/api/billing/coupons/preview", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ productCode: selectedProduct.code }),
+        });
+        const payload = (await response.json()) as { offer?: typeof bestOffer };
+        if (live) setBestOffer(response.ok ? payload.offer ?? null : null);
+      } catch {
+        // The banner is an invitation, not a requirement. A failure here must
+        // not disturb a checkout that is otherwise fine.
+        if (live) setBestOffer(null);
+      }
+    })();
+    return () => {
+      live = false;
+    };
+  }, [selectedProduct, couponQuote]);
+
+  // A menu that only closes by choosing something is a trap on touch, and one
+  // that stays open behind a payment sheet is worse.
+  useEffect(() => {
+    if (!planMenuOpen) return;
+    const onPointerDown = (event: MouseEvent | TouchEvent) => {
+      if (!planMenuRef.current?.contains(event.target as Node)) setPlanMenuOpen(false);
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setPlanMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("touchstart", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("touchstart", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [planMenuOpen]);
 
   async function handleCancelSubscription() {
     setBusyCode("cancel");
@@ -1240,50 +1308,93 @@ export default function BillingClient({
                   : "Pick the top-up that suits you"}
               </p>
 
-              <div
-                role="radiogroup"
-                aria-label="Available plans"
-                className="mt-[20px] space-y-[11px]"
-              >
-                {planOptions.map((option) => {
-                  const isSelected = option.product.code === selectedCode;
-                  return (
-                    <button
-                      key={option.product.code}
-                      type="button"
-                      role="radio"
-                      aria-checked={isSelected}
-                      onClick={() => {
-                        setSelectedCode(option.product.code);
-                        // A code is priced against ONE product. Carrying the
-                        // quote across a plan change would show a discount that
-                        // the server's guard then rejects at checkout.
-                        setCouponQuote(null);
-                        setCouponError(null);
-                      }}
-                      disabled={busyCode !== null}
-                      className={`flex h-[46px] w-full items-center gap-[12px] rounded-[12px] px-[14px] text-left transition-colors duration-200 disabled:cursor-not-allowed ${
-                        isSelected
-                          ? "border-2 border-[#7C3AED] bg-[#F3F0FE]"
-                          : "border-2 border-transparent bg-[#F2F2F5] hover:bg-[#ECECF1]"
-                      }`}
-                    >
-                      <PlanRadio selected={isSelected} />
-                      <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-[#17171C]">
-                        {option.label}
+              {/*
+                A dropdown, not a stack of rows.
+                
+                The design has two plans; the real catalogue has six, and six
+                46px rows pushed the discount-code banner and the status line
+                clean off the first screen - the offer was there and nobody
+                could see it. The menu overlays rather than expands, so opening
+                it never moves what is underneath.
+              */}
+              <div ref={planMenuRef} className="relative mt-[20px]">
+                <button
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded={planMenuOpen}
+                  aria-label={`Plan: ${selectedOption?.label ?? "none"}. Change plan`}
+                  onClick={() => setPlanMenuOpen((open) => !open)}
+                  disabled={busyCode !== null}
+                  className="flex h-[46px] w-full items-center gap-[12px] rounded-[12px] border-2 border-[#7C3AED] bg-[#F3F0FE] px-[14px] text-left transition-colors duration-200 disabled:cursor-not-allowed"
+                >
+                  <PlanRadio selected />
+                  <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-[#17171C]">
+                    {selectedOption?.label ?? "Choose a plan"}
+                  </span>
+                  {selectedOption?.savingPercent ? (
+                    <span className="shrink-0 rounded-[5px] bg-[#2E9E52] px-[7px] py-[3px] text-[11px] font-semibold text-white">
+                      {selectedOption.savingPercent}% OFF
+                    </span>
+                  ) : null}
+                  {selectedOption ? (
+                    <span className="shrink-0 text-[15px] text-[#6E6E78]">
+                      <span className="text-[16px] font-semibold text-[#17171C]">
+                        {selectedOption.price}
                       </span>
-                      {option.savingPercent ? (
-                        <span className="shrink-0 rounded-[5px] bg-[#2E9E52] px-[7px] py-[3px] text-[11px] font-semibold text-white">
-                          {option.savingPercent}% OFF
-                        </span>
-                      ) : null}
-                      <span className="shrink-0 text-[15px] text-[#6E6E78]">
-                        <span className="text-[16px] font-semibold text-[#17171C]">{option.price}</span>
-                        {option.suffix}
-                      </span>
-                    </button>
-                  );
-                })}
+                      {selectedOption.suffix}
+                    </span>
+                  ) : null}
+                  <ChevronDown open={planMenuOpen} />
+                </button>
+
+                {planMenuOpen ? (
+                  <ul
+                    role="listbox"
+                    aria-label="Available plans"
+                    className="absolute left-0 right-0 top-[52px] z-30 max-h-[280px] space-y-[4px] overflow-y-auto rounded-[12px] border border-[#E6E6EC] bg-white p-[6px] shadow-[0_16px_40px_rgba(15,18,28,0.16)]"
+                  >
+                    {planOptions.map((option) => {
+                      const isSelected = option.product.code === selectedCode;
+                      return (
+                        <li key={option.product.code}>
+                          <button
+                            type="button"
+                            role="option"
+                            aria-selected={isSelected}
+                            onClick={() => {
+                              setSelectedCode(option.product.code);
+                              setPlanMenuOpen(false);
+                              // A code is priced against ONE product. Carrying
+                              // the quote across a plan change would show a
+                              // discount the server's guard then rejects at
+                              // checkout.
+                              setCouponQuote(null);
+                              setCouponError(null);
+                            }}
+                            className={`flex h-[42px] w-full items-center gap-[10px] rounded-[9px] px-[10px] text-left transition-colors duration-150 ${
+                              isSelected ? "bg-[#F3F0FE]" : "hover:bg-[#F4F4F7]"
+                            }`}
+                          >
+                            <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-[#17171C]">
+                              {option.label}
+                            </span>
+                            {option.savingPercent ? (
+                              <span className="shrink-0 rounded-[5px] bg-[#2E9E52] px-[7px] py-[3px] text-[11px] font-semibold text-white">
+                                {option.savingPercent}% OFF
+                              </span>
+                            ) : null}
+                            <span className="shrink-0 text-[14px] text-[#6E6E78]">
+                              <span className="text-[15px] font-semibold text-[#17171C]">
+                                {option.price}
+                              </span>
+                              {option.suffix}
+                            </span>
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                ) : null}
               </div>
             </>
           ) : null}
@@ -1411,10 +1522,42 @@ export default function BillingClient({
               <div className="relative mt-[21px] overflow-hidden rounded-[12px] bg-[#F7E7A4] px-4 py-[14px]">
                 <SpecialOfferGlyph />
                 <div className="relative">
-                  <div className="text-[15px] font-bold text-[#3D3312]">Special offer!</div>
+                  <div className="text-[15px] font-bold text-[#3D3312]">
+                    {bestOffer ? `${bestOffer.percent}% off your first ${
+                      selectedProduct?.billingCycle === "yearly" ? "year" : "month"
+                    }` : "Special offer!"}
+                  </div>
+                  {/*
+                    Resolved server-side for THIS customer and THIS plan. The
+                    copy here used to be fixed - "Spend 30 credits and a discount
+                    code unlocks automatically" - which matched neither the real
+                    balance thresholds nor whether any code was switched on. Now
+                    it only ever names a code that would actually be honoured,
+                    and says nothing when there is nothing to offer.
+                  */}
                   <p className="mt-[4px] max-w-[250px] text-[13px] leading-[1.5] text-[#5A4B1A]">
-                    Spend 30 credits and a discount code unlocks automatically.
+                    {bestOffer
+                      ? `Use ${bestOffer.code} and pay ${formatCurrency(
+                          bestOffer.upfrontSubunits,
+                          bestOffer.currency,
+                        )} instead of ${formatCurrency(
+                          bestOffer.recurringSubunits,
+                          bestOffer.currency,
+                        )}.`
+                      : "Have a discount code? Enter it below."}
                   </p>
+                  {bestOffer && couponInput.trim().toUpperCase() !== bestOffer.code ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCouponInput(bestOffer.code);
+                        if (selectedProduct) void checkCoupon(selectedProduct, bestOffer.code);
+                      }}
+                      className="mt-[10px] rounded-[9px] bg-[#3D3312] px-4 py-[7px] text-[13px] font-semibold text-white transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99]"
+                    >
+                      Apply {bestOffer.code}
+                    </button>
+                  ) : null}
                   <div className="mt-[12px] flex max-w-[250px] gap-2">
                     <label htmlFor="coupon-code" className="sr-only">
                       Discount code
@@ -1516,6 +1659,21 @@ function BenefitCheck() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+
+function ChevronDown({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 16 16"
+      fill="none"
+      aria-hidden="true"
+      className={`shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+    >
+      <path d="M4 6l4 4 4-4" stroke="#17171C" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

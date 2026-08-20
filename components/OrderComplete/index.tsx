@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { playPrinterFeed, type PrinterSoundHandle } from "./printer-sound";
 
 /**
  * The screen a customer lands on the moment a payment settles.
@@ -43,6 +44,19 @@ export interface OrderCompleteProps {
 const RECEIPT_WIDTH = 344;
 /** Horizontal padding of the printer card, doubled. Kept here so the two cannot drift. */
 const PRINTER_PADDING_X = 44;
+
+/**
+ * Feed rate, in px per second.
+ *
+ * The paper advances at a CONSTANT speed, so the duration is derived from the
+ * receipt's height rather than fixed: a longer receipt - one carrying a discount
+ * line and a recurring-price footnote - genuinely takes longer to print, which
+ * is both what a real printer does and what keeps the sound in sync with it.
+ * A fixed duration would make a long receipt appear to accelerate.
+ */
+const FEED_PX_PER_SECOND = 118;
+const MIN_FEED_MS = 1400;
+const MAX_FEED_MS = 5200;
 const PAPER_WIDTH = `min(${RECEIPT_WIDTH}px, calc(100% - ${PRINTER_PADDING_X}px))`;
 const TOOTH_WIDTH = 11.5;
 const TOOTH_HEIGHT = 9;
@@ -90,6 +104,29 @@ function CheckMark() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+
+function SpeakerIcon({ muted }: { muted: boolean }) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path
+        d="M4 7.6h2.6L10 4.6v10.8L6.6 12.4H4a.8.8 0 0 1-.8-.8V8.4a.8.8 0 0 1 .8-.8Z"
+        stroke="#16171B"
+        strokeWidth="1.5"
+        strokeLinejoin="round"
+      />
+      {muted ? (
+        <path d="M13.4 7.8l3.4 4.4M16.8 7.8l-3.4 4.4" stroke="#16171B" strokeWidth="1.5" strokeLinecap="round" />
+      ) : (
+        <path
+          d="M13.2 7.4a3.6 3.6 0 0 1 0 5.2"
+          stroke="#16171B"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      )}
     </svg>
   );
 }
@@ -155,6 +192,24 @@ export default function OrderComplete({
     return () => observer.disconnect();
   }, []);
 
+  // Read once on mount rather than during render, so the server and the first
+  // client render agree.
+  const [reducedMotion, setReducedMotion] = useState(false);
+  useEffect(() => {
+    setReducedMotion(Boolean(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches));
+  }, []);
+
+  const feedMs = useMemo(
+    () =>
+      Math.round(
+        Math.min(MAX_FEED_MS, Math.max(MIN_FEED_MS, (paperHeight / FEED_PX_PER_SECOND) * 1000)),
+      ),
+    [paperHeight],
+  );
+
+  const [muted, setMuted] = useState(false);
+  const soundRef = useRef<PrinterSoundHandle | null>(null);
+
   useEffect(() => {
     if (!paperHeight) return;
     // One frame after the height is known, so the transition has a 0 -> H change
@@ -163,8 +218,27 @@ export default function OrderComplete({
     return () => window.clearTimeout(timer);
   }, [paperHeight]);
 
-  const reducedMotion =
-    typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  // Started with the feed and given the same duration, so the motor stops when
+  // the paper does. Skipped entirely when motion is reduced - someone who has
+  // asked for less movement has not asked for a noise instead.
+  useEffect(() => {
+    if (!fed || reducedMotion || muted || !feedMs) return;
+    soundRef.current = playPrinterFeed({ durationMs: feedMs, pxPerSecond: FEED_PX_PER_SECOND });
+    return () => {
+      soundRef.current?.stop();
+      soundRef.current = null;
+    };
+  }, [fed, reducedMotion, muted, feedMs]);
+
+  const toggleMute = useCallback(() => {
+    setMuted((value) => {
+      if (!value) {
+        soundRef.current?.stop();
+        soundRef.current = null;
+      }
+      return !value;
+    });
+  }, []);
 
   const clipHeight = fed || reducedMotion ? paperHeight : 0;
 
@@ -196,13 +270,31 @@ export default function OrderComplete({
             <div className="rounded-[24px] bg-[#F1F1F3] px-[22px] pb-[16px] pt-[25px]">
               <div className="flex items-center justify-between">
                 <BrandMark />
-                <Link
-                  href={homeHref}
-                  className="inline-flex h-[41px] items-center gap-2 rounded-[12px] bg-white px-[16px] text-[15px] font-medium text-[#16171B] transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99]"
-                >
-                  <HomeIcon />
-                  Home
-                </Link>
+                <div className="flex items-center gap-2">
+                  {/*
+                    Sound that arrives unasked should always be refusable. Only
+                    rendered while there is something to silence.
+                  */}
+                  {!reducedMotion ? (
+                    <button
+                      type="button"
+                      onClick={toggleMute}
+                      aria-pressed={muted}
+                      aria-label={muted ? "Unmute the printer" : "Mute the printer"}
+                      title={muted ? "Unmute" : "Mute"}
+                      className="inline-flex h-[41px] w-[41px] items-center justify-center rounded-[12px] bg-white text-[#16171B] transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99]"
+                    >
+                      <SpeakerIcon muted={muted} />
+                    </button>
+                  ) : null}
+                  <Link
+                    href={homeHref}
+                    className="inline-flex h-[41px] items-center gap-2 rounded-[12px] bg-white px-[16px] text-[15px] font-medium text-[#16171B] transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99]"
+                  >
+                    <HomeIcon />
+                    Home
+                  </Link>
+                </div>
               </div>
 
               <div className="mt-[28px] flex h-[50px] items-center justify-center gap-[8px] rounded-[12px] bg-white">
@@ -224,8 +316,16 @@ export default function OrderComplete({
               the card's corners stay visible on either side.
             */}
             <div
-              className="relative z-10 mx-auto overflow-hidden transition-[height] duration-[1500ms] ease-out motion-reduce:transition-none"
-              style={{ width: PAPER_WIDTH, height: clipHeight, marginTop: -16 }}
+              className="relative z-10 mx-auto overflow-hidden motion-reduce:transition-none"
+              style={{
+                width: PAPER_WIDTH,
+                height: clipHeight,
+                marginTop: -16,
+                // Linear, because a stepper motor feeds at a constant rate. An
+                // ease made the paper appear to accelerate away from its own
+                // sound.
+                transition: reducedMotion ? undefined : `height ${feedMs}ms linear`,
+              }}
             >
               <div ref={paperRef} className="w-full font-[family-name:var(--font-roboto-mono)] text-[#16171B]">
                 <div className="bg-white px-[18px] pb-[105px] pt-[17px] sm:px-[26px]">

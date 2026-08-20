@@ -205,3 +205,31 @@ test("every tier's real prices produce the same saving the pricing page claims",
   assert.equal(yearlySavingPercent(inr(34900), inr(349900)), 16, "Core");
   assert.equal(yearlySavingPercent(inr(74900), inr(749900)), 16, "Pro");
 });
+
+test("the offer banner is resolved server-side, not written into the client", () => {
+  // The banner used to read "Spend 30 credits and a discount code unlocks
+  // automatically" - a fixed string that matched neither the real balance
+  // thresholds (0/25/50) nor whether any code was switched on at all. Only the
+  // server knows which codes are active, which this customer has already spent,
+  // and whether their balance clears each ceiling.
+  assert.match(billingClient, /bestOffer/);
+  // Comments stripped first: the explanation of what the old copy was is
+  // allowed to mention it, the rendered output is not.
+  const withoutComments = billingClient
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+  assert.doesNotMatch(
+    withoutComments,
+    /Spend 30 credits/,
+    "the fixed offer copy must not come back",
+  );
+});
+
+test("the plan chooser is a dropdown, so the offer stays on screen", () => {
+  // Six plans as stacked rows pushed the discount banner and the status line off
+  // the first screen - the offer was there and nobody could see it. The menu
+  // overlays rather than expands, so opening it never moves what is underneath.
+  assert.match(billingClient, /aria-haspopup="listbox"/);
+  assert.match(billingClient, /role="listbox"/);
+  assert.match(billingClient, /absolute left-0 right-0/, "the menu must overlay, not push");
+});
