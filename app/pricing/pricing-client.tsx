@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, ChevronRight } from "lucide-react";
 import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
@@ -114,7 +114,6 @@ export default function PricingClient({
   initialPricingData: PricingPayload | null;
   initialPricingError: string | null;
 }) {
-  const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading } = useUser();
   const { showBanner, setShowBanner } = useBanner();
@@ -261,7 +260,17 @@ export default function PricingClient({
     // Carry a discount code across the hand-off. Without this, a customer who
     // arrived on /pricing with a code silently lost it and was charged full
     // price - the page builds this URL, so anything not added here is dropped.
-    const carriedCoupon = searchParams?.get("coupon")?.trim().toUpperCase();
+    //
+    // Read from location at click time rather than through useSearchParams.
+    // This page is statically prerendered for SEO, and that hook forces the
+    // whole subtree out of the prerender unless it sits behind a Suspense
+    // fallback - which would empty the pricing content out of the static HTML.
+    // The code is only needed when this handler runs, so there is nothing to
+    // gain from making it reactive.
+    const carriedCoupon =
+      typeof window === "undefined"
+        ? null
+        : new URLSearchParams(window.location.search).get("coupon")?.trim().toUpperCase();
     if (carriedCoupon) params.set("coupon", carriedCoupon);
     if (quoted && pricingData) {
       params.set("qa", String(quoted.amountPaise));

@@ -57,3 +57,6 @@ original_slides.json
 seed_import_slides.js
 /Users/aviralgarg/Downloads/wayweb-dev/WhatsApp Audio 2026-01-22 at 18.17.40.mp3
 .env*.local
+
+# Local Claude Code launch config
+.claude/launch.json

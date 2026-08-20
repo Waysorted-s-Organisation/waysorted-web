@@ -3,6 +3,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatMoney } from "@/lib/billing/money";
+import { yearlySavingPercent } from "@/lib/billing/plan-savings";
+import Image from "next/image";
+import OrderComplete, { type OrderCompleteProps } from "@/components/OrderComplete";
 
 type RazorpaySuccessResponse = {
   razorpay_payment_id: string;
@@ -178,6 +181,29 @@ function formatDate(value?: string | null) {
   });
 }
 
+const SUBSCRIPTION_BENEFITS = [
+  "Includes all Premium Waysorted features",
+  "Regular updates with ongoing support",
+  "Lowest cost for credit top-ups",
+  "Credits never expire, no monthly resets.",
+];
+
+const TOPUP_BENEFITS = [
+  "Credits land in your wallet as soon as the payment settles",
+  "Usable across every Waysorted tool",
+  "No subscription required",
+  "Credits never expire, no monthly resets.",
+];
+
+/**
+ * Strips the provider prefix so the receipt reads `Order #Nq8Kf...` rather than
+ * `Order #order_Nq8Kf...`. The reference itself is unchanged, because support
+ * looks payments up by it.
+ */
+function orderNumberFrom(reference: string) {
+  return reference.replace(/^(order_|sub_)/, "");
+}
+
 function couponMessage(reason?: string): string {
   switch (reason) {
     case "coupon_already_used":
@@ -231,8 +257,11 @@ export default function BillingClient({
     recurringSubunits: number;
     currency: string;
   } | null>(null);
+  // Set only once a payment has been verified by the server. It is the trigger
+  // for the receipt screen, so it must never be set on a pending or unverified
+  // payment - a receipt is a statement that money moved.
+  const [completedOrder, setCompletedOrder] = useState<OrderCompleteProps | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
-  const [showCatalog, setShowCatalog] = useState(!initialProductCode);
   const [paidOrderId, setPaidOrderId] = useState<string | null>(null);
   const autostartedRef = useRef(false);
   const checkoutAttemptKeysRef = useRef(new Map<string, string>());
@@ -266,7 +295,6 @@ export default function BillingClient({
     return { amountPaise: quotedAmountSubunits, currency: quotedCurrency.toUpperCase() };
   }, [quotedAmountSubunits, quotedCurrency, selectedProduct]);
 
-  const hasChosenProduct = Boolean(selectedProduct);
   const shouldShowSubscriptionPanel =
     Boolean(currentSubscription) || Boolean(snapshot && snapshot.billing.subscription.status !== "inactive");
 
@@ -312,7 +340,6 @@ export default function BillingClient({
     const available = snapshot.billing.catalog.some((product) => product.code === initialProductCode);
     if (!available) {
       setSelectedCode(snapshot.billing.catalog[0]?.code || null);
-      setShowCatalog(true);
       setStatus("That plan is not available on your account. Pick an available option below.");
     }
   }, [initialProductCode, snapshot]);
@@ -452,6 +479,14 @@ export default function BillingClient({
 
             checkoutAttemptKeysRef.current.delete(product.code);
             setPaidOrderId(payload.orderId);
+            // Shown as soon as the server has verified the payment, not after
+            // the wallet poll below - the poll can take 40s, and by then the
+            // charge is already a fact the customer is entitled to see.
+            setCompletedOrder({
+              orderNumber: orderNumberFrom(payload.orderId),
+              itemName: product.name,
+              amount: formatCurrency(payload.amount, payload.currency),
+            });
 
             const { settled } = await waitForWalletUpdate(baselineCredits);
             setStatus(
@@ -719,6 +754,31 @@ export default function BillingClient({
             }
 
             checkoutAttemptKeysRef.current.delete(product.code);
+
+            // Built from the server's own coupon figures in the create response,
+            // never from the client's cached quote, so the receipt states the
+            // amount that was actually charged.
+            const cycle = product.billingCycle === "yearly" ? "year" : "month";
+            const applied = payload.coupon;
+            setCompletedOrder({
+              orderNumber: orderNumberFrom(payload.subscriptionId),
+              itemName: product.name,
+              amount: formatCurrency(product.amountPaise, product.currency),
+              total: applied
+                ? formatCurrency(applied.upfrontSubunits, applied.currency)
+                : formatCurrency(product.amountPaise, product.currency),
+              discountLabel: applied ? `${applied.code} (${applied.percent}% off)` : null,
+              discountAmount: applied
+                ? `-${formatCurrency(applied.discountSubunits, applied.currency)}`
+                : null,
+              footnote: applied
+                ? `First ${cycle} at the discounted rate, then ${formatCurrency(
+                    applied.recurringSubunits,
+                    applied.currency,
+                  )} per ${cycle}.`
+                : `Renews at ${formatCurrency(product.amountPaise, product.currency)} per ${cycle}.`,
+            });
+
             setStatus("Subscription payment verified. Waiting for entitlement sync...");
             let settled = false;
 
@@ -774,7 +834,6 @@ export default function BillingClient({
           scroll: false,
         });
       }
-      setShowCatalog(true);
       return;
     }
 
@@ -798,7 +857,6 @@ export default function BillingClient({
       // customer sees "the price changed" for a link we sent them.
       const quote = await checkCoupon(selectedProduct, urlCoupon);
       if (!quote) {
-        setShowCatalog(true);
         return;
       }
       await handleSubscriptionCheckout(selectedProduct, urlCoupon, quote);
@@ -817,6 +875,83 @@ export default function BillingClient({
     searchParams,
     selectedProduct,
   ]);
+
+  /**
+   * The plan rows.
+   *
+   * Built from the catalogue rather than hardcoded, so a plan the account is not
+   * entitled to never appears - the previous card hid this behind a "Change
+   * plan" toggle, and a chooser nobody opens is a chooser nobody uses.
+   */
+  const planOptions = useMemo(() => {
+    const catalog = snapshot?.billing.catalog || [];
+    const wantSubscription = selectedProduct ? selectedProduct.kind === "subscription" : true;
+    const members = catalog.filter((product) => (product.kind === "subscription") === wantSubscription);
+    const cycleCounts = new Map<string, number>();
+    for (const product of members) {
+      cycleCounts.set(product.billingCycle, (cycleCounts.get(product.billingCycle) || 0) + 1);
+    }
+    const monthly = members.find((product) => product.billingCycle === "monthly");
+
+    return members.map((product) => {
+      const unique = cycleCounts.get(product.billingCycle) === 1;
+      const cycleLabel =
+        product.billingCycle === "monthly" ? "Monthly" : product.billingCycle === "yearly" ? "Yearly" : null;
+
+      // Computed from the two prices actually on offer, rounded down, so the
+      // badge cannot claim a saving the checkout will not give.
+      const savingPercent =
+        product.billingCycle === "yearly"
+          ? yearlySavingPercent(
+              monthly ? { amountSubunits: monthly.amountPaise, currency: monthly.currency } : null,
+              { amountSubunits: product.amountPaise, currency: product.currency },
+            )
+          : null;
+
+      return {
+        product,
+        label: cycleLabel && unique ? cycleLabel : product.name,
+        price: formatCurrency(product.amountPaise, product.currency),
+        suffix:
+          product.billingCycle === "monthly"
+            ? "/ month"
+            : product.billingCycle === "yearly"
+              ? "/ year"
+              : "",
+        savingPercent,
+      };
+    });
+  }, [snapshot?.billing.catalog, selectedProduct]);
+
+  const planSubtitle = useMemo(() => {
+    if (!selectedProduct) return "Pick a plan or top up credits.";
+    if (selectedProduct.billingCycle === "monthly") return "Monthly Plan";
+    if (selectedProduct.billingCycle === "yearly") return "Yearly Plan";
+    return "One-time purchase";
+  }, [selectedProduct]);
+
+  /**
+   * The single path from this page to Razorpay.
+   *
+   * The code is re-priced at click time rather than trusted from state: a
+   * balance can move between applying a code and pressing this, and a stale
+   * quote is exactly what the server's guard rejects.
+   */
+  async function handleContinue() {
+    if (!selectedProduct) return;
+    if (selectedProduct.kind !== "subscription") {
+      void handleOrderCheckout(selectedProduct);
+      return;
+    }
+    const code = couponInput.trim().toUpperCase();
+    if (!code) {
+      void handleSubscriptionCheckout(selectedProduct, undefined, null);
+      return;
+    }
+    const quote = couponQuote?.code === code ? couponQuote : await checkCoupon(selectedProduct, code);
+    if (!quote) return;
+    void handleSubscriptionCheckout(selectedProduct, code, quote);
+  }
 
   async function handleCancelSubscription() {
     setBusyCode("cancel");
@@ -846,166 +981,135 @@ export default function BillingClient({
     }
   }
 
-  return (
-    <main className="min-h-screen bg-[#F5F7FC] px-4 py-8 text-secondary-db-100 sm:px-6">
-      <div className="mx-auto max-w-[880px]">
-        <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="text-[30px] font-semibold tracking-[-0.02em]">Secure checkout</h1>
-            <p className="mt-1 text-sm text-[#687184]">
-              {hasChosenProduct ? "Review the selected plan and continue to Razorpay." : "Choose a plan or top up credits."}
-            </p>
-          </div>
-          <div className="rounded-full border border-[#E7EDF7] bg-white px-4 py-2 text-xs font-medium text-[#5E6A7B]">
-            Available credits: <span className="font-semibold text-secondary-db-100">{snapshot?.billing.wallet.availableCredits ?? "--"}</span>
-          </div>
-        </div>
+  // A verified payment replaces the checkout entirely. Leaving the form behind
+  // it is how someone pays twice.
+  if (completedOrder) return <OrderComplete {...completedOrder} />;
 
-        <section className="rounded-[26px] border border-[#E7EDF7] bg-white p-5 shadow-[0_12px_34px_rgba(13,18,24,0.04)] sm:p-6">
-          <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
-              <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7A8499]">Selected item</div>
-              <div className="mt-2 text-[28px] font-semibold tracking-[-0.02em] text-secondary-db-100">
-                {selectedProduct?.name || "Select a product"}
-              </div>
-              <div className="mt-2 text-sm text-[#687184]">
+  const wallet = snapshot?.billing.wallet.availableCredits ?? null;
+  const selectedCredits = selectedProduct
+    ? selectedProduct.creditsGranted + selectedProduct.bonusCredits
+    : null;
+  const benefits = selectedProduct?.kind === "subscription" ? SUBSCRIPTION_BENEFITS : TOPUP_BENEFITS;
+  const isSubscription = selectedProduct?.kind === "subscription";
+
+  return (
+    <main className="min-h-screen bg-[#F5F5F7] px-4 py-8 text-secondary-db-100">
+      <Image
+        src="/icons/logo-black.svg"
+        alt="Waysorted"
+        width={132}
+        height={32}
+        priority
+        className="h-8 w-auto"
+      />
+
+      <div className="mx-auto mt-6 w-full max-w-[400px] pb-10">
+        <section className="rounded-[20px] bg-white p-5 shadow-[0_10px_40px_rgba(15,18,28,0.06)]">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="text-[19px] font-semibold leading-[24px] tracking-[-0.01em] text-[#17171C]">
                 {selectedProduct
-                  ? `${formatCurrency(selectedProduct.amountPaise, selectedProduct.currency)} · ${
-                      selectedProduct.creditsGranted + selectedProduct.bonusCredits
-                    } credits`
-                  : "Choose a plan below to continue."}
-              </div>
+                  ? isSubscription
+                    ? `Subscribing to ${selectedProduct.name}`
+                    : selectedProduct.name
+                  : "Choose a plan"}
+              </h1>
+              <p className="mt-[3px] text-[14px] text-[#8B8B94]">{planSubtitle}</p>
             </div>
-            {selectedProduct?.kind === "subscription" ? (
-              <div className="w-full sm:w-auto">
-                <label
-                  htmlFor="coupon-code"
-                  className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#7A8499]"
-                >
-                  Have a code?
-                </label>
-                <div className="mt-2 flex gap-2">
-                  <input
-                    id="coupon-code"
-                    value={couponInput}
-                    onChange={(event) => {
-                      setCouponInput(event.target.value.toUpperCase());
-                      // Any edit invalidates a previous answer. Leaving a stale
-                      // quote on screen while the field says something else is
-                      // how a customer ends up expecting one price and being
-                      // quoted another.
-                      setCouponError(null);
-                      setCouponQuote(null);
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" && selectedProduct) {
-                        event.preventDefault();
-                        void checkCoupon(selectedProduct, couponInput);
-                      }
-                    }}
-                    placeholder="WELCOME15"
-                    autoComplete="off"
-                    spellCheck={false}
-                    disabled={Boolean(couponQuote)}
-                    className="w-full rounded-2xl border border-[#E7EDF7] px-4 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-secondary-db-100 outline-none focus:border-[#356DFF] disabled:bg-[#F4F7FC] disabled:text-[#687184] sm:w-[200px]"
-                  />
-                  {/*
-                    An explicit Apply, not an on-blur check. Applying a discount
-                    is a deliberate act with a visible result, and a customer
-                    should be able to see the code took effect BEFORE they reach
-                    the payment sheet. Once applied the field locks, so the code
-                    on screen is always the code that was priced.
-                  */}
-                  {couponQuote ? (
+            {selectedCredits !== null ? (
+              <span className="inline-flex h-[26px] shrink-0 items-center gap-[6px] rounded-full bg-[#EFEBFE] px-[10px] text-[12px] font-medium text-[#6D3BEB]">
+                <CreditsIcon />
+                {selectedCredits.toLocaleString()} credits
+              </span>
+            ) : null}
+          </div>
+
+          <div className="mt-[17px] h-px w-full bg-[#EAEAEF]" />
+
+          <div className="mt-[11px] flex items-center justify-between gap-3 text-[15px]">
+            <span className="text-[#4A4A55]">Credits Remaining</span>
+            <span className="font-medium text-[#17171C]">
+              {wallet === null ? "--" : `${wallet.toLocaleString()} credits`}
+            </span>
+          </div>
+
+          <div className="mt-[14px] rounded-[12px] bg-[#F6F7FB] px-5 pb-[15px] pt-[16px]">
+            <div className="text-[15px] font-semibold text-[#17171C]">
+              {isSubscription ? "Plan Benefits" : "What you get"}
+            </div>
+            <ul className="mt-[16px] space-y-[10px]">
+              {benefits.map((benefit) => (
+                <li key={benefit} className="flex items-start gap-[10px] text-[15px] leading-[18px] text-[#3E3E49]">
+                  <BenefitCheck />
+                  <span>{benefit}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {planOptions.length > 1 ? (
+            <>
+              <h2 className="mt-[13px] text-[16px] font-semibold leading-[20px] text-[#17171C]">
+                {isSubscription ? "Want to Upgrade Plan?" : "Choose an amount"}
+              </h2>
+              <p className="mt-[6px] text-[14px] text-[#8B8B94]">
+                {isSubscription
+                  ? "Upgrade to Yearly Plan and Save higher"
+                  : "Pick the top-up that suits you"}
+              </p>
+
+              <div
+                role="radiogroup"
+                aria-label="Available plans"
+                className="mt-[20px] space-y-[11px]"
+              >
+                {planOptions.map((option) => {
+                  const isSelected = option.product.code === selectedCode;
+                  return (
                     <button
+                      key={option.product.code}
                       type="button"
+                      role="radio"
+                      aria-checked={isSelected}
                       onClick={() => {
-                        setCouponInput("");
+                        setSelectedCode(option.product.code);
+                        // A code is priced against ONE product. Carrying the
+                        // quote across a plan change would show a discount that
+                        // the server's guard then rejects at checkout.
                         setCouponQuote(null);
                         setCouponError(null);
                       }}
-                      className="rounded-2xl border border-[#E7EDF7] px-4 py-3 text-sm font-semibold text-[#687184] transition-colors hover:border-[#C0392B] hover:text-[#C0392B]"
+                      disabled={busyCode !== null}
+                      className={`flex h-[46px] w-full items-center gap-[12px] rounded-[12px] px-[14px] text-left transition-colors duration-200 disabled:cursor-not-allowed ${
+                        isSelected
+                          ? "border-2 border-[#7C3AED] bg-[#F3F0FE]"
+                          : "border-2 border-transparent bg-[#F2F2F5] hover:bg-[#ECECF1]"
+                      }`}
                     >
-                      Remove
+                      <PlanRadio selected={isSelected} />
+                      <span className="min-w-0 flex-1 truncate text-[15px] font-medium text-[#17171C]">
+                        {option.label}
+                      </span>
+                      {option.savingPercent ? (
+                        <span className="shrink-0 rounded-[5px] bg-[#2E9E52] px-[7px] py-[3px] text-[11px] font-semibold text-white">
+                          {option.savingPercent}% OFF
+                        </span>
+                      ) : null}
+                      <span className="shrink-0 text-[15px] text-[#6E6E78]">
+                        <span className="text-[16px] font-semibold text-[#17171C]">{option.price}</span>
+                        {option.suffix}
+                      </span>
                     </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        if (selectedProduct) void checkCoupon(selectedProduct, couponInput);
-                      }}
-                      disabled={!couponInput.trim() || couponChecking || !selectedProduct}
-                      className="rounded-2xl bg-secondary-db-100 px-4 py-3 text-sm font-semibold text-white transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
-                    >
-                      {couponChecking ? "Checking..." : "Apply"}
-                    </button>
-                  )}
-                </div>
-                {couponError ? (
-                  <div className="mt-2 text-sm text-[#C0392B]">{couponError}</div>
-                ) : null}
-                {/*
-                  Both numbers, stated before checkout. Razorpay's own sheet
-                  repeats them, so the customer sees the arrangement twice and
-                  cannot mistake the discounted first cycle for the recurring
-                  price.
-                */}
-                {couponChecking ? (
-                  <div className="mt-2 text-sm text-[#687184]">Checking...</div>
-                ) : couponQuote ? (
-                  /*
-                    Both numbers, from the server, stated before checkout.
-                    Razorpay's own sheet repeats them, so the customer sees the
-                    arrangement twice and cannot mistake the discounted first
-                    cycle for the recurring price.
-                  */
-                  <div className="mt-2 text-sm font-medium text-[#1E7B4D]">
-                    {`${couponQuote.code} applied — ${couponQuote.percent}% off: ${formatCurrency(
-                      couponQuote.upfrontSubunits,
-                      couponQuote.currency,
-                    )} for your first ${
-                      selectedProduct.billingCycle === "monthly" ? "month" : "year"
-                    }, then ${formatCurrency(couponQuote.recurringSubunits, couponQuote.currency)}.`}
-                  </div>
-                ) : null}
+                  );
+                })}
               </div>
-            ) : null}
-            {selectedProduct ? (
-              <button
-                type="button"
-                onClick={async () => {
-                  if (selectedProduct.kind !== "subscription") {
-                    void handleOrderCheckout(selectedProduct);
-                    return;
-                  }
-                  const code = couponInput.trim().toUpperCase();
-                  if (!code) {
-                    void handleSubscriptionCheckout(selectedProduct, undefined, null);
-                    return;
-                  }
-                  // Re-checked at click time, not trusted from earlier state: a
-                  // balance can move, and a stale quote is exactly what the
-                  // server's guard rejects.
-                  const quote = couponQuote?.code === code ? couponQuote : await checkCoupon(selectedProduct, code);
-                  if (!quote) return;
-                  void handleSubscriptionCheckout(selectedProduct, code, quote);
-                }}
-                disabled={busyCode === selectedProduct.code || paidOrderId !== null}
-                className="rounded-2xl bg-[#356DFF] px-6 py-3 text-sm font-semibold text-white shadow-[0_10px_20px_rgba(53,109,255,0.22)] transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
-              >
-                {busyCode === selectedProduct.code
-                  ? "Processing..."
-                  : selectedProduct.kind === "subscription"
-                    ? "Continue to Razorpay"
-                    : "Continue to Razorpay"}
-              </button>
-            ) : null}
-          </div>
+            </>
+          ) : null}
 
           {quoteDrift && selectedProduct ? (
             <div
               role="alert"
-              className="mt-4 rounded-2xl border border-[#F5D9A8] bg-[#FFF8EC] px-4 py-3 text-xs text-[#7A5B1E]"
+              className="mt-[16px] rounded-[12px] border border-[#F5D9A8] bg-[#FFF8EC] px-4 py-3 text-[13px] text-[#7A5B1E]"
             >
               <p className="font-semibold text-[#8A5A00]">The price for this plan has changed.</p>
               <p className="mt-1">
@@ -1022,63 +1126,123 @@ export default function BillingClient({
             </div>
           ) : null}
 
-          <div className="mt-4 rounded-2xl border border-[#EEF2FA] bg-[#F8FAFF] px-4 py-3 text-xs text-[#687184]">
-            {status}
-          </div>
+          <button
+            type="button"
+            onClick={handleContinue}
+            disabled={!selectedProduct || busyCode !== null || paidOrderId !== null}
+            className="mt-[25px] flex h-[40px] w-full items-center justify-center gap-2 rounded-[12px] bg-gradient-to-b from-[#2C2450] to-[#191233] text-[15px] font-medium text-white transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
+          >
+            {busyCode ? (
+              "Processing..."
+            ) : (
+              <>
+                Continue to
+                <RazorpayWordmark />
+              </>
+            )}
+          </button>
 
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setShowCatalog((value) => !value)}
-              className="rounded-full border border-[#DCE5FF] bg-[#EDF2FF] px-4 py-2 text-xs font-semibold text-[#2E56CC] transition-colors duration-200 hover:bg-[#E3ECFF]"
-            >
-              {showCatalog ? "Hide other plans" : "Change plan"}
-            </button>
-            {autostart && !quoteDrift ? (
-              <span className="text-xs text-[#7A8499]">Checkout opens automatically when ready.</span>
-            ) : null}
-          </div>
-
-          {showCatalog ? (
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              {snapshot?.billing.catalog.map((product) => {
-                const totalCredits = product.creditsGranted + product.bonusCredits;
-                const isSelected = selectedCode === product.code;
-
-                return (
-                  <button
-                    key={product.code}
-                    type="button"
-                    onClick={() => setSelectedCode(product.code)}
-                    className={`rounded-2xl border px-4 py-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm ${
-                      isSelected ? "border-[#356DFF] bg-[#EEF3FF]" : "border-[#E7EDF7] bg-[#F8FAFF]"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <div className="text-sm font-semibold">{product.name}</div>
-                        <div className="mt-1 text-xs text-[#687184]">{totalCredits.toLocaleString()} credits</div>
-                      </div>
-                      <div className="shrink-0 text-sm font-semibold">
-                        {formatCurrency(product.amountPaise, product.currency)}
-                      </div>
+          {/*
+            The design's "Special offer!" banner is where a discount code lives.
+            Once a code is priced it becomes the confirmation of what will be
+            charged - both the first cycle and the recurring amount - so the
+            arrangement is stated here as well as on Razorpay's own sheet.
+          */}
+          {isSubscription ? (
+            couponQuote ? (
+              <div className="mt-[21px] rounded-[12px] bg-[#E8F6EE] px-4 py-[14px]">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-[15px] font-semibold text-[#12673B]">
+                      {couponQuote.code} applied - {couponQuote.percent}% off
                     </div>
+                    <p className="mt-[4px] text-[13px] leading-[1.5] text-[#276B4A]">
+                      {formatCurrency(couponQuote.upfrontSubunits, couponQuote.currency)} for your
+                      first {selectedProduct?.billingCycle === "yearly" ? "year" : "month"}, then{" "}
+                      {formatCurrency(couponQuote.recurringSubunits, couponQuote.currency)}.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCouponInput("");
+                      setCouponQuote(null);
+                      setCouponError(null);
+                    }}
+                    className="shrink-0 text-[13px] font-semibold text-[#276B4A] underline underline-offset-2"
+                  >
+                    Remove
                   </button>
-                );
-              })}
-            </div>
+                </div>
+              </div>
+            ) : (
+              <div className="relative mt-[21px] overflow-hidden rounded-[12px] bg-[#F7E7A4] px-4 py-[14px]">
+                <SpecialOfferGlyph />
+                <div className="relative">
+                  <div className="text-[15px] font-bold text-[#3D3312]">Special offer!</div>
+                  <p className="mt-[4px] max-w-[250px] text-[13px] leading-[1.5] text-[#5A4B1A]">
+                    Spend 30 credits and a discount code unlocks automatically.
+                  </p>
+                  <div className="mt-[12px] flex max-w-[250px] gap-2">
+                    <label htmlFor="coupon-code" className="sr-only">
+                      Discount code
+                    </label>
+                    <input
+                      id="coupon-code"
+                      value={couponInput}
+                      onChange={(event) => {
+                        setCouponInput(event.target.value.toUpperCase());
+                        // Any edit invalidates the previous answer. Leaving a
+                        // stale quote on screen while the field says something
+                        // else is how a customer expects one price and is
+                        // quoted another.
+                        setCouponError(null);
+                        setCouponQuote(null);
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" && selectedProduct) {
+                          event.preventDefault();
+                          void checkCoupon(selectedProduct, couponInput);
+                        }
+                      }}
+                      placeholder="Enter code"
+                      autoComplete="off"
+                      spellCheck={false}
+                      className="h-[36px] min-w-0 flex-1 rounded-[9px] border border-[#E2CE7E] bg-white px-3 text-[13px] font-semibold uppercase tracking-[0.06em] text-[#3D3312] outline-none placeholder:font-normal placeholder:normal-case placeholder:tracking-normal placeholder:text-[#A79552] focus:border-[#B99B2A]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (selectedProduct) void checkCoupon(selectedProduct, couponInput);
+                      }}
+                      disabled={!couponInput.trim() || couponChecking || !selectedProduct}
+                      className="h-[36px] shrink-0 rounded-[9px] bg-[#3D3312] px-4 text-[13px] font-semibold text-white transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+                    >
+                      {couponChecking ? "Checking..." : "Apply"}
+                    </button>
+                  </div>
+                  {couponError ? (
+                    <p className="mt-[8px] text-[13px] font-medium text-[#9A3412]">{couponError}</p>
+                  ) : null}
+                </div>
+              </div>
+            )
           ) : null}
+
+          <p className="mt-[14px] text-center text-[12px] leading-[1.5] text-[#8B8B94]" role="status">
+            {status}
+          </p>
         </section>
 
         {shouldShowSubscriptionPanel ? (
-          <section className="mt-4 rounded-2xl border border-[#E7EDF7] bg-white p-4">
+          <section className="mt-4 rounded-[16px] border border-[#E6E6EC] bg-white px-5 py-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <div className="text-sm font-semibold">Subscription</div>
-                <div className="mt-1 text-xs text-[#687184]">
+                <div className="text-[14px] font-semibold text-[#17171C]">Subscription</div>
+                <div className="mt-[2px] text-[12px] text-[#8B8B94]">
                   {snapshot?.billing.subscription.status || "NA"}
                   {snapshot?.billing.subscription.renewsAt
-                    ? ` · renews ${formatDate(snapshot.billing.subscription.renewsAt)}`
+                    ? ` - renews ${formatDate(snapshot.billing.subscription.renewsAt)}`
                     : ""}
                 </div>
               </div>
@@ -1087,7 +1251,7 @@ export default function BillingClient({
                   type="button"
                   onClick={handleCancelSubscription}
                   disabled={busyCode === "cancel" || currentSubscription.cancelAtCycleEnd}
-                  className="rounded-xl border border-[#DCE5FF] bg-[#EDF2FF] px-4 py-2 text-xs font-semibold text-[#2E56CC] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="rounded-[10px] border border-[#E6E6EC] bg-[#F6F7FB] px-4 py-2 text-[12px] font-semibold text-[#4A4A55] disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   {currentSubscription.cancelAtCycleEnd ? "Cancellation scheduled" : "Cancel subscription"}
                 </button>
@@ -1097,5 +1261,89 @@ export default function BillingClient({
         ) : null}
       </div>
     </main>
+  );
+}
+
+function CreditsIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <circle cx="7" cy="7" r="5.6" stroke="#6D3BEB" strokeWidth="1.3" />
+      <circle cx="7" cy="7" r="2.1" fill="#6D3BEB" />
+    </svg>
+  );
+}
+
+function BenefitCheck() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true" className="mt-[1px] shrink-0">
+      <rect width="18" height="18" rx="9" fill="#EFEBFE" />
+      <path
+        d="M5.2 9.2L7.7 11.6L12.8 6.4"
+        stroke="#6D3BEB"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function PlanRadio({ selected }: { selected: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`block h-[16px] w-[16px] shrink-0 rounded-full ${
+        selected ? "border-[4.5px] border-[#7C3AED] bg-white" : "border border-[#D6D6DD] bg-white"
+      }`}
+    />
+  );
+}
+
+/**
+ * The processor's mark on the button that hands the customer over to it.
+ *
+ * Drawn inline rather than fetched so the button cannot render wordless if an
+ * asset request fails - it names where the money is going, and a blank there is
+ * worse than an approximate glyph. Replace with Razorpay's own brand asset when
+ * one is added to `public/`.
+ */
+function RazorpayWordmark() {
+  return (
+    <span className="inline-flex items-center gap-[6px]">
+      {/*
+        Reversed (all-white) treatment of the processor's mark, which is how it
+        is meant to sit on a dark button. Inlined so the button cannot render
+        wordless if an asset request fails - it names where the money is going.
+      */}
+      <svg width="14" height="15" viewBox="0 0 30 32" fill="none" aria-hidden="true">
+        <path d="M22.4 0L18.4 15l9.1 5.4L22.4 0z" fill="#FFFFFF" fillOpacity="0.72" />
+        <path d="M14.3 8.4L2.2 32h11.6l4.3-16.2-3.8-7.4z" fill="#FFFFFF" />
+      </svg>
+      <span className="text-[15px] font-bold italic tracking-[-0.01em]">Razorpay</span>
+    </span>
+  );
+}
+
+/** The soft sparkle graphic in the corner of the offer banner. */
+function SpecialOfferGlyph() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 120 90"
+      className="pointer-events-none absolute -bottom-2 right-0 h-[86px] w-[120px]"
+    >
+      <ellipse cx="72" cy="74" rx="46" ry="26" fill="#F0DA8A" />
+      <path d="M104 18l6 22-24-6 18-16z" fill="#EFD87F" />
+      <path
+        d="M84 30l2.6 6.4L93 39l-6.4 2.6L84 48l-2.6-6.4L75 39l6.4-2.6L84 30z"
+        fill="#FFFFFF"
+        fillOpacity="0.9"
+      />
+      <path
+        d="M102 52l1.7 4.3 4.3 1.7-4.3 1.7-1.7 4.3-1.7-4.3-4.3-1.7 4.3-1.7 1.7-4.3z"
+        fill="#FFFFFF"
+        fillOpacity="0.8"
+      />
+    </svg>
   );
 }

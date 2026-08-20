@@ -2,6 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import {
+  validateBillingDetails,
+  postalRuleFor,
+  type BillingDetailsField,
+} from "@/lib/billing/billing-details";
 
 export type BillingDetails = {
   firstName: string;
@@ -32,6 +37,9 @@ export default function BillingDetailsModal({ isOpen, onClose, onSubmit, initial
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Per-field, so the customer is told WHICH entry is wrong rather than being
+  // handed one message for a seven-field form.
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<BillingDetailsField, string>>>({});
 
   useEffect(() => {
     if (!initialData) return;
@@ -42,6 +50,21 @@ export default function BillingDetailsModal({ isOpen, onClose, onSubmit, initial
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // The same validator the API runs, so the form and the server can never
+    // disagree about what is acceptable. The browser `pattern` attributes only
+    // ever constrained the character class - "hskdh" is made of letters, so it
+    // passed as a city, and "jshdh" passed as an Indian PIN code.
+    const problems = validateBillingDetails(formData);
+    if (problems.length) {
+      const next: Partial<Record<BillingDetailsField, string>> = {};
+      for (const problem of problems) next[problem.field] = problem.message;
+      setFieldErrors(next);
+      setError(null);
+      return;
+    }
+
+    setFieldErrors({});
     setIsLoading(true);
     setError(null);
     try {
@@ -152,12 +175,16 @@ export default function BillingDetailsModal({ isOpen, onClose, onSubmit, initial
                 type="text"
                 placeholder="Enter city"
                 value={formData.city}
-                pattern="^[A-Za-z\s\-']+$"
-                title="Only letters, spaces, hyphens, and apostrophes are allowed"
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                onChange={(e) => {
+                  setFormData({ ...formData, city: e.target.value });
+                  setFieldErrors((prev) => ({ ...prev, city: undefined }));
+                }}
                 className="mt-0.5 block w-full border-none bg-transparent p-0 text-xs font-regular text-secondary-db-50 placeholder-secondary-db-40 outline-none focus:ring-0"
               />
             </div>
+            {fieldErrors.city ? (
+              <p className="mt-1 text-xs text-red-600">{fieldErrors.city}</p>
+            ) : null}
           
 
           <div className="relative rounded-lg border-2 border-transparent focus-within:border-primary-way-100 bg-primary-way-5 px-3.5 py-2 transition-all">
@@ -165,14 +192,22 @@ export default function BillingDetailsModal({ isOpen, onClose, onSubmit, initial
             <input
               required
               type="text"
-              placeholder="Enter zip code"
+              placeholder={
+                postalRuleFor(formData.country)
+                  ? `Enter ${postalRuleFor(formData.country)!.hint}`
+                  : "Enter zip code"
+              }
               value={formData.zipCode}
-              pattern="^[A-Za-z0-9\s\-]+$"
-              title="Only letters, numbers, spaces, and hyphens are allowed"
-              onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, zipCode: e.target.value });
+                setFieldErrors((prev) => ({ ...prev, zipCode: undefined }));
+              }}
               className="mt-0.5 block w-full border-none bg-transparent p-0 text-xs font-regular text-secondary-db-50 placeholder-secondary-db-40 outline-none focus:ring-0"
             />
           </div>
+          {fieldErrors.zipCode ? (
+            <p className="mt-1 text-xs text-red-600">{fieldErrors.zipCode}</p>
+          ) : null}
 
           {error ? (
             <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">

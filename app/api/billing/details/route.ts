@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/lib/billing/auth";
 import UserBilling from "@/models/userBilling";
 import dbConnect from "@/lib/db";
 import { ensureUserBilling } from "@/lib/billing/db";
+import { validateBillingDetails } from "@/lib/billing/billing-details";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,8 +14,28 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { firstName, lastName, email, address, country, city, zipCode } = body;
 
-    if (!firstName || !lastName || !email || !address || !country || !city || !zipCode) {
-      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+    // Validated HERE, not only in the form. The client's `pattern` attributes
+    // are a hint to a cooperating browser; this endpoint is reachable directly,
+    // and it previously stored anything non-empty. These values end up on
+    // invoices and in tax records.
+    const validationErrors = validateBillingDetails({
+      firstName,
+      lastName,
+      email,
+      address,
+      country,
+      city,
+      zipCode,
+    });
+    if (validationErrors.length) {
+      return NextResponse.json(
+        {
+          error: validationErrors[0].message,
+          code: "billing_details_invalid",
+          fields: validationErrors,
+        },
+        { status: 400 },
+      );
     }
 
     await ensureUserBilling(auth.user);
@@ -23,13 +44,13 @@ export async function POST(request: NextRequest) {
       {
         $set: {
           billingDetails: {
-            firstName,
-            lastName,
-            email,
-            address,
-            country,
-            city,
-            zipCode,
+            firstName: String(firstName).trim(),
+            lastName: String(lastName).trim(),
+            email: String(email).trim(),
+            address: String(address).trim(),
+            country: String(country).trim(),
+            city: String(city).trim(),
+            zipCode: String(zipCode).trim().toUpperCase(),
           },
         },
       },
