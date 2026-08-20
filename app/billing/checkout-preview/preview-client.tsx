@@ -121,9 +121,30 @@ function installStub() {
         productCode?: string;
         couponCode?: string;
       };
-      const percent = COUPONS[String(body.couponCode || "").toUpperCase()];
       const product = SNAPSHOT.billing.catalog.find((item) => item.code === body.productCode);
-      if (!percent || !product) return json({ valid: false, reason: "coupon_not_applicable" });
+
+      // No code: the "what could this customer use" answer the banner renders.
+      // Monthly only, mirroring the codes' appliesToProductCodes in the seed.
+      if (!body.couponCode) {
+        if (!product || product.billingCycle !== "monthly") return json({ offer: null });
+        const percent = 30;
+        const discount = Math.round((product.amountPaise * percent) / 100);
+        return json({
+          offer: {
+            code: "UNLOCK30",
+            percent,
+            discountSubunits: discount,
+            upfrontSubunits: product.amountPaise - discount,
+            recurringSubunits: product.amountPaise,
+            currency: product.currency,
+          },
+        });
+      }
+
+      const percent = COUPONS[String(body.couponCode || "").toUpperCase()];
+      if (!percent || !product || product.billingCycle !== "monthly") {
+        return json({ valid: false, reason: "coupon_not_applicable" });
+      }
       const discountSubunits = Math.round((product.amountPaise * percent) / 100);
       return json({
         valid: true,

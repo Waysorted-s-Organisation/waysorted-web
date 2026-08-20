@@ -42,6 +42,51 @@ export function creditThresholdFor(code: string): number {
  * reservation must happen inside the same flow that calls the provider and
  * must be releasable if that call fails.
  */
+/**
+ * The best discount this customer could actually use right now.
+ *
+ * Read from the database rather than from a list in the client, because only
+ * the server knows which codes are switched on, which ones this customer has
+ * already spent, and whether their balance clears each code's ceiling. The
+ * checkout banner used to advertise a fixed string - "Spend 30 credits and a
+ * discount code unlocks automatically" - which matched neither the real
+ * thresholds nor whether any code was live at all.
+ *
+ * Every candidate goes through the same resolveCoupon the checkout uses, so the
+ * offer shown is one that will actually be honoured. Returns null when there is
+ * nothing to offer, and the banner then says nothing rather than promising a
+ * discount that would be refused.
+ */
+export async function resolveBestOfferForUser(options: {
+  userId: string;
+  productCode: string;
+  amountPaise: number;
+  currency: string;
+  creditsRemaining?: number | null;
+  heldCredits?: number | null;
+  now?: Date;
+}): Promise<DiscountQuote | null> {
+  const now = options.now || new Date();
+  const candidates = await Coupon.find({
+    active: true,
+    $and: [
+      { $or: [{ startsAt: null }, { startsAt: { $lte: now } }] },
+      { $or: [{ endsAt: null }, { endsAt: { $gt: now } }] },
+    ],
+  })
+    .select("code percent")
+    // Best first, so the customer is offered the largest discount they qualify
+    // for rather than whichever happened to be created first.
+    .sort({ percent: -1 })
+    .lean<{ code: string; percent: number }[]>();
+
+  for (const candidate of candidates) {
+    const resolution = await resolveCoupon({ ...options, code: candidate.code, now });
+    if (resolution.ok) return resolution.quote;
+  }
+  return null;
+}
+
 export async function resolveCoupon(options: {
   code: string;
   userId: string;

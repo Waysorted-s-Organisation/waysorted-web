@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/auth";
 import { buildBillingSnapshot } from "@/lib/billing/db";
 import { getCatalogProduct } from "@/lib/billing/catalog";
-import { resolveCoupon } from "@/lib/billing/coupon";
+import { resolveCoupon, resolveBestOfferForUser } from "@/lib/billing/coupon";
 import { billingErrorResponse } from "@/lib/billing/http-errors";
 
 export const dynamic = "force-dynamic";
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
 
     const code = (body.couponCode || "").trim().toUpperCase();
     const product = getCatalogProduct((body.productCode || "").trim());
-    if (!code || !product || product.kind !== "subscription") {
+    if (!product || product.kind !== "subscription") {
       return NextResponse.json({ error: "Invalid coupon request." }, { status: 400 });
     }
 
@@ -55,6 +55,31 @@ export async function POST(request: NextRequest) {
     const pricedProduct = snapshot.catalog.find((item) => item.code === product.code);
     if (!pricedProduct) {
       return NextResponse.json({ error: "Product is not available." }, { status: 403 });
+    }
+
+    // No code supplied: answer "what could this customer use", so the checkout
+    // banner can advertise a real offer instead of fixed copy. Same resolution
+    // path as a named code, so anything offered here will be honoured.
+    if (!code) {
+      const best = await resolveBestOfferForUser({
+        userId: String(auth.user._id),
+        productCode: product.code,
+        amountPaise: pricedProduct.amountPaise,
+        currency: pricedProduct.currency,
+        creditsRemaining: snapshot.wallet?.availableCredits ?? null,
+        heldCredits: snapshot.wallet?.heldCredits ?? null,
+      });
+      if (!best) return NextResponse.json({ offer: null });
+      return NextResponse.json({
+        offer: {
+          code: best.code,
+          percent: best.percent,
+          discountSubunits: best.discountPaise,
+          upfrontSubunits: best.upfrontAmountPaise,
+          recurringSubunits: best.originalAmountPaise,
+          currency: pricedProduct.currency,
+        },
+      });
     }
 
     const resolution = await resolveCoupon({

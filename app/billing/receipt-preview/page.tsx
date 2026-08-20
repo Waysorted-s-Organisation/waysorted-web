@@ -24,15 +24,15 @@ export default async function ReceiptPreviewPage({
     return (
       <OrderComplete
         orderNumber="17362673"
-        itemName="Waysorted Pro"
-        amount="$6.00"
-        total="$4.80"
+        itemName="Waysorted Core"
+        amount="₹349.00"
+        total="₹279.20"
         discountLabel="BOOST20 (20% off)"
-        discountAmount="-$1.20"
-        footnote="First month at the discounted rate, then $6.00 per month."
+        discountAmount="-₹69.80"
+        footnote="First month at the discounted rate, then ₹349.00 per month."
       />
     );
   }
 
-  return <OrderComplete orderNumber="17362673" itemName="Waysorted Pro" amount="$6.00" />;
+  return <OrderComplete orderNumber="17362673" itemName="Waysorted Core" amount="₹349.00" />;
 }
