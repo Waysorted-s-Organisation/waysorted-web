@@ -30,7 +30,12 @@ const COUPONS = [
     code: "WELCOME15",
     percent: 15,
     description: "Shown at a healthy balance — upgrade prompt",
-    maxRedemptions: null,
+    // Capped, unlike the others. It is the only code with no balance
+    // requirement, so it is the only one an arbitrary account can take, and it
+    // is the placeholder printed on the billing page. Uncapped, the seed run
+    // itself would be the decision to give an unbounded number of people 15%
+    // off. Raise it deliberately once the first real sale has been verified.
+    maxRedemptions: 100,
   },
   {
     code: "BOOST20",

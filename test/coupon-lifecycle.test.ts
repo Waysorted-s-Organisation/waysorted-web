@@ -29,6 +29,8 @@ const client = read("app/billing/billing-client.tsx");
 const cancelRoute = read("app/api/billing/subscriptions/cancel/route.ts");
 const userBilling = read("models/userBilling.ts");
 const catalogLib = read("lib/billing/catalog.ts");
+const cycleReconciler = read("lib/billing/subscription-cycle-reconciliation.ts");
+const alerts = read("lib/billing/payment-alerts.ts");
 
 test("each code is bound to the credit state that produced it", () => {
   // The modals promise "exclusively for you" at a credit threshold. Nothing
@@ -247,4 +249,80 @@ test("a paid mandate is never reclaimed blind", () => {
   const releaseAt = createRoute.indexOf("superseded_pending_subscription");
   assert.ok(reclaimAt > 0 && reclaimAt < releaseAt, "verify with the provider before releasing");
   assert.match(createRoute, /staleIsLivePaidMandate = true/, "an unreachable provider must not authorise destruction");
+});
+
+test("a successful signup does not release the claim", () => {
+  // subscription.authenticated IS the success event for a coupon subscription -
+  // it is future-dated, so it rests in authenticated for its whole first cycle.
+  // The release lives in a case block shared with authenticated, activated and
+  // pending, so it must be gated on the event, not on reaching the block.
+  // Ungated, a paid customer's claim went back to the pool: the per-user cap
+  // became void and the discount became repeatable indefinitely.
+  assert.match(
+    webhooks,
+    /eventType === "subscription\.halted" \|\| eventType === "subscription\.cancelled"/,
+    "release must fire only for the two endings, never for authenticated",
+  );
+  const block = webhooks.slice(
+    webhooks.indexOf('case "subscription.authenticated":'),
+    webhooks.indexOf('case "subscription.charged"'),
+  );
+  const gateAt = block.indexOf('eventType === "subscription.halted"');
+  const releaseAt = block.indexOf("releaseCoupon(");
+  assert.ok(gateAt > 0 && gateAt < releaseAt, "the gate must precede the release");
+});
+
+test("the backstop can see a discounted subscription at all", () => {
+  // A coupon subscription is created payment_pending and promoted to scheduled,
+  // and rests there for its ENTIRE first cycle. Scanning only
+  // active/cancel_scheduled meant the one path that recovers a payment the
+  // webhook never delivered could not see it: money taken, no credits, no
+  // settlement, no alert.
+  assert.match(
+    cycleReconciler,
+    /\["active", "cancel_scheduled", "scheduled", "payment_pending"\]/,
+    "the cycle backstop must scan the statuses a discounted subscription rests in",
+  );
+});
+
+test("a correctly fulfilled subscription sale does not look unfulfilled", () => {
+  // findPaidButUnfulfilledPurchases defines "customer paid and got nothing" as
+  // {captured, grantApplied:false}, and the daily cron 500s when that list is
+  // non-empty. Subscription credits come from the cycle path, which never
+  // touches the purchase row - so without this every correct sale turned the
+  // billing cron permanently red.
+  assert.match(alerts, /grantApplied: false/, "the alert's definition is unchanged");
+  assert.match(
+    verifyRoute,
+    /\{ _id: purchase\._id, grantApplied: false \},\s*\n\s*\{ \$set: \{ grantApplied: true \} \}/,
+    "verify must record that the grant was delivered",
+  );
+});
+
+test("a payment the webhook never delivered is settled, without granting again", () => {
+  // Nothing settled a subscription purchase when its webhook failed:
+  // purchase-reconciliation excludes kind "subscription" and the subscription
+  // reconciler only marks them failed. The first paying customer's row sat
+  // pending for eight days with a real payment against it.
+  assert.match(cycleReconciler, /settlePaidSubscriptionPurchases/);
+  const helper = cycleReconciler.slice(
+    cycleReconciler.indexOf("async function settlePaidSubscriptionPurchases"),
+    cycleReconciler.indexOf("export async function reconcileSubscriptionCycles"),
+  );
+  assert.match(helper, /grantApplied: true/, "settling must close the door on a second grant");
+  assert.match(
+    helper,
+    /status: \{ \$in: \["pending", "created"\] \}/,
+    "a webhook arriving mid-run must win, and a refunded row must never be resurrected",
+  );
+});
+
+test("the only code an arbitrary account can take is capped", () => {
+  // WELCOME15 has no balance requirement and is the placeholder on the billing
+  // page. Uncapped, the seed run itself would be the decision to give an
+  // unbounded number of people 15% off.
+  const seed = read("scripts/seed-coupons.ts");
+  const welcome = seed.slice(seed.indexOf('code: "WELCOME15"'), seed.indexOf('code: "BOOST20"'));
+  assert.doesNotMatch(welcome, /maxRedemptions: null/, "WELCOME15 must not seed uncapped");
+  assert.match(welcome, /maxRedemptions: \d+/);
 });

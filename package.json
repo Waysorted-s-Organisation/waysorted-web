@@ -9,6 +9,7 @@
     "lint": "next lint",
     "test": "tsx --conditions=react-server --test test/*.test.ts",
     "test:auth-refresh": "tsx --conditions=react-server --test test/auth-refresh-classification.test.ts test/auth-refresh-route.test.ts",
+    "repair:subscription-purchases": "tsx --conditions=react-server scripts/repair-unsettled-subscription-purchases.ts",
     "seed:coupons": "tsx --conditions=react-server scripts/seed-coupons.ts",
     "test:coupons": "tsx --conditions=react-server --test test/coupon-discount.test.ts test/coupon-models.test.ts test/coupon-lifecycle.test.ts test/coupon-redemption-integrity.test.ts",
     "migrate:session-expiry": "tsx --conditions=react-server scripts/backfill-session-expiry.ts",

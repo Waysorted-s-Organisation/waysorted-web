@@ -148,6 +148,25 @@ export async function POST(request: NextRequest) {
           paymentId,
         });
         creditsApplied = true;
+
+        // Record on the purchase that the grant was delivered.
+        //
+        // For a subscription the CYCLE path owns credits, and it never touches
+        // this row - so grantApplied stayed false on every correctly-fulfilled
+        // sale. findPaidButUnfulfilledPurchases selects exactly
+        // {status:"captured", grantApplied:false} as its definition of
+        // "customer paid and got nothing", and the daily cron returns HTTP 500
+        // whenever that list is non-empty. So every correct subscription sale
+        // would have turned the billing cron permanently red and buried every
+        // other signal in it.
+        //
+        // Setting it also closes the double-grant door: applyPurchaseCredits
+        // gates on grantApplied:false (db.ts:657-673), so this row can never be
+        // credited a second time by another path.
+        await Purchase.updateOne(
+          { _id: purchase._id, grantApplied: false },
+          { $set: { grantApplied: true } },
+        );
       }
     } catch (creditError) {
       // Never fail verification over this - the payment is already captured and the webhook remains

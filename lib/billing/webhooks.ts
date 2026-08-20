@@ -226,19 +226,26 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         metadata: { source: "webhook" },
       });
 
-      // Halted and cancelled both end the checkout without any other flow
-      // concluding it: the reconciler scans only payment_pending, so a claim
-      // left reserved here would block the code for this customer forever.
-      await releaseCoupon({
-        subscriptionId: String(entity.id),
-        reason: `subscription_${eventType.split(".")[1]}`,
-      }).catch((error) => {
-        console.error("[billing] coupon release on subscription end failed", {
+      // ONLY the two endings. This block also handles authenticated, activated
+      // and pending, and `subscription.authenticated` is precisely the SUCCESS
+      // event for a coupon subscription - it is future-dated, so it rests in
+      // authenticated for its whole first cycle. Releasing there returned a paid
+      // customer's claim to the pool: the per-user cap became void, the global
+      // cap under-counted, and the discount became repeatable indefinitely.
+      // redeemCoupon only transitions a `reserved` row, so once released the
+      // later redemption is a permanent no-op and nothing corrects it.
+      if (eventType === "subscription.halted" || eventType === "subscription.cancelled") {
+        await releaseCoupon({
           subscriptionId: String(entity.id),
-          eventType,
-          error: error instanceof Error ? error.message : String(error),
+          reason: `subscription_${eventType.split(".")[1]}`,
+        }).catch((error) => {
+          console.error("[billing] coupon release on subscription end failed", {
+            subscriptionId: String(entity.id),
+            eventType,
+            error: error instanceof Error ? error.message : String(error),
+          });
         });
-      });
+      }
 
       const providerPeriodStart = toDate((entity as { current_start?: number }).current_start);
       const providerPeriodEnd = toDate((entity as { current_end?: number }).current_end);
