@@ -231,3 +231,25 @@ test("the plan chooser is a dropdown, so the offer stays on screen", () => {
   assert.match(billingClient, /role="listbox"/);
   assert.match(billingClient, /absolute left-0 right-0/, "the menu must overlay, not push");
 });
+
+test("neither purchase page asks for billing details", () => {
+  // Both /pricing and /billing used to open a seven-field form before checkout.
+  // Nothing functional consumes those details - Razorpay owns the invoice, and
+  // the only reader in the repo feeds `declaredBillingCountry` into an advisory
+  // risk flag that no path blocks, reprices or refuses on. It was a form
+  // standing between a customer and paying us, for information not needed to
+  // take the payment.
+  //
+  // They are still addable from /settings, which is the one place that should
+  // still mount the modal.
+  const pricing = read("app/pricing/pricing-client.tsx");
+  for (const [name, source] of [["pricing", pricing], ["billing", billingClient]] as const) {
+    assert.doesNotMatch(source, /BillingDetailsModal/, `${name} must not mount the form`);
+    assert.doesNotMatch(source, /requireBillingDetails/, `${name} must not gate on it`);
+  }
+  assert.match(
+    read("app/settings/components/tabs/SubscriptionTab.tsx"),
+    /BillingDetailsModal/,
+    "settings must remain the place to add them",
+  );
+});

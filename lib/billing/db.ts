@@ -68,6 +68,23 @@ export type BillingSnapshot = {
     customizablePresets: boolean;
     canPurchaseTopups: boolean;
     canPurchaseStarterPack: boolean;
+    /**
+     * Premium tool gates, decided HERE rather than in the plugin.
+     *
+     * The plugin already reads `capabilities.manualFrameSelection` and
+     * `capabilities.paletteAi` and falls back to its own hand-written status set
+     * when they are absent - which they always were, so the fallback was the
+     * only code that ever ran. Four copies of that set existed across the two
+     * repos and every one of them had drifted, most recently by omitting
+     * "scheduled" and locking out every discounted subscriber for their whole
+     * first cycle.
+     *
+     * Emitting them makes the server the single decider and turns the plugin's
+     * copies into dead code that cannot drift again.
+     */
+    manualFrameSelection: boolean;
+    paletteAi: boolean;
+    aiContrast: boolean;
   };
   pricingVersion: string;
   pricing: PricingContext;
@@ -642,6 +659,11 @@ export async function buildBillingSnapshot(user: IUser, request?: NextRequest | 
       customizablePresets: hasActiveSubscription,
       canPurchaseTopups: true,
       canPurchaseStarterPack: isNewUser,
+      // The plugin reads these and only falls back to its own status set when
+      // they are missing. They were always missing.
+      manualFrameSelection: hasActiveSubscription,
+      paletteAi: hasActiveSubscription,
+      aiContrast: hasActiveSubscription,
     },
     pricingVersion: billing.pricingVersion,
     pricing,

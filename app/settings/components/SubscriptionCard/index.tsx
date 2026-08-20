@@ -63,6 +63,11 @@ export default function SubscriptionCard({ user, onEditBilling }: Props) {
 
   const statusDisplayMap: Record<string, string> = {
     active: "Active",
+    // A paid mandate whose first full charge is booked ahead - where every
+    // discounted subscription rests for its ENTIRE first cycle. Missing from
+    // this map, it fell through to the default and told a customer who had just
+    // paid "No active subscription", directly beneath the plan they had bought.
+    scheduled: "Active",
     cancel_scheduled: "Cancel scheduled",
     payment_pending: "Payment pending",
     cancelled: "Cancelled",

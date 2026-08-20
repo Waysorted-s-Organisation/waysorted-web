@@ -89,3 +89,44 @@ test("an immediate cancellation is not recorded as cancelling at period end", ()
   assert.match(route, /cancelledImmediatelyAsFallback = true;/);
   assert.match(route, /providerAlreadyCancelled \|\| cancelledImmediatelyAsFallback \? false/);
 });
+
+test("the server decides the plugin's premium gates", () => {
+  // The plugin reads capabilities.manualFrameSelection / paletteAi and falls
+  // back to its own hand-written status set when they are absent - which they
+  // always were, so the fallback was the only code that ever ran. Four copies of
+  // that set existed across two repos and every one had drifted, most recently
+  // by omitting "scheduled" and locking out every discounted subscriber.
+  //
+  // Emitting them makes the server the single decider.
+  const db = read("lib/billing/db.ts");
+  for (const capability of ["manualFrameSelection", "paletteAi", "aiContrast"]) {
+    assert.match(
+      db,
+      new RegExp(`${capability}: hasActiveSubscription`),
+      `${capability} must be decided server-side`,
+    );
+  }
+
+  // And it must be derived from the entitlement definition that includes
+  // "scheduled", not from a fresh literal.
+  assert.match(db, /const hasActiveSubscription = isSubscriptionActive\(/);
+});
+
+test("payment.captured can be retried after a failed grant", () => {
+  // The row is marked captured before the grant runs. Without this the retry
+  // could no longer match its own purchase - the filter looked for
+  // created/pending only - so a customer whose grant threw once was left paid,
+  // uncredited and unreachable by this path forever.
+  const webhooks = read("lib/billing/webhooks.ts");
+  assert.match(webhooks, /\{ status: "captured", grantApplied: false \}/);
+});
+
+test("an order id is only enforced against a purchase matched by one", () => {
+  // Razorpay's subscription invoices carry an order_id on the payment, but a
+  // subscription purchase has razorpayOrderId null - so comparing them threw
+  // "Payment order does not match the purchase", the event was dropped as
+  // payment_validation_failed, and the customer never settled.
+  const webhooks = read("lib/billing/webhooks.ts");
+  assert.match(webhooks, /const matchedByOrderId = Boolean\(purchase\);/);
+  assert.match(webhooks, /expectedOrderId: matchedByOrderId \? orderId \|\| null : null/);
+});

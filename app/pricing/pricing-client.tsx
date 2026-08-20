@@ -10,7 +10,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GlowStarButton from "@/components/GlowStarButton";
 import PricingCard from "./components/PricingCard";
-import BillingDetailsModal, { type BillingDetails } from "@/components/BillingDetailsModal";
 import { useUser } from "@/hooks/useUser";
 import {
   getCreditPresentation,
@@ -122,40 +121,7 @@ export default function PricingClient({
   const [selectedTopupIndex, setSelectedTopupIndex] = useState(0);
   const [pricingData, setPricingData] = useState<PricingPayload | null>(initialPricingData);
   const [pricingError, setPricingError] = useState<string | null>(initialPricingError);
-  const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
-
-  const requireBillingDetails = (action: () => void) => {
-    if (!user) {
-      action();
-      return;
-    }
-    if (user.billing?.billingDetails) {
-      action();
-      return;
-    }
-    setPendingAction(() => action);
-    setIsBillingModalOpen(true);
-  };
-
-  const handleBillingSubmit = async (details: BillingDetails) => {
-    const res = await fetch("/api/billing/details", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(details),
-    });
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.error || "Failed to save billing details");
-    }
-
-    setIsBillingModalOpen(false);
-    if (pendingAction) {
-      pendingAction();
-      setPendingAction(null);
-    }
-  };
 
   useEffect(() => {
     // The server normally supplies the country-aware catalog in the initial HTML.
@@ -284,17 +250,20 @@ export default function PricingClient({
       return;
     }
 
-    requireBillingDetails(() => router.push(target));
+    // Straight to checkout.
+    //
+    // This used to open a seven-field billing form first. Nothing functional
+    // consumes those details: Razorpay owns the invoice, and the only reader in
+    // the repo feeds `declaredBillingCountry` into an advisory risk flag that no
+    // path blocks, reprices or refuses on. Settings calls them "details for
+    // future invoices" and treats them as optional - so this was a form standing
+    // between a customer and paying us, for information we do not need to take
+    // the payment. They remain addable from settings.
+    router.push(target);
   }
 
   return (
     <main className={`min-h-screen bg-[#F6F7FB] ${showBanner ? "pt-24" : "pt-16"}`}>
-      <BillingDetailsModal
-        isOpen={isBillingModalOpen}
-        onClose={() => setIsBillingModalOpen(false)}
-        onSubmit={handleBillingSubmit}
-        initialData={user?.billing?.billingDetails}
-      />
 
       <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 

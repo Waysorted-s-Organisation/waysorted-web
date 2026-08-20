@@ -1,4 +1,5 @@
 import Purchase, { type IPurchase } from "@/models/purchase";
+import { cancelRazorpaySubscription } from "@/lib/billing/razorpay";
 import RazorpayEventLog from "@/models/razorpayEventLog";
 import Refund from "@/models/refund";
 import Subscription from "@/models/subscription";
@@ -293,9 +294,22 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         (subscriptionId
           ? await Purchase.findOne({
               razorpaySubscriptionId: subscriptionId,
-              status: { $in: ["created", "pending"] },
+              // "captured" with grantApplied false is included so this branch is
+              // RE-ENTRANT. The row is marked captured before the grant runs, so
+              // if the grant threw - a transient database error, a provider
+              // timeout - Razorpay's retry could no longer match its own
+              // purchase and the customer was left paid, uncredited, and
+              // unreachable by this path forever.
+              $or: [
+                { status: { $in: ["created", "pending"] } },
+                { status: "captured", grantApplied: false },
+              ],
             })
           : null);
+
+      // Whether the row was found BY order id, which is the only case where an
+      // order id may be enforced against it.
+      const matchedByOrderId = Boolean(purchase);
 
       if (!subscriptionPurchase) {
         // Terminal, not retryable, when this is a subscription payment we have
@@ -326,10 +340,18 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
           validateCapturedRazorpayPayment({
             payment: paymentEntity,
             purchase: matchedPurchase,
-            // A subscription payment legitimately carries no order id; the
-            // match was made on subscription_id instead, so there is nothing to
-            // compare here.
-            expectedOrderId: orderId || null,
+            // Enforced ONLY when the purchase was matched by order id.
+            //
+            // A subscription purchase has razorpayOrderId null, but Razorpay's
+            // subscription invoices do carry an order_id on the payment - so
+            // when one arrived, this compared that order id against the
+            // purchase's null and threw "Payment order does not match the
+            // purchase". The event was dropped as payment_validation_failed and
+            // the customer never settled: paid, uncredited, no receipt. The
+            // amount, currency, status and payment-identity checks below still
+            // apply in full, so nothing about what was actually charged is
+            // relaxed.
+            expectedOrderId: matchedByOrderId ? orderId || null : null,
             expectedPaymentId: paymentId || null,
           });
         } catch (validationError) {
@@ -619,6 +641,50 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
           : "partially_refunded";
       updatedPurchase.refundedAt = new Date();
       await updatedPurchase.save();
+
+      /**
+       * A refunded subscription must also stop being able to charge.
+       *
+       * The admin refund route cancels the mandate on a full refund; this path
+       * did not. A refund issued from the RAZORPAY DASHBOARD - which is how a
+       * support refund actually happens - therefore reversed the money and left
+       * the mandate live. At the start date Razorpay would debit the FULL plan
+       * price from a customer who had been refunded in full, with no purchase
+       * row to record it, and applySubscriptionCycleCredits would re-grant the
+       * credits and force the subscription back to active.
+       *
+       * Failures are logged and swallowed: the refund itself has already been
+       * issued, and a throw here would have Razorpay retry an event that has
+       * already reversed credits. An uncancelled mandate is what the reconciler
+       * exists to catch.
+       */
+      if (
+        updatedPurchase.status === "refunded" &&
+        updatedPurchase.kind === "subscription" &&
+        updatedPurchase.razorpaySubscriptionId
+      ) {
+        const providerSubscriptionId = updatedPurchase.razorpaySubscriptionId;
+        try {
+          await cancelRazorpaySubscription(providerSubscriptionId, false);
+        } catch (cancelError) {
+          console.error("[billing] could not cancel a refunded subscription from the webhook", {
+            purchaseId: String(updatedPurchase._id),
+            subscriptionId: providerSubscriptionId,
+            error: cancelError instanceof Error ? cancelError.message : String(cancelError),
+          });
+        }
+        await Subscription.updateOne(
+          { providerSubscriptionId },
+          { $set: { status: "cancelled", canceledAt: new Date() } },
+        ).catch(() => null);
+        await updateBillingSubscriptionState({
+          userId: String(updatedPurchase.user),
+          planCode: updatedPurchase.productCode,
+          status: "cancelled",
+          renewsAt: null,
+          cancelAtCycleEnd: false,
+        }).catch(() => null);
+      }
 
       // Give the promotional allowance back on a FULL refund, the way the admin refund route
       // already does. This path did not, so a refund issued from the Razorpay dashboard left the
