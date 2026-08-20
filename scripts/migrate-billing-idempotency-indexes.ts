@@ -169,14 +169,14 @@ async function createCouponRedemptionIndexes() {
 
   const duplicateClaims = await CouponRedemption.aggregate([
     { $match: { status: { $in: ["reserved", "redeemed"] } } },
-    { $group: { _id: { coupon: "$coupon", user: "$user" }, count: { $sum: 1 } } },
+    { $group: { _id: "$user", count: { $sum: 1 } } },
     { $match: { count: { $gt: 1 } } },
     { $limit: 1 },
   ]);
   if (duplicateClaims.length) {
     throw new Error(
-      `User holds multiple live claims on one coupon, requires manual reconciliation: ` +
-        `${JSON.stringify(duplicateClaims[0]._id)}`,
+      `User holds multiple live promotional claims, requires manual reconciliation: ` +
+        `${duplicateClaims[0]._id}`,
     );
   }
 
@@ -187,17 +187,29 @@ async function createCouponRedemptionIndexes() {
   );
 
   const activeClaimFilter = { status: { $in: ["reserved", "redeemed"] } };
-  await dropIfOptionsDiffer(CouponRedemption.collection, "coupon_1_user_1_active", {
+
+  // An earlier revision scoped this per (coupon, user), which granted a separate
+  // allowance per code. Drop it explicitly - leaving it would keep enforcing the
+  // weaker predicate alongside the new one and cost nothing but confusion.
+  const legacyPerCoupon = (await CouponRedemption.collection.indexes()).find(
+    (index) => index.name === "coupon_1_user_1_active",
+  );
+  if (legacyPerCoupon?.name) {
+    await CouponRedemption.collection.dropIndex(legacyPerCoupon.name);
+    console.log("Dropped coupon_1_user_1_active (superseded by the per-user allowance).");
+  }
+
+  await dropIfOptionsDiffer(CouponRedemption.collection, "user_1_active_promo", {
     unique: true,
     partial: true,
     partialFilterExpression: activeClaimFilter,
   });
   await CouponRedemption.collection.createIndex(
-    { coupon: 1, user: 1 },
+    { user: 1 },
     {
       unique: true,
       partialFilterExpression: activeClaimFilter,
-      name: "coupon_1_user_1_active",
+      name: "user_1_active_promo",
     },
   );
 }

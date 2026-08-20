@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
       amountPaise: pricedProduct.amountPaise,
       currency: pricedProduct.currency,
       creditsRemaining: snapshot.wallet?.availableCredits ?? null,
+      heldCredits: snapshot.wallet?.heldCredits ?? null,
     });
 
     // 200 either way. A rejected code is an answer, not an error, and the

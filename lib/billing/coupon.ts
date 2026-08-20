@@ -48,6 +48,8 @@ export async function resolveCoupon(options: {
   amountPaise: number;
   currency: string;
   creditsRemaining?: number | null;
+  /** Credits reserved by in-flight work. Counted, or the gate is free to defeat. */
+  heldCredits?: number | null;
   now?: Date;
 }): Promise<CouponResolution> {
   const normalized = options.code.trim().toUpperCase();
@@ -59,14 +61,22 @@ export async function resolveCoupon(options: {
   const eligibility = checkCouponEligibility(coupon, options.productCode, options.now);
   if (!eligibility.ok) return { ok: false, reason: eligibility.reason };
 
-  // Balance gate. Checked before the global cap so a customer who is simply
-  // not eligible is told that, rather than being told the code ran out.
+  // Balance gate, on credits HELD as well as available.
+  //
+  // availableCredits excludes credits reserved by an in-flight operation, so
+  // gating on it alone is defeatable for free: start work that reserves your
+  // balance, watch available drop to zero, take UNLOCK30, then release the
+  // reservation and get the credits back. The customer's real balance is the
+  // sum, and that is what the modal was reacting to.
+  //
+  // Checked before the global cap so someone simply not eligible is told that,
+  // rather than being told the code ran out.
   const threshold = creditThresholdFor(normalized);
-  if (
-    Number.isFinite(threshold) &&
-    typeof options.creditsRemaining === "number" &&
-    options.creditsRemaining > threshold
-  ) {
+  const effectiveCredits =
+    typeof options.creditsRemaining === "number"
+      ? options.creditsRemaining + (options.heldCredits ?? 0)
+      : null;
+  if (Number.isFinite(threshold) && effectiveCredits !== null && effectiveCredits > threshold) {
     return { ok: false, reason: "coupon_not_applicable" };
   }
 
@@ -151,11 +161,25 @@ export async function reserveCoupon(options: {
     });
     if (mine && String(mine.coupon) === String(options.couponId)) {
       if (mine.status === "released") {
-        mine.status = "reserved";
-        mine.reservedAt = new Date();
-        mine.releasedAt = null;
-        mine.releaseReason = null;
-        await mine.save();
+        // Conditional, and allowed to fail. Re-reserving in place can itself
+        // violate the per-user index if the customer has since taken a claim on
+        // another code, and a save() that threw here would escape as an
+        // unhandled E11000 rather than the clear answer the caller expects.
+        try {
+          const revived = await CouponRedemption.updateOne(
+            { _id: mine._id, status: "released" },
+            {
+              $set: { status: "reserved", reservedAt: new Date() },
+              $unset: { releasedAt: "", releaseReason: "" },
+            },
+          );
+          if (revived.modifiedCount !== 1) return { ok: false, reason: "coupon_already_used" };
+        } catch (reviveError) {
+          if ((reviveError as { code?: number })?.code === 11000) {
+            return { ok: false, reason: "coupon_already_used" };
+          }
+          throw reviveError;
+        }
       }
       return { ok: true, redemptionId: String(mine._id), reused: true };
     }
@@ -198,6 +222,31 @@ export async function releaseCoupon(options: {
   const filter: Record<string, unknown> = { status: "reserved" };
   if (options.redemptionId) filter._id = options.redemptionId;
   else if (options.purchaseId) filter.purchase = options.purchaseId;
+  else if (options.subscriptionId) filter.subscriptionId = options.subscriptionId;
+  else return false;
+
+  const result = await CouponRedemption.updateOne(filter, {
+    $set: { status: "released", releasedAt: new Date(), releaseReason: options.reason },
+  });
+  return result.modifiedCount > 0;
+}
+
+/**
+ * redeemed -> released, after the money has been given back.
+ *
+ * Separate from releaseCoupon, which deliberately refuses to touch a redeemed
+ * row: unwinding a redemption is only correct once a refund has actually
+ * settled, and that decision belongs to refund handling. Without this, a
+ * refunded first cycle left the customer's single promotional allowance
+ * permanently consumed for a purchase they got no benefit from.
+ */
+export async function releaseRedeemedCoupon(options: {
+  purchaseId?: string | null;
+  subscriptionId?: string | null;
+  reason: string;
+}): Promise<boolean> {
+  const filter: Record<string, unknown> = { status: "redeemed" };
+  if (options.purchaseId) filter.purchase = options.purchaseId;
   else if (options.subscriptionId) filter.subscriptionId = options.subscriptionId;
   else return false;
 

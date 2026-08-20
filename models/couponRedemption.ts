@@ -66,17 +66,26 @@ const CouponRedemptionSchema = new Schema<ICouponRedemption, CouponRedemptionMod
 CouponRedemptionSchema.index({ purchase: 1 }, { unique: true, name: "purchase_1" });
 
 /**
- * One live claim per (coupon, user).
+ * One live promotional claim per USER, across every coupon.
  *
- * Partial on the two statuses that consume the code, so a `released` row leaves
- * the customer free to try again. Without that, a single abandoned checkout
- * would permanently burn a maxPerUser:1 code for someone who paid nothing.
+ * Deliberately NOT scoped per coupon. The four codes are a ladder shown at
+ * descending credit balances — WELCOME15, BOOST20, TOPUP25, UNLOCK30 — so a
+ * per-coupon index grants four separate one-per-user allowances. A customer
+ * could take each in turn: four discounted first cycles, each granting FULL
+ * catalog credits (applySubscriptionCycleCredits does not scale credits with
+ * price), each cancellable before the full-price charge ever lands. That is a
+ * standing offer to take the product at a permanent discount, not a promotion.
+ *
+ * Partial on the two statuses that consume a code, so a `released` row leaves
+ * the customer free to try again. Without that, one abandoned checkout would
+ * permanently burn the customer's single allowance for a purchase they never
+ * made.
  */
 CouponRedemptionSchema.index(
-  { coupon: 1, user: 1 },
+  { user: 1 },
   {
     unique: true,
-    name: "coupon_1_user_1_active",
+    name: "user_1_active_promo",
     partialFilterExpression: { status: { $in: ["reserved", "redeemed"] } },
   },
 );

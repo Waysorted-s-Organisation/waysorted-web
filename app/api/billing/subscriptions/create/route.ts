@@ -115,6 +115,7 @@ export async function POST(request: NextRequest) {
         amountPaise: pricedProduct.amountPaise,
         currency: pricedProduct.currency,
         creditsRemaining: snapshot.wallet?.availableCredits ?? null,
+      heldCredits: snapshot.wallet?.heldCredits ?? null,
       });
       if (!couponResolution.ok) {
         return NextResponse.json(

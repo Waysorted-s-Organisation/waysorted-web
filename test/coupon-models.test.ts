@@ -25,11 +25,14 @@ test("one purchase can never redeem twice", () => {
   assert.equal(options.unique, true);
 });
 
-test("one live claim per user per coupon, and released rows free the code", () => {
-  const found = indexNamed(CouponRedemption.schema as never, "coupon_1_user_1_active");
-  assert.ok(found, "coupon_1_user_1_active index must exist");
+test("one live promotional claim per user, across every coupon", () => {
+  // Deliberately not scoped per coupon: the four codes are a ladder shown at
+  // descending balances, so a per-coupon index would grant four allowances and
+  // a churner could take four discounted first cycles with full credits.
+  const found = indexNamed(CouponRedemption.schema as never, "user_1_active_promo");
+  assert.ok(found, "user_1_active_promo index must exist");
   const [keys, options] = found;
-  assert.deepEqual(keys, { coupon: 1, user: 1 });
+  assert.deepEqual(keys, { user: 1 });
   assert.equal(options.unique, true);
 
   // The partial filter is the whole point. Without it a released reservation

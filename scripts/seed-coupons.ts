@@ -87,20 +87,23 @@ async function main() {
     // Never flips `active`. An operator who enabled a code must not have it
     // silently switched off by a re-run, and a code must never be switched on
     // by one either.
-    await Coupon.updateOne(
-      { code: definition.code },
-      {
-        $set: {
-          percent: definition.percent,
-          appliesToProductCodes: applicable,
-          maxRedemptions: definition.maxRedemptions,
-          maxPerUser: 1,
-          description: definition.description,
-        },
-        $setOnInsert: { active: false },
-      },
-      { upsert: true },
-    );
+    // Only ever creates. An operator who set a global cap, narrowed the
+    // products, or enabled a code must not have that silently reset by someone
+    // re-running the seed - maxRedemptions in particular would go from "500
+    // left" back to unlimited with no trace.
+    if (existing) {
+      console.log(`    (left untouched - edit it deliberately, not by re-seeding)`);
+      continue;
+    }
+    await Coupon.create({
+      code: definition.code,
+      percent: definition.percent,
+      appliesToProductCodes: applicable,
+      maxRedemptions: definition.maxRedemptions,
+      maxPerUser: 1,
+      description: definition.description,
+      active: false,
+    });
   }
 
   if (!APPLY) {

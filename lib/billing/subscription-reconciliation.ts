@@ -56,6 +56,13 @@ export async function reconcileStalePendingSubscriptions(input: {
         subscription.status = provider.status === "cancelled" ? "cancelled" : "expired";
         subscription.canceledAt ||= new Date();
         await subscription.save();
+        // Same gap as the abandoned branch below: once this row leaves
+        // payment_pending nothing sweeps it again, so an unreleased claim is
+        // stuck for good.
+        await releaseCoupon({
+          subscriptionId: subscription.providerSubscriptionId,
+          reason: `provider_${provider.status}`,
+        }).catch(() => null);
         await Purchase.updateMany(
           { razorpaySubscriptionId: subscription.providerSubscriptionId, status: "pending" },
           { $set: { status: "failed" } },

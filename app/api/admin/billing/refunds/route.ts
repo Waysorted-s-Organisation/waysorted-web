@@ -3,6 +3,7 @@ import Purchase from "@/models/purchase";
 import { requireAdminUser } from "@/lib/billing/auth";
 import { createRefundRecord, recordRefundAdjustment } from "@/lib/billing/db";
 import { createRazorpayRefund } from "@/lib/billing/razorpay";
+import { releaseRedeemedCoupon } from "@/lib/billing/coupon";
 
 type RefundBody = {
   purchaseId?: string;
@@ -62,7 +63,25 @@ export async function POST(request: NextRequest) {
       await refund.save();
     }
 
-    purchase.status = amountPaise >= purchase.amountPaise ? "refunded" : "partially_refunded";
+    const isFullRefund = amountPaise >= purchase.amountPaise;
+
+    // A full refund of a discounted first cycle gives the promotional allowance
+    // back. Without this the customer keeps a spent claim for a purchase they
+    // got no benefit from, and - since the allowance is one per user across
+    // every code - they could never use any of them again.
+    if (isFullRefund && purchase.couponCode) {
+      await releaseRedeemedCoupon({
+        purchaseId: String(purchase._id),
+        reason: "first_cycle_refunded",
+      }).catch((error) => {
+        console.error("[billing] coupon release on refund failed", {
+          purchaseId: String(purchase._id),
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+    }
+
+    purchase.status = isFullRefund ? "refunded" : "partially_refunded";
     purchase.refundedAt = new Date();
     await purchase.save();
 
