@@ -257,6 +257,21 @@ export default function PricingClient({
     // number against itself, which cannot detect the drift the customer would experience.
     const quoted = pricingData?.catalog.find((item) => item.code === productCode);
     const params = new URLSearchParams({ product: productCode, autostart: "1" });
+    // Carry a discount code across the hand-off. Without this, a customer who
+    // arrived on /pricing with a code silently lost it and was charged full
+    // price - the page builds this URL, so anything not added here is dropped.
+    //
+    // Read from location at click time rather than through useSearchParams.
+    // This page is statically prerendered for SEO, and that hook forces the
+    // whole subtree out of the prerender unless it sits behind a Suspense
+    // fallback - which would empty the pricing content out of the static HTML.
+    // The code is only needed when this handler runs, so there is nothing to
+    // gain from making it reactive.
+    const carriedCoupon =
+      typeof window === "undefined"
+        ? null
+        : new URLSearchParams(window.location.search).get("coupon")?.trim().toUpperCase();
+    if (carriedCoupon) params.set("coupon", carriedCoupon);
     if (quoted && pricingData) {
       params.set("qa", String(quoted.amountPaise));
       params.set("qc", quoted.currency);

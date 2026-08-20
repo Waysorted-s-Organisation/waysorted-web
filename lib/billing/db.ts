@@ -87,7 +87,16 @@ const SIGNUP_STARTER_GRANT_CREDITS = 100;
 const EXISTING_FREE_PLAN_CUTOFF = new Date("2026-05-03T00:00:00.000Z");
 
 function formatBillingPlanName(planCode: string | null, status: string) {
-  if (!(status === "active" || status === "cancel_scheduled" || status === "payment_pending")) {
+  if (
+    !(
+      status === "active" ||
+      status === "cancel_scheduled" ||
+      status === "payment_pending" ||
+      // A discounted subscription rests here for its entire first cycle.
+      // Returning null showed the customer no plan name at all for 30 days.
+      status === "scheduled"
+    )
+  ) {
     return null;
   }
   if (planCode === "sub_month_1" || planCode === "sub_year_1599") return "Discover";
@@ -1563,7 +1572,11 @@ export async function recordProcessorReservationStatus(input: {
 export async function findCurrentSubscription(userId: string) {
   return Subscription.findOne({
     user: userId,
-    status: { $in: ["payment_pending", "active", "cancel_scheduled", "halted"] },
+    // MUST match the one_live_subscription_per_user partial index in models/subscription.ts. If a
+    // live status is missing here, the create route cannot see the existing subscription, proceeds
+    // to make a second one, and the unique index rejects the insert with an opaque E11000 - after a
+    // payable provider subscription has already been created and leaked.
+    status: { $in: ["payment_pending", "scheduled", "active", "cancel_scheduled", "halted"] },
   }).sort({ updatedAt: -1 });
 }
 
@@ -1593,11 +1606,30 @@ export async function recordRefundAdjustment(input: {
     const deltaCreditsToReverse = Math.max(0, targetCreditsToReverse - (purchase.refundedCreditsApplied || 0));
 
     purchase.refundedAmountPaise = cumulativeRefundAmount;
-    const appliedCredits = Math.min(
-      deltaCreditsToReverse,
-      Math.max(0, Number(billing.availableCredits)),
-    );
+    // Reversed against available AND held credits.
+    //
+    // Held credits are the customer's, merely reserved by in-flight work, and
+    // ignoring them made the clawback silently do nothing: a wallet at
+    // available 0 / held 150 reversed 0 credits while both callers set
+    // creditAdjustmentApplied unconditionally, so nothing ever retried. The
+    // hold then returned to spendable within a day and the customer kept
+    // credits for a refunded purchase. One production wallet sits at
+    // available 0 / held 300 right now.
+    const reversibleCredits =
+      Math.max(0, Number(billing.availableCredits)) + Math.max(0, Number(billing.heldCredits || 0));
+    const appliedCredits = Math.min(deltaCreditsToReverse, reversibleCredits);
     const clawbackShortfallCredits = deltaCreditsToReverse - appliedCredits;
+    if (clawbackShortfallCredits > 0) {
+      // Surfaced rather than swallowed: the caller marks the adjustment applied
+      // regardless, so a silent shortfall is a permanent under-reversal.
+      console.error("[billing] refund clawback could not reverse the full amount", {
+        purchaseId: String(purchase._id),
+        userId: String(purchase.user),
+        wanted: deltaCreditsToReverse,
+        reversed: appliedCredits,
+        shortfall: clawbackShortfallCredits,
+      });
+    }
     purchase.refundedCreditsApplied = (purchase.refundedCreditsApplied || 0) + appliedCredits;
     await purchase.save({ session });
 
@@ -1605,9 +1637,24 @@ export async function recordRefundAdjustment(input: {
       return purchase;
     }
 
+    // Take from available first, then from held. The condition guards the
+    // combined balance, so a reversal is never applied against a wallet that
+    // cannot cover it.
+    const fromAvailable = Math.min(appliedCredits, Math.max(0, Number(billing.availableCredits)));
+    const fromHeld = appliedCredits - fromAvailable;
     const updatedBilling = await UserBilling.findOneAndUpdate(
-      { user: purchase.user, availableCredits: { $gte: appliedCredits } },
-      { $inc: { availableCredits: -appliedCredits, lifetimeRefundedCredits: appliedCredits } },
+      {
+        user: purchase.user,
+        availableCredits: { $gte: fromAvailable },
+        ...(fromHeld > 0 ? { heldCredits: { $gte: fromHeld } } : {}),
+      },
+      {
+        $inc: {
+          availableCredits: -fromAvailable,
+          ...(fromHeld > 0 ? { heldCredits: -fromHeld } : {}),
+          lifetimeRefundedCredits: appliedCredits,
+        },
+      },
       { new: true, session },
     );
     if (!updatedBilling) throw new Error("Unable to apply refund credit adjustment.");

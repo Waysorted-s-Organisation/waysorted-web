@@ -4,6 +4,7 @@ import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/
 import { getRazorpayConfig } from "@/lib/billing/env";
 import { verifyRazorpaySubscriptionSignature } from "@/lib/billing/crypto";
 import { fetchRazorpayPayment, fetchRazorpaySubscription } from "@/lib/billing/razorpay";
+import { claimRedemptionForSettledPurchase } from "@/lib/billing/coupon";
 import {
   applySubscriptionCycleCredits,
   findSubscriptionByProviderId,
@@ -67,11 +68,55 @@ export async function POST(request: NextRequest) {
     if (payment.id !== paymentId || payment.subscription_id !== subscriptionId) {
       return conflict("Razorpay payment belongs to a different subscription.");
     }
-    if (String(payment.status).toLowerCase() !== "captured") {
-      return conflict("Razorpay payment is not captured.");
+    const paymentStatus = String(payment.status).toLowerCase();
+    if (paymentStatus !== "captured") {
+      // "Not captured yet" is not "failed", and for UPI AutoPay it is expected.
+      // Razorpay (ticket 20407158): the addon "is processed when the customer
+      // actually approves the mandate in their UPI app, so the debit may happen
+      // a few minutes after the subscription is created". Treating that as a
+      // failure would tell a customer their payment did not work while it was
+      // in flight, and INR/UPI is the primary market.
+      //
+      // 202, not 409: the checkout is genuinely accepted and in progress. The
+      // cycle reconciler settles the purchase and grants the credits when the
+      // capture lands, so nothing is lost by waiting.
+      if (paymentStatus !== "failed") {
+        return NextResponse.json(
+          {
+            verified: false,
+            pending: true,
+            code: "payment_processing",
+            error:
+              "Your payment is being confirmed. This can take a few minutes with UPI - your subscription will activate automatically.",
+            paymentStatus,
+          },
+          { status: 202 },
+        );
+      }
+      return conflict("Razorpay payment failed.");
     }
+    // purchase.amountPaise holds the amount CHARGED, so with a coupon this is
+    // the discounted upfront and the exact-equality check stays correct.
     if (Number(payment.amount) !== purchase.amountPaise ||
         String(payment.currency).toUpperCase() !== String(purchase.currency).toUpperCase()) {
+      // One case deserves more than a generic mismatch: the customer was shown
+      // a discount, the addon did not apply, and they were charged full price.
+      // Never silently accept that - it is a real overcharge against a promise
+      // the UI made.
+      if (purchase.couponCode && Number(payment.amount) === purchase.originalAmountPaise) {
+        console.error("[billing] coupon addon did not apply; customer charged full price", {
+          purchaseId: String(purchase._id),
+          userId: String(purchase.user),
+          couponCode: purchase.couponCode,
+          expectedUpfront: purchase.amountPaise,
+          chargedAmount: Number(payment.amount),
+          paymentId,
+          subscriptionId,
+        });
+        return conflict(
+          "You were charged the full price instead of the discounted amount. We have flagged this for immediate correction.",
+        );
+      }
       return conflict("Razorpay payment amount does not match this purchase.");
     }
     if (
@@ -79,6 +124,24 @@ export async function POST(request: NextRequest) {
       String(providerSubscription.notes?.productCode || "") !== purchase.productCode
     ) {
       return conflict("Razorpay subscription does not match the selected plan.");
+    }
+
+    if (purchase.couponCode) {
+      // The money has moved, so the claim is spent rather than merely held.
+      //
+      // The shared claim point, not redeemCoupon: this is one of three settlement proofs and they
+      // must all apply the same tolerance. redeemCoupon transitions a `reserved` row only, so a
+      // claim the orphan sweep had already released stayed released for a customer who had been
+      // charged, leaving the code repeatable.
+      await claimRedemptionForSettledPurchase({
+        purchaseId: String(purchase._id),
+        subscriptionId,
+      }).catch((error) => {
+        console.error("[billing] coupon claim on subscription verify failed", {
+          purchaseId: String(purchase._id),
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
     }
 
     purchase.razorpayPaymentId ||= paymentId;
@@ -117,6 +180,25 @@ export async function POST(request: NextRequest) {
           paymentId,
         });
         creditsApplied = true;
+
+        // Record on the purchase that the grant was delivered.
+        //
+        // For a subscription the CYCLE path owns credits, and it never touches
+        // this row - so grantApplied stayed false on every correctly-fulfilled
+        // sale. findPaidButUnfulfilledPurchases selects exactly
+        // {status:"captured", grantApplied:false} as its definition of
+        // "customer paid and got nothing", and the daily cron returns HTTP 500
+        // whenever that list is non-empty. So every correct subscription sale
+        // would have turned the billing cron permanently red and buried every
+        // other signal in it.
+        //
+        // Setting it also closes the double-grant door: applyPurchaseCredits
+        // gates on grantApplied:false (db.ts:657-673), so this row can never be
+        // credited a second time by another path.
+        await Purchase.updateOne(
+          { _id: purchase._id, grantApplied: false },
+          { $set: { grantApplied: true } },
+        );
       }
     } catch (creditError) {
       // Never fail verification over this - the payment is already captured and the webhook remains

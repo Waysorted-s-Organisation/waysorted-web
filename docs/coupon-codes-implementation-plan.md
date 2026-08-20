@@ -1,3 +1,20 @@
+> **SUPERSEDED — do not implement from this document.**
+>
+> This plan selects Mechanism C (full price plus bonus credits) and at the time
+> explicitly rejected `start_at` + addons, on the grounds that it "would collide
+> head-on with `subscription-reconciliation.ts`". That collision was real, and
+> it has since been fixed: an authorised mandate with a future `charge_at` is
+> promoted to a `scheduled` status the reconciler leaves alone.
+>
+> With that resolved, the addon mechanism was verified against the live Razorpay
+> API in test mode across 48/48 combinations, and it is what is implemented. It
+> keeps the plan at full price — so the plan cache key never changes and no plan
+> proliferates per discount — and it works in every currency and payment method,
+> which Offers and plan-swap do not.
+>
+> The implemented design is `docs/coupon-codes-spec.md`. This file is retained
+> for the alternatives it evaluates and the reasoning behind each rejection.
+
 # FINAL PLAN — Coupon codes on subscriptions, live Razorpay stack
 
 Every repo fact below was re-verified against working tree `main` @ `b61a8a5`. Every Razorpay claim in §3 was re-fetched from the cited URL during this analysis. Where I could not verify, it is in the second list of §3 and nowhere else.
