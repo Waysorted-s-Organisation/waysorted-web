@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import WaysortedLogo from "@/components/WaysortedLogo";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { isPrinterAudioReady, playPrinterFeed, unlockPrinterAudio, type PrinterSoundHandle } from "./printer-sound";
 
@@ -289,15 +290,8 @@ export default function OrderComplete({
       aria-label="Order complete"
     >
       <div className="mx-auto flex min-h-full w-full max-w-[1120px] flex-col px-5 py-8 sm:px-8">
-        {/* `self-start`, or a stretch column blows the mark up to the full width. */}
-        <Image
-          src="/icons/logo-white.svg"
-          alt="Waysorted"
-          width={148}
-          height={36}
-          priority
-          className="h-9 w-auto self-start"
-        />
+        {/* `self-start`, or a stretch column blows the lockup up to the full width. */}
+        <WaysortedLogo tone="light" className="self-start" />
 
         <div className="flex flex-1 flex-col items-center pb-16 pt-10 sm:pt-14">
           <div className="relative w-full max-w-[440px]">
