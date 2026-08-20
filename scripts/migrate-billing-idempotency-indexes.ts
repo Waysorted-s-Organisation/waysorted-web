@@ -4,6 +4,7 @@ import dbConnect from "../lib/db";
 import Purchase from "../models/purchase";
 import Refund from "../models/refund";
 import Subscription from "../models/subscription";
+import CouponRedemption from "../models/couponRedemption";
 
 async function replacePurchaseIndex() {
   const indexes = await Purchase.collection.indexes();
@@ -142,12 +143,84 @@ async function createLiveSubscriptionIndex() {
   );
 }
 
+/**
+ * The two indexes that make coupon redemption safe.
+ *
+ * Both are enforcement, not optimisation: without them the route's
+ * check-then-write races with itself and the same code is spent twice by two
+ * concurrent checkouts. An idempotency guard that depends on an unmigrated
+ * index is exactly how a double-credit stayed invisible before, so these ship
+ * with the models rather than after them.
+ */
+async function createCouponRedemptionIndexes() {
+  // A duplicate here means two live claims already exist and the unique index
+  // would fail to build - surface which rows, rather than aborting the whole
+  // migration with a bare E11000 and leaving later steps unapplied.
+  const duplicatePurchases = await CouponRedemption.aggregate([
+    { $group: { _id: "$purchase", count: { $sum: 1 } } },
+    { $match: { count: { $gt: 1 } } },
+    { $limit: 1 },
+  ]);
+  if (duplicatePurchases.length) {
+    throw new Error(
+      `Purchase has multiple coupon redemptions, requires manual reconciliation: ${duplicatePurchases[0]._id}`,
+    );
+  }
+
+  const duplicateClaims = await CouponRedemption.aggregate([
+    { $match: { status: { $in: ["reserved", "redeemed"] } } },
+    { $group: { _id: "$user", count: { $sum: 1 } } },
+    { $match: { count: { $gt: 1 } } },
+    { $limit: 1 },
+  ]);
+  if (duplicateClaims.length) {
+    throw new Error(
+      `User holds multiple live promotional claims, requires manual reconciliation: ` +
+        `${duplicateClaims[0]._id}`,
+    );
+  }
+
+  await dropIfOptionsDiffer(CouponRedemption.collection, "purchase_1", { unique: true });
+  await CouponRedemption.collection.createIndex(
+    { purchase: 1 },
+    { unique: true, name: "purchase_1" },
+  );
+
+  const activeClaimFilter = { status: { $in: ["reserved", "redeemed"] } };
+
+  // An earlier revision scoped this per (coupon, user), which granted a separate
+  // allowance per code. Drop it explicitly - leaving it would keep enforcing the
+  // weaker predicate alongside the new one and cost nothing but confusion.
+  const legacyPerCoupon = (await CouponRedemption.collection.indexes()).find(
+    (index) => index.name === "coupon_1_user_1_active",
+  );
+  if (legacyPerCoupon?.name) {
+    await CouponRedemption.collection.dropIndex(legacyPerCoupon.name);
+    console.log("Dropped coupon_1_user_1_active (superseded by the per-user allowance).");
+  }
+
+  await dropIfOptionsDiffer(CouponRedemption.collection, "user_1_active_promo", {
+    unique: true,
+    partial: true,
+    partialFilterExpression: activeClaimFilter,
+  });
+  await CouponRedemption.collection.createIndex(
+    { user: 1 },
+    {
+      unique: true,
+      partialFilterExpression: activeClaimFilter,
+      name: "user_1_active_promo",
+    },
+  );
+}
+
 async function migrate() {
   await dbConnect();
   await replacePurchaseIndex();
   await createRefundIndex();
   await createUniquePurchaseProviderIndexes();
   await createLiveSubscriptionIndex();
+  await createCouponRedemptionIndexes();
   console.log("Billing idempotency index migration complete.");
 }
 

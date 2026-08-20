@@ -288,6 +288,24 @@ export const FEATURE_PRICING: FeaturePricingRule[] = [
     credits: 5,
     description: "Process one free Comment Summarizer Section scope",
   },
+  {
+    featureCode: "icon_create_component",
+    // Applies 2x multiplier: 1 * 2 = 2 credits
+    credits: 1,
+    description: "Create Component for Icon Library",
+  },
+  {
+    featureCode: "icon_export_code",
+    // Applies 2x multiplier: 1.5 * 2 = 3 credits
+    credits: 1.5,
+    description: "Export Code for Icon Library",
+  },
+  {
+    featureCode: "icon_create_component_export_code",
+    // Applies 2x multiplier: 2 * 2 = 4 credits
+    credits: 2,
+    description: "Create Component and Export Code for Icon Library",
+  },
 ];
 
 export const AI_IMPORT_PRICING: FileImportPricingRule[] = [
@@ -328,7 +346,11 @@ export function isSubscriptionActive(
   status: string | null | undefined,
   renewsAt?: Date | null,
 ) {
-  if (status === "active" || status === "cancel_scheduled") {
+  // "scheduled" is a paid, authorised mandate whose first charge is booked for a
+  // future date - which is exactly what a discounted first cycle looks like for
+  // its whole first period. Excluding it showed a paying customer as having no
+  // subscription, withheld their capabilities and swapped their top-up pricing.
+  if (status === "active" || status === "cancel_scheduled" || status === "scheduled") {
     return Boolean(renewsAt) && renewsAt!.getTime() >= Date.now();
   }
   return false;

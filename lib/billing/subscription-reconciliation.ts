@@ -3,6 +3,7 @@ import Subscription from "@/models/subscription";
 import { updateBillingSubscriptionState } from "@/lib/billing/db";
 import { fetchRazorpaySubscription } from "@/lib/billing/razorpay";
 import { cancelRazorpaySubscription } from "@/lib/billing/razorpay";
+import { releaseCoupon } from "@/lib/billing/coupon";
 import dbConnect from "@/lib/db";
 
 const DEFAULT_MINIMUM_AGE_MS = 2 * 60 * 60_000;
@@ -55,6 +56,13 @@ export async function reconcileStalePendingSubscriptions(input: {
         subscription.status = provider.status === "cancelled" ? "cancelled" : "expired";
         subscription.canceledAt ||= new Date();
         await subscription.save();
+        // Same gap as the abandoned branch below: once this row leaves
+        // payment_pending nothing sweeps it again, so an unreleased claim is
+        // stuck for good.
+        await releaseCoupon({
+          subscriptionId: subscription.providerSubscriptionId,
+          reason: `provider_${provider.status}`,
+        }).catch(() => null);
         await Purchase.updateMany(
           { razorpaySubscriptionId: subscription.providerSubscriptionId, status: "pending" },
           { $set: { status: "failed" } },
@@ -112,6 +120,20 @@ export async function reconcileStalePendingSubscriptions(input: {
         subscription.status = "expired";
         subscription.canceledAt ||= new Date();
         await subscription.save();
+        // Give the coupon back. This sweep is the ONLY place that sees an
+        // abandoned subscription checkout - purchase-reconciliation filters
+        // kind != subscription and never reaches these rows. Without the
+        // release, one abandoned checkout permanently consumes a one-per-user
+        // code for a customer who paid nothing.
+        await releaseCoupon({
+          subscriptionId: subscription.providerSubscriptionId,
+          reason: "abandoned_subscription_checkout",
+        }).catch((error) => {
+          console.error("[billing] coupon release on abandoned subscription failed", {
+            subscriptionId: subscription.providerSubscriptionId,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
         await Purchase.updateMany(
           { razorpaySubscriptionId: subscription.providerSubscriptionId, status: "pending" },
           { $set: { status: "failed" } },

@@ -9,6 +9,7 @@ import { reconcilePendingOneTimePurchases } from "@/lib/billing/purchase-reconci
 import { recoverStaleRazorpayWebhooks } from "@/lib/billing/webhook-recovery";
 import { expireStaleReservations } from "@/lib/billing/db";
 import { reconcileStalePendingSubscriptions } from "@/lib/billing/subscription-reconciliation";
+import { sweepOrphanedReservations } from "@/lib/billing/coupon";
 import { inspectCreditLedgerConsistency } from "@/lib/billing/ledger-reconciliation";
 import { reconcileSubscriptionCycles } from "@/lib/billing/subscription-cycle-reconciliation";
 import { collectPaymentAlerts, emitPaymentAlerts } from "@/lib/billing/payment-alerts";
@@ -57,6 +58,7 @@ export async function GET(request: NextRequest) {
       subscriptionRecovery,
       cycleRecovery,
       ledgerAudit,
+      couponSweep,
     ] = await Promise.allSettled([
       produceN4InactivityEvents(),
       reconcilePendingOneTimePurchases(),
@@ -67,6 +69,12 @@ export async function GET(request: NextRequest) {
       // only delivery path. This asks Razorpay what it actually charged and fills any gaps.
       reconcileSubscriptionCycles(),
       inspectCreditLedgerConsistency(),
+      // Coupon reservations are taken before the provider call and released by
+      // whichever flow concludes the checkout. Several endings conclude no flow
+      // at all - a process dying mid-create, a cancelled pending checkout, a
+      // halted subscription - and a reservation stranded that way blocks the
+      // code for that customer permanently.
+      sweepOrphanedReservations({ limit: 100 }),
     ]);
 
     // A failure in the unrelated N4 marketing producer must not discard the billing report, which
@@ -83,6 +91,9 @@ export async function GET(request: NextRequest) {
       reportJobFailure("subscription-reconciliation", subscriptionRecovery),
       reportJobFailure("subscription-cycle-backstop", cycleRecovery),
       reportJobFailure("ledger-audit", ledgerAudit),
+      // Reported like every other billing job: a sweeper that fails silently is
+      // indistinguishable from one with nothing to do.
+      reportJobFailure("coupon-orphan-sweep", couponSweep),
     ].filter(Boolean).length;
 
     // Turn money-correctness signals into something a human sees.

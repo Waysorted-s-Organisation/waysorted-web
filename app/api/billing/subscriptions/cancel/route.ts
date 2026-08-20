@@ -7,6 +7,7 @@ import {
   emitNotificationEvent,
 } from "@/lib/notifications";
 import { billingErrorResponse } from "@/lib/billing/http-errors";
+import { releaseCoupon } from "@/lib/billing/coupon";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -74,6 +75,23 @@ export async function POST(request: NextRequest) {
     }
 
     const localCancelAtCycleEnd = providerAlreadyCancelled ? false : cancelAtCycleEnd;
+    // A cancelled pending checkout concludes no other flow: the reconciler
+    // scans only payment_pending, so once this row moves to cancelled nothing
+    // would ever free the coupon claim and the customer could never use the
+    // code again. Only a reserved row is touched - a redeemed one represents
+    // money that moved.
+    if (!localCancelAtCycleEnd) {
+      await releaseCoupon({
+        subscriptionId: subscription.providerSubscriptionId,
+        reason: "subscription_cancelled_by_user",
+      }).catch((error) => {
+        console.error("[billing] coupon release on cancellation failed", {
+          subscriptionId: subscription.providerSubscriptionId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+    }
+
     subscription.status = localCancelAtCycleEnd ? "cancel_scheduled" : "cancelled";
     subscription.cancelAtCycleEnd = localCancelAtCycleEnd;
     await subscription.save();

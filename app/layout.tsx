@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Hanken_Grotesk } from "next/font/google";
+import { Hanken_Grotesk, Roboto_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
@@ -13,6 +13,15 @@ const hanken = Hanken_Grotesk({
   subsets: ["latin"],
   display: "optional",
   variable: "--font-hanken",
+});
+
+// Only the printed receipt on the order-complete screen uses this. A receipt is
+// a column of aligned figures, and that alignment is the whole reason the design
+// is monospaced - a proportional font makes the amounts wander.
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-roboto-mono",
 });
 
 export const metadata: Metadata = {
@@ -225,7 +234,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${hanken.className} no-scrollbar`} suppressHydrationWarning>
+      <body className={`${hanken.className} ${robotoMono.variable} no-scrollbar`} suppressHydrationWarning>
         <Providers>
           {/* Global session loader intentionally disabled. */}
           {children}
