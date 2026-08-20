@@ -244,6 +244,7 @@ export default function BillingClient({
     if (urlCoupon) setCouponInput(urlCoupon);
   }, [urlCoupon]);
 
+
   const selectedProduct = useMemo(
     () => snapshot?.billing.catalog.find((product) => product.code === selectedCode) || null,
     [selectedCode, snapshot?.billing.catalog],
@@ -546,6 +547,18 @@ export default function BillingClient({
     },
     [],
   );
+
+  // A code arriving by link is applied automatically, so both entry points end
+  // in the SAME state: priced, confirmed on screen, and locked. Prefilling the
+  // box without applying would leave someone to notice an Apply button they
+  // never asked for, and pay full price if they missed it.
+  const autoAppliedRef = useRef("");
+  useEffect(() => {
+    if (!urlCoupon || !selectedProduct) return;
+    if (autoAppliedRef.current === `${urlCoupon}:${selectedProduct.code}`) return;
+    autoAppliedRef.current = `${urlCoupon}:${selectedProduct.code}`;
+    void checkCoupon(selectedProduct, urlCoupon);
+  }, [urlCoupon, selectedProduct, checkCoupon]);
 
   const handleSubscriptionCheckout = useCallback(async (
     product: CatalogProduct,
@@ -877,17 +890,56 @@ export default function BillingClient({
                     value={couponInput}
                     onChange={(event) => {
                       setCouponInput(event.target.value.toUpperCase());
+                      // Any edit invalidates a previous answer. Leaving a stale
+                      // quote on screen while the field says something else is
+                      // how a customer ends up expecting one price and being
+                      // quoted another.
                       setCouponError(null);
                       setCouponQuote(null);
                     }}
-                    onBlur={() => {
-                      if (selectedProduct) void checkCoupon(selectedProduct, couponInput);
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" && selectedProduct) {
+                        event.preventDefault();
+                        void checkCoupon(selectedProduct, couponInput);
+                      }
                     }}
                     placeholder="WELCOME15"
                     autoComplete="off"
                     spellCheck={false}
-                    className="w-full rounded-2xl border border-[#E7EDF7] px-4 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-secondary-db-100 outline-none focus:border-[#356DFF] sm:w-[200px]"
+                    disabled={Boolean(couponQuote)}
+                    className="w-full rounded-2xl border border-[#E7EDF7] px-4 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-secondary-db-100 outline-none focus:border-[#356DFF] disabled:bg-[#F4F7FC] disabled:text-[#687184] sm:w-[200px]"
                   />
+                  {/*
+                    An explicit Apply, not an on-blur check. Applying a discount
+                    is a deliberate act with a visible result, and a customer
+                    should be able to see the code took effect BEFORE they reach
+                    the payment sheet. Once applied the field locks, so the code
+                    on screen is always the code that was priced.
+                  */}
+                  {couponQuote ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCouponInput("");
+                        setCouponQuote(null);
+                        setCouponError(null);
+                      }}
+                      className="rounded-2xl border border-[#E7EDF7] px-4 py-3 text-sm font-semibold text-[#687184] transition-colors hover:border-[#C0392B] hover:text-[#C0392B]"
+                    >
+                      Remove
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (selectedProduct) void checkCoupon(selectedProduct, couponInput);
+                      }}
+                      disabled={!couponInput.trim() || couponChecking || !selectedProduct}
+                      className="rounded-2xl bg-secondary-db-100 px-4 py-3 text-sm font-semibold text-white transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:translate-y-0"
+                    >
+                      {couponChecking ? "Checking..." : "Apply"}
+                    </button>
+                  )}
                 </div>
                 {couponError ? (
                   <div className="mt-2 text-sm text-[#C0392B]">{couponError}</div>
@@ -907,8 +959,8 @@ export default function BillingClient({
                     arrangement twice and cannot mistake the discounted first
                     cycle for the recurring price.
                   */
-                  <div className="mt-2 text-sm text-[#687184]">
-                    {`${couponQuote.percent}% off: ${formatCurrency(
+                  <div className="mt-2 text-sm font-medium text-[#1E7B4D]">
+                    {`${couponQuote.code} applied — ${couponQuote.percent}% off: ${formatCurrency(
                       couponQuote.upfrontSubunits,
                       couponQuote.currency,
                     )} for your first ${

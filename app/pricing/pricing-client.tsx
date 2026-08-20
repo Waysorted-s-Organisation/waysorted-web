@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, ChevronUp, ChevronRight } from "lucide-react";
 import { useBanner } from "@/context/BannerContext";
 import Header from "@/components/Header";
@@ -114,6 +114,7 @@ export default function PricingClient({
   initialPricingData: PricingPayload | null;
   initialPricingError: string | null;
 }) {
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { user, loading } = useUser();
   const { showBanner, setShowBanner } = useBanner();
@@ -257,6 +258,11 @@ export default function PricingClient({
     // number against itself, which cannot detect the drift the customer would experience.
     const quoted = pricingData?.catalog.find((item) => item.code === productCode);
     const params = new URLSearchParams({ product: productCode, autostart: "1" });
+    // Carry a discount code across the hand-off. Without this, a customer who
+    // arrived on /pricing with a code silently lost it and was charged full
+    // price - the page builds this URL, so anything not added here is dropped.
+    const carriedCoupon = searchParams?.get("coupon")?.trim().toUpperCase();
+    if (carriedCoupon) params.set("coupon", carriedCoupon);
     if (quoted && pricingData) {
       params.set("qa", String(quoted.amountPaise));
       params.set("qc", quoted.currency);

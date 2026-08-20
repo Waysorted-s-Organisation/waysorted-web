@@ -12,7 +12,7 @@
     "repair:subscription-purchases": "tsx --conditions=react-server scripts/repair-unsettled-subscription-purchases.ts",
     "harness:coupons": "tsx scripts/razorpay-coupon-harness.ts",
     "seed:coupons": "tsx --conditions=react-server scripts/seed-coupons.ts",
-    "test:coupons": "tsx --conditions=react-server --test test/coupon-discount.test.ts test/coupon-models.test.ts test/coupon-lifecycle.test.ts test/coupon-redemption-integrity.test.ts",
+    "test:coupons": "tsx --conditions=react-server --test test/coupon-discount.test.ts test/coupon-models.test.ts test/coupon-lifecycle.test.ts test/coupon-redemption-integrity.test.ts test/coupon-urls.test.ts",
     "migrate:session-expiry": "tsx --conditions=react-server scripts/backfill-session-expiry.ts",
     "typecheck": "tsc --noEmit",
     "test:billing-pricing": "tsx --test test/billing-regional-pricing.test.ts test/billing-pricing-fallback.test.ts",

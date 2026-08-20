@@ -16,6 +16,8 @@ export default async function BillingPage({
   searchParams: Promise<{
     product?: string;
     autostart?: string;
+    /** A discount code to prefill. Validated server-side before it can affect a charge. */
+    coupon?: string;
     qa?: string;
     qc?: string;
     qv?: string;
