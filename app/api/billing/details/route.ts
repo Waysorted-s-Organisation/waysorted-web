@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthenticatedUser } from "@/lib/billing/auth";
+import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/auth";
 import UserBilling from "@/models/userBilling";
 import dbConnect from "@/lib/db";
 import { ensureUserBilling } from "@/lib/billing/db";
@@ -8,7 +8,16 @@ import { validateBillingDetails } from "@/lib/billing/billing-details";
 export async function POST(request: NextRequest) {
   try {
     await dbConnect();
-    const auth = await getAuthenticatedUser(request);
+    // Bridge auth too, like every other route on the checkout path.
+    //
+    // A customer arriving from the Figma plugin holds only the bridge cookie -
+    // that is the whole point of the bridge - and /billing now asks for billing
+    // details before checkout. Session-only auth here meant the modal opened,
+    // the customer filled it in, and Save answered 401: the entire plugin
+    // checkout dead-ended on a form it had just been told to complete.
+    const auth =
+      (await getAuthenticatedUser(request)) ||
+      (await getBridgeAuthenticatedUser("billing:checkout"));
     if (!auth?.user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const body = await request.json();

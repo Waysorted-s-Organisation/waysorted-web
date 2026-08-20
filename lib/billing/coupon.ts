@@ -1,5 +1,6 @@
 import Coupon, { type ICoupon } from "@/models/coupon";
 import CouponRedemption from "@/models/couponRedemption";
+import { Types } from "mongoose";
 import {
   checkCouponEligibility,
   quoteCouponDiscount,
@@ -232,6 +233,16 @@ export async function releaseCoupon(options: {
 }
 
 /**
+ * The one release reason that means the money went BACK to the customer.
+ *
+ * Every other reason - an orphan sweep, an abandoned checkout, a superseded
+ * retry - is a race that a late settlement is allowed to win. This one is a
+ * decision made after a refund settled, and re-claiming it charges a customer
+ * their one-per-user allowance for a purchase they were made whole on.
+ */
+export const COUPON_RELEASE_REASON_REFUNDED = "first_cycle_refunded";
+
+/**
  * redeemed -> released, after the money has been given back.
  *
  * Separate from releaseCoupon, which deliberately refuses to touch a redeemed
@@ -259,6 +270,17 @@ export async function releaseRedeemedCoupon(options: {
 /**
  * Marks a redemption spent once its money is confirmed to have moved.
  *
+ * The single claim point for all three settlement proofs - the client
+ * confirmation, the paid webhooks, and the cycle reconciler - so one tolerance
+ * covers them all rather than each path inventing its own.
+ *
+ * Resolved by purchase OR subscription, because neither identifier is reliably
+ * present. attachSubscriptionToRedemption only runs AFTER the provider call in
+ * subscriptions/create, so any settlement that beats it - or any claim whose
+ * subscription was never attached at all - matched nothing when this keyed on
+ * subscriptionId alone, and the sweep then handed a paying customer their
+ * one-per-user allowance back.
+ *
  * Accepts a `released` row as well as a `reserved` one. The orphan sweep frees
  * any reservation older than the grace window whose purchase is not yet
  * captured, and it can legitimately win that race against a recovery that is
@@ -269,11 +291,34 @@ export async function releaseRedeemedCoupon(options: {
  * Never touches a wallet: this only records that the allowance was consumed.
  */
 export async function claimRedemptionForSettledPurchase(
-  subscriptionId: string,
+  target: string | { purchaseId?: string | null; subscriptionId?: string | null },
 ): Promise<boolean> {
-  if (!subscriptionId) return false;
+  // A bare string is a provider subscription id - the shape the cycle reconciler
+  // has always called this with.
+  const options = typeof target === "string" ? { subscriptionId: target } : target;
+  const purchaseId = options.purchaseId?.trim() || "";
+  const subscriptionId = options.subscriptionId?.trim() || "";
+
+  const identity: Array<Record<string, unknown>> = [];
+  // Validated before it reaches the filter: an uncastable purchase id throws a
+  // CastError for the WHOLE query, taking the subscription match down with it,
+  // and a claim that never lands is a discount the customer can take again.
+  if (purchaseId && Types.ObjectId.isValid(purchaseId)) identity.push({ purchase: purchaseId });
+  if (subscriptionId) identity.push({ subscriptionId });
+  if (!identity.length) return false;
+
   const result = await CouponRedemption.updateOne(
-    { subscriptionId, status: { $in: ["reserved", "released"] } },
+    {
+      $or: identity,
+      status: { $in: ["reserved", "released"] },
+      // A refund release is the one the widened `released` tolerance must NOT
+      // swallow. invoice.paid fires on renewals too, so a customer whose
+      // discounted first cycle was refunded had the next full-price charge
+      // silently re-consume the allowance the refund had just handed back -
+      // locking them out of all four codes for a cycle they paid list price
+      // for. Matches reserved rows too: releaseReason defaults to null.
+      releaseReason: { $ne: COUPON_RELEASE_REASON_REFUNDED },
+    },
     { $set: { status: "redeemed", redeemedAt: new Date() }, $unset: { releasedAt: "", releaseReason: "" } },
   );
   return result.modifiedCount > 0;

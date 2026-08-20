@@ -13,15 +13,15 @@ export const dynamic = "force-dynamic";
 export default async function CheckoutPreviewPage({
   searchParams,
 }: {
-  searchParams: Promise<{ coupon?: string }>;
+  searchParams: Promise<{ nodetails?: string }>;
 }) {
   if (process.env.NODE_ENV === "production") notFound();
 
-  const { coupon } = await searchParams;
+  const { nodetails } = await searchParams;
 
   return (
     <Suspense fallback={null}>
-      <CheckoutPreview coupon={coupon || null} />
+      <CheckoutPreview withoutDetails={nodetails === "1"} />
     </Suspense>
   );
 }

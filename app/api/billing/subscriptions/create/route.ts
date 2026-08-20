@@ -259,12 +259,70 @@ export async function POST(request: NextRequest) {
         String(auth.user._id),
         existingSubscription.providerSubscriptionId,
       );
+
+      // This branch returned no coupon block at all, so a customer retrying a
+      // discounted checkout was charged the discounted addon while the printed
+      // "Order complete" stated the LIST price with no discount line - a
+      // receipt that contradicted the money actually taken.
+      //
+      // Every number is read off the reused row rather than re-quoted: the
+      // addon amount was frozen on the first attempt and is what Razorpay will
+      // capture, and this is the exact row subscriptions/verify compares the
+      // payment against. A fresh quote can have moved since.
+      const reusedCouponCode = reusedPurchase?.couponCode || null;
+      let reusedCoupon: {
+        code: string;
+        percent: number;
+        discountSubunits: number;
+        upfrontSubunits: number;
+        recurringSubunits: number;
+        currency: string;
+      } | null = null;
+
+      if (reusedPurchase && reusedCouponCode) {
+        const upfrontSubunits = reusedPurchase.amountPaise;
+        const recurringSubunits = reusedPurchase.originalAmountPaise ?? pricedProduct.amountPaise;
+        const discountSubunits =
+          reusedPurchase.discountPaise ?? Math.max(recurringSubunits - upfrontSubunits, 0);
+        reusedCoupon = {
+          code: reusedCouponCode,
+          // Derived from the frozen amounts so the "% off" on the receipt cannot
+          // contradict the discount line printed beside it. The live resolution
+          // is only a fallback for when the stored price is unusable as a
+          // denominator.
+          percent:
+            recurringSubunits > 0
+              ? Math.round((discountSubunits * 100) / recurringSubunits)
+              : couponResolution?.ok
+                ? couponResolution.quote.percent
+                : 0,
+          discountSubunits,
+          upfrontSubunits,
+          recurringSubunits,
+          currency: reusedPurchase.currency,
+        };
+      }
+
       return NextResponse.json({
         purchaseId: reusedPurchase ? String(reusedPurchase._id) : undefined,
         subscriptionId: existingSubscription.providerSubscriptionId,
         key: getRazorpayConfig().publicKeyId,
         product: pricedProduct,
         status: existingSubscription.status,
+        ...(reusedCoupon
+          ? { coupon: reusedCoupon }
+          : couponResolution?.ok
+            ? {
+                coupon: {
+                  code: couponResolution.quote.code,
+                  percent: couponResolution.quote.percent,
+                  discountSubunits: couponResolution.quote.discountPaise,
+                  upfrontSubunits: couponResolution.quote.upfrontAmountPaise,
+                  recurringSubunits: couponResolution.quote.originalAmountPaise,
+                  currency: pricedProduct.currency,
+                },
+              }
+            : {}),
       });
     }
 

@@ -4,7 +4,7 @@ import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/
 import { getRazorpayConfig } from "@/lib/billing/env";
 import { verifyRazorpaySubscriptionSignature } from "@/lib/billing/crypto";
 import { fetchRazorpayPayment, fetchRazorpaySubscription } from "@/lib/billing/razorpay";
-import { redeemCoupon } from "@/lib/billing/coupon";
+import { claimRedemptionForSettledPurchase } from "@/lib/billing/coupon";
 import {
   applySubscriptionCycleCredits,
   findSubscriptionByProviderId,
@@ -128,8 +128,16 @@ export async function POST(request: NextRequest) {
 
     if (purchase.couponCode) {
       // The money has moved, so the claim is spent rather than merely held.
-      await redeemCoupon({ purchaseId: String(purchase._id) }).catch((error) => {
-        console.error("[billing] coupon redemption transition failed", {
+      //
+      // The shared claim point, not redeemCoupon: this is one of three settlement proofs and they
+      // must all apply the same tolerance. redeemCoupon transitions a `reserved` row only, so a
+      // claim the orphan sweep had already released stayed released for a customer who had been
+      // charged, leaving the code repeatable.
+      await claimRedemptionForSettledPurchase({
+        purchaseId: String(purchase._id),
+        subscriptionId,
+      }).catch((error) => {
+        console.error("[billing] coupon claim on subscription verify failed", {
           purchaseId: String(purchase._id),
           error: error instanceof Error ? error.message : String(error),
         });

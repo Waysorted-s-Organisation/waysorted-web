@@ -6,6 +6,7 @@ import { formatMoney } from "@/lib/billing/money";
 import { yearlySavingPercent } from "@/lib/billing/plan-savings";
 import Image from "next/image";
 import OrderComplete, { type OrderCompleteProps } from "@/components/OrderComplete";
+import BillingDetailsModal, { type BillingDetails } from "@/components/BillingDetailsModal";
 
 type RazorpaySuccessResponse = {
   razorpay_payment_id: string;
@@ -95,6 +96,8 @@ type BillingSnapshot = {
       canPurchaseStarterPack: boolean;
     };
     catalog: CatalogProduct[];
+    /** Already returned by the snapshot; declared here so checkout can gate on it. */
+    billingDetails?: BillingDetails | null;
     pricingVersion: string;
     pricing: {
       country: string;
@@ -261,6 +264,8 @@ export default function BillingClient({
   // for the receipt screen, so it must never be set on a pending or unverified
   // payment - a receipt is a statement that money moved.
   const [completedOrder, setCompletedOrder] = useState<OrderCompleteProps | null>(null);
+  const [billingModalOpen, setBillingModalOpen] = useState(false);
+  const pendingCheckoutRef = useRef<(() => void) | null>(null);
   const [scriptReady, setScriptReady] = useState(false);
   const [paidOrderId, setPaidOrderId] = useState<string | null>(null);
   const autostartedRef = useRef(false);
@@ -268,6 +273,7 @@ export default function BillingClient({
 
   const redirectPath = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ""}`;
 
+  const bridgeExpired = searchParams.get("bridge") === "expired";
   const urlCoupon = searchParams.get("coupon")?.trim().toUpperCase() || "";
   useEffect(() => {
     if (urlCoupon) setCouponInput(urlCoupon);
@@ -309,10 +315,21 @@ export default function BillingClient({
     }
     setSnapshot(payload);
     if (!selectedCode && payload.billing.catalog.length > 0) {
-      setSelectedCode(payload.billing.catalog[0].code);
+      // The catalogue is ordered starter, top-up, subscription, so catalog[0]
+      // is always a top-up. A customer arriving from a discount link with no
+      // product named therefore landed on a product no code can apply to, was
+      // told "this code does not apply to this plan", and had no way forward.
+      // Codes are subscription-only, so a code in the URL picks a subscription.
+      const wantsCoupon = Boolean(urlCoupon);
+      const preferred = wantsCoupon
+        ? payload.billing.catalog.find((product) => product.kind === "subscription")
+        : null;
+      setSelectedCode((preferred || payload.billing.catalog[0]).code);
     }
     return payload;
-  }, [redirectPath, router, selectedCode]);
+    // urlCoupon changes only when the query string does, which already moves
+    // redirectPath above, so this adds no extra churn.
+  }, [redirectPath, router, selectedCode, urlCoupon]);
 
   const refreshCurrentSubscription = useCallback(async () => {
     const response = await fetch(`/api/billing/subscriptions/current?ts=${Date.now()}`, {
@@ -592,6 +609,19 @@ export default function BillingClient({
     if (!urlCoupon || !selectedProduct) return;
     if (autoAppliedRef.current === `${urlCoupon}:${selectedProduct.code}`) return;
     autoAppliedRef.current = `${urlCoupon}:${selectedProduct.code}`;
+    // The preview endpoint answers 400 for a non-subscription product, and a 400
+    // carries no `reason`, so couponMessage fell through to the generic "that
+    // code cannot be applied to this plan" - which was rendered only inside the
+    // subscription-only banner, i.e. nowhere. The customer saw no trace of the
+    // code at all. Say the true thing instead of calling an endpoint we know
+    // will refuse.
+    if (selectedProduct.kind !== "subscription") {
+      setCouponQuote(null);
+      setCouponError(
+        `${urlCoupon} applies to subscription plans, not credit top-ups. Choose a plan to use it.`,
+      );
+      return;
+    }
     void checkCoupon(selectedProduct, urlCoupon);
   }, [urlCoupon, selectedProduct, checkCoupon]);
 
@@ -823,6 +853,44 @@ export default function BillingClient({
   useEffect(() => {
     if (!autostart || autostartedRef.current || !scriptReady || !selectedProduct || busyCode) return;
 
+    /**
+     * Only ever auto-open the product the link actually named.
+     *
+     * When `?product=` names something the account cannot buy, the page
+     * substitutes the first catalogue entry and sets a message - but `autostart`
+     * stayed armed, so Razorpay opened for a DIFFERENT product than the link
+     * asked for. The drift guard could not catch it: drift compares against
+     * `?qa`/`?qc`, which only the /pricing hand-off carries, so on any other
+     * link `quoteDrift` is null and the guard is inert.
+     *
+     * Consuming autostart here rather than in the substitution effect makes it
+     * independent of effect ordering. The message set at substitution time stays
+     * on screen to explain why nothing opened.
+     */
+    if (!initialProductCode || selectedProduct.code !== initialProductCode) {
+      autostartedRef.current = true;
+      const params = new URLSearchParams(searchParams.toString());
+      if (params.has("autostart")) {
+        params.delete("autostart");
+        router.replace(params.size ? `${pathname}?${params.toString()}` : pathname, { scroll: false });
+      }
+      return;
+    }
+
+    // A discount code cannot apply to a top-up, so opening the payment sheet
+    // here would charge the full price seconds after a modal promised a
+    // discount. Let them pick a plan instead.
+    if (urlCoupon && selectedProduct.kind !== "subscription") {
+      autostartedRef.current = true;
+      const params = new URLSearchParams(searchParams.toString());
+      if (params.has("autostart")) {
+        params.delete("autostart");
+        router.replace(params.size ? `${pathname}?${params.toString()}` : pathname, { scroll: false });
+      }
+      setStatus(`${urlCoupon} applies to subscription plans. Nothing has been charged.`);
+      return;
+    }
+
     // Never auto-open Razorpay at a price the customer has not seen. On drift, stop here and let
     // the confirmation banner below render both amounts so they can decide.
     if (quoteDrift) {
@@ -834,6 +902,24 @@ export default function BillingClient({
           scroll: false,
         });
       }
+      return;
+    }
+
+    // An autostart link must not skip the gate either. /pricing collects these
+    // before it hands off, but a /claim link with ?autostart=1 comes straight
+    // here, so without this the one path that opens Razorpay by itself is also
+    // the one that never asks.
+    if (snapshot && !snapshot.billing.billingDetails) {
+      autostartedRef.current = true;
+      const detailParams = new URLSearchParams(searchParams.toString());
+      if (detailParams.has("autostart")) {
+        detailParams.delete("autostart");
+        router.replace(detailParams.size ? `${pathname}?${detailParams.toString()}` : pathname, {
+          scroll: false,
+        });
+      }
+      pendingCheckoutRef.current = null;
+      setBillingModalOpen(true);
       return;
     }
 
@@ -866,11 +952,13 @@ export default function BillingClient({
     busyCode,
     handleOrderCheckout,
     handleSubscriptionCheckout,
+    initialProductCode,
     pathname,
     quoteDrift,
     router,
     checkCoupon,
     scriptReady,
+    snapshot,
     urlCoupon,
     searchParams,
     selectedProduct,
@@ -923,6 +1011,30 @@ export default function BillingClient({
     });
   }, [snapshot?.billing.catalog, selectedProduct]);
 
+  /**
+   * Whether the other family of products exists, so the card can offer a way
+   * across.
+   *
+   * The rows list one family at a time - cycles of a plan, or amounts of a
+   * top-up - which is what the design shows. But /billing is now a direct
+   * entry point from the plugin and from discount links, and it opens on
+   * whatever the catalogue lists first, which is always a top-up. Without this
+   * switch a customer who landed there could never reach a subscription, and
+   * subscriptions are the only thing a discount code applies to.
+   */
+  const otherFamily = useMemo(() => {
+    const catalog = snapshot?.billing.catalog || [];
+    if (!selectedProduct) return null;
+    const wantSubscription = selectedProduct.kind !== "subscription";
+    const target = catalog.find((product) => (product.kind === "subscription") === wantSubscription);
+    if (!target) return null;
+    return {
+      code: target.code,
+      label: wantSubscription ? "Looking for a plan instead?" : "Just need credits instead?",
+      action: wantSubscription ? "See subscription plans" : "See credit top-ups",
+    };
+  }, [snapshot?.billing.catalog, selectedProduct]);
+
   const planSubtitle = useMemo(() => {
     if (!selectedProduct) return "Pick a plan or top up credits.";
     if (selectedProduct.billingCycle === "monthly") return "Monthly Plan";
@@ -937,6 +1049,43 @@ export default function BillingClient({
    * balance can move between applying a code and pressing this, and a stale
    * quote is exactly what the server's guard rejects.
    */
+  /**
+   * Collects billing details before the first purchase, the way /pricing does.
+   *
+   * /pricing gated on this and /billing never did. That was invisible while
+   * /pricing was the only way in - but the plugin's checkout bridge and every
+   * /claim link now land here directly, so without this a customer can buy
+   * without ever giving the details that go on their invoice and into the
+   * country-mismatch risk check.
+   */
+  function requireBillingDetails(action: () => void) {
+    if (!snapshot || snapshot.billing.billingDetails) {
+      action();
+      return;
+    }
+    pendingCheckoutRef.current = action;
+    setBillingModalOpen(true);
+  }
+
+  async function handleBillingDetailsSubmit(details: BillingDetails) {
+    const response = await fetch("/api/billing/details", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(details),
+    });
+    if (!response.ok) {
+      const payload = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(payload.error || "Unable to save billing details.");
+    }
+    setBillingModalOpen(false);
+    // Re-read rather than assume: the server trims and normalises what it
+    // stored, and the next gate check must see what is actually on file.
+    await refreshSnapshot().catch(() => null);
+    const pending = pendingCheckoutRef.current;
+    pendingCheckoutRef.current = null;
+    pending?.();
+  }
+
   async function handleContinue() {
     if (!selectedProduct) return;
     if (selectedProduct.kind !== "subscription") {
@@ -949,7 +1098,20 @@ export default function BillingClient({
       return;
     }
     const quote = couponQuote?.code === code ? couponQuote : await checkCoupon(selectedProduct, code);
-    if (!quote) return;
+    if (!quote) {
+      // A bare `return` here made the button do visibly nothing, forever: a
+      // customer who had already used their one allowance arrived with the code
+      // prefilled from the URL, could not clear it without noticing the Remove
+      // control, and every press of Continue was silently swallowed.
+      //
+      // It deliberately does NOT fall through to a full-price checkout. That
+      // would open Razorpay at an amount they were never shown, which is the one
+      // thing this page must never do.
+      setStatus(
+        `${code} could not be applied, so nothing has been charged. Remove the code to continue at the full price.`,
+      );
+      return;
+    }
     void handleSubscriptionCheckout(selectedProduct, code, quote);
   }
 
@@ -994,6 +1156,16 @@ export default function BillingClient({
 
   return (
     <main className="min-h-screen bg-[#F5F5F7] px-4 py-8 text-secondary-db-100">
+      <BillingDetailsModal
+        isOpen={billingModalOpen}
+        onClose={() => {
+          pendingCheckoutRef.current = null;
+          setBillingModalOpen(false);
+        }}
+        onSubmit={handleBillingDetailsSubmit}
+        initialData={snapshot?.billing.billingDetails ?? null}
+      />
+
       <Image
         src="/icons/logo-black.svg"
         alt="Waysorted"
@@ -1106,6 +1278,56 @@ export default function BillingClient({
             </>
           ) : null}
 
+          {otherFamily ? (
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedCode(otherFamily.code);
+                setCouponQuote(null);
+                setCouponError(null);
+              }}
+              className="mt-[12px] text-[13px] text-[#6D3BEB] underline underline-offset-2 transition-opacity hover:opacity-70"
+            >
+              {otherFamily.label} {otherFamily.action}
+            </button>
+          ) : null}
+
+          {/*
+            Rendered outside the subscription-only banner below. A code refused
+            because the selected product is a top-up produced an error that was
+            only ever mounted inside that banner, so the customer saw no trace of
+            the code they had been sent.
+          */}
+          {couponError && !isSubscription ? (
+            <div
+              role="alert"
+              className="mt-[14px] rounded-[12px] bg-[#FDF0E7] px-4 py-3 text-[13px] text-[#9A3412]"
+            >
+              <p>{couponError}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setCouponInput("");
+                  setCouponError(null);
+                  setCouponQuote(null);
+                }}
+                className="mt-[6px] font-semibold underline underline-offset-2"
+              >
+                Remove code and continue
+              </button>
+            </div>
+          ) : null}
+
+          {bridgeExpired ? (
+            <div
+              role="status"
+              className="mt-[14px] rounded-[12px] bg-[#F6F7FB] px-4 py-3 text-[13px] text-[#4A4A55]"
+            >
+              That checkout link had expired, so we brought you straight here. Nothing has been
+              charged.
+            </div>
+          ) : null}
+
           {quoteDrift && selectedProduct ? (
             <div
               role="alert"
@@ -1128,7 +1350,7 @@ export default function BillingClient({
 
           <button
             type="button"
-            onClick={handleContinue}
+            onClick={() => requireBillingDetails(() => void handleContinue())}
             disabled={!selectedProduct || busyCode !== null || paidOrderId !== null}
             className="mt-[25px] flex h-[40px] w-full items-center justify-center gap-2 rounded-[12px] bg-gradient-to-b from-[#2C2450] to-[#191233] text-[15px] font-medium text-white transition-transform duration-200 hover:-translate-y-0.5 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
           >

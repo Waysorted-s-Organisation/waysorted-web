@@ -1,8 +1,13 @@
-import Purchase from "@/models/purchase";
+import Purchase, { type IPurchase } from "@/models/purchase";
 import RazorpayEventLog from "@/models/razorpayEventLog";
 import Refund from "@/models/refund";
 import Subscription from "@/models/subscription";
-import { redeemCoupon, releaseCoupon } from "@/lib/billing/coupon";
+import {
+  claimRedemptionForSettledPurchase,
+  COUPON_RELEASE_REASON_REFUNDED,
+  releaseCoupon,
+  releaseRedeemedCoupon,
+} from "@/lib/billing/coupon";
 import User from "@/models/user";
 import {
   buildSubscriptionPurchaseCompletedEvent,
@@ -14,12 +19,17 @@ import {
   applySubscriptionCycleCredits,
   createRefundRecord,
   ensureSubscriptionRecord,
+  findSubscriptionByProviderId,
   recordRefundAdjustment,
   updateBillingSubscriptionState,
 } from "@/lib/billing/db";
-import { resolvePaidSubscriptionCycle } from "@/lib/billing/webhook-payload";
+import {
+  buildSubscriptionCycleKey,
+  resolvePaidSubscriptionCycle,
+} from "@/lib/billing/webhook-payload";
 import { validateCapturedRazorpayPayment } from "@/lib/billing/payment-verification";
 import { randomUUID } from "crypto";
+import type { HydratedDocument } from "mongoose";
 import {
   buildWebhookClaimFilter,
   buildWebhookLeaseTimes,
@@ -149,6 +159,106 @@ export async function claimWebhookForProcessing(
   );
 }
 
+type PurchaseDocument = HydratedDocument<IPurchase>;
+
+/**
+ * Settles a subscription purchase from a captured payment, WITHOUT granting purchase credits.
+ *
+ * The cycle path is the single owner of a subscription's credits. applyPurchaseCredits granting
+ * here as well put one charge into two idempotency namespaces that share no guard, so a customer
+ * whose invoice.paid arrived after the capture was credited twice for a single payment.
+ */
+async function settleSubscriptionCapture(
+  purchase: PurchaseDocument,
+  paymentId: string,
+  isRefunded: boolean,
+) {
+  const providerSubscriptionId = purchase.razorpaySubscriptionId || "";
+
+  // The money moved, so the promotional allowance is spent rather than merely held. This branch
+  // never touched the redemption row at all: the customer paid at a discount, took the credits, and
+  // kept a claim the orphan sweep would hand straight back - a second discount for the asking.
+  //
+  // Inside the refunded guard deliberately. The admin refund route drives redeemed -> released with
+  // reason "first_cycle_refunded", and an unguarded late capture would flip a refunded customer's
+  // allowance back to consumed.
+  if (!isRefunded && purchase.couponCode) {
+    await claimRedemptionForSettledPurchase({
+      // Both identifiers, because neither is reliable on its own: subscriptionId is attached only
+      // after the provider call in subscriptions/create, and a webhook-created row may carry no
+      // purchase id.
+      purchaseId: String(purchase._id),
+      subscriptionId: providerSubscriptionId || null,
+    }).catch((error) => {
+      console.error("[billing] coupon claim on subscription capture failed", {
+        purchaseId: String(purchase._id),
+        subscriptionId: providerSubscriptionId || null,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    });
+  }
+
+  const subscription = providerSubscriptionId
+    ? await findSubscriptionByProviderId(providerSubscriptionId)
+    : null;
+  if (!subscription || !paymentId) {
+    // Settled but uncredited, and left that way on purpose: grantApplied stays false so the
+    // paid-but-unfulfilled alert fires on a charge that has no local subscription to credit. The
+    // cycle reconciler is the backstop once the subscription record exists.
+    console.error("[billing] captured subscription payment has no local subscription to credit", {
+      purchaseId: String(purchase._id),
+      subscriptionId: providerSubscriptionId || null,
+      paymentId: paymentId || null,
+    });
+    return;
+  }
+
+  await applySubscriptionCycleCredits({
+    subscription,
+    // Always the shared builder, never a hand-written template. verify, invoice.paid and the
+    // renewal backstop have to collapse onto the ONE unique creditledgers.idempotencyKey so
+    // whichever arrives second is a no-op; two keys differing by an inserted ":payment:" segment is
+    // precisely what credited the first paying customer twice for a single charge.
+    cycleKey: buildSubscriptionCycleKey(subscription.providerSubscriptionId, paymentId),
+    paymentId,
+  });
+
+  // Record the delivery on the purchase, including when the ledger row was already present.
+  //
+  // The cycle path never touches this row, so grantApplied stayed false on every correctly
+  // fulfilled subscription sale - and findPaidButUnfulfilledPurchases reads exactly
+  // {status:"captured", grantApplied:false} as "customer paid and got nothing", which turns the
+  // daily billing cron red and buries every other signal in it. /subscriptions/verify sets it for
+  // this reason; the webhook must match. Conditional, so it can never re-open the grant.
+  await Purchase.updateOne(
+    { _id: purchase._id, grantApplied: false },
+    { $set: { grantApplied: true } },
+  );
+}
+
+/**
+ * Hands a fully refunded customer their promotional allowance back.
+ *
+ * Two lookups rather than one filter: releaseRedeemedCoupon matches on purchase OR subscription,
+ * never both, so a claim recorded against only the subscription is invisible to a purchase-keyed
+ * call.
+ *
+ * The `reserved` fallback covers the row no other path can ever free again. Every claim call site
+ * swallows its error, so a transient failure leaves the redemption reserved - and once the purchase
+ * is refunded, sweepOrphanedReservations deliberately skips it (coupon.ts excludes refunded
+ * purchases by value) and releaseRedeemedCoupon does not match it either. That row survived
+ * forever, and because user_1_active_promo counts a reserved claim as live it locked a fully
+ * refunded customer out of all four codes permanently.
+ */
+async function releaseRefundedRedemption(purchaseId: string, subscriptionId: string | null) {
+  const reason = COUPON_RELEASE_REASON_REFUNDED;
+  if (await releaseRedeemedCoupon({ purchaseId, reason })) return true;
+  if (subscriptionId && (await releaseRedeemedCoupon({ subscriptionId, reason }))) return true;
+  if (await releaseCoupon({ purchaseId, reason })) return true;
+  if (subscriptionId) return releaseCoupon({ subscriptionId, reason });
+  return false;
+}
+
 export async function processRazorpayWebhook(payload: Record<string, unknown>) {
   const eventType = String(payload.event || "");
   const bodyPayload = (payload.payload as Record<string, unknown> | undefined) || {};
@@ -238,13 +348,28 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
       matchedPurchase.razorpayPaymentId ||= paymentId || null;
       // Never resurrect a refunded purchase: a late or re-delivered capture event would otherwise
       // flip it back to captured and show a refunded charge as paid.
-      if (matchedPurchase.status !== "refunded" && matchedPurchase.status !== "partially_refunded") {
+      const isRefunded =
+        matchedPurchase.status === "refunded" || matchedPurchase.status === "partially_refunded";
+      if (!isRefunded) {
         matchedPurchase.status = "captured";
         matchedPurchase.capturedAt ||= new Date();
       }
       await matchedPurchase.save();
 
-      await applyPurchaseCredits(matchedPurchase);
+      if (matchedPurchase.kind === "subscription") {
+        // A subscription's credits belong to the CYCLE path and nothing else.
+        //
+        // createPurchaseRecord copies creditsGranted onto subscription rows too, so
+        // applyPurchaseCredits granted here under purchase-grant:<id> while invoice.paid granted the
+        // SAME charge under subscription-cycle:<subId>:...:payment:<paymentId>. Two disjoint
+        // idempotency namespaces with no shared guard: a UPI AutoPay customer, whose
+        // /subscriptions/verify returns 202 payment_processing and leaves grantApplied false, was
+        // credited twice for one payment once both events landed.
+        await settleSubscriptionCapture(matchedPurchase, paymentId, isRefunded);
+      } else {
+        await applyPurchaseCredits(matchedPurchase);
+      }
+
       if (matchedPurchase.kind === "subscription" && matchedPurchase.razorpaySubscriptionId) {
         await emitSubscriptionPurchaseCompleted({
           userId: String(matchedPurchase.user),
@@ -351,11 +476,23 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
       });
       if (!subscription) return { ignored: true, reason: "subscription_not_found" };
 
-      // A charge on a discounted subscription means the first cycle was paid,
-      // so the claim is spent. Idempotent: only a reserved row transitions, and
-      // verify may already have done it.
-      await redeemCoupon({ subscriptionId }).catch((error) => {
-        console.error("[billing] coupon redemption on subscription.charged failed", {
+      const linkedPurchaseId = String(
+        (subscription.metadata as Record<string, unknown> | undefined)?.purchaseId || "",
+      );
+
+      // A charge on a discounted subscription means the first cycle was paid, so the claim is spent.
+      //
+      // Through the shared claim point rather than redeemCoupon: this is the third proof that the
+      // money moved, and all three now converge on one helper with one tolerance. redeemCoupon
+      // transitions a `reserved` row only, so a claim the orphan sweep had already released stayed
+      // released for a customer who had been charged - and the code became repeatable. Keyed on the
+      // purchase as well as the subscription, because subscriptionId is attached only after the
+      // provider call in subscriptions/create and can legitimately be null here.
+      await claimRedemptionForSettledPurchase({
+        purchaseId: linkedPurchaseId || null,
+        subscriptionId,
+      }).catch((error) => {
+        console.error("[billing] coupon claim on subscription.charged failed", {
           subscriptionId,
           error: error instanceof Error ? error.message : String(error),
         });
@@ -393,13 +530,9 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
         paymentId: paidCycle.paymentId,
       });
 
-      const purchaseId = String(
-        (subscription.metadata as Record<string, unknown> | undefined)
-          ?.purchaseId || "",
-      );
       await emitSubscriptionPurchaseCompleted({
         userId: String(subscription.user),
-        purchaseId: purchaseId || null,
+        purchaseId: linkedPurchaseId || null,
         subscriptionId: subscription.providerSubscriptionId,
         productCode: subscription.planCode,
         completionSource: eventType,
@@ -474,6 +607,26 @@ export async function processRazorpayWebhook(payload: Record<string, unknown>) {
           : "partially_refunded";
       updatedPurchase.refundedAt = new Date();
       await updatedPurchase.save();
+
+      // Give the promotional allowance back on a FULL refund, the way the admin refund route
+      // already does. This path did not, so a refund issued from the Razorpay dashboard left the
+      // redemption "redeemed" - and because user_1_active_promo is deliberately not scoped per
+      // coupon, that locked the customer out of ALL FOUR codes for a subscription whose money they
+      // got back in full. A partial refund is not that: the customer keeps the discounted product.
+      if (updatedPurchase.status === "refunded" && updatedPurchase.couponCode) {
+        // Never allowed to fail the refund webhook. A throw here would have Razorpay retry an event
+        // that has already reversed the credits, purely over coupon bookkeeping.
+        await releaseRefundedRedemption(
+          String(updatedPurchase._id),
+          updatedPurchase.razorpaySubscriptionId || null,
+        ).catch((error) => {
+          console.error("[billing] coupon release on refund webhook failed", {
+            purchaseId: String(updatedPurchase._id),
+            providerRefundId,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        });
+      }
 
       return { processed: true, type: eventType, refundId: String(refund._id) };
     }

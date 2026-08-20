@@ -103,10 +103,22 @@ test("every path that ends a checkout also frees the code", () => {
   // Superseded by the customer's own retry.
   assert.match(createRoute, /superseded_pending_subscription/);
 
-  // Paid: reserved -> redeemed, from both the client confirmation and the
-  // webhook, because either can arrive first.
-  assert.match(verifyRoute, /redeemCoupon\(/);
-  assert.match(webhooks, /redeemCoupon\(/);
+  // Paid: the claim is taken from both the client confirmation and the webhook,
+  // because either can arrive first.
+  //
+  // Both now go through claimRedemptionForSettledPurchase rather than
+  // redeemCoupon. That is the point: redeemCoupon only matches a "reserved" row,
+  // so once the orphan sweep had released a reservation, a customer who then
+  // paid kept their promotional allowance and could take a second discount. The
+  // shared helper tolerates a released row, and routing every settlement proof
+  // through it means the three of them cannot drift apart in what they accept.
+  assert.match(verifyRoute, /claimRedemptionForSettledPurchase\(/);
+  assert.match(webhooks, /claimRedemptionForSettledPurchase\(/);
+  assert.doesNotMatch(
+    verifyRoute,
+    /redeemCoupon\(/,
+    "settlement must not go back to the reserved-only path",
+  );
 });
 
 test("release only ever touches a reserved row", () => {

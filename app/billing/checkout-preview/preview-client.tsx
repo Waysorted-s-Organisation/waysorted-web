@@ -29,7 +29,21 @@ const SNAPSHOT = {
       canPurchaseTopups: true,
       canPurchaseStarterPack: true,
     },
+    // Ordered exactly as the real catalogue is - top-up first - because that
+    // ordering is what made subscriptions unreachable from this page.
     catalog: [
+      {
+        code: "topup_std_100",
+        name: "100 credits",
+        kind: "topup",
+        eligibility: "all",
+        priceInr: 3,
+        amountPaise: 300,
+        creditsGranted: 100,
+        bonusCredits: 0,
+        billingCycle: "one_time",
+        currency: "USD",
+      },
       {
         code: "sub_month_1",
         name: "Pro Plan",
@@ -55,6 +69,15 @@ const SNAPSHOT = {
         currency: "USD",
       },
     ],
+    billingDetails: {
+      firstName: "Preview",
+      lastName: "User",
+      email: "preview@waysorted.com",
+      address: "42 MG Road, Indiranagar",
+      country: "india",
+      city: "Bengaluru",
+      zipCode: "560038",
+    } as { [k: string]: string } | null,
     pricingVersion: "preview",
     pricing: {
       country: "US",
@@ -126,12 +149,13 @@ function installStub() {
   };
 }
 
-export default function CheckoutPreview({ coupon }: { coupon: string | null }) {
+export default function CheckoutPreview({ withoutDetails }: { withoutDetails: boolean }) {
   const [ready] = useState(() => {
     installStub();
     return true;
   });
   if (!ready) return null;
 
-  return <BillingClient autostart={false} initialProductCode={coupon ? "sub_month_1" : null} />;
+  if (withoutDetails) SNAPSHOT.billing.billingDetails = null;
+  return <BillingClient autostart={false} initialProductCode={null} />;
 }

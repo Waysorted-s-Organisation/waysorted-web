@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { normalizeCouponCode } from "@/lib/billing/coupon-code";
 
 export const dynamic = "force-dynamic";
 
@@ -23,20 +24,29 @@ export const dynamic = "force-dynamic";
  * before the code can affect a charge. Rejecting here would leak which codes
  * exist to anyone who can type a URL.
  */
-const CODE_PATTERN = /^[A-Z0-9][A-Z0-9_-]{1,31}$/;
+/** A malformed percent-escape throws rather than returning the raw string. */
+function safeDecode(value: string): string {
+  try {
+    return decodeURIComponent(value || "");
+  } catch {
+    return "";
+  }
+}
 
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ code: string }> },
 ) {
   const { code } = await context.params;
-  const normalized = decodeURIComponent(code || "").trim().toUpperCase();
+  // Shared with the plugin's checkout bridge, so the two entry points cannot
+  // disagree about what a code looks like.
+  const normalized = normalizeCouponCode(safeDecode(code));
 
   const target = new URL("/billing", request.nextUrl.origin);
 
   // A malformed code is dropped rather than forwarded. It cannot be valid, and
   // reflecting arbitrary input into the next URL is not worth the risk.
-  if (CODE_PATTERN.test(normalized)) {
+  if (normalized) {
     target.searchParams.set("coupon", normalized);
   }
 
