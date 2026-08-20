@@ -5,7 +5,11 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatMoney } from "@/lib/billing/money";
 import { yearlySavingPercent } from "@/lib/billing/plan-savings";
 import { isLiveSubscriptionStatus } from "@/lib/billing/subscription-status";
-import { getMonthlyCounterpartCode, getPlanUi } from "@/app/pricing/pricing-presentation";
+import {
+  getMonthlyCounterpartCode,
+  getOneTimeProductDisplay,
+  getPlanUi,
+} from "@/app/pricing/pricing-presentation";
 import Image from "next/image";
 import OrderComplete, { type OrderCompleteProps } from "@/components/OrderComplete";
 import { unlockPrinterAudio } from "@/components/OrderComplete/printer-sound";
@@ -512,9 +516,13 @@ export default function BillingClient({
             // Shown as soon as the server has verified the payment, not after
             // the wallet poll below - the poll can take 40s, and by then the
             // charge is already a fact the customer is entitled to see.
+            const oneTime = getOneTimeProductDisplay(product);
             setCompletedOrder({
               orderNumber: orderNumberFrom(payload.orderId),
-              itemName: product.name,
+              // What they bought, not the catalogue's internal label. A receipt
+              // reading "Standard Top-up 100" for 75 credits at 100 rupees is
+              // three numbers describing one purchase.
+              itemName: `${oneTime.kindLabel} - ${oneTime.creditsLabel}`,
               amount: formatCurrency(payload.amount, payload.currency),
             });
 
@@ -982,7 +990,13 @@ export default function BillingClient({
       // The catalogue's own `name` is an internal label ("Monthly 2"), and
       // showing it here meant the plan someone picked on the pricing page was
       // called something else the moment they reached checkout.
-      const planName = getPlanUi(product.code)?.planName || product.name;
+      // A one-time product is named by what it grants, not by the catalogue's
+      // internal label - "Standard Top-up 100" grants 75 credits for 100 rupees,
+      // so showing that name put three different numbers on one row.
+      const planName =
+        product.kind === "subscription"
+          ? getPlanUi(product.code)?.planName || product.name
+          : getOneTimeProductDisplay(product).creditsLabel;
 
       // Paired by TIER, not by whichever monthly plan came first in the
       // catalogue. Comparing every yearly against Discover's monthly meant only
@@ -1204,7 +1218,7 @@ export default function BillingClient({
                 {selectedProduct
                   ? isSubscription
                     ? `Subscribing to ${getPlanUi(selectedProduct.code)?.planName || selectedProduct.name}`
-                    : selectedProduct.name
+                    : getOneTimeProductDisplay(selectedProduct).kindLabel
                   : "Choose a plan"}
               </h1>
               <p className="mt-[3px] text-[14px] text-[#8B8B94]">{planSubtitle}</p>
@@ -1640,19 +1654,26 @@ function PlanRadio({ selected }: { selected: boolean }) {
 }
 
 /**
- * The processor's name on the button that hands the customer over to it.
+ * Razorpay's own lockup, on the button that hands the customer over to it.
  *
- * Deliberately the WORDMARK ONLY. This drew a hand-approximated version of
- * Razorpay's symbol, which was simply wrong - and a wrong trademark on a
- * payment button is worse than no symbol at all, because it undermines exactly
- * the trust the logo is there to provide.
+ * The official asset, not a redrawing. An earlier version approximated the
+ * symbol by hand from a screenshot and got it wrong, which on a payment button
+ * undermines exactly the trust a processor's logo is there to provide.
  *
- * To restore the symbol, export `razorpay-icon` from the checkout frame in
- * Figma to `public/icons/razorpay.svg` and render it here beside the word. The
- * wordmark is upright, not italic.
+ * The artwork is already white and includes both the symbol and the wordmark,
+ * so it needs no colour handling - it sits on the dark button as-is. Sized by
+ * height with width auto, so its 251x54 proportions are never distorted.
  */
 function RazorpayWordmark() {
-  return <span className="text-[15px] font-bold tracking-[-0.01em]">Razorpay</span>;
+  return (
+    <Image
+      src="/icons/razorpay.svg"
+      alt="Razorpay"
+      width={84}
+      height={18}
+      className="h-[18px] w-auto"
+    />
+  );
 }
 
 /** The soft sparkle graphic in the corner of the offer banner. */

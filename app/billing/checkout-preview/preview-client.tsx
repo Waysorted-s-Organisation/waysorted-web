@@ -33,8 +33,18 @@ const SNAPSHOT = {
     // ordering is what made subscriptions unreachable from this page.
     catalog: [
       {
-        code: "topup_std_100", name: "100 credits", kind: "topup", eligibility: "all",
-        priceInr: 99, amountPaise: 9900, creditsGranted: 100, bonusCredits: 0,
+        code: "topup_std_50", name: "Standard Top-up 50", kind: "topup", eligibility: "standard",
+        priceInr: 50, amountPaise: 5000, creditsGranted: 35, bonusCredits: 0,
+        billingCycle: "one_time", currency: "INR",
+      },
+      {
+        code: "topup_std_100", name: "Standard Top-up 100", kind: "topup", eligibility: "standard",
+        priceInr: 100, amountPaise: 10000, creditsGranted: 75, bonusCredits: 0,
+        billingCycle: "one_time", currency: "INR",
+      },
+      {
+        code: "topup_std_120", name: "Standard Top-up 120", kind: "topup", eligibility: "standard",
+        priceInr: 120, amountPaise: 12000, creditsGranted: 100, bonusCredits: 0,
         billingCycle: "one_time", currency: "INR",
       },
       {

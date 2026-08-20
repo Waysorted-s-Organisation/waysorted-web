@@ -17,7 +17,11 @@ import test from "node:test";
 import { COUPON_MAX_CREDITS } from "@/lib/billing/coupon";
 import { normalizeCouponCode } from "@/lib/billing/coupon-code";
 import { yearlySavingPercent } from "@/lib/billing/plan-savings";
-import { getMonthlyCounterpartCode, getPlanUi } from "@/app/pricing/pricing-presentation";
+import {
+  getMonthlyCounterpartCode,
+  getOneTimeProductDisplay,
+  getPlanUi,
+} from "@/app/pricing/pricing-presentation";
 
 const read = (file: string) => readFileSync(path.join(process.cwd(), file), "utf8");
 
@@ -179,9 +183,20 @@ test("checkout names a plan the same way /pricing does", () => {
   // here meant the plan someone chose on the pricing page was called something
   // else the moment they reached checkout.
   assert.match(billingClient, /getPlanUi\(selectedProduct\.code\)\?\.planName/);
-  assert.match(billingClient, /const planName = getPlanUi\(product\.code\)\?\.planName/);
+  assert.match(billingClient, /getPlanUi\(product\.code\)\?\.planName \|\| product\.name/);
   assert.equal(getPlanUi("sub_month_2")?.planName, "Core");
   assert.equal(getPlanUi("sub_year_3499")?.planName, "Core");
+
+  // A one-time product is named by what it grants. The catalogue label
+  // "Standard Top-up 100" describes a 75-credit product costing 100 rupees, so
+  // showing it put three different numbers on one row.
+  assert.match(billingClient, /getOneTimeProductDisplay\(product\)\.creditsLabel/);
+  const topup = getOneTimeProductDisplay({ code: "topup_std_100", creditsGranted: 75, bonusCredits: 0 });
+  assert.equal(topup.creditsLabel, "75 credits");
+  assert.equal(topup.kindLabel, "Credit top-up");
+  const starter = getOneTimeProductDisplay({ code: "starter_149", creditsGranted: 200, bonusCredits: 25 });
+  assert.equal(starter.creditsLabel, "225 credits", "a bonus counts toward what the customer receives");
+  assert.equal(starter.kindLabel, "Starter pack");
 });
 
 test("the yearly saving is paired by tier, not by catalogue order", () => {
