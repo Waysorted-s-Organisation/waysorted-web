@@ -23,6 +23,7 @@ const bridgeRoute = read("app/api/billing/checkout/bridge/route.ts");
 const exchangeRoute = read("app/api/billing/checkout/bridge/exchange/route.ts");
 const grantModel = read("models/billingBridgeGrant.ts");
 const billingClient = read("app/billing/billing-client.tsx");
+const detailsRoute = read("app/api/billing/details/route.ts");
 
 test("the grant has somewhere to put the code", () => {
   // Mongoose strict mode silently drops unknown keys, so a route that passes
@@ -112,6 +113,21 @@ test("checkout collects billing details, the way /pricing does", () => {
     billingClient,
     /requireBillingDetails\(\(\) => void handleContinue\(\)\)/,
     "the Continue button must go through the gate",
+  );
+});
+
+test("a bridged customer can actually clear the billing-details gate", () => {
+  // The gate existing is not enough. A customer arriving from the plugin holds
+  // ONLY the bridge cookie - that is the entire point of the bridge - and
+  // /api/billing/details was the one route on the checkout path that did not
+  // accept it. The modal opened, they filled in seven fields, and Save answered
+  // 401 with no way past: the flagship flow was unusable for exactly the people
+  // it targets.
+  assert.match(detailsRoute, /getBridgeAuthenticatedUser\("billing:checkout"\)/);
+  assert.match(
+    detailsRoute,
+    /getAuthenticatedUser\(request\)\)\s*\|\|/,
+    "session auth must still be tried first",
   );
 });
 
