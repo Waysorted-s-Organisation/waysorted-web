@@ -311,11 +311,21 @@ export default function BillingClient({
    */
   const quoteDrift = useMemo(() => {
     if (!selectedProduct || quotedAmountSubunits === null || !quotedCurrency) return null;
+    /*
+     * A quote belongs to the product it was quoted FOR.
+     *
+     * The comparison used to run against whatever was selected, so switching
+     * plans in the dropdown tripped it: someone who arrived from Pro (qa=74900)
+     * and chose Discover was told "You were shown ₹749.00. Based on your account
+     * it is now ₹149.00" - blaming their account for a change they made
+     * themselves, in the alarming register reserved for a real price drift.
+     */
+    if (initialProductCode && selectedProduct.code !== initialProductCode) return null;
     const sameAmount = selectedProduct.amountPaise === quotedAmountSubunits;
     const sameCurrency = selectedProduct.currency.toUpperCase() === quotedCurrency.toUpperCase();
     if (sameAmount && sameCurrency) return null;
     return { amountPaise: quotedAmountSubunits, currency: quotedCurrency.toUpperCase() };
-  }, [quotedAmountSubunits, quotedCurrency, selectedProduct]);
+  }, [quotedAmountSubunits, quotedCurrency, selectedProduct, initialProductCode]);
 
   /*
    * Show this only while the customer actually HAS a subscription.
