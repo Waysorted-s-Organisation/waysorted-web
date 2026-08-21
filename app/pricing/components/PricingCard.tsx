@@ -48,7 +48,13 @@ export default function PricingCard({
       <div>
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-2 h-[42px]">
-            <Image src={iconSrc} alt="" width={24} height={24} className="h-[24px] w-[24px]" />
+            {/* The three marks are genuinely different shapes in the design (24x24,
+                22x19, 21x25). A fixed box that centres them keeps the three cards
+                optically aligned; sizing the <img> itself let flex-shrink and the
+                intrinsic ratio fight over the width. */}
+            <span className="flex h-[24px] w-[24px] shrink-0 items-center justify-center">
+              <Image src={iconSrc} alt="" width={24} height={24} className="max-h-full max-w-full object-contain" />
+            </span>
             <h3 className="text-[32px] font-semibold leading-[42px]">{planName}</h3>
           </div>
 

@@ -20,7 +20,7 @@ export const PLAN_UI = {
     planName: "Discover",
     description: "Best for individuals getting started with Waysorted.",
     ctaLabel: "Select Plan",
-    iconSrc: "/pricingIcons/Discover.png",
+    iconSrc: "/pricingIcons/Discover.svg",
     features: [
       "Includes all Premium Waysorted features",
       "Regular updates with ongoing support",
@@ -32,7 +32,7 @@ export const PLAN_UI = {
     planName: "Core",
     description: "Perfect for designers who need full access to tools, credits & ongoing updates.",
     ctaLabel: "Get Started",
-    iconSrc: "/pricingIcons/Core.png",
+    iconSrc: "/pricingIcons/Core.svg",
     featured: true,
     features: [
       "Includes all Premium Waysorted features",
@@ -45,7 +45,7 @@ export const PLAN_UI = {
     planName: "Pro",
     description: "Designed for studios and enterprises with more support & credits.",
     ctaLabel: "Select Plan",
-    iconSrc: "/pricingIcons/Pro.png",
+    iconSrc: "/pricingIcons/Pro.svg",
     features: [
       "Includes all Premium Waysorted features",
       "Regular updates with ongoing support",

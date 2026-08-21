@@ -358,13 +358,18 @@ export default function PricingClient({
 
           <div className="mx-auto mt-8 max-w-[790px] rounded-[15.31px] border border-[#ECEFF5] bg-white p-6 md:p-3">
             <div className="flex flex-col items-center text-center md:flex-row md:justify-center md:text-left gap-4">
-              <Image
-                src="/pricingIcons/Credit topup message icon.png"
-                alt="Not ready for a plan?"
-                width={48}
-                height={48}
-                className="h-[48px] w-[48px] shrink-0 object-contain"
-              />
+              {/* In the design the lavender tile is the CONTAINER and the gift is a
+                  23x25 violet glyph inset inside it, so only the glyph is an asset.
+                  The old PNG baked both together at 52px and had no @2x. */}
+              <div className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-[8px] bg-[#F1EAFE]">
+                <Image
+                  src="/pricingIcons/credit-topup-gift.svg"
+                  alt=""
+                  width={22}
+                  height={24}
+                  className="h-6 w-[22px] object-contain"
+                />
+              </div>
               {/* Mobile text layout */}
               <div className="md:hidden">
                 <p className="text-[18px] font-semibold text-[#111827]">Not ready for a plan?</p>
@@ -386,7 +391,9 @@ export default function PricingClient({
           <section className="mt-14 flex flex-col gap-8 md:flex-row md:items-stretch md:justify-center md:gap-[50px]">
             <div className="w-full px-[25px] md:px-0 md:w-[434px] md:py-8 flex flex-col">
               <div className="flex items-center gap-2">
-                <Image src="/pricingIcons/Pay as you go.png" alt="" width={32} height={32} className="h-8 w-8" />
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center">
+                  <Image src="/pricingIcons/pay-as-you-go-gift.svg" alt="" width={32} height={32} className="max-h-full max-w-full object-contain" />
+                </span>
                 <h2 className="text-2xl md:text-[32px] font-medium text-[#111827]">Pay as you go</h2>
               </div>
 
