@@ -242,11 +242,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
 ];
 
 export const FEATURE_PRICING: FeaturePricingRule[] = [
-  { featureCode: "frame_generation", credits: 10, description: "Frame generation" },
-  { featureCode: "bleed", credits: 5, description: "Bleed option" },
+  { featureCode: "frame_generation", credits: 5, description: "Frame generation" },
+  { featureCode: "bleed", credits: 2.5, description: "Bleed option" },
   {
     featureCode: "ai_contrast",
-    credits: 5,
+    credits: 2.5,
     description: "Enhance contrast with AI",
     requiresSubscription: true,
   },
