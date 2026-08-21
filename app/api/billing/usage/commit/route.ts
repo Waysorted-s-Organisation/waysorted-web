@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/billing/auth";
-import { commitReservation } from "@/lib/billing/db";
+import UsageReservation from "@/models/usageReservation";
+import { commitReservation, settleImportReservationPricing } from "@/lib/billing/db";
 import {
   buildToolUsageCompletedEvent,
   buildToolUsageHeavyEvent,
@@ -17,6 +18,7 @@ type CommitBody = {
   reservationId?: string;
   idempotencyKey?: string;
   processorJobId?: string;
+  actualSizeBytes?: number;
 };
 
 export async function POST(request: NextRequest) {
@@ -26,6 +28,33 @@ export async function POST(request: NextRequest) {
 
     if (!auth?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const reservationId = body.reservationId?.trim() || null;
+    if (reservationId) {
+      const existingReservation = await UsageReservation.findOne({
+        _id: reservationId,
+        user: String(auth.user._id),
+      });
+      if (
+        existingReservation &&
+        existingReservation.featureCode.startsWith("import_") &&
+        existingReservation.metadata?.authoritativePricingApplied !== true
+      ) {
+        const actualSize =
+          typeof body.actualSizeBytes === "number" && body.actualSizeBytes > 0
+            ? body.actualSizeBytes
+            : Number(existingReservation.selectedOptions?.clientDeclaredSizeBytes) || 0;
+
+        if (actualSize > 0) {
+          await settleImportReservationPricing({
+            userId: String(auth.user._id),
+            reservationId,
+            actualSizeBytes: actualSize,
+            importMode: (existingReservation.selectedOptions?.importMode as string) || null,
+          });
+        }
+      }
     }
 
     const reservation = await commitReservation({
