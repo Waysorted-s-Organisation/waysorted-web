@@ -9,7 +9,13 @@ export const fetchCache = "force-no-store";
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json().catch(() => ({}))) as UsagePricingRequest;
-    const resolved = resolveUsageCredits(body);
+    const resolved = resolveUsageCredits({
+      ...body,
+      selectedOptions: {
+        ...(body.selectedOptions || {}),
+        isQuote: true,
+      },
+    });
 
     return NextResponse.json({
       ok: true,
