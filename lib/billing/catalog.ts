@@ -320,33 +320,33 @@ export const FEATURE_PRICING: FeaturePricingRule[] = [
 ];
 
 export const AI_IMPORT_PRICING: FileImportPricingRule[] = [
-  { featureCode: "import_ai", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 15 },
-  { featureCode: "import_ai", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 20 },
-  { featureCode: "import_ai", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 30 },
+  { featureCode: "import_ai", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 9 },
+  { featureCode: "import_ai", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 12.5 },
+  { featureCode: "import_ai", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 17.5 },
 ];
 
 export const EPS_IMPORT_PRICING: FileImportPricingRule[] = [
-  { featureCode: "import_eps", sizeLabel: "small", maxBytes: 8 * 1024 * 1024, credits: 15 },
-  { featureCode: "import_eps", sizeLabel: "medium", maxBytes: 30 * 1024 * 1024, credits: 22 },
-  { featureCode: "import_eps", sizeLabel: "large", maxBytes: 100 * 1024 * 1024, credits: 35 },
+  { featureCode: "import_eps", sizeLabel: "small", maxBytes: 8 * 1024 * 1024, credits: 9 },
+  { featureCode: "import_eps", sizeLabel: "medium", maxBytes: 30 * 1024 * 1024, credits: 14 },
+  { featureCode: "import_eps", sizeLabel: "large", maxBytes: 100 * 1024 * 1024, credits: 20 },
 ];
 
 export const PSD_IMPORT_PRICING: FileImportPricingRule[] = [
-  { featureCode: "import_psd", sizeLabel: "small", maxBytes: 10 * 1024 * 1024, credits: 15 },
-  { featureCode: "import_psd", sizeLabel: "medium", maxBytes: 50 * 1024 * 1024, credits: 25 },
-  { featureCode: "import_psd", sizeLabel: "large", maxBytes: 200 * 1024 * 1024, credits: 40 },
+  { featureCode: "import_psd", sizeLabel: "small", maxBytes: 10 * 1024 * 1024, credits: 10 },
+  { featureCode: "import_psd", sizeLabel: "medium", maxBytes: 50 * 1024 * 1024, credits: 15 },
+  { featureCode: "import_psd", sizeLabel: "large", maxBytes: 200 * 1024 * 1024, credits: 22.5 },
 ];
 
 export const PDF_EDITABLE_IMPORT_PRICING: FileImportPricingRule[] = [
-  { featureCode: "import_pdf_editable", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 15 },
-  { featureCode: "import_pdf_editable", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 20 },
-  { featureCode: "import_pdf_editable", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 30 },
+  { featureCode: "import_pdf_editable", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 9 },
+  { featureCode: "import_pdf_editable", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 12.5 },
+  { featureCode: "import_pdf_editable", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 17.5 },
 ];
 
 export const PDF_IMAGE_IMPORT_PRICING: FileImportPricingRule[] = [
-  { featureCode: "import_pdf_image", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 15 },
-  { featureCode: "import_pdf_image", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 20 },
-  { featureCode: "import_pdf_image", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 30 },
+  { featureCode: "import_pdf_image", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 9 },
+  { featureCode: "import_pdf_image", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 12.5 },
+  { featureCode: "import_pdf_image", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 17.5 },
 ];
 
 export function getCatalogProduct(code: string) {
