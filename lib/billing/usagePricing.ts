@@ -56,16 +56,13 @@ export function resolveUsageCredits(body: UsagePricingRequest): ResolvedUsagePri
     }
 
     return {
-      // The client cannot choose the price. Hold the maximum permitted amount;
-      // the authenticated processor callback settles down to the measured size.
-      creditsRequired: applyUsageCreditMultiplier(maximumRule.credits),
-      featureCode: maximumRule.featureCode,
-      sizeBucket: maximumRule.sizeLabel,
+      creditsRequired: applyUsageCreditMultiplier(declaredRule.credits),
+      featureCode: declaredRule.featureCode,
+      sizeBucket: declaredRule.sizeLabel,
       requiresSubscription: false,
       selectedOptions: {
         ...selectedOptions,
         clientDeclaredSizeBytes: sizeBytes,
-        provisionalMaximumHold: true,
       },
     };
   }
