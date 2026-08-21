@@ -9,10 +9,8 @@ import OrderComplete from "@/components/OrderComplete";
  * surface in the product to look at while building it. This exists so it can be
  * checked, and must never be mistaken for a genuine receipt.
  *
- * Always available in development. In production it stays a 404 unless
- * BILLING_PREVIEW=1 is set, which is the switch to flip when the page needs to
- * be recorded or demoed - and to unset immediately afterwards. Deliberately an
- * env var rather than a code change, so turning it off does not need a revert.
+ * Development only. To show it on production, use the temporary keyed link at
+ * ./[key], which carries its own expiry - see that file.
  *
  * The numbers below are invented and fixed. Nothing here reads a real order.
  */
@@ -27,17 +25,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false, nocache: true },
 };
 
-function previewEnabled() {
-  if (process.env.NODE_ENV !== "production") return true;
-  return process.env.BILLING_PREVIEW === "1";
-}
-
 export default async function ReceiptPreviewPage({
   searchParams,
 }: {
   searchParams: Promise<{ discount?: string }>;
 }) {
-  if (!previewEnabled()) notFound();
+  if (process.env.NODE_ENV === "production") notFound();
 
   const { discount } = await searchParams;
 
