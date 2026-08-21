@@ -23,7 +23,15 @@ function getBadgePriority(tool: ITool) {
 
 export async function GET() {
   await dbConnect();
-  const all = await Tool.find().lean();
+  /*
+   * Honour isActive - the route is called /active and used not to filter at all,
+   * which is how retired tools kept surfacing on the homepage.
+   *
+   * Deliberately NOT filtering on `disabled`. A disabled tool is one that ships
+   * with an "Unlock's soon" badge and is meant to be seen; an inactive one has
+   * been retired. Filtering on both would also hide Comment Summariser.
+   */
+  const all = await Tool.find({ isActive: true }).lean();
 
   // Sort by badge priority, then by name as tiebreaker
   all.sort((a, b) => {

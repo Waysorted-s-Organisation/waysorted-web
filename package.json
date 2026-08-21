@@ -36,7 +36,8 @@
     "migrate:reconcile-subscription-purchases": "tsx --conditions=react-server scripts/migrate-reconcile-subscription-purchases.ts",
     "test:billing-small-fixes": "tsx --test test/billing-small-fixes.test.ts",
     "test:billing-hardening": "tsx --test test/billing-hardening.test.ts",
-    "test:figma-plugin-cors": "tsx --test test/figma-plugin-cors.test.ts"
+    "test:figma-plugin-cors": "tsx --test test/figma-plugin-cors.test.ts",
+    "retire:tools": "tsx --conditions=react-server scripts/retire-tools.ts"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.15",

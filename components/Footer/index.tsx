@@ -6,7 +6,7 @@ import Link from "next/link";
 import ToolsPicker from "./ToolPicker";
 import NewsletterInput from "./NewsLetterInput";
 import { ITool } from "@/models/tool";
-// import ReleaseNotesCarousel from "./ReleaseNotesCarousel";
+import BlogRotator from "./BlogRotator";
 
 export default function Footer() {
   const [tools, setTools] = useState<ITool[] | null>(null);
@@ -62,9 +62,9 @@ export default function Footer() {
 
         {/* Two-column section (stacks on mobile) */}
         <div className="mt-4 sm:mt-5 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
-          {/* Right column (Release Notes) should come first on mobile */}
+          {/* Right column (a rotating blog post) should come first on mobile */}
           <div className="order-1 lg:order-2 col-span-1 lg:col-span-4 self-start">
-            {/* <ReleaseNotesCarousel /> */}
+            <BlogRotator />
           </div>
 
           {/* Left column (Tools) appears second on mobile, first on desktop */}

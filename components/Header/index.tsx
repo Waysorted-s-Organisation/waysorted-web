@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ProductsMenu } from '../ProductsMenu';
@@ -9,6 +9,7 @@ import { useUser } from '@/hooks/useUser';
 import UserMenu from '@/components/UserMenu';
 import GlowStarButton from '@/components/GlowStarButton';
 import products from "@/data/products.json"
+import { buildAnnouncements, type PublicOffer } from '@/lib/announcements';
 
 interface HeaderProps {
   showBanner: boolean;
@@ -142,6 +143,47 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
     };
   }, []);
 
+  /*
+   * The banner rotates. It used to be a single hardcoded line, which is what
+   * "stuck on this CTA only" meant.
+   *
+   * The evergreen lines render immediately; discount lines are appended once the
+   * public ladder answers, so a slow or empty response degrades to the evergreen
+   * rotation rather than an empty bar. Every seeded coupon ships inactive, so an
+   * empty ladder is the normal case, not a failure.
+   */
+  const [offers, setOffers] = useState<PublicOffer[]>([]);
+  const [announcementIndex, setAnnouncementIndex] = useState(0);
+  const [announcementPaused, setAnnouncementPaused] = useState(false);
+  const announcements = useMemo(() => buildAnnouncements(offers), [offers]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/billing/coupons/public-ladder', { headers: { Accept: 'application/json' } });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!cancelled) setOffers(json?.data?.ladder ?? []);
+      } catch {
+        // No offers is a valid state; the evergreen lines still rotate.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!showBanner || announcements.length < 2 || announcementPaused) return;
+    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    const timer = setInterval(() => {
+      setAnnouncementIndex((prev) => (prev + 1) % announcements.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [showBanner, announcements.length, announcementPaused]);
+
+  // The list can shrink when the ladder resolves; never index past the end.
+  const announcement = announcements[announcementIndex % announcements.length];
+
   // helper to choose text color based on secure section state
   const textColor = isSecureSection ? 'text-white' : 'text-secondary-db-100';
 
@@ -150,12 +192,22 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
       ref={headerRef}
       className={`w-full fixed top-0 z-40 ${isSecureSection ? 'bg-secondary-db-100' : 'bg-white border-b border-gray-200'}`}
     >
-      {showBanner && (
-          <div className="relative flex min-h-9 w-full items-center justify-center bg-[#111820] px-12 py-2 text-center text-xs text-white/80 sm:text-sm">
-            <span>Try Palettable for quick Color schemes and Contrast check...</span>
-            <Link href="/learning/palettable" className="ml-1 underline underline-offset-2 transition-colors hover:text-white">
-              Click here
-            </Link>
+      {showBanner && announcement && (
+          <div
+            className="relative flex min-h-9 w-full items-center justify-center bg-[#111820] px-12 py-2 text-center text-xs text-white/80 sm:text-sm"
+            onMouseEnter={() => setAnnouncementPaused(true)}
+            onMouseLeave={() => setAnnouncementPaused(false)}
+            onFocus={() => setAnnouncementPaused(true)}
+            onBlur={() => setAnnouncementPaused(false)}
+          >
+            {/* polite, not assertive: the banner is ambient. A rotating region that
+                interrupts is worse than one that is never announced. */}
+            <span aria-live="polite" aria-atomic="true">
+              <span>{announcement.text}</span>
+              <Link href={announcement.href} className="ml-1 underline underline-offset-2 transition-colors hover:text-white">
+                {announcement.ctaLabel}
+              </Link>
+            </span>
             <button
               onClick={() => setShowBanner(false)}
               className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer rounded-md bg-white/10 p-2 transition-colors hover:bg-white/15"

@@ -68,13 +68,13 @@ export default function Bio() {
       link: 'https://www.figma.com/community/plugin/1532842109377504268/waysorted',
     },
     {
-      icon: '/icons/way-logo-black.svg',
+      icon: '/images/way-mark-black.png',
       text: 'Waysorted.com (Getting Started)',
       link: 'https://waysorted.com',
     },
 
     {
-      icon: '/icons/way-logo-black.svg',
+      icon: '/images/way-mark-black.png',
       text: 'Request Feature (Vote. Discuss. Influence.)',
       link: 'https://waysorted.com/requests',
     },
@@ -90,13 +90,20 @@ export default function Bio() {
   return (
     <div className="bio-bg-dots min-h-screen flex flex-col items-center justify-center px-4 sm:px-0">
       <div className="flex flex-col items-center mb-6">
-        <Image
-          src="/icons/waysorted-logo-black.svg"
-          alt="Waysorted Logo"
-          width={54}
-          height={54}
-          className="mb-2 rounded-lg w-12 h-12 sm:w-[54px] sm:h-[54px]"
-        />
+        {/* The brand lockup the rest of the product settled on - Header and
+            WaysortedLogo both use this mark. The old waysorted-logo-black.svg was a
+            grey gradient whose 53.5 rect sat in a 54 viewBox, leaving a transparent
+            sliver on two edges that the rounded corners made visible. */}
+        <div className="mb-2 h-12 w-12 overflow-hidden rounded-lg bg-[#181818] sm:h-[54px] sm:w-[54px]">
+          <Image
+            src="/images/way-mark-black.png"
+            alt="Waysorted"
+            width={54}
+            height={54}
+            className="h-full w-full object-cover"
+            priority
+          />
+        </div>
         <p className="text-black text-lg sm:text-xl font-semibold text-center">
           Say Hii to Way!
         </p>
@@ -110,13 +117,18 @@ export default function Bio() {
               rel="noopener noreferrer"
               className="relative flex items-center justify-center bg-white rounded py-3 sm:py-4 px-4 sm:px-6 hover:opacity-90 transition"
             >
-              <Image
-                src={link.icon}
-                alt="icon"
-                width={24}
-                height={24}
-                className="absolute left-4 sm:left-70"
-              />
+              {/* A fixed box, because the two marks are different shapes: the Figma
+                  logo is 22x31 and the way mark is square, so sizing the <img> alone
+                  left the rows visibly uneven. alt is empty - the row text is the label. */}
+              <span className="absolute left-4 flex h-6 w-6 items-center justify-center sm:left-70">
+                <Image
+                  src={link.icon}
+                  alt=""
+                  width={24}
+                  height={24}
+                  className="max-h-full max-w-full object-contain"
+                />
+              </span>
               <span className="text-black text-base sm:text-xl font-semibold text-center px-6 sm:px-0">
                 {link.text}
               </span>
