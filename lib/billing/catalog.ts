@@ -242,14 +242,25 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
 ];
 
 export const FEATURE_PRICING: FeaturePricingRule[] = [
+  { featureCode: "frame_generation", credits: 10, description: "Frame generation" },
+  { featureCode: "bleed", credits: 5, description: "Bleed option" },
+  {
+    featureCode: "ai_contrast",
+    credits: 5,
+    description: "Enhance contrast with AI",
+    requiresSubscription: true,
+  },
   { featureCode: "dpi_150", credits: 2, description: "150 DPI export" },
   { featureCode: "dpi_300", credits: 5, description: "300 DPI export" },
   { featureCode: "cmyk", credits: 2, description: "CMYK export" },
   { featureCode: "resolution_low", credits: 0, description: "Low resolution" },
   { featureCode: "resolution_medium", credits: 2, description: "Medium resolution" },
   { featureCode: "resolution_high", credits: 5, description: "High resolution" },
-  { featureCode: "bleed", credits: 2, description: "Bleed option" },
-  { featureCode: "preset_standard", credits: 0, description: "Standard preset" },
+  {
+    featureCode: "preset_standard",
+    credits: 0,
+    description: "Standard preset",
+  },
   {
     featureCode: "preset_customizable",
     credits: 0,
