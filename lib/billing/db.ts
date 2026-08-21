@@ -704,7 +704,16 @@ export async function createPurchaseRecord(input: {
     pricingCurrency: input.pricing?.currency || pricedProduct.currency,
     pricingRiskFlags: input.pricing?.riskFlags || [],
     creditsGranted: product.creditsGranted,
-    bonusCredits: product.bonusCredits,
+    /*
+     * A subscription's bonus is NOT part of this purchase.
+     *
+     * The cycle path grants it, once per (user, plan), reading the catalog
+     * directly - this row is never what issues it. Copying the figure here made
+     * recordRefundAdjustment reverse `creditsGranted + bonusCredits`, so
+     * refunding a re-subscription clawed back a welcome bonus that purchase had
+     * never granted, taking credits the customer had paid for in another cycle.
+     */
+    bonusCredits: product.kind === "subscription" ? 0 : product.bonusCredits,
     receipt,
     checkoutSource: input.checkoutSource || "website",
     idempotencyKey: input.idempotencyKey,
@@ -1026,13 +1035,26 @@ export async function applySubscriptionCycleCredits(input: {
      *
      * The key is (user, planCode) rather than the subscription id on purpose - cancelling
      * and resubscribing to the same plan creates a new subscription, and that must not
-     * re-issue the bonus. CreditLedger.idempotencyKey is unique, so the insert itself is
-     * the exactly-once guard; no read-then-write race to lose.
+     * re-issue the bonus.
+     *
+     * CHECK, don't catch. A duplicate key inside a transaction aborts it SERVER-side, so
+     * swallowing the E11000 and carrying on leaves every following write failing with
+     * NoSuchTransaction - which carries the TransientTransactionError label, so
+     * withTransaction retries the whole callback in a hot loop until its 120s deadline and
+     * then throws. That turned the second cycle of every monthly subscription into a
+     * two-minute hang that granted nothing. The catch is gone; a read decides instead.
+     *
+     * The read is inside the transaction, so the window for two cycles of the same
+     * (user, plan) to both see "absent" is vanishingly small - and if they do, the insert
+     * throws, this transaction rolls back whole, and the caller's existing retry (webhook
+     * redelivery, the cycle reconciler) re-runs it against a state where the read now
+     * finds the row. Never a partial grant.
      */
     const planBonusKey = `subscription-plan-bonus:${existingSubscription.user}:${existingSubscription.planCode}`;
     let bonusGranted = 0;
     if (product.bonusCredits > 0) {
-      try {
+      const alreadyWelcomed = await CreditLedger.exists({ idempotencyKey: planBonusKey }).session(session);
+      if (!alreadyWelcomed) {
         await CreditLedger.create([{
           user: existingSubscription.user,
           deltaCredits: product.bonusCredits,
@@ -1048,9 +1070,6 @@ export async function applySubscriptionCycleCredits(input: {
           },
         }], { session });
         bonusGranted = product.bonusCredits;
-      } catch (error) {
-        // Already welcomed onto this plan - grant the cycle credits and nothing more.
-        if ((error as { code?: number }).code !== 11000) throw error;
       }
     }
 

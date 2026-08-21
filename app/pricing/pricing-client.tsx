@@ -198,11 +198,15 @@ export default function PricingClient({
    * the correct default: an anonymous visitor is not a subscriber.
    */
   const [purchasableCodes, setPurchasableCodes] = useState<string[] | null>(null);
+  const [purchasableLookupFailed, setPurchasableLookupFailed] = useState(false);
 
   useEffect(() => {
     if (loading) return;
     if (!user) {
-      setPurchasableCodes([]);
+      // Signed out, nothing to look up. Not "nothing is purchasable" - the
+      // checkout hand-off still routes through /login as it always has.
+      setPurchasableCodes(null);
+      setPurchasableLookupFailed(false);
       return;
     }
     let active = true;
@@ -211,14 +215,20 @@ export default function PricingClient({
         const res = await fetch("/api/billing/snapshot", { headers: { Accept: "application/json" } });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
-        const codes = (json?.data?.catalog || json?.catalog || []).map(
-          (product: { code: string }) => product.code,
-        );
-        if (active) setPurchasableCodes(codes);
+        // The snapshot is nested under `billing`, the same shape
+        // app/billing/billing-client.tsx reads. Reading json.catalog silently
+        // yielded [] for every signed-in user, which locked subscribers out of
+        // the very tier this exists to sell them.
+        const catalog: { code: string }[] = json?.billing?.catalog ?? [];
+        if (active) {
+          setPurchasableCodes(catalog.map((product) => product.code));
+          setPurchasableLookupFailed(false);
+        }
       } catch {
-        // Unknown is treated as "not purchasable" - the CTA points at the plans
-        // instead of sending someone to a checkout the server would reject.
-        if (active) setPurchasableCodes([]);
+        if (active) {
+          setPurchasableCodes(null);
+          setPurchasableLookupFailed(true);
+        }
       }
     })();
     return () => {
@@ -266,9 +276,29 @@ export default function PricingClient({
    * Null means the snapshot has not answered yet; treat that as locked so the
    * button never flickers from buyable to not.
    */
+  const activeTopupCode = activeTopup?.product?.code ?? "";
+  const activeTopupNeedsSubscription = Boolean(activeTopup?.product?.requiresSubscription);
+
+  /*
+   * Locked when we can show a price but cannot sell it.
+   *
+   * Signed out, or while the snapshot is still in flight, only the subscriber
+   * rung is locked - an anonymous visitor definitionally is not a subscriber,
+   * and everything else still routes through /login exactly as before.
+   *
+   * Once the snapshot answers, it decides both directions. A subscriber sees
+   * ONLY subscriber top-ups from getVisibleCatalog, so the standard rung is
+   * refused for them too; gating only on requiresSubscription would still have
+   * handed them to a checkout that swaps the product out underneath them.
+   */
   const activeTopupLocked =
-    Boolean(activeTopup?.product?.requiresSubscription) &&
-    !(purchasableCodes ?? []).includes(activeTopup?.product?.code ?? "");
+    purchasableCodes === null
+      ? activeTopupNeedsSubscription
+      : Boolean(activeTopupCode) && !purchasableCodes.includes(activeTopupCode);
+
+  // Only claim someone needs a subscription when we actually read their plan.
+  const lockedBecauseNotSubscribed =
+    activeTopupLocked && activeTopupNeedsSubscription && !purchasableLookupFailed;
 
   function goToCheckout(productCode: string | null) {
     if (!productCode) return;
@@ -279,7 +309,13 @@ export default function PricingClient({
      * so the customer would land on a dead checkout having been sent by us.
      */
     const requested = pricingData?.catalog.find((item) => item.code === productCode);
-    if (requested?.requiresSubscription && !(purchasableCodes ?? []).includes(productCode)) return;
+    if (purchasableCodes === null) {
+      // Plan unknown (signed out, or the snapshot has not answered). Only the
+      // subscriber tier is certainly out of reach; the rest routes via /login.
+      if (requested?.requiresSubscription) return;
+    } else if (!purchasableCodes.includes(productCode)) {
+      return;
+    }
 
     // Carry the price the customer actually looked at across the hand-off. /pricing may render the
     // unauthenticated catalog (detected country, no pricing lock) while /billing prices from the
@@ -589,23 +625,30 @@ export default function PricingClient({
                 </div>
 
                 {activeTopupLocked ? (
-                  /* Subscriber pricing is visible to everyone, buyable only by
-                     subscribers. Send them to the plans rather than to a checkout
-                     getVisibleCatalog would refuse. */
+                  /* We can show the price but not sell it. Never hand off to a
+                     checkout getVisibleCatalog would refuse. */
                   <div className="mt-auto shrink-0">
                     <GlowStarButton
                       type="button"
                       onClick={() => {
-                        document.getElementById("pricing-plans")?.scrollIntoView({ behavior: "smooth" });
+                        if (lockedBecauseNotSubscribed) {
+                          document.getElementById("pricing-plans")?.scrollIntoView({ behavior: "smooth" });
+                          return;
+                        }
+                        setPaygMode(activeTopupNeedsSubscription ? "standard" : "subscriber");
                       }}
                       className="h-[42px] w-full rounded-[10px] bg-[#111827] text-[16px] font-semibold text-white cursor-pointer"
                       starCount={18}
                       enterDurationSec={0.35}
                     >
-                      Subscribe to unlock
+                      {lockedBecauseNotSubscribed ? "Subscribe to unlock" : "See your rate"}
                     </GlowStarButton>
                     <p className="mt-2 text-center text-[12px] leading-[1.35] text-[#8A94A6]">
-                      These rates apply once you are on a plan.
+                      {lockedBecauseNotSubscribed
+                        ? "These rates apply once you are on a plan."
+                        : purchasableLookupFailed
+                          ? "We could not check your plan just now. Reload to try again."
+                          : "Your plan uses the other rate."}
                     </p>
                   </div>
                 ) : (

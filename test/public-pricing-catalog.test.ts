@@ -57,11 +57,26 @@ test("publishing them does not make them buyable", () => {
 });
 
 test("the pricing page refuses to hand off a product it knows is locked", () => {
-  // Belt to the CTA's braces: even if the button were mis-rendered, the
-  // navigation itself checks before sending anyone to /billing.
+  /*
+   * Belt to the CTA's braces: even if the button were mis-rendered, the
+   * navigation itself checks before sending anyone to /billing.
+   *
+   * Both directions matter. Gating only on requiresSubscription still handed an
+   * active subscriber to a standard top-up, which getVisibleCatalog refuses for
+   * them just as firmly - checkout then silently swapped the product underneath.
+   */
   const source = readFileSync(new URL("../app/pricing/pricing-client.tsx", import.meta.url), "utf8");
-  assert.match(
-    source,
-    /if \(requested\?\.requiresSubscription && !\(purchasableCodes \?\? \[\]\)\.includes\(productCode\)\) return;/,
+  const fn = source.slice(source.indexOf("function goToCheckout"));
+  const body = fn.slice(0, fn.indexOf("\n  }\n"));
+
+  // Plan unknown: only the subscriber-only tier is certainly out of reach.
+  assert.match(body, /purchasableCodes === null/);
+  assert.match(body, /requested\?\.requiresSubscription/);
+  // Plan known: the snapshot decides, in both directions.
+  assert.match(body, /!purchasableCodes\.includes\(productCode\)/);
+  // And it must bail rather than fall through to router.push.
+  assert.ok(
+    body.indexOf("return;") < body.indexOf("router.push"),
+    "the guard must return before navigating",
   );
 });

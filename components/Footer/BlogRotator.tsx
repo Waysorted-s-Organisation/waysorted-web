@@ -24,6 +24,7 @@ const ROTATE_MS = 5000;
 export default function BlogRotator() {
   const [posts, setPosts] = useState<BlogPostCard[] | null>(null);
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -56,13 +57,19 @@ export default function BlogRotator() {
     [],
   );
 
+  /*
+   * `index` is in the dependency list so picking a dot restarts the clock.
+   * Without it the interval kept its original schedule and could advance a
+   * fraction of a second after a deliberate choice, snapping the card away from
+   * the post the reader had just asked for.
+   */
   useEffect(() => {
-    if (!posts || posts.length < 2 || prefersReducedMotion) return;
+    if (!posts || posts.length < 2 || prefersReducedMotion || paused) return;
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % posts.length);
     }, ROTATE_MS);
     return () => clearInterval(timer);
-  }, [posts, prefersReducedMotion]);
+  }, [posts, prefersReducedMotion, paused, index]);
 
   // Nothing published, or the request failed: leave the slot empty rather than
   // holding 220px of dark box open for a card that will never arrive.
@@ -71,7 +78,13 @@ export default function BlogRotator() {
   const post = posts[index] ?? posts[0];
 
   return (
-    <div className="bg-secondary-db-90 rounded-xl p-3 sm:p-4 md:p-5 min-h-[220px] flex flex-col justify-between h-full">
+    <div
+      className="bg-secondary-db-90 rounded-xl p-3 sm:p-4 md:p-5 min-h-[220px] flex flex-col justify-between h-full"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocusCapture={() => setPaused(true)}
+      onBlurCapture={() => setPaused(false)}
+    >
       <Link href={`/blogs/${post.slug}`} className="group transition-opacity duration-300 ease-in-out">
         <div className="bg-secondary-db-80 w-full h-36 sm:h-40 md:h-48 rounded-md mb-3 sm:mb-4 relative overflow-hidden">
           {post.coverImage && (
@@ -91,7 +104,7 @@ export default function BlogRotator() {
         <p className="text-gray-400 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2">
           {post.excerpt}
         </p>
-        <p className="text-gray-500 text-[11px] sm:text-xs">
+        <p className="text-gray-400 text-[11px] sm:text-xs">
           {post.category}
           {post.readTime ? ` · ${post.readTime}` : ""}
         </p>

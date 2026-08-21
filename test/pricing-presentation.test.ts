@@ -111,3 +111,37 @@ test("yearly savings is calculated from catalog prices", () => {
 
   assert.equal(getMinimumAnnualSavingsPercent(monthly, yearly), 16);
 });
+
+test("the plan bonus is decided by a read, never by catching a duplicate key", () => {
+  /*
+   * A duplicate key inside a MongoDB transaction aborts it server-side. Catching
+   * the E11000 and continuing to write leaves every later statement failing with
+   * NoSuchTransaction, which carries the TransientTransactionError label, so
+   * withTransaction retries the whole callback in a hot loop until its 120s
+   * deadline and then throws. That turned the SECOND cycle of every monthly
+   * subscription into a two-minute hang that granted nothing at all.
+   *
+   * The exactly-once guard has to be a read.
+   */
+  const source = readFileSync(new URL("../lib/billing/db.ts", import.meta.url), "utf8");
+  const cycleFn = source.slice(source.indexOf("export async function applySubscriptionCycleCredits"));
+  const body = cycleFn.slice(0, cycleFn.indexOf("\nexport async function "));
+
+  assert.match(body, /CreditLedger\.exists\(\{ idempotencyKey: planBonusKey \}\)/);
+  assert.doesNotMatch(
+    body.slice(body.indexOf("planBonusKey")),
+    /code !== 11000/,
+    "the plan-bonus insert must not swallow a duplicate key mid-transaction",
+  );
+});
+
+test("a subscription purchase row carries no bonus to refund", () => {
+  // The cycle path grants the bonus, once per (user, plan), reading the catalog.
+  // Copying it onto the Purchase row made recordRefundAdjustment reverse credits
+  // that purchase had never granted.
+  const source = readFileSync(new URL("../lib/billing/db.ts", import.meta.url), "utf8");
+  assert.match(
+    source,
+    /bonusCredits: product\.kind === "subscription" \? 0 : product\.bonusCredits,/,
+  );
+});

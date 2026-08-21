@@ -1187,8 +1187,17 @@ export default function BillingClient({
   if (completedOrder) return <OrderComplete {...completedOrder} />;
 
   const wallet = snapshot?.billing.wallet.availableCredits ?? null;
+  /*
+   * A subscription's bonus lands once per plan, so adding it here quoted 175
+   * credits to anyone resubscribing to a plan they had held before - and the
+   * cycle would grant them 150. /pricing already refuses this arithmetic for
+   * recurring products (pricing-presentation.ts) and states the bonus on its own
+   * line; checkout now matches rather than promising what it cannot deliver.
+   */
   const selectedCredits = selectedProduct
-    ? selectedProduct.creditsGranted + selectedProduct.bonusCredits
+    ? selectedProduct.kind === "subscription"
+      ? selectedProduct.creditsGranted
+      : selectedProduct.creditsGranted + selectedProduct.bonusCredits
     : null;
   // The same four lines the customer read on the plan card they clicked. The
   // hardcoded list here described a generic plan, so the benefits changed

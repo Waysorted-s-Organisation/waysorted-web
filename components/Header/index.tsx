@@ -154,8 +154,24 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
    */
   const [offers, setOffers] = useState<PublicOffer[]>([]);
   const [announcementIndex, setAnnouncementIndex] = useState(0);
-  const [announcementPaused, setAnnouncementPaused] = useState(false);
+  // Hover and focus are tracked apart on purpose. Sharing one flag meant moving
+  // the pointer off the bar resumed rotation while the CTA still held keyboard
+  // focus - and because the link is reconciled in place rather than remounted,
+  // its label and href changed under someone about to press Enter.
+  const [announcementHovered, setAnnouncementHovered] = useState(false);
+  const [announcementFocused, setAnnouncementFocused] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
   const announcements = useMemo(() => buildAnnouncements(offers), [offers]);
+
+  useEffect(() => {
+    const query = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    if (!query) return;
+    setReduceMotion(query.matches);
+    // Sampled once, the setting was ignored for anyone who changed it mid-session.
+    const onChange = (event: MediaQueryListEvent) => setReduceMotion(event.matches);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -173,13 +189,13 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
   }, []);
 
   useEffect(() => {
-    if (!showBanner || announcements.length < 2 || announcementPaused) return;
-    if (typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    if (!showBanner || announcements.length < 2) return;
+    if (announcementHovered || announcementFocused || reduceMotion) return;
     const timer = setInterval(() => {
       setAnnouncementIndex((prev) => (prev + 1) % announcements.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, [showBanner, announcements.length, announcementPaused]);
+  }, [showBanner, announcements.length, announcementHovered, announcementFocused, reduceMotion]);
 
   // The list can shrink when the ladder resolves; never index past the end.
   const announcement = announcements[announcementIndex % announcements.length];
@@ -195,14 +211,17 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
       {showBanner && announcement && (
           <div
             className="relative flex min-h-9 w-full items-center justify-center bg-[#111820] px-12 py-2 text-center text-xs text-white/80 sm:text-sm"
-            onMouseEnter={() => setAnnouncementPaused(true)}
-            onMouseLeave={() => setAnnouncementPaused(false)}
-            onFocus={() => setAnnouncementPaused(true)}
-            onBlur={() => setAnnouncementPaused(false)}
+            onMouseEnter={() => setAnnouncementHovered(true)}
+            onMouseLeave={() => setAnnouncementHovered(false)}
+            onFocus={() => setAnnouncementFocused(true)}
+            onBlur={() => setAnnouncementFocused(false)}
           >
-            {/* polite, not assertive: the banner is ambient. A rotating region that
-                interrupts is worse than one that is never announced. */}
-            <span aria-live="polite" aria-atomic="true">
+            {/* Deliberately NOT a live region. This is ambient marketing, not a
+                status update: announcing it every six seconds interrupts whatever
+                the reader is actually doing, on every page, with no pause a
+                browse-mode user can reach - mouseenter and focus never fire for
+                them. The text is in the DOM and reachable on demand instead. */}
+            <span>
               <span>{announcement.text}</span>
               <Link href={announcement.href} className="ml-1 underline underline-offset-2 transition-colors hover:text-white">
                 {announcement.ctaLabel}
