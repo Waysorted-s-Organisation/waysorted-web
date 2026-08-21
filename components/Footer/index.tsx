@@ -193,6 +193,11 @@ export default function Footer() {
 
                   <li><Link href="/document-hub/bug-reporting" className="hover:text-white">Report a Bug</Link></li>
                   <li><Link href="/learning" className="hover:text-white">Learning Hub</Link></li>
+                  {/* Release Notes left the Resources menu by design request. Without
+                      an inbound link somewhere, /release-notes sits in the sitemap with
+                      nothing pointing at it - which is the exact crawlability hole
+                      c4fb5ae closed. Out of the menu, still reachable. */}
+                  <li><Link href="/release-notes" className="hover:text-white">Release Notes</Link></li>
                   <li><Link href="/document-hub/faqs" className="hover:text-white">FAQs</Link></li>
                 </ul>
               </div>
