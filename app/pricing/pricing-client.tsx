@@ -33,6 +33,8 @@ type CatalogProduct = {
   pricingCountryName?: string;
   pricingTier?: "tier_1" | "tier_2" | "tier_3";
   pricingRiskFlags?: string[];
+  /** Shown to everyone, buyable only by subscribers. Enforced server-side. */
+  requiresSubscription?: boolean;
 };
 
 export type PricingPayload = {
@@ -184,6 +186,46 @@ export default function PricingClient({
     };
   }, [pricingData]);
 
+  /*
+   * What this visitor may actually buy, straight from the authenticated snapshot.
+   *
+   * The snapshot's catalog IS `getVisibleCatalog({ isNewUser, hasActiveSubscription })`
+   * - the same function checkout enforces with - so asking it "what can I buy"
+   * gives the identical answer rather than a second guess at subscription status
+   * that could drift from it.
+   *
+   * Signed out, this stays empty and the subscriber rung is view-only, which is
+   * the correct default: an anonymous visitor is not a subscriber.
+   */
+  const [purchasableCodes, setPurchasableCodes] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      setPurchasableCodes([]);
+      return;
+    }
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/billing/snapshot", { headers: { Accept: "application/json" } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        const codes = (json?.data?.catalog || json?.catalog || []).map(
+          (product: { code: string }) => product.code,
+        );
+        if (active) setPurchasableCodes(codes);
+      } catch {
+        // Unknown is treated as "not purchasable" - the CTA points at the plans
+        // instead of sending someone to a checkout the server would reject.
+        if (active) setPurchasableCodes([]);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [user, loading]);
+
   const topupMarks = useMemo(
     () => [
       ...topupProducts.map((product) => ({
@@ -213,8 +255,31 @@ export default function PricingClient({
     }
   }, [availablePaygModes.standard, availablePaygModes.subscriber, paygMode, pricingData]);
 
+  /*
+   * Whether the rung on screen is one this visitor can actually buy.
+   *
+   * Switching to the subscriber tier is always allowed - that is the comparison
+   * the toggle exists to make. Only the CTA changes: a non-subscriber looking at
+   * subscriber pricing is sent to the plans rather than to a checkout that
+   * getVisibleCatalog would refuse.
+   *
+   * Null means the snapshot has not answered yet; treat that as locked so the
+   * button never flickers from buyable to not.
+   */
+  const activeTopupLocked =
+    Boolean(activeTopup?.product?.requiresSubscription) &&
+    !(purchasableCodes ?? []).includes(activeTopup?.product?.code ?? "");
+
   function goToCheckout(productCode: string | null) {
     if (!productCode) return;
+
+    /*
+     * Second gate, behind the CTA's. A subscriber-only product this visitor
+     * cannot buy must never reach /billing: getVisibleCatalog rejects it there,
+     * so the customer would land on a dead checkout having been sent by us.
+     */
+    const requested = pricingData?.catalog.find((item) => item.code === productCode);
+    if (requested?.requiresSubscription && !(purchasableCodes ?? []).includes(productCode)) return;
 
     // Carry the price the customer actually looked at across the hand-off. /pricing may render the
     // unauthenticated catalog (detected country, no pricing lock) while /billing prices from the
@@ -323,7 +388,7 @@ export default function PricingClient({
             {pricingError ? <div className="mt-3 text-[12px] text-[#B42318]">{pricingError}</div> : null}
           </div>
 
-          <section className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
+          <section id="pricing-plans" className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
             {!pricingData
               ? Array.from({ length: 3 }, (_, index) => (
                   <div
@@ -423,21 +488,19 @@ export default function PricingClient({
                     <button
                       type="button"
                       onClick={() => setPaygMode("standard")}
-                      disabled={!availablePaygModes.standard}
                       className={paygMode === "standard" ? "text-[#111827]" : "text-[#6B7280]"}
                     >
                       Non Subscriber
                     </button>
+                    {/* Always switchable: it is a comparison, not a purchase choice.
+                        Whether the rung on show can be bought is the CTA's problem. */}
                     <button
                       type="button"
-                      onClick={() => {
-                        const nextMode = paygMode === "standard" ? "subscriber" : "standard";
-                        if (nextMode === "subscriber" && !availablePaygModes.subscriber) return;
-                        if (nextMode === "standard" && !availablePaygModes.standard) return;
-                        setPaygMode(nextMode);
-                      }}
+                      role="switch"
+                      aria-checked={paygMode === "subscriber"}
+                      onClick={() => setPaygMode(paygMode === "standard" ? "subscriber" : "standard")}
                       className="relative h-[20px] w-[38px] rounded-full bg-[#111827]"
-                      aria-label="Toggle pay as you go mode"
+                      aria-label="Compare subscriber credit pricing"
                     >
                       <span
                         className={`absolute top-[2px] h-4 w-4 rounded-full bg-white transition-all ${
@@ -448,7 +511,6 @@ export default function PricingClient({
                     <button
                       type="button"
                       onClick={() => setPaygMode("subscriber")}
-                      disabled={!availablePaygModes.subscriber}
                       className={paygMode === "subscriber" ? "text-[#111827]" : "text-[#6B7280]"}
                     >
                       Subscribed User
@@ -526,16 +588,38 @@ export default function PricingClient({
                   </div>
                 </div>
 
-                <GlowStarButton
-                  type="button"
-                  onClick={() => goToCheckout(activeTopup?.product?.code || null)}
-                  disabled={!activeTopup?.product}
-                  className="mt-auto h-[42px] w-full rounded-[10px] bg-[#111827] text-[16px] font-semibold text-white disabled:opacity-60 cursor-pointer shrink-0"
-                  starCount={18}
-                  enterDurationSec={0.35}
-                >
-                  Purchase credits
-                </GlowStarButton>
+                {activeTopupLocked ? (
+                  /* Subscriber pricing is visible to everyone, buyable only by
+                     subscribers. Send them to the plans rather than to a checkout
+                     getVisibleCatalog would refuse. */
+                  <div className="mt-auto shrink-0">
+                    <GlowStarButton
+                      type="button"
+                      onClick={() => {
+                        document.getElementById("pricing-plans")?.scrollIntoView({ behavior: "smooth" });
+                      }}
+                      className="h-[42px] w-full rounded-[10px] bg-[#111827] text-[16px] font-semibold text-white cursor-pointer"
+                      starCount={18}
+                      enterDurationSec={0.35}
+                    >
+                      Subscribe to unlock
+                    </GlowStarButton>
+                    <p className="mt-2 text-center text-[12px] leading-[1.35] text-[#8A94A6]">
+                      These rates apply once you are on a plan.
+                    </p>
+                  </div>
+                ) : (
+                  <GlowStarButton
+                    type="button"
+                    onClick={() => goToCheckout(activeTopup?.product?.code || null)}
+                    disabled={!activeTopup?.product}
+                    className="mt-auto h-[42px] w-full rounded-[10px] bg-[#111827] text-[16px] font-semibold text-white disabled:opacity-60 cursor-pointer shrink-0"
+                    starCount={18}
+                    enterDurationSec={0.35}
+                  >
+                    Purchase credits
+                  </GlowStarButton>
+                )}
               </div>
             </div>
           </section>
