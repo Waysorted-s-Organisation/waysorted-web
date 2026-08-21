@@ -55,14 +55,18 @@ export function resolveUsageCredits(body: UsagePricingRequest): ResolvedUsagePri
       throw new Error("Unsupported import size or tool.");
     }
 
+    const isQuoteOnly = selectedOptions?.isQuote === true;
+    const ruleToUse = isQuoteOnly ? declaredRule : maximumRule;
+
     return {
-      creditsRequired: applyUsageCreditMultiplier(declaredRule.credits),
-      featureCode: declaredRule.featureCode,
-      sizeBucket: declaredRule.sizeLabel,
+      creditsRequired: applyUsageCreditMultiplier(ruleToUse.credits),
+      featureCode: ruleToUse.featureCode,
+      sizeBucket: ruleToUse.sizeLabel,
       requiresSubscription: false,
       selectedOptions: {
         ...selectedOptions,
         clientDeclaredSizeBytes: sizeBytes,
+        ...(isQuoteOnly ? {} : { provisionalMaximumHold: true }),
       },
     };
   }
