@@ -80,6 +80,13 @@ export default function Bio() {
     },
   ];
 
+  const socials = [
+    { label: 'Instagram', href: 'https://www.instagram.com/waysorted/', icon: '/icons/insta-logo-black.svg' },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/company/waysortedhq', icon: '/icons/linkedin-logo-black.svg' },
+    { label: 'Discord', href: 'https://discord.gg/U2XF76WxNv', icon: '/icons/discord-logo-black.svg' },
+    { label: 'X', href: 'https://x.com/Waysorted', icon: '/icons/x-logo-black.svg' },
+  ];
+
   return (
     <div className="bio-bg-dots min-h-screen flex flex-col items-center justify-center px-4 sm:px-0">
       <div className="flex flex-col items-center mb-6">
@@ -117,42 +124,27 @@ export default function Bio() {
           </li>
         ))}
       </ul>
-      <div className="flex flex-wrap justify-center gap-3 sm:space-x-4 sm:gap-0 mt-8">
-        <a
-          href="https://www.instagram.com/waysorted/"
-          className="p-2 rounded-md bg-white"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image src="/icons/insta-logo-black.svg" alt="Instagram" width={24} height={24} />
-        </a>
-
-        <a
-          href="https://www.linkedin.com/company/waysortedhq"
-          className="p-2 rounded-md bg-white"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image src="/icons/linkedin-logo-black.svg" alt="LinkedIn" width={24} height={24} />
-        </a>
-
-        <a
-          href="https://discord.gg/U2XF76WxNv"
-          className="p-2 rounded-md bg-white"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image src="/icons/discord-logo-black.svg" alt="Discord" width={24} height={24} />
-        </a>
-
-        <a
-          href="https://x.com/Waysorted"
-          className="p-2 rounded-md bg-white"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image src="/icons/x-logo-black.svg" alt="X" width={24} height={24} />
-        </a>
+      {/* Fixed 40x40 tiles that centre their icon, so the four marks — which have
+          four different intrinsic ratios (15x15, 15x15, 18x14, 15x14) and are served
+          unoptimised as SVG — sit on a common baseline instead of setting their own. */}
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+        {socials.map((social) => (
+          <a
+            key={social.label}
+            href={social.href}
+            className="flex h-10 w-10 items-center justify-center rounded-md bg-white"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Image
+              src={social.icon}
+              alt={social.label}
+              width={24}
+              height={24}
+              className="h-6 w-6 object-contain"
+            />
+          </a>
+        ))}
       </div>
     </div>
   );

@@ -357,7 +357,7 @@ export default function PricingClient({
           </section>
 
           <div className="mx-auto mt-8 max-w-[790px] rounded-[15.31px] border border-[#ECEFF5] bg-white p-6 md:p-3">
-            <div className="flex flex-col items-center text-center md:flex-row md:text-left gap-4">
+            <div className="flex flex-col items-center text-center md:flex-row md:justify-center md:text-left gap-4">
               <Image
                 src="/pricingIcons/Credit topup message icon.png"
                 alt="Not ready for a plan?"
@@ -381,7 +381,9 @@ export default function PricingClient({
             </div>
           </div>
 
-          <section className="mt-10 flex flex-col gap-8 md:flex-row md:items-stretch md:justify-center md:gap-[50px]">
+          {/* mt-14 (56px) matches the design: the banner ends at y1058 and the
+              pay-as-you-go group starts at y1111 in the 1280-wide pricing frame. */}
+          <section className="mt-14 flex flex-col gap-8 md:flex-row md:items-stretch md:justify-center md:gap-[50px]">
             <div className="w-full px-[25px] md:px-0 md:w-[434px] md:py-8 flex flex-col">
               <div className="flex items-center gap-2">
                 <Image src="/pricingIcons/Pay as you go.png" alt="" width={32} height={32} className="h-8 w-8" />
@@ -395,7 +397,7 @@ export default function PricingClient({
 
               <ul className="mt-6 space-y-4">
                 {[
-                  "Includes all core Waysorted features",
+                  "Includes all Premium Waysorted features",
                   "Regular updates with ongoing support",
                   "Credits never expires, reset when needed",
                 ].map((item) => (
@@ -450,7 +452,9 @@ export default function PricingClient({
                   </div>
 
                   <div className="mt-5">
-                    <p className="text-[40px] font-bold leading-none tracking-tight text-[#111827] md:text-[45px]">
+                    {/* 40px at 0% tracking is the design's value; the md:45px step and
+                        tracking-tight were both off-spec. */}
+                    <p className="text-[40px] font-semibold leading-none text-[#111827]">
                       {activeTopup?.value || "--"} Credits
                     </p>
                   </div>

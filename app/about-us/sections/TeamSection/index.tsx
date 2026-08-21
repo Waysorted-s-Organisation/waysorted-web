@@ -114,7 +114,7 @@ export default function TeamSection() {
   if (isMobile) {
     // Stack all members, and add JoinUsMobile after the last member in each group
     return (
-      <section className="bg-white px-6 pt-12 pb-40 text-center">
+      <section className="bg-white px-6 pt-12 pb-16 md:pb-24 text-center">
         <div className="flex flex-col gap-y-8 max-w-xs mx-auto">
           {team.map((member: TeamMemberProps, index: number) => (
             <TeamMember
@@ -142,7 +142,7 @@ export default function TeamSection() {
 
   // Desktop & md+ (unchanged from your original)
   return (
-    <section className="bg-white px-6 md:px-20 lg:px-32 pt-12 pb-40 text-center">
+    <section className="bg-white px-6 md:px-20 lg:px-32 pt-12 pb-16 md:pb-24 text-center">
       <div className="grid gap-y-8 gap-x-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 justify-center max-w-6xl mx-auto">
         {team.map((member: TeamMemberProps, index: number) => (
           <TeamMember

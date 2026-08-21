@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ProductsMenu } from '../ProductsMenu';
 import ResourcesMenu from '../ResourcesMenu';
-import LanguageDropdown from '../LanguageDropdown';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/hooks/useUser';
 import UserMenu from '@/components/UserMenu';
@@ -20,15 +19,12 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
   const { user, refetch } = useUser();
   const [productsOpen, setProductsOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
-  const [languageOpen, setLanguageOpen] = useState(false);
 
   // Mobile state
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
 
-  const languageBtnRef = useRef<HTMLButtonElement | null>(null);
-  const mobileLanguageBtnRef = useRef<HTMLButtonElement | null>(null);
   const router = useRouter();
 
   // header ref so we can measure its height to detect "touch"
@@ -63,7 +59,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
     const closeAll = () => {
       setProductsOpen(false);
       setResourcesOpen(false);
-      setLanguageOpen(false);
       setMobileOpen(false);
       setMobileProductsOpen(false);
       setMobileResourcesOpen(false);
@@ -77,7 +72,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         setMobileOpen(false);
-        setLanguageOpen(false);
         setMobileProductsOpen(false);
         setMobileResourcesOpen(false);
       }
@@ -150,7 +144,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
 
   // helper to choose text color based on secure section state
   const textColor = isSecureSection ? 'text-white' : 'text-secondary-db-100';
-  const logoLanguage = isSecureSection ? '/icons/language-white.svg' : '/icons/world.svg';
 
   return (
     <header
@@ -277,24 +270,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 <UserMenu user={user} handleLogout={handleLogout} />
               </div>
             )}
-
-            {/* Language: hide on mobile, available inside drawer */}
-            <div className="relative hidden lg:block">
-              <button
-                onClick={() => setLanguageOpen((prev) => !prev)}
-                className={`border border-secondary-db-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer ${isSecureSection ? 'border border-secondary-db-80' : ''}`}
-                title="Change Language"
-                aria-label="Change Language"
-                ref={languageBtnRef}
-              >
-                <Image src={logoLanguage} alt="Globe Icon" title="Globe Icon" width={20} height={20} />
-              </button>
-              <LanguageDropdown
-                isOpen={languageOpen}
-                onClose={() => setLanguageOpen(false)}
-                buttonRef={languageBtnRef}
-              />
-            </div>
 
             <GlowStarButton
               type="button"
@@ -542,27 +517,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                   <span className="font-medium">Pricing</span>
                 </Link>
                 <div className="border-t border-primary-way-10" />
-              </div>
-              {/* Language pill + dropdown */}
-              <div className="px-3 py-4">
-                <button
-                  ref={mobileLanguageBtnRef}
-                  onClick={() => setLanguageOpen((prev) => !prev)}
-                  className="inline-flex items-center gap-2 rounded-full border border-secondary-db-20 px-3 py-1.5 active:scale-95"
-                  title="Change Language"
-                  aria-label="Change Language"
-                  aria-controls="mobile-language"
-                >
-                  <Image src={logoLanguage} alt="Language" title="Language" width={16} height={16} />
-                  <span className="text-secondary-db-100 text-sm">En</span>
-                </button>
-                <div id="mobile-language" className="relative mt-2">
-                  <LanguageDropdown
-                    isOpen={languageOpen}
-                    onClose={() => setLanguageOpen(false)}
-                    buttonRef={mobileLanguageBtnRef}
-                  />
-                </div>
               </div>
             </nav>
 

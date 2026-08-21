@@ -45,7 +45,7 @@ export default function WayAICard({ className }: { className?: string }) {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 flex items-center justify-between">
+      <div className="relative z-10 flex items-center">
         <div className="flex items-center gap-3">
           <div className="relative h-13 w-13 rounded-full bg-white/25 flex items-center justify-center">
             <Image
@@ -58,9 +58,6 @@ export default function WayAICard({ className }: { className?: string }) {
             />
           </div>
         </div>
-        <span className="text-xs px-2.5 py-1 rounded-md bg-white/60 text-primary-way-100 translate-y-[-24px] translate-x-[8px]">
-          Coming Soon
-        </span>
       </div>
 
       <div className="relative z-10 mt-8">

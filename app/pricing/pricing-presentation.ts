@@ -22,7 +22,7 @@ export const PLAN_UI = {
     ctaLabel: "Select Plan",
     iconSrc: "/pricingIcons/Discover.png",
     features: [
-      "Includes all core Waysorted features",
+      "Includes all Premium Waysorted features",
       "Regular updates with ongoing support",
       "Lowest cost for credit top-ups",
       "Credits never expire, with no monthly reset.",
@@ -35,7 +35,7 @@ export const PLAN_UI = {
     iconSrc: "/pricingIcons/Core.png",
     featured: true,
     features: [
-      "Includes all core Waysorted features",
+      "Includes all Premium Waysorted features",
       "Regular updates with ongoing support",
       "Lowest cost for small top-ups",
       "Credits never expire, with no monthly reset.",
@@ -47,7 +47,7 @@ export const PLAN_UI = {
     ctaLabel: "Select Plan",
     iconSrc: "/pricingIcons/Pro.png",
     features: [
-      "Includes all core Waysorted features",
+      "Includes all Premium Waysorted features",
       "Regular updates with ongoing support",
       "Lowest cost for credit top-ups",
       "Credits never expire, with no monthly reset.",
