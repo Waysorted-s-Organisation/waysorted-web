@@ -42,17 +42,33 @@ const nextConfig: NextConfig = {
         source: "/api/admin/billing/:path*",
         headers: billingApiHeaders,
       },
+      /*
+       * A week, revalidated in the background - not a year, and not immutable.
+       *
+       * `immutable` is a promise that the bytes at a URL will never change, and
+       * it is only keepable when the URL is content-addressed. These filenames
+       * are stable and hand-written, so redrawing an icon left every returning
+       * visitor holding the old art for a YEAR while new ones saw the fix - with
+       * nothing in the app to indicate it. That already happened twice on this
+       * branch (unit-converter, comment-summarizer) and would happen on every
+       * future redraw.
+       *
+       * stale-while-revalidate keeps repeat visits instant: the cached copy is
+       * served immediately and refreshed in the background, so the only cost is
+       * that a redraw takes up to a week to reach everyone instead of never.
+       * A handful of files DO carry a content hash and could stay immutable, but
+       * a second rule for them is more machinery than the saving is worth.
+       */
       {
-        // Cache static assets for 1 year
         source: "/icons/:path*",
         headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=2592000" },
         ],
       },
       {
         source: "/images/:path*",
         headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+          { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=2592000" },
         ],
       },
       {
