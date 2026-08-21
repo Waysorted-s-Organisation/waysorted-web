@@ -93,6 +93,9 @@ type BillingSnapshot = {
     subscription: {
       planCode: string | null;
       status: string;
+      /** The human-facing form of `status`. The server has always sent it; this
+          type just never declared it, so the panel printed the raw enum. */
+      statusLabel?: string;
       renewsAt: string | null;
       willCancelAt: string | null;
       cancelAtCycleEnd: boolean;
@@ -314,8 +317,19 @@ export default function BillingClient({
     return { amountPaise: quotedAmountSubunits, currency: quotedCurrency.toUpperCase() };
   }, [quotedAmountSubunits, quotedCurrency, selectedProduct]);
 
+  /*
+   * Show this only while the customer actually HAS a subscription.
+   *
+   * The test used to be `status !== "inactive"`, which let every terminal state
+   * through - "cancelled", "expired", "completed". A cancelled subscriber saw a
+   * panel headed "Subscription" reading `cancelled`, with no renewal date and no
+   * Cancel button (currentSubscription is null once it is not live), i.e. a card
+   * that states a dead fact and offers nothing. isLiveSubscriptionStatus is the
+   * same predicate the rest of billing uses for "this is their current one".
+   */
   const shouldShowSubscriptionPanel =
-    Boolean(currentSubscription) || Boolean(snapshot && snapshot.billing.subscription.status !== "inactive");
+    Boolean(currentSubscription) ||
+    Boolean(snapshot && isLiveSubscriptionStatus(snapshot.billing.subscription.status));
 
   const refreshSnapshot = useCallback(async () => {
     const response = await fetch(`/api/billing/snapshot?ts=${Date.now()}`, { cache: "no-store" });
@@ -1581,8 +1595,11 @@ export default function BillingClient({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="text-[14px] font-semibold text-[#17171C]">Subscription</div>
+                {/* statusLabel, not the raw enum. buildSubscriptionPresentation
+                    already turns "cancel_scheduled" into "Cancels at period end";
+                    printing `status` showed customers the database value. */}
                 <div className="mt-[2px] text-[12px] text-[#8B8B94]">
-                  {snapshot?.billing.subscription.status || "NA"}
+                  {snapshot?.billing.subscription.statusLabel || "NA"}
                   {snapshot?.billing.subscription.renewsAt
                     ? ` - renews ${formatDate(snapshot.billing.subscription.renewsAt)}`
                     : ""}
