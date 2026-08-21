@@ -61,17 +61,28 @@ export function getPlanUi(productCode: string) {
 }
 
 export function getCreditPresentation(product: PricingDisplayProduct) {
-  const totalCredits = product.creditsGranted + product.bonusCredits;
+  const isRecurring = product.billingCycle === "monthly" || product.billingCycle === "yearly";
   const period = product.billingCycle === "yearly"
     ? "year"
     : product.billingCycle === "monthly"
       ? "month"
       : "purchase";
 
+  /*
+   * A one-time pack's bonus arrives with the pack, so it belongs in the headline figure.
+   * A subscription's bonus lands once, on the first purchase of that plan, so folding it
+   * into "N credits/month" would promise it every month.
+   */
+  const headlineCredits = isRecurring
+    ? product.creditsGranted
+    : product.creditsGranted + product.bonusCredits;
+
   return {
-    creditsLabel: `${totalCredits.toLocaleString("en-US")} credits/${period}`,
+    creditsLabel: `${headlineCredits.toLocaleString("en-US")} credits/${period}`,
     bonusCreditsLabel: product.bonusCredits > 0
-      ? `Includes ${product.bonusCredits.toLocaleString("en-US")} bonus credits`
+      ? (isRecurring
+        ? `Plus ${product.bonusCredits.toLocaleString("en-US")} bonus credits for new users`
+        : `Includes ${product.bonusCredits.toLocaleString("en-US")} bonus credits`)
       : undefined,
   };
 }

@@ -998,12 +998,11 @@ export async function applySubscriptionCycleCredits(input: {
     const existingSubscription = await Subscription.findById(input.subscription._id).session(session);
     if (!existingSubscription) throw new Error("Subscription not found.");
     const ledgerKey = `subscription-cycle:${existingSubscription._id}:${input.cycleKey}`;
-    const totalGranted = product.creditsGranted + product.bonusCredits;
 
     try {
       await CreditLedger.create([{
         user: existingSubscription.user,
-        deltaCredits: totalGranted,
+        deltaCredits: product.creditsGranted,
         balanceAfter: null,
         reason: "subscription_cycle_grant",
         subscription: existingSubscription._id,
@@ -1013,13 +1012,49 @@ export async function applySubscriptionCycleCredits(input: {
           paymentId: input.paymentId || null,
           planCode: existingSubscription.planCode,
           purchasedCredits: product.creditsGranted,
-          bonusCredits: product.bonusCredits,
         },
       }], { session });
     } catch (error) {
       if ((error as { code?: number }).code === 11000) return existingSubscription;
       throw error;
     }
+
+    /*
+     * The plan bonus is a welcome, not an allowance: it lands the first time this user
+     * buys this plan and never again, so it must not ride along on the cycle grant the
+     * way a one-time pack's bonus rides on applyPurchaseCredits.
+     *
+     * The key is (user, planCode) rather than the subscription id on purpose - cancelling
+     * and resubscribing to the same plan creates a new subscription, and that must not
+     * re-issue the bonus. CreditLedger.idempotencyKey is unique, so the insert itself is
+     * the exactly-once guard; no read-then-write race to lose.
+     */
+    const planBonusKey = `subscription-plan-bonus:${existingSubscription.user}:${existingSubscription.planCode}`;
+    let bonusGranted = 0;
+    if (product.bonusCredits > 0) {
+      try {
+        await CreditLedger.create([{
+          user: existingSubscription.user,
+          deltaCredits: product.bonusCredits,
+          balanceAfter: null,
+          reason: "bonus_grant",
+          subscription: existingSubscription._id,
+          idempotencyKey: planBonusKey,
+          metadata: {
+            cycleKey: input.cycleKey,
+            paymentId: input.paymentId || null,
+            planCode: existingSubscription.planCode,
+            bonusCredits: product.bonusCredits,
+          },
+        }], { session });
+        bonusGranted = product.bonusCredits;
+      } catch (error) {
+        // Already welcomed onto this plan - grant the cycle credits and nothing more.
+        if ((error as { code?: number }).code !== 11000) throw error;
+      }
+    }
+
+    const totalGranted = product.creditsGranted + bonusGranted;
 
     const lockedSubscription = await Subscription.findByIdAndUpdate(
       existingSubscription._id,
@@ -1038,7 +1073,7 @@ export async function applySubscriptionCycleCredits(input: {
         $inc: {
           availableCredits: totalGranted,
           lifetimePurchasedCredits: product.creditsGranted,
-          lifetimeBonusCredits: product.bonusCredits,
+          lifetimeBonusCredits: bonusGranted,
         },
         $set: {
           subscriptionStatus: lockedSubscription.status === "cancel_scheduled" ? "cancel_scheduled" : "active",
@@ -1055,9 +1090,17 @@ export async function applySubscriptionCycleCredits(input: {
 
     await CreditLedger.updateOne(
       { idempotencyKey: ledgerKey },
-      { $set: { balanceAfter: billing.availableCredits } },
+      { $set: { balanceAfter: billing.availableCredits - bonusGranted } },
       { session },
     );
+
+    if (bonusGranted > 0) {
+      await CreditLedger.updateOne(
+        { idempotencyKey: planBonusKey },
+        { $set: { balanceAfter: billing.availableCredits } },
+        { session },
+      );
+    }
 
     return lockedSubscription;
   });

@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import {
   getCreditPresentation,
   getMinimumAnnualSavingsPercent,
   getPlanUi,
 } from "../app/pricing/pricing-presentation";
+import { CATALOG_PRODUCTS } from "../lib/billing/catalog";
 
 test("subscription credit labels use the granted catalog values", () => {
   assert.deepEqual(getCreditPresentation({
@@ -41,6 +43,52 @@ test("a real catalog bonus is shown instead of invented plan copy", () => {
     creditsLabel: "225 credits/purchase",
     bonusCreditsLabel: "Includes 25 bonus credits",
   });
+});
+
+test("a subscription's bonus is never folded into the per-period figure", () => {
+  // The bonus lands once, on the first purchase of the plan. "175 credits/month" would
+  // promise it every month, which is the reading applySubscriptionCycleCredits refuses.
+  assert.deepEqual(getCreditPresentation({
+    code: "sub_month_1",
+    priceInr: 149,
+    creditsGranted: 150,
+    bonusCredits: 25,
+    billingCycle: "monthly",
+  }), {
+    creditsLabel: "150 credits/month",
+    bonusCreditsLabel: "Plus 25 bonus credits for new users",
+  });
+});
+
+test("every active monthly plan carries the bonus the pricing design shows", () => {
+  const expected: Record<string, number> = {
+    sub_month_1: 25,
+    sub_month_2: 50,
+    sub_month_3: 100,
+  };
+  for (const [code, bonus] of Object.entries(expected)) {
+    const product = CATALOG_PRODUCTS.find((p) => p.code === code);
+    assert.ok(product, `${code} missing from the catalog`);
+    assert.equal(product.bonusCredits, bonus, `${code} bonus drifted from the design`);
+  }
+});
+
+test("a subscription bonus is keyed per plan, not per subscription", () => {
+  // Cancelling and resubscribing mints a new subscription id. Keying the ledger row on
+  // it would re-issue the welcome bonus every time someone churned and came back.
+  const source = readFileSync(
+    new URL("../lib/billing/db.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    source,
+    /subscription-plan-bonus:\$\{existingSubscription\.user\}:\$\{existingSubscription\.planCode\}/,
+  );
+  // The cycle grant must not carry the bonus, or it would repeat monthly.
+  assert.doesNotMatch(
+    source,
+    /const totalGranted = product\.creditsGranted \+ product\.bonusCredits;/,
+  );
 });
 
 test("plan presentation is keyed by code, not catalog array position", () => {
