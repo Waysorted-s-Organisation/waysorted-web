@@ -457,8 +457,14 @@ export default function PricingClient({
             })}
           </section>
 
-          <div className="mx-auto mt-8 max-w-[790px] rounded-[15.31px] border border-[#ECEFF5] bg-white p-6 md:p-3">
-            <div className="flex flex-col items-center text-center md:flex-row md:justify-center md:text-left gap-4">
+          {/* md:w-fit rather than a fixed 790px: the card now ends where its content
+              ends, so there is no slack to distribute. Centring the row inside a fixed
+              width only moved the dead space - it split 57px of it onto BOTH sides,
+              spoiling the left edge that was already correct. Padding is symmetric too;
+              md:p-3 was half the mobile p-6, which is the other half of "keep equal
+              margin everywhere". */}
+          <div className="mx-auto mt-8 w-full max-w-[790px] rounded-[15.31px] border border-[#ECEFF5] bg-white p-6 md:w-fit md:px-5 md:py-4">
+            <div className="flex flex-col items-center text-center md:flex-row md:text-left gap-4">
               {/* In the design the lavender tile is the CONTAINER and the gift is a
                   23x25 violet glyph inset inside it, so only the glyph is an asset.
                   The old PNG baked both together at 52px and had no @2x. */}

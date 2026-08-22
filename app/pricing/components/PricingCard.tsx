@@ -66,7 +66,7 @@ export default function PricingCard({
         </div>
 
         <p
-          className={`mt-3 text-[14px] font-medium leading-[21px] h-[54px] ${
+          className={`mt-3 text-[14px] font-medium leading-[21px] min-h-[54px] ${
             featured ? "text-white/85" : "text-[#6B7280]"
           }`}
         >
@@ -123,7 +123,7 @@ export default function PricingCard({
           />
           {creditsLabel}
         </p>
-        <p className={`mt-1 text-[12px] leading-[1.35] h-[16px] ${featured ? "text-white/80" : "text-[#8A94A6]"}`}>
+        <p className={`mt-1 text-[12px] leading-[1.35] min-h-[16px] ${featured ? "text-white/80" : "text-[#8A94A6]"}`}>
           {bonusCreditsLabel}
         </p>
       </div>

@@ -120,7 +120,7 @@ export default function Bio() {
               {/* A fixed box, because the two marks are different shapes: the Figma
                   logo is 22x31 and the way mark is square, so sizing the <img> alone
                   left the rows visibly uneven. alt is empty - the row text is the label. */}
-              <span className="absolute left-4 flex h-6 w-6 items-center justify-center sm:left-70">
+              <span className="absolute left-4 flex h-6 w-6 items-center justify-center overflow-hidden rounded-md sm:left-70">
                 <Image
                   src={link.icon}
                   alt=""

@@ -96,7 +96,7 @@ export default function VisionSection() {
   return (
     <section
       ref={sectionRef}
-      className="bg-white text-center px-6 md:px-20 lg:px-32 pb-40 min-h-[80vh] flex flex-col items-center justify-center pt-8 md:pt-12"
+      className="bg-white text-center px-6 md:px-20 lg:px-32 pb-40 min-h-[80vh] flex flex-col items-center justify-start pt-8 md:pt-12"
     >
 
       {/* Vision Statement */}
