@@ -135,13 +135,41 @@ test("the plan bonus is decided by a read, never by catching a duplicate key", (
   );
 });
 
-test("a subscription purchase row carries no bonus to refund", () => {
-  // The cycle path grants the bonus, once per (user, plan), reading the catalog.
-  // Copying it onto the Purchase row made recordRefundAdjustment reverse credits
-  // that purchase had never granted.
+test("a refund reverses the bonus a subscription payment granted, and only that", () => {
+  /*
+   * recordRefundAdjustment reverses `creditsGranted + bonusCredits` off the
+   * Purchase row and cannot ask whether the bonus was ever issued, so the row has
+   * to carry what actually happened. Both constants are wrong:
+   *
+   *   catalogue figure -> refunding a re-subscription claws back a welcome bonus
+   *                       that cycle never granted
+   *   zero             -> refunding a first-ever cycle in full leaves the bonus
+   *                       in the wallet, and nothing reverses a
+   *                       `subscription-plan-bonus:` ledger row afterwards
+   *
+   * So the row opens at zero and the cycle path stamps the real figure.
+   */
   const source = readFileSync(new URL("../lib/billing/db.ts", import.meta.url), "utf8");
+
   assert.match(
     source,
     /bonusCredits: product\.kind === "subscription" \? 0 : product\.bonusCredits,/,
+    "a subscription row must open with no bonus - the cycle path decides",
   );
+
+  const cycleFn = source.slice(source.indexOf("export async function applySubscriptionCycleCredits"));
+  const body = cycleFn.slice(0, cycleFn.indexOf("\nexport async function "));
+
+  // Written back only when a bonus was really issued, and only against the row
+  // carrying the payment that issued it.
+  assert.match(
+    body,
+    /if \(bonusGranted > 0 && input\.paymentId\)/,
+    "the write-back must be conditional on a bonus actually having been granted",
+  );
+  const writeBack = body.slice(body.indexOf("if (bonusGranted > 0 && input.paymentId)"));
+  assert.match(writeBack, /Purchase\.updateOne\(/);
+  assert.match(writeBack, /razorpayPaymentId: input\.paymentId/);
+  assert.match(writeBack, /\$set: \{ bonusCredits: bonusGranted \}/);
+  assert.match(writeBack, /\{ session \}/, "the write-back must join the grant's transaction");
 });

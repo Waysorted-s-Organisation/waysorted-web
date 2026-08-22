@@ -705,13 +705,17 @@ export async function createPurchaseRecord(input: {
     pricingRiskFlags: input.pricing?.riskFlags || [],
     creditsGranted: product.creditsGranted,
     /*
-     * A subscription's bonus is NOT part of this purchase.
+     * A subscription row opens with no bonus and is stamped later with whatever
+     * was actually granted against its payment.
      *
-     * The cycle path grants it, once per (user, plan), reading the catalog
-     * directly - this row is never what issues it. Copying the figure here made
-     * recordRefundAdjustment reverse `creditsGranted + bonusCredits`, so
-     * refunding a re-subscription clawed back a welcome bonus that purchase had
-     * never granted, taking credits the customer had paid for in another cycle.
+     * recordRefundAdjustment reverses `creditsGranted + bonusCredits` off this
+     * row, so the figure has to be what the cycle path really issued, not what
+     * the catalogue advertises. The cycle path grants the plan bonus once per
+     * (user, plan), so the two disagree in both directions: copying the catalogue
+     * figure in here clawed a welcome bonus back off a re-subscription that had
+     * never granted one, and leaving it at zero let a full refund of a first-ever
+     * cycle keep the bonus that same payment had just paid for. Only
+     * applySubscriptionCycleCredits knows which happened, so it writes it back.
      */
     bonusCredits: product.kind === "subscription" ? 0 : product.bonusCredits,
     receipt,
@@ -1071,6 +1075,35 @@ export async function applySubscriptionCycleCredits(input: {
         }], { session });
         bonusGranted = product.bonusCredits;
       }
+    }
+
+    /*
+     * Tell the Purchase row what this payment actually bought.
+     *
+     * recordRefundAdjustment reverses `creditsGranted + bonusCredits` off the row
+     * alone - it has no way to ask whether the bonus was issued. On a first-ever
+     * cycle the bonus IS issued against this payment, so a row left at zero makes
+     * a full refund reverse the allowance and leave the bonus behind: refunded in
+     * full, 100 credits kept, and nothing anywhere reverses a
+     * `subscription-plan-bonus:` row afterwards.
+     *
+     * Renewals and re-subscriptions grant no bonus, so bonusGranted is 0 and the
+     * row is left alone - which is what stops the opposite error, clawing back a
+     * welcome bonus a later cycle never paid for.
+     *
+     * Renewals carry no Purchase row at all; the update simply matches nothing,
+     * and with no row there is nothing to refund either.
+     */
+    if (bonusGranted > 0 && input.paymentId) {
+      await Purchase.updateOne(
+        {
+          razorpayPaymentId: input.paymentId,
+          user: existingSubscription.user,
+          kind: "subscription",
+        },
+        { $set: { bonusCredits: bonusGranted } },
+        { session },
+      );
     }
 
     const totalGranted = product.creditsGranted + bonusGranted;
