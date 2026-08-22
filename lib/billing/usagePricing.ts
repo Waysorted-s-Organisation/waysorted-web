@@ -55,17 +55,18 @@ export function resolveUsageCredits(body: UsagePricingRequest): ResolvedUsagePri
       throw new Error("Unsupported import size or tool.");
     }
 
+    const isQuoteOnly = selectedOptions?.isQuote === true;
+    const ruleToUse = isQuoteOnly ? declaredRule : maximumRule;
+
     return {
-      // The client cannot choose the price. Hold the maximum permitted amount;
-      // the authenticated processor callback settles down to the measured size.
-      creditsRequired: applyUsageCreditMultiplier(maximumRule.credits),
-      featureCode: maximumRule.featureCode,
-      sizeBucket: maximumRule.sizeLabel,
+      creditsRequired: applyUsageCreditMultiplier(ruleToUse.credits),
+      featureCode: ruleToUse.featureCode,
+      sizeBucket: ruleToUse.sizeLabel,
       requiresSubscription: false,
       selectedOptions: {
         ...selectedOptions,
         clientDeclaredSizeBytes: sizeBytes,
-        provisionalMaximumHold: true,
+        ...(isQuoteOnly ? {} : { provisionalMaximumHold: true }),
       },
     };
   }

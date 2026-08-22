@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { resolveMaximumImportPricing } from "../lib/billing/catalog";
 import { formatMoney, minorUnitMultiplier } from "../lib/billing/money";
 import { resolveUsageCredits } from "../lib/billing/usagePricing";
 import { isSubscriptionActive } from "../lib/billing/catalog";
@@ -12,6 +13,10 @@ test("currency subunits use explicit zero and three decimal conventions", () => 
 });
 
 test("import reservations hold the maximum tier regardless of client-declared size", () => {
+  const maximumImportPricing = resolveMaximumImportPricing("psd");
+  assert.ok(maximumImportPricing);
+  const expectedMaximumHoldCredits = maximumImportPricing.credits * 2;
+
   const tinyClaim = resolveUsageCredits({
     featureCode: "import_file",
     toolCode: "psd",
@@ -22,8 +27,8 @@ test("import reservations hold the maximum tier regardless of client-declared si
     toolCode: "psd",
     sizeBytes: 190 * 1024 * 1024,
   });
-  assert.equal(tinyClaim.creditsRequired, 80);
-  assert.equal(largeClaim.creditsRequired, 80);
+  assert.equal(tinyClaim.creditsRequired, expectedMaximumHoldCredits);
+  assert.equal(largeClaim.creditsRequired, expectedMaximumHoldCredits);
   assert.equal(tinyClaim.selectedOptions.provisionalMaximumHold, true);
 });
 

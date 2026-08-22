@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import OrderComplete from "@/components/OrderComplete";
 
@@ -6,10 +7,23 @@ import OrderComplete from "@/components/OrderComplete";
  *
  * The real screen only appears after money has moved, which makes it the hardest
  * surface in the product to look at while building it. This exists so it can be
- * checked, and is refused outside development so it can never be mistaken for a
- * genuine receipt.
+ * checked, and must never be mistaken for a genuine receipt.
+ *
+ * Development only. To show it on production, use the temporary keyed link at
+ * ./[key], which carries its own expiry - see that file.
+ *
+ * The numbers below are invented and fixed. Nothing here reads a real order.
  */
 export const dynamic = "force-dynamic";
+
+/**
+ * Never indexable. /billing is not in the robots disallow list, so without this
+ * a crawler could pick the page up and publish what looks like a real Waysorted
+ * receipt, complete with an order number.
+ */
+export const metadata: Metadata = {
+  robots: { index: false, follow: false, nocache: true },
+};
 
 export default async function ReceiptPreviewPage({
   searchParams,
