@@ -11,10 +11,14 @@ const HASHED_ICONS = [
 
 test("a hashed icon's filename actually matches its contents", () => {
   /*
-   * /icons/:path* is served max-age=31536000, immutable. That is only true of a
-   * content-addressed URL, so these two carry their hash in the filename. If the
-   * art is redrawn without re-hashing, the header starts lying again and
-   * returning visitors keep the old icon for a year.
+   * /icons/:path* is served max-age=604800, stale-while-revalidate=2592000, and
+   * these filenames are hand-written - so the URL is not content-addressed and
+   * the only thing making a redraw visible is the hash in the name.
+   *
+   * Shortening the header (it used to claim immutable, max-age=31536000) does not
+   * recall what was already cached under it: production still answers for the
+   * retired /icons/unit-converter.svg from a copy weeks old. Redraw without
+   * re-hashing and returning visitors keep the old icon.
    */
   for (const { path } of HASHED_ICONS) {
     const file = new URL(`../public${path}`, import.meta.url);
