@@ -93,6 +93,9 @@ type BillingSnapshot = {
     subscription: {
       planCode: string | null;
       status: string;
+      /** The human-facing form of `status`. The server has always sent it; this
+          type just never declared it, so the panel printed the raw enum. */
+      statusLabel?: string;
       renewsAt: string | null;
       willCancelAt: string | null;
       cancelAtCycleEnd: boolean;
@@ -308,14 +311,35 @@ export default function BillingClient({
    */
   const quoteDrift = useMemo(() => {
     if (!selectedProduct || quotedAmountSubunits === null || !quotedCurrency) return null;
+    /*
+     * A quote belongs to the product it was quoted FOR.
+     *
+     * The comparison used to run against whatever was selected, so switching
+     * plans in the dropdown tripped it: someone who arrived from Pro (qa=74900)
+     * and chose Discover was told "You were shown ₹749.00. Based on your account
+     * it is now ₹149.00" - blaming their account for a change they made
+     * themselves, in the alarming register reserved for a real price drift.
+     */
+    if (initialProductCode && selectedProduct.code !== initialProductCode) return null;
     const sameAmount = selectedProduct.amountPaise === quotedAmountSubunits;
     const sameCurrency = selectedProduct.currency.toUpperCase() === quotedCurrency.toUpperCase();
     if (sameAmount && sameCurrency) return null;
     return { amountPaise: quotedAmountSubunits, currency: quotedCurrency.toUpperCase() };
-  }, [quotedAmountSubunits, quotedCurrency, selectedProduct]);
+  }, [quotedAmountSubunits, quotedCurrency, selectedProduct, initialProductCode]);
 
+  /*
+   * Show this only while the customer actually HAS a subscription.
+   *
+   * The test used to be `status !== "inactive"`, which let every terminal state
+   * through - "cancelled", "expired", "completed". A cancelled subscriber saw a
+   * panel headed "Subscription" reading `cancelled`, with no renewal date and no
+   * Cancel button (currentSubscription is null once it is not live), i.e. a card
+   * that states a dead fact and offers nothing. isLiveSubscriptionStatus is the
+   * same predicate the rest of billing uses for "this is their current one".
+   */
   const shouldShowSubscriptionPanel =
-    Boolean(currentSubscription) || Boolean(snapshot && snapshot.billing.subscription.status !== "inactive");
+    Boolean(currentSubscription) ||
+    Boolean(snapshot && isLiveSubscriptionStatus(snapshot.billing.subscription.status));
 
   const refreshSnapshot = useCallback(async () => {
     const response = await fetch(`/api/billing/snapshot?ts=${Date.now()}`, { cache: "no-store" });
@@ -1187,8 +1211,17 @@ export default function BillingClient({
   if (completedOrder) return <OrderComplete {...completedOrder} />;
 
   const wallet = snapshot?.billing.wallet.availableCredits ?? null;
+  /*
+   * A subscription's bonus lands once per plan, so adding it here quoted 175
+   * credits to anyone resubscribing to a plan they had held before - and the
+   * cycle would grant them 150. /pricing already refuses this arithmetic for
+   * recurring products (pricing-presentation.ts) and states the bonus on its own
+   * line; checkout now matches rather than promising what it cannot deliver.
+   */
   const selectedCredits = selectedProduct
-    ? selectedProduct.creditsGranted + selectedProduct.bonusCredits
+    ? selectedProduct.kind === "subscription"
+      ? selectedProduct.creditsGranted
+      : selectedProduct.creditsGranted + selectedProduct.bonusCredits
     : null;
   // The same four lines the customer read on the plan card they clicked. The
   // hardcoded list here described a generic plan, so the benefits changed
@@ -1572,8 +1605,11 @@ export default function BillingClient({
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <div className="text-[14px] font-semibold text-[#17171C]">Subscription</div>
+                {/* statusLabel, not the raw enum. buildSubscriptionPresentation
+                    already turns "cancel_scheduled" into "Cancels at period end";
+                    printing `status` showed customers the database value. */}
                 <div className="mt-[2px] text-[12px] text-[#8B8B94]">
-                  {snapshot?.billing.subscription.status || "NA"}
+                  {snapshot?.billing.subscription.statusLabel || "NA"}
                   {snapshot?.billing.subscription.renewsAt
                     ? ` - renews ${formatDate(snapshot.billing.subscription.renewsAt)}`
                     : ""}

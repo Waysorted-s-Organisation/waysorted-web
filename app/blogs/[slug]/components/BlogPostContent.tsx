@@ -227,10 +227,13 @@ export default function BlogPostContent({
       {/* Author and Share Icons */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div className="flex items-center text-sm text-gray-600 font-medium">
-          <div className="w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center mr-3">
-            {/* Minimal White W */}
-            <span className="text-white text-[10px] font-bold">W</span>
-          </div>
+          {/* The avatar comes from the post's own authorAvatar. It used to be a
+              hardcoded "W" glyph, which stood in for every author regardless. */}
+          {post.authorAvatar ? (
+            <div className="relative mr-3 h-6 w-6 shrink-0 overflow-hidden rounded-full">
+              <Image src={post.authorAvatar} alt="" fill className="object-cover" />
+            </div>
+          ) : null}
           <span>{post.authorName}</span>
           <span className="mx-2 text-gray-300">•</span>
           <span>{publishedDate}</span>

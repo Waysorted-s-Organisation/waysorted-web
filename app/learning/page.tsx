@@ -55,7 +55,9 @@ async function getTools() {
   try {
     await dbConnect();
     // Select only needed fields for the grid to optimize performance (exclude iconData and slides)
-    const all = await Tool.find({})
+    // isActive only - a retired tool should not be listed, but a `disabled` one
+    // still is, because that is what the "Unlock's soon" badge is for.
+    const all = await Tool.find({ isActive: true })
       .select('name slug heading description shortDescription icon isAI badge disabled isActive category tagline tags version')
       .lean() as any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
 

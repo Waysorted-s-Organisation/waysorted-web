@@ -130,7 +130,11 @@ export default function BlogsContent({
       {/* Header Area */}
       <div className="mb-10">
         <div className="mb-6 inline-flex h-8 items-center rounded-[6px] bg-[#F3F4F6] px-2 text-[13px] font-medium text-[#0D1218]">
-          <div className="mr-2 h-5 w-5 rounded-[4px] bg-[#0D1218]"></div>
+          {/* The dark chip is the design's; it was just empty. The blogs mark is
+              white-on-transparent, which is what it is drawn for. */}
+          <span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-[#0D1218]">
+            <Image src="/icons/blogs-mark.svg" alt="" width={12} height={11} className="h-3 w-3 object-contain" />
+          </span>
           Our Blogs
         </div>
         <h1 className="text-4xl md:text-[40px] font-semibold tracking-tight text-[#0D1218]">

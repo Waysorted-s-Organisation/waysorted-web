@@ -704,7 +704,20 @@ export async function createPurchaseRecord(input: {
     pricingCurrency: input.pricing?.currency || pricedProduct.currency,
     pricingRiskFlags: input.pricing?.riskFlags || [],
     creditsGranted: product.creditsGranted,
-    bonusCredits: product.bonusCredits,
+    /*
+     * A subscription row opens with no bonus and is stamped later with whatever
+     * was actually granted against its payment.
+     *
+     * recordRefundAdjustment reverses `creditsGranted + bonusCredits` off this
+     * row, so the figure has to be what the cycle path really issued, not what
+     * the catalogue advertises. The cycle path grants the plan bonus once per
+     * (user, plan), so the two disagree in both directions: copying the catalogue
+     * figure in here clawed a welcome bonus back off a re-subscription that had
+     * never granted one, and leaving it at zero let a full refund of a first-ever
+     * cycle keep the bonus that same payment had just paid for. Only
+     * applySubscriptionCycleCredits knows which happened, so it writes it back.
+     */
+    bonusCredits: product.kind === "subscription" ? 0 : product.bonusCredits,
     receipt,
     checkoutSource: input.checkoutSource || "website",
     idempotencyKey: input.idempotencyKey,
@@ -998,12 +1011,11 @@ export async function applySubscriptionCycleCredits(input: {
     const existingSubscription = await Subscription.findById(input.subscription._id).session(session);
     if (!existingSubscription) throw new Error("Subscription not found.");
     const ledgerKey = `subscription-cycle:${existingSubscription._id}:${input.cycleKey}`;
-    const totalGranted = product.creditsGranted + product.bonusCredits;
 
     try {
       await CreditLedger.create([{
         user: existingSubscription.user,
-        deltaCredits: totalGranted,
+        deltaCredits: product.creditsGranted,
         balanceAfter: null,
         reason: "subscription_cycle_grant",
         subscription: existingSubscription._id,
@@ -1013,13 +1025,88 @@ export async function applySubscriptionCycleCredits(input: {
           paymentId: input.paymentId || null,
           planCode: existingSubscription.planCode,
           purchasedCredits: product.creditsGranted,
-          bonusCredits: product.bonusCredits,
         },
       }], { session });
     } catch (error) {
       if ((error as { code?: number }).code === 11000) return existingSubscription;
       throw error;
     }
+
+    /*
+     * The plan bonus is a welcome, not an allowance: it lands the first time this user
+     * buys this plan and never again, so it must not ride along on the cycle grant the
+     * way a one-time pack's bonus rides on applyPurchaseCredits.
+     *
+     * The key is (user, planCode) rather than the subscription id on purpose - cancelling
+     * and resubscribing to the same plan creates a new subscription, and that must not
+     * re-issue the bonus.
+     *
+     * CHECK, don't catch. A duplicate key inside a transaction aborts it SERVER-side, so
+     * swallowing the E11000 and carrying on leaves every following write failing with
+     * NoSuchTransaction - which carries the TransientTransactionError label, so
+     * withTransaction retries the whole callback in a hot loop until its 120s deadline and
+     * then throws. That turned the second cycle of every monthly subscription into a
+     * two-minute hang that granted nothing. The catch is gone; a read decides instead.
+     *
+     * The read is inside the transaction, so the window for two cycles of the same
+     * (user, plan) to both see "absent" is vanishingly small - and if they do, the insert
+     * throws, this transaction rolls back whole, and the caller's existing retry (webhook
+     * redelivery, the cycle reconciler) re-runs it against a state where the read now
+     * finds the row. Never a partial grant.
+     */
+    const planBonusKey = `subscription-plan-bonus:${existingSubscription.user}:${existingSubscription.planCode}`;
+    let bonusGranted = 0;
+    if (product.bonusCredits > 0) {
+      const alreadyWelcomed = await CreditLedger.exists({ idempotencyKey: planBonusKey }).session(session);
+      if (!alreadyWelcomed) {
+        await CreditLedger.create([{
+          user: existingSubscription.user,
+          deltaCredits: product.bonusCredits,
+          balanceAfter: null,
+          reason: "bonus_grant",
+          subscription: existingSubscription._id,
+          idempotencyKey: planBonusKey,
+          metadata: {
+            cycleKey: input.cycleKey,
+            paymentId: input.paymentId || null,
+            planCode: existingSubscription.planCode,
+            bonusCredits: product.bonusCredits,
+          },
+        }], { session });
+        bonusGranted = product.bonusCredits;
+      }
+    }
+
+    /*
+     * Tell the Purchase row what this payment actually bought.
+     *
+     * recordRefundAdjustment reverses `creditsGranted + bonusCredits` off the row
+     * alone - it has no way to ask whether the bonus was issued. On a first-ever
+     * cycle the bonus IS issued against this payment, so a row left at zero makes
+     * a full refund reverse the allowance and leave the bonus behind: refunded in
+     * full, 100 credits kept, and nothing anywhere reverses a
+     * `subscription-plan-bonus:` row afterwards.
+     *
+     * Renewals and re-subscriptions grant no bonus, so bonusGranted is 0 and the
+     * row is left alone - which is what stops the opposite error, clawing back a
+     * welcome bonus a later cycle never paid for.
+     *
+     * Renewals carry no Purchase row at all; the update simply matches nothing,
+     * and with no row there is nothing to refund either.
+     */
+    if (bonusGranted > 0 && input.paymentId) {
+      await Purchase.updateOne(
+        {
+          razorpayPaymentId: input.paymentId,
+          user: existingSubscription.user,
+          kind: "subscription",
+        },
+        { $set: { bonusCredits: bonusGranted } },
+        { session },
+      );
+    }
+
+    const totalGranted = product.creditsGranted + bonusGranted;
 
     const lockedSubscription = await Subscription.findByIdAndUpdate(
       existingSubscription._id,
@@ -1038,7 +1125,7 @@ export async function applySubscriptionCycleCredits(input: {
         $inc: {
           availableCredits: totalGranted,
           lifetimePurchasedCredits: product.creditsGranted,
-          lifetimeBonusCredits: product.bonusCredits,
+          lifetimeBonusCredits: bonusGranted,
         },
         $set: {
           subscriptionStatus: lockedSubscription.status === "cancel_scheduled" ? "cancel_scheduled" : "active",
@@ -1055,9 +1142,17 @@ export async function applySubscriptionCycleCredits(input: {
 
     await CreditLedger.updateOne(
       { idempotencyKey: ledgerKey },
-      { $set: { balanceAfter: billing.availableCredits } },
+      { $set: { balanceAfter: billing.availableCredits - bonusGranted } },
       { session },
     );
+
+    if (bonusGranted > 0) {
+      await CreditLedger.updateOne(
+        { idempotencyKey: planBonusKey },
+        { $set: { balanceAfter: billing.availableCredits } },
+        { session },
+      );
+    }
 
     return lockedSubscription;
   });

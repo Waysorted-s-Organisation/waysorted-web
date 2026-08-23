@@ -20,9 +20,9 @@ export const PLAN_UI = {
     planName: "Discover",
     description: "Best for individuals getting started with Waysorted.",
     ctaLabel: "Select Plan",
-    iconSrc: "/pricingIcons/Discover.png",
+    iconSrc: "/pricingIcons/Discover.svg",
     features: [
-      "Includes all core Waysorted features",
+      "Includes all Premium Waysorted features",
       "Regular updates with ongoing support",
       "Lowest cost for credit top-ups",
       "Credits never expire, with no monthly reset.",
@@ -32,10 +32,10 @@ export const PLAN_UI = {
     planName: "Core",
     description: "Perfect for designers who need full access to tools, credits & ongoing updates.",
     ctaLabel: "Get Started",
-    iconSrc: "/pricingIcons/Core.png",
+    iconSrc: "/pricingIcons/Core.svg",
     featured: true,
     features: [
-      "Includes all core Waysorted features",
+      "Includes all Premium Waysorted features",
       "Regular updates with ongoing support",
       "Lowest cost for small top-ups",
       "Credits never expire, with no monthly reset.",
@@ -45,9 +45,9 @@ export const PLAN_UI = {
     planName: "Pro",
     description: "Designed for studios and enterprises with more support & credits.",
     ctaLabel: "Select Plan",
-    iconSrc: "/pricingIcons/Pro.png",
+    iconSrc: "/pricingIcons/Pro.svg",
     features: [
-      "Includes all core Waysorted features",
+      "Includes all Premium Waysorted features",
       "Regular updates with ongoing support",
       "Lowest cost for credit top-ups",
       "Credits never expire, with no monthly reset.",
@@ -61,17 +61,28 @@ export function getPlanUi(productCode: string) {
 }
 
 export function getCreditPresentation(product: PricingDisplayProduct) {
-  const totalCredits = product.creditsGranted + product.bonusCredits;
+  const isRecurring = product.billingCycle === "monthly" || product.billingCycle === "yearly";
   const period = product.billingCycle === "yearly"
     ? "year"
     : product.billingCycle === "monthly"
       ? "month"
       : "purchase";
 
+  /*
+   * A one-time pack's bonus arrives with the pack, so it belongs in the headline figure.
+   * A subscription's bonus lands once, on the first purchase of that plan, so folding it
+   * into "N credits/month" would promise it every month.
+   */
+  const headlineCredits = isRecurring
+    ? product.creditsGranted
+    : product.creditsGranted + product.bonusCredits;
+
   return {
-    creditsLabel: `${totalCredits.toLocaleString("en-US")} credits/${period}`,
+    creditsLabel: `${headlineCredits.toLocaleString("en-US")} credits/${period}`,
     bonusCreditsLabel: product.bonusCredits > 0
-      ? `Includes ${product.bonusCredits.toLocaleString("en-US")} bonus credits`
+      ? (isRecurring
+        ? `Plus ${product.bonusCredits.toLocaleString("en-US")} bonus credits for new users`
+        : `Includes ${product.bonusCredits.toLocaleString("en-US")} bonus credits`)
       : undefined,
   };
 }

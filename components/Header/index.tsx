@@ -1,15 +1,15 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ProductsMenu } from '../ProductsMenu';
 import ResourcesMenu from '../ResourcesMenu';
-import LanguageDropdown from '../LanguageDropdown';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/hooks/useUser';
 import UserMenu from '@/components/UserMenu';
 import GlowStarButton from '@/components/GlowStarButton';
 import products from "@/data/products.json"
+import { buildAnnouncements, type PublicOffer } from '@/lib/announcements';
 
 interface HeaderProps {
   showBanner: boolean;
@@ -20,15 +20,12 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
   const { user, refetch } = useUser();
   const [productsOpen, setProductsOpen] = useState(false);
   const [resourcesOpen, setResourcesOpen] = useState(false);
-  const [languageOpen, setLanguageOpen] = useState(false);
 
   // Mobile state
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileProductsOpen, setMobileProductsOpen] = useState(false);
   const [mobileResourcesOpen, setMobileResourcesOpen] = useState(false);
 
-  const languageBtnRef = useRef<HTMLButtonElement | null>(null);
-  const mobileLanguageBtnRef = useRef<HTMLButtonElement | null>(null);
   const router = useRouter();
 
   // header ref so we can measure its height to detect "touch"
@@ -63,7 +60,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
     const closeAll = () => {
       setProductsOpen(false);
       setResourcesOpen(false);
-      setLanguageOpen(false);
       setMobileOpen(false);
       setMobileProductsOpen(false);
       setMobileResourcesOpen(false);
@@ -77,7 +73,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         setMobileOpen(false);
-        setLanguageOpen(false);
         setMobileProductsOpen(false);
         setMobileResourcesOpen(false);
       }
@@ -148,21 +143,90 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
     };
   }, []);
 
+  /*
+   * The banner rotates. It used to be a single hardcoded line, which is what
+   * "stuck on this CTA only" meant.
+   *
+   * The evergreen lines render immediately; discount lines are appended once the
+   * public ladder answers, so a slow or empty response degrades to the evergreen
+   * rotation rather than an empty bar. Every seeded coupon ships inactive, so an
+   * empty ladder is the normal case, not a failure.
+   */
+  const [offers, setOffers] = useState<PublicOffer[]>([]);
+  const [announcementIndex, setAnnouncementIndex] = useState(0);
+  // Hover and focus are tracked apart on purpose. Sharing one flag meant moving
+  // the pointer off the bar resumed rotation while the CTA still held keyboard
+  // focus - and because the link is reconciled in place rather than remounted,
+  // its label and href changed under someone about to press Enter.
+  const [announcementHovered, setAnnouncementHovered] = useState(false);
+  const [announcementFocused, setAnnouncementFocused] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const announcements = useMemo(() => buildAnnouncements(offers), [offers]);
+
+  useEffect(() => {
+    const query = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    if (!query) return;
+    setReduceMotion(query.matches);
+    // Sampled once, the setting was ignored for anyone who changed it mid-session.
+    const onChange = (event: MediaQueryListEvent) => setReduceMotion(event.matches);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/billing/coupons/public-ladder', { headers: { Accept: 'application/json' } });
+        if (!res.ok) return;
+        const json = await res.json();
+        if (!cancelled) setOffers(json?.data?.ladder ?? []);
+      } catch {
+        // No offers is a valid state; the evergreen lines still rotate.
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!showBanner || announcements.length < 2) return;
+    if (announcementHovered || announcementFocused || reduceMotion) return;
+    const timer = setInterval(() => {
+      setAnnouncementIndex((prev) => (prev + 1) % announcements.length);
+    }, 6000);
+    return () => clearInterval(timer);
+  }, [showBanner, announcements.length, announcementHovered, announcementFocused, reduceMotion]);
+
+  // The list can shrink when the ladder resolves; never index past the end.
+  const announcement = announcements[announcementIndex % announcements.length];
+
   // helper to choose text color based on secure section state
   const textColor = isSecureSection ? 'text-white' : 'text-secondary-db-100';
-  const logoLanguage = isSecureSection ? '/icons/language-white.svg' : '/icons/world.svg';
 
   return (
     <header
       ref={headerRef}
       className={`w-full fixed top-0 z-40 ${isSecureSection ? 'bg-secondary-db-100' : 'bg-white border-b border-gray-200'}`}
     >
-      {showBanner && (
-          <div className="relative flex min-h-9 w-full items-center justify-center bg-[#111820] px-12 py-2 text-center text-xs text-white/80 sm:text-sm">
-            <span>Try Palettable for quick Color schemes and Contrast check...</span>
-            <Link href="/learning/palettable" className="ml-1 underline underline-offset-2 transition-colors hover:text-white">
-              Click here
-            </Link>
+      {showBanner && announcement && (
+          <div
+            className="relative flex min-h-9 w-full items-center justify-center bg-[#111820] px-12 py-2 text-center text-xs text-white/80 sm:text-sm"
+            onMouseEnter={() => setAnnouncementHovered(true)}
+            onMouseLeave={() => setAnnouncementHovered(false)}
+            onFocus={() => setAnnouncementFocused(true)}
+            onBlur={() => setAnnouncementFocused(false)}
+          >
+            {/* Deliberately NOT a live region. This is ambient marketing, not a
+                status update: announcing it every six seconds interrupts whatever
+                the reader is actually doing, on every page, with no pause a
+                browse-mode user can reach - mouseenter and focus never fire for
+                them. The text is in the DOM and reachable on demand instead. */}
+            <span>
+              <span>{announcement.text}</span>
+              <Link href={announcement.href} className="ml-1 underline underline-offset-2 transition-colors hover:text-white">
+                {announcement.ctaLabel}
+              </Link>
+            </span>
             <button
               onClick={() => setShowBanner(false)}
               className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer rounded-md bg-white/10 p-2 transition-colors hover:bg-white/15"
@@ -277,24 +341,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                 <UserMenu user={user} handleLogout={handleLogout} />
               </div>
             )}
-
-            {/* Language: hide on mobile, available inside drawer */}
-            <div className="relative hidden lg:block">
-              <button
-                onClick={() => setLanguageOpen((prev) => !prev)}
-                className={`border border-secondary-db-20 rounded-lg p-2 active:scale-95 transition-transform duration-100 cursor-pointer ${isSecureSection ? 'border border-secondary-db-80' : ''}`}
-                title="Change Language"
-                aria-label="Change Language"
-                ref={languageBtnRef}
-              >
-                <Image src={logoLanguage} alt="Globe Icon" title="Globe Icon" width={20} height={20} />
-              </button>
-              <LanguageDropdown
-                isOpen={languageOpen}
-                onClose={() => setLanguageOpen(false)}
-                buttonRef={languageBtnRef}
-              />
-            </div>
 
             <GlowStarButton
               type="button"
@@ -542,27 +588,6 @@ const Header = ({ showBanner, setShowBanner }: HeaderProps) => {
                   <span className="font-medium">Pricing</span>
                 </Link>
                 <div className="border-t border-primary-way-10" />
-              </div>
-              {/* Language pill + dropdown */}
-              <div className="px-3 py-4">
-                <button
-                  ref={mobileLanguageBtnRef}
-                  onClick={() => setLanguageOpen((prev) => !prev)}
-                  className="inline-flex items-center gap-2 rounded-full border border-secondary-db-20 px-3 py-1.5 active:scale-95"
-                  title="Change Language"
-                  aria-label="Change Language"
-                  aria-controls="mobile-language"
-                >
-                  <Image src={logoLanguage} alt="Language" title="Language" width={16} height={16} />
-                  <span className="text-secondary-db-100 text-sm">En</span>
-                </button>
-                <div id="mobile-language" className="relative mt-2">
-                  <LanguageDropdown
-                    isOpen={languageOpen}
-                    onClose={() => setLanguageOpen(false)}
-                    buttonRef={mobileLanguageBtnRef}
-                  />
-                </div>
               </div>
             </nav>
 

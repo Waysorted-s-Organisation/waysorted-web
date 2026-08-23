@@ -3,35 +3,21 @@
 import React, { useState, useRef, useEffect, MouseEvent } from "react";
 import clsx from "clsx";
 import Image from "next/image";
+import products from "../../data/products.json";
 // 1. Import the default function directly
 // 1. Import removed for dynamic loading
 
-const TOOLS_DATA = [
-  {
-    id: 1,
-    name: "Frames to PDF",
-    src: "/icons/wayspace-1.svg",
-    textColor: "text-secondary-db-100",
-  },
-  {
-    id: 2,
-    name: "Palettable",
-    src: "/icons/wayspace-2.svg",
-    textColor: "text-secondary-db-100",
-  },
-  {
-    id: 3,
-    name: "Unit Convertor",
-    src: "/icons/wayspace-3.svg",
-    textColor: "text-secondary-db-100",
-  },
-  {
-    id: 4,
-    name: "Font Importer",
-    src: "/icons/wayspace-4.svg",
-    textColor: "text-secondary-db-100",
-  },
-];
+// The wayspace-N artwork is a decorative variant of the product whose id is N in
+// data/products.json, so take the names from there rather than restating them here —
+// they had drifted out of sync (tiles 1 and 2 were labelled with each other's product).
+const WAYSPACE_TILE_IDS = [1, 2, 3, 4];
+
+const TOOLS_DATA = WAYSPACE_TILE_IDS.map((id) => ({
+  id,
+  name: products.find((product) => product.id === id)?.name ?? "",
+  src: `/icons/wayspace-${id}.svg`,
+  textColor: "text-secondary-db-100",
+}));
 
 const INFINITE_TOOLS = [...TOOLS_DATA, ...TOOLS_DATA, ...TOOLS_DATA];
 

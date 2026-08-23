@@ -163,14 +163,20 @@ export default function Focus({ className }: { className?: string }) {
                   )}
                 >
                   <div className="w-12 h-12 flex items-center justify-center rounded-md bg-primary-way-10">
-                    <Image
-                      src={tool.icon || tool.iconData || "/icons/tool-fallback.svg"}
-                      width={40}
-                      height={40}
-                      alt={`${tool.name} icon`}
-                      title={`${tool.name} icon`}
-                      className="object-contain"
-                    />
+                    {/* The old fallback pointed at /icons/tool-fallback.svg, which
+                        does not exist - so a tool without an icon rendered a broken
+                        image rather than a blank tile. Unreachable today (every tool
+                        has one), which is exactly why it would have gone unnoticed. */}
+                    {tool.icon || tool.iconData ? (
+                      <Image
+                        src={(tool.icon || tool.iconData) as string}
+                        width={40}
+                        height={40}
+                        alt={`${tool.name} icon`}
+                        title={`${tool.name} icon`}
+                        className="object-contain"
+                      />
+                    ) : null}
                   </div>
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-secondary-db-100 text-sm text-start truncate">

@@ -163,7 +163,10 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceInr: 149,
     amountPaise: 14900,
     creditsGranted: 150,
-    bonusCredits: 0,
+    // A subscription's bonus is granted ONCE, the first time this user buys this plan -
+    // see applySubscriptionCycleCredits. It is not part of the monthly allowance, and it
+    // is separate from the 100-credit signup StarterGrant.
+    bonusCredits: 25,
     billingCycle: "monthly",
     currency: "INR",
     active: true,
@@ -177,7 +180,7 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceInr: 349,
     amountPaise: 34900,
     creditsGranted: 550,
-    bonusCredits: 0,
+    bonusCredits: 50,
     billingCycle: "monthly",
     currency: "INR",
     active: true,
@@ -191,7 +194,7 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceInr: 749,
     amountPaise: 74900,
     creditsGranted: 1500,
-    bonusCredits: 0,
+    bonusCredits: 100,
     billingCycle: "monthly",
     currency: "INR",
     active: true,

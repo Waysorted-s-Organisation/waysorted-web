@@ -1,10 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { readFileSync } from "node:fs";
 import {
   getCreditPresentation,
   getMinimumAnnualSavingsPercent,
   getPlanUi,
 } from "../app/pricing/pricing-presentation";
+import { CATALOG_PRODUCTS } from "../lib/billing/catalog";
 
 test("subscription credit labels use the granted catalog values", () => {
   assert.deepEqual(getCreditPresentation({
@@ -43,6 +45,52 @@ test("a real catalog bonus is shown instead of invented plan copy", () => {
   });
 });
 
+test("a subscription's bonus is never folded into the per-period figure", () => {
+  // The bonus lands once, on the first purchase of the plan. "175 credits/month" would
+  // promise it every month, which is the reading applySubscriptionCycleCredits refuses.
+  assert.deepEqual(getCreditPresentation({
+    code: "sub_month_1",
+    priceInr: 149,
+    creditsGranted: 150,
+    bonusCredits: 25,
+    billingCycle: "monthly",
+  }), {
+    creditsLabel: "150 credits/month",
+    bonusCreditsLabel: "Plus 25 bonus credits for new users",
+  });
+});
+
+test("every active monthly plan carries the bonus the pricing design shows", () => {
+  const expected: Record<string, number> = {
+    sub_month_1: 25,
+    sub_month_2: 50,
+    sub_month_3: 100,
+  };
+  for (const [code, bonus] of Object.entries(expected)) {
+    const product = CATALOG_PRODUCTS.find((p) => p.code === code);
+    assert.ok(product, `${code} missing from the catalog`);
+    assert.equal(product.bonusCredits, bonus, `${code} bonus drifted from the design`);
+  }
+});
+
+test("a subscription bonus is keyed per plan, not per subscription", () => {
+  // Cancelling and resubscribing mints a new subscription id. Keying the ledger row on
+  // it would re-issue the welcome bonus every time someone churned and came back.
+  const source = readFileSync(
+    new URL("../lib/billing/db.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(
+    source,
+    /subscription-plan-bonus:\$\{existingSubscription\.user\}:\$\{existingSubscription\.planCode\}/,
+  );
+  // The cycle grant must not carry the bonus, or it would repeat monthly.
+  assert.doesNotMatch(
+    source,
+    /const totalGranted = product\.creditsGranted \+ product\.bonusCredits;/,
+  );
+});
+
 test("plan presentation is keyed by code, not catalog array position", () => {
   assert.equal(getPlanUi("sub_month_2")?.planName, "Core");
   assert.equal(getPlanUi("sub_year_1599")?.planName, "Discover");
@@ -62,4 +110,66 @@ test("yearly savings is calculated from catalog prices", () => {
   ];
 
   assert.equal(getMinimumAnnualSavingsPercent(monthly, yearly), 16);
+});
+
+test("the plan bonus is decided by a read, never by catching a duplicate key", () => {
+  /*
+   * A duplicate key inside a MongoDB transaction aborts it server-side. Catching
+   * the E11000 and continuing to write leaves every later statement failing with
+   * NoSuchTransaction, which carries the TransientTransactionError label, so
+   * withTransaction retries the whole callback in a hot loop until its 120s
+   * deadline and then throws. That turned the SECOND cycle of every monthly
+   * subscription into a two-minute hang that granted nothing at all.
+   *
+   * The exactly-once guard has to be a read.
+   */
+  const source = readFileSync(new URL("../lib/billing/db.ts", import.meta.url), "utf8");
+  const cycleFn = source.slice(source.indexOf("export async function applySubscriptionCycleCredits"));
+  const body = cycleFn.slice(0, cycleFn.indexOf("\nexport async function "));
+
+  assert.match(body, /CreditLedger\.exists\(\{ idempotencyKey: planBonusKey \}\)/);
+  assert.doesNotMatch(
+    body.slice(body.indexOf("planBonusKey")),
+    /code !== 11000/,
+    "the plan-bonus insert must not swallow a duplicate key mid-transaction",
+  );
+});
+
+test("a refund reverses the bonus a subscription payment granted, and only that", () => {
+  /*
+   * recordRefundAdjustment reverses `creditsGranted + bonusCredits` off the
+   * Purchase row and cannot ask whether the bonus was ever issued, so the row has
+   * to carry what actually happened. Both constants are wrong:
+   *
+   *   catalogue figure -> refunding a re-subscription claws back a welcome bonus
+   *                       that cycle never granted
+   *   zero             -> refunding a first-ever cycle in full leaves the bonus
+   *                       in the wallet, and nothing reverses a
+   *                       `subscription-plan-bonus:` ledger row afterwards
+   *
+   * So the row opens at zero and the cycle path stamps the real figure.
+   */
+  const source = readFileSync(new URL("../lib/billing/db.ts", import.meta.url), "utf8");
+
+  assert.match(
+    source,
+    /bonusCredits: product\.kind === "subscription" \? 0 : product\.bonusCredits,/,
+    "a subscription row must open with no bonus - the cycle path decides",
+  );
+
+  const cycleFn = source.slice(source.indexOf("export async function applySubscriptionCycleCredits"));
+  const body = cycleFn.slice(0, cycleFn.indexOf("\nexport async function "));
+
+  // Written back only when a bonus was really issued, and only against the row
+  // carrying the payment that issued it.
+  assert.match(
+    body,
+    /if \(bonusGranted > 0 && input\.paymentId\)/,
+    "the write-back must be conditional on a bonus actually having been granted",
+  );
+  const writeBack = body.slice(body.indexOf("if (bonusGranted > 0 && input.paymentId)"));
+  assert.match(writeBack, /Purchase\.updateOne\(/);
+  assert.match(writeBack, /razorpayPaymentId: input\.paymentId/);
+  assert.match(writeBack, /\$set: \{ bonusCredits: bonusGranted \}/);
+  assert.match(writeBack, /\{ session \}/, "the write-back must join the grant's transaction");
 });

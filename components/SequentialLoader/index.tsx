@@ -126,7 +126,9 @@ function IconTile({
         className={[
           "transition-colors duration-500 ease-out",
           isActive ? activeClass : "text-gray-400 grayscale opacity-70",
-          "w-[var(--mob-icon-size)] h-var(--mob-icon-size)] md:w-[var(--icon-size)] md:h-[var(--icon-size)]"
+          // h-var(...) was missing its opening bracket, so the mobile icon height
+          // silently never applied and the glyph sized itself.
+          "w-[var(--mob-icon-size)] h-[var(--mob-icon-size)] md:w-[var(--icon-size)] md:h-[var(--icon-size)]"
         ].join(" ")}
       />
     </div>

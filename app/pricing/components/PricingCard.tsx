@@ -42,26 +42,36 @@ export default function PricingCard({
           : "border-[#E7EBF3] bg-white text-[#111827]"
       }`}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div>
+      {/* The discount pill shares the title row, as it does in the design. It used to
+          sit beside the title+description column, which forced the description into a
+          250px cap and pushed the longest one (Core) onto a third line. */}
+      <div>
+        <div className="flex items-start justify-between gap-4">
           <div className="flex items-center gap-2 h-[42px]">
-            <Image src={iconSrc} alt="" width={24} height={24} className="h-[24px] w-[24px]" />
+            {/* The three marks are genuinely different shapes in the design (24x24,
+                22x19, 21x25). A fixed box that centres them keeps the three cards
+                optically aligned; sizing the <img> itself let flex-shrink and the
+                intrinsic ratio fight over the width. */}
+            <span className="flex h-[24px] w-[24px] shrink-0 items-center justify-center">
+              <Image src={iconSrc} alt="" width={24} height={24} className="max-h-full max-w-full object-contain" />
+            </span>
             <h3 className="text-[32px] font-semibold leading-[42px]">{planName}</h3>
           </div>
-          <p
-            className={`mt-3 max-w-[250px] text-[14px] font-medium leading-[21px] h-[54px] ${
-              featured ? "text-white/85" : "text-[#6B7280]"
-            }`}
-          >
-            {description}
-          </p>
+
+          {discountTag ? (
+            <span className="rounded-[6px] bg-[#10B058] px-2.5 py-1 text-[10px] font-bold leading-none text-white whitespace-nowrap shrink-0 uppercase tracking-wider">
+              {discountTag}
+            </span>
+          ) : null}
         </div>
 
-        {discountTag ? (
-          <span className="rounded-[6px] bg-[#10B058] px-2.5 py-1 text-[10px] font-bold leading-none text-white whitespace-nowrap shrink-0 uppercase tracking-wider">
-            {discountTag}
-          </span>
-        ) : null}
+        <p
+          className={`mt-3 text-[14px] font-medium leading-[21px] min-h-[54px] ${
+            featured ? "text-white/85" : "text-[#6B7280]"
+          }`}
+        >
+          {description}
+        </p>
       </div>
 
       <div className="mt-[5px] md:mt-4">
@@ -74,7 +84,7 @@ export default function PricingCard({
         </div>
 
         <div className="mt-1 flex items-end gap-1.5 h-[36px]">
-          <p className="text-[36px] font-bold leading-none">{amountLabel}</p>
+          <p className="text-[36px] font-semibold leading-none">{amountLabel}</p>
           <span className={`pb-0.5 text-[16px] font-medium leading-[21px] ${featured ? "text-white/75" : "text-[#6B7280]"}`}>
             /{cycleLabel}
           </span>
@@ -113,7 +123,7 @@ export default function PricingCard({
           />
           {creditsLabel}
         </p>
-        <p className={`mt-1 text-[12px] leading-[1.35] h-[16px] ${featured ? "text-white/80" : "text-[#8A94A6]"}`}>
+        <p className={`mt-1 text-[12px] leading-[1.35] min-h-[16px] ${featured ? "text-white/80" : "text-[#8A94A6]"}`}>
           {bonusCreditsLabel}
         </p>
       </div>
