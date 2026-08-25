@@ -44,7 +44,16 @@ async function main() {
   let touched = 0, total = 0;
 
   for (const post of posts as Array<Record<string, unknown>>) {
-    const fields = { title: post.title, excerpt: post.excerpt, tags: post.tags, contentBlocks: post.contentBlocks };
+    /*
+     * Every field except the identifiers. Naming a subset is how the first pass
+     * missed coverImageAlt, which feeds both og:image:alt and the article image's
+     * alt text - so the misspelling survived in two places the fix reported clean.
+     * slug is excluded deliberately: rewriting it would change a live URL.
+     */
+    const SKIP = new Set(["_id", "slug", "__v", "createdAt", "updatedAt", "publishedAt", "isDeleted", "status"]);
+    const fields = Object.fromEntries(
+      Object.entries(post).filter(([k]) => !SKIP.has(k)),
+    );
     const n = count(JSON.stringify(fields));
     if (!n) continue;
     touched += 1; total += n;
