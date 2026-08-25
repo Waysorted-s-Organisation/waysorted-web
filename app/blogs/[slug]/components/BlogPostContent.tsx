@@ -125,7 +125,7 @@ export default function BlogPostContent({
    * did - see lib/blog-internal-links.ts for why this links rather than appends.
    */
   const internalLinks = React.useMemo(
-    () => (post ? planInternalLinks(post.contentBlocks) : new Map<number, Segment[]>()),
+    () => (post ? planInternalLinks(post.contentBlocks, post.slug) : new Map<number, Segment[]>()),
     [post],
   );
 
