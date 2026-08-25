@@ -4,6 +4,7 @@ import { buildCorsHeaders } from "@/lib/cors";
 import { buildFigmaPatCorsHeaders } from "@/lib/figma-plugin-cors";
 import { LEGACY_PRICING_COUNTRY_COOKIE } from "@/lib/billing/regional-pricing";
 import { isNonCanonicalHost } from "@/lib/canonical-host";
+import { prefersMarkdown, isNegotiablePath } from "@/lib/markdown-negotiation";
 
 const PAGE_NO_STORE_HEADERS = {
   "Cache-Control": "private, no-store, no-cache, max-age=0, must-revalidate",
@@ -42,6 +43,29 @@ export function middleware(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.hostname = "www.waysorted.com";
     return NextResponse.redirect(url, 301);
+  }
+
+  /*
+   * Serve Markdown to agents that ask for it by name.
+   *
+   * Deliberately placed after the canonical-host redirect and before everything
+   * else, and deliberately narrow: prefersMarkdown is false for every browser
+   * Accept header, for a bare wildcard, and for an absent header, so a person
+   * never reaches this branch and the HTML path below is untouched.
+   *
+   * A rewrite, not a different response body on the same URL: the page keeps its
+   * own cache entry under its own path, so nothing here can fragment the cached
+   * HTML or let a shared cache hand Markdown to a browser. The Vary header the
+   * negotiation requires is set on the Markdown response itself.
+   */
+  if (
+    request.method === "GET" &&
+    isNegotiablePath(pathname) &&
+    prefersMarkdown(request.headers.get("accept"))
+  ) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/md${pathname === "/" ? "" : pathname}`;
+    return NextResponse.rewrite(url);
   }
 
   // Handle CORS preflight requests (API only)
