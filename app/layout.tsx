@@ -56,7 +56,7 @@ export const metadata: Metadata = {
       "Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.",
     images: [
       {
-        url: "/images/og-image.png",
+        url: "/images/og-image.8f249510.png",
         width: 1200,
         height: 675,
         alt: "Waysorted - Unified Tools Hub for Designers",
@@ -68,7 +68,7 @@ export const metadata: Metadata = {
     title: "Waysorted - Accelerate every idea with one powerful suite",
     description:
       "Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.",
-    images: ["/images/og-image.png"],
+    images: ["/images/og-image.8f249510.png"],
   },
   robots: {
     index: true,
@@ -157,7 +157,7 @@ const jsonLd = {
       keywords: "Figma plugin, design tools, productivity, fast, secure, local-first, zero latency",
       softwareVersion: "1.0.0",
       releaseNotes: "https://www.waysorted.com/release-notes",
-      screenshot: "https://www.waysorted.com/images/og-image.png",
+      screenshot: "https://www.waysorted.com/images/og-image.8f249510.png",
       softwareHelp: {
         "@type": "CreativeWork",
         url: "https://www.waysorted.com/document-hub/what-is-waysorted",

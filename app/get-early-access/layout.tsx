@@ -18,7 +18,7 @@ export const metadata: Metadata = {
         description: "Use Waysorted inside Figma to work smarter with bundled, use-case-based plugins.",
         images: [
             {
-                url: "/images/og-image.png",
+                url: "/images/og-image.8f249510.png",
                 width: 1200,
                 height: 675,
                 alt: "Waysorted - Accelerate every idea with one powerful suite",

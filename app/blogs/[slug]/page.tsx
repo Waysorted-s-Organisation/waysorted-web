@@ -13,7 +13,7 @@ type BlogPostPageProps = {
 };
 
 function absoluteUrl(value?: string) {
-  if (!value) return `${siteUrl}/images/og-image.png`;
+  if (!value) return `${siteUrl}/images/og-image.8f249510.png`;
   if (value.startsWith("http://") || value.startsWith("https://")) return value;
   return `${siteUrl}${value.startsWith("/") ? value : `/${value}`}`;
 }

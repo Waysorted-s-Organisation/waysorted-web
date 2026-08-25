@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/og-image.png",
+        url: "/images/og-image.8f249510.png",
         width: 1200,
         height: 675,
         alt: "Waysorted blog for designers",
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title,
     description,
-    images: ["/images/og-image.png"],
+    images: ["/images/og-image.8f249510.png"],
   },
 };
 
