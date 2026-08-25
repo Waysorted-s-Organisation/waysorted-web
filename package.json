@@ -38,7 +38,8 @@
     "test:billing-hardening": "tsx --test test/billing-hardening.test.ts",
     "test:figma-plugin-cors": "tsx --test test/figma-plugin-cors.test.ts",
     "retire:tools": "tsx --conditions=react-server scripts/retire-tools.ts",
-    "backfill:plan-bonus": "tsx --conditions=react-server scripts/backfill-plan-bonus.ts"
+    "backfill:plan-bonus": "tsx --conditions=react-server scripts/backfill-plan-bonus.ts",
+    "fix:brand-spelling": "tsx --conditions=react-server scripts/fix-brand-spelling.ts"
   },
   "dependencies": {
     "@floating-ui/react": "^0.27.15",
