@@ -35,15 +35,18 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get("host") || "";
 
-  // Enforce www in production (Single-hop redirect)
-  if (
-    process.env.NODE_ENV === "production" &&
-    hostname === "waysorted.com"
-  ) {
-    const url = request.nextUrl.clone();
-    url.hostname = "www.waysorted.com";
-    return NextResponse.redirect(url, 301);
-  }
+  /*
+   * The apex redirect is NOT here. Vercel owns it, at the domain level:
+   * Project Settings > Domains > waysorted.com > Redirect to Another Domain,
+   * set to 308 Permanent Redirect > www.waysorted.com.
+   *
+   * This function used to attempt the same redirect with a 301. It never ran -
+   * the platform redirect resolves at the edge before a request reaches the app,
+   * so the code was unreachable while the live response was Vercel's default 307.
+   * A temporary redirect is the wrong signal for a permanent host consolidation,
+   * and 28 of the site's 31 backlinks point at the apex, so they were all passing
+   * through it. Fixed where it actually lives rather than here.
+   */
 
   /*
    * Serve Markdown to agents that ask for it by name.
