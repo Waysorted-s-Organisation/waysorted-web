@@ -4,6 +4,19 @@ import dbConnect from "@/lib/toolsdb";
 import Tool, { ITool } from "@/models/tool";
 import { applyToolIconOverrides } from "@/lib/tool-icon-overrides";
 
+/*
+ * The tool roster lives in Mongo, so this page cannot be a build-time snapshot.
+ *
+ * It prerenders and hands the result to LearnClient as initialTools, and that
+ * component returns early from its fetch whenever the server supplied any - so
+ * nothing on the client ever corrects a stale list. Retiring a tool
+ * (scripts/retire-tools.ts) changed the database and left this page listing it
+ * anyway, with no deploy in sight to rebuild it.
+ *
+ * 300s matches app/blogs/page.tsx, the other database-backed list page.
+ */
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: "Explore Beta Release Tools",
   description:
