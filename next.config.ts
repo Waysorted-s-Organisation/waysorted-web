@@ -11,6 +11,23 @@ const billingApiHeaders = [
   { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
 ];
 
+/*
+ * Signed-in-only pages that were answering 200 with `index, follow`.
+ *
+ * They are in no sitemap and nothing links to them, so most likely nothing was
+ * ever indexed - but /payment and /billing are checkout surfaces and
+ * /mobile-redirect is a stub, and none of the three has anything to offer a
+ * searcher.
+ *
+ * A header rather than robots.txt on purpose, and in this order on purpose:
+ * Disallow only stops the crawl, it does not remove a URL already indexed, and
+ * it would prevent Google from ever recrawling to SEE a noindex. The Googlebot
+ * group in app/robots.ts is also missing three Disallow lines the `*` group has,
+ * and Googlebot obeys only its most specific matching group - worth closing, but
+ * in a LATER deploy, once these tags have been crawled.
+ */
+const noindexPageHeaders = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
+
 const nextConfig: NextConfig = {
   // Add CORS headers for API routes - this runs at platform level
   // ensuring headers are present even on redirects
@@ -24,6 +41,7 @@ const nextConfig: NextConfig = {
         source: "/billing",
         headers: [
           ...billingPageHeaders,
+          ...noindexPageHeaders,
           { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
         ],
       },
@@ -31,8 +49,13 @@ const nextConfig: NextConfig = {
         source: "/payment",
         headers: [
           ...billingPageHeaders,
+          ...noindexPageHeaders,
           { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
         ],
+      },
+      {
+        source: "/mobile-redirect",
+        headers: noindexPageHeaders,
       },
       {
         source: "/api/billing/:path*",
@@ -164,6 +187,15 @@ const nextConfig: NextConfig = {
       {
         source: '/support/request',
         destination: '/requests',
+        permanent: true,
+      },
+      {
+        // getSlides() still honours the legacy convertor spelling for slide rows,
+        // but no tool row carries it - so this URL was a soft 404, and once
+        // /learning/[toolName] calls notFound() it becomes a hard one. Send it to
+        // the page it was always meant to reach.
+        source: '/learning/unit-convertor',
+        destination: '/learning/unit-converter',
         permanent: true,
       },
     ];

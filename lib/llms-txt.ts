@@ -112,9 +112,9 @@ No. Waysorted uses local-first architecture - your designs are processed on your
 
 ## Connect
 
-- [LinkedIn](https://www.linkedin.com/company/waysorted)
-- [Twitter](https://twitter.com/waysorted)
-- [Discord](https://discord.gg/waysorted)
+- [LinkedIn](https://www.linkedin.com/company/waysortedhq)
+- [X](https://x.com/Waysorted)
+- [Discord](https://discord.com/invite/U2XF76WxNv)
 - [GitHub](https://github.com/Waysorted-s-Organisation)
 
 ## Keywords
