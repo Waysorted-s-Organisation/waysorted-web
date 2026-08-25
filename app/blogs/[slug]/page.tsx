@@ -74,11 +74,14 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       modifiedTime,
       authors: [post.authorName],
       tags: post.tags,
+      // No width/height: `image` is the post's own cover when it has one and the
+      // site card only as a fallback, so the size is not knowable here. The pair
+      // was hardcoded 1200x630, which described neither - covers come from
+      // Cloudinary at whatever size they were uploaded, and the fallback is
+      // 1200x675. Omitted, scrapers read the real dimensions off the file.
       images: [
         {
           url: image,
-          width: 1200,
-          height: 630,
           alt: post.coverImageAlt || post.title,
         },
       ],
