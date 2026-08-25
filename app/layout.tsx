@@ -93,6 +93,10 @@ const jsonLd = {
       "@id": "https://www.waysorted.com/#organization",
       name: "Waysorted",
       legalName: "Waysorted Infotech Pvt Ltd",
+      // Organization carried no description of its own. url, logo, sameAs, address
+      // and contactPoint were all already here.
+      description:
+        "Waysorted is a unified Figma plugin suite for designers - export, convert, import and generate without leaving the canvas.",
       url: "https://www.waysorted.com",
       logo: {
         "@type": "ImageObject",
