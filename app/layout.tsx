@@ -220,6 +220,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/*
+          Feed autodiscovery, declared here rather than through metadata.alternates.
+          A page's `alternates` REPLACES the root's instead of merging, and every
+          route sets its own canonical (see the note above), so a types entry on the
+          root was silently dropped everywhere except /blogs - which declares its
+          own. In the head it is inherited by every page unconditionally.
+        */}
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="Waysorted Blog"
+          href="https://www.waysorted.com/blogs/rss.xml"
+        />
         {/* Preconnect to external domains for faster loading */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />

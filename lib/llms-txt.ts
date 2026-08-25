@@ -1,4 +1,17 @@
-# Waysorted
+import type { BlogPostCard } from "@/types/blog";
+
+/**
+ * The agent index, generated rather than stored.
+ *
+ * It used to be a static file in public/, which meant a post published today was
+ * invisible to any agent following the index until somebody remembered to edit it
+ * by hand - while the sitemap, the RSS feed and the Markdown variant all picked it
+ * up on their own. The blog section is now built from the same database rows those
+ * three read, so the three stay in step and a new post needs no maintenance.
+ */
+const SITE = "https://www.waysorted.com";
+
+const HEAD = `# Waysorted
 
 > Accelerate every idea with one powerful suite
 
@@ -70,7 +83,9 @@ AI-powered insights that distill design feedback into clear, actionable summarie
 - **Encrypted Workflows**: Secure data handling
 - **All-in-One**: Replace multiple plugins with one suite
 
-## Navigation
+`
+
+const TAIL = `## Navigation
 
 - [Home](https://www.waysorted.com)
 - [Pricing](https://www.waysorted.com/pricing)
@@ -105,3 +120,16 @@ No. Waysorted uses local-first architecture - your designs are processed on your
 ## Keywords
 
 Waysorted, Waysorted Infotech Pvt Ltd, Figma plugin, Figma plugin suite, export Figma to PDF, HTML to Figma, import AI EPS PSD into Figma, colour palette generator, WCAG contrast checker, px to rem converter, SVG icon library, design tools
+`
+
+export function buildLlmsTxt(posts: Pick<BlogPostCard, "title" | "slug" | "excerpt">[] = []): string {
+  if (!posts.length) return `${HEAD}${TAIL}`;
+  const lines = posts
+    .map((p) => {
+      const excerpt = (p.excerpt || "").replace(/\s+/g, " ").trim();
+      return `- [${p.title}](${SITE}/blogs/${p.slug})${excerpt ? ` - ${excerpt}` : ""}`;
+    })
+    .join("\n");
+  const section = `## Latest writing\n\nEvery post is also available as Markdown at the same URL with \`Accept: text/markdown\`.\n\n${lines}\n\n`;
+  return `${HEAD}${section}${TAIL}`;
+}

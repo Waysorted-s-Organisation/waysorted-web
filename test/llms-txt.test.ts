@@ -3,7 +3,10 @@ import test from "node:test";
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 
-const llms = readFileSync(new URL("../public/llms.txt", import.meta.url), "utf8");
+import { buildLlmsTxt } from "../lib/llms-txt";
+
+// Built with no posts: the static sections are what this file can check offline.
+const llms = buildLlmsTxt([]);
 const SITE = "https://www.waysorted.com";
 
 /** Every markdown link that points at our own site. */
