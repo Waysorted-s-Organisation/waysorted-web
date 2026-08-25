@@ -5,6 +5,7 @@ import Slide from '@/models/slide'
 import ClientToolPage from './ClientToolPage'
 import { applyToolIconOverride } from '@/lib/tool-icon-overrides'
 import { breadcrumbJsonLd } from '@/lib/breadcrumb-schema'
+import { notFound } from 'next/navigation'
 
 // Ensure Tool model is registered
 import '@/models/tool'
@@ -73,7 +74,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         description: tool.description,
         keywords: [tool.name, tool.category, ...(tool.tags || [])],
         alternates: {
-            canonical: `https://www.waysorted.com/learning/${toolName}`,
+            /*
+             * tool.slug, not the raw param. getTool() lowercases before querying,
+             * so /learning/Frames-To-PDF resolves and used to canonicalise to
+             * itself - one page reachable under every case variant, each claiming
+             * to be the original. The stored slug is the one true URL.
+             */
+            canonical: `https://www.waysorted.com/learning/${tool.slug}`,
         },
         openGraph: {
             title: `${tool.name} - Waysorted`,
@@ -94,15 +101,17 @@ export default async function ToolPage({ params }: PageProps) {
     const { toolName } = await params
     const tool = await getTool(toolName)
 
-    if (!tool) {
-        // If tool not found, we can let the client handle it or show 404
-        // Historically the client page handled "loading" then null. 
-        // For SEO, 404 is better if it truly doesn't exist.
-        // But let's pass null to client to maintain existing behavior for now if preferred, 
-        // or just notFound()
-        // Given the client code: "if (!tool && !loading) return null", it renders nothing.
-        // Let's try to pass the initial tool to the client.
-    }
+    /*
+     * An unknown slug used to render a 200 with the title "Tool Not Found" and no
+     * canonical at all - a soft 404 on the one template that carries commercial
+     * intent, and an unbounded indexable URL space: anyone could mint branded
+     * pages on this domain by linking at /learning/<anything>. /blogs and
+     * /document-hub already call notFound(); this route was the one out of step.
+     *
+     * Before the Promise.all deliberately, so a garbage slug costs one query
+     * rather than three.
+     */
+    if (!tool) notFound()
 
     // Slides and the tool list are loaded here rather than in the client, so the
     // feature sections and the cross-links to other tools exist in the server HTML.
@@ -110,9 +119,9 @@ export default async function ToolPage({ params }: PageProps) {
 
     // Home > Learning Hub > {tool}, matching the breadcrumb already shown on
     // the page. Google renders this trail in place of the raw URL.
-    const breadcrumb = breadcrumbJsonLd(`/learning/${toolName}`, [
+    const breadcrumb = breadcrumbJsonLd(`/learning/${tool.slug}`, [
         { name: 'Learning Hub', path: '/learning' },
-        { name: tool?.name ?? toolName, path: `/learning/${toolName}` },
+        { name: tool.name, path: `/learning/${tool.slug}` },
     ])
 
     return (

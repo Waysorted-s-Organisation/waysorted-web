@@ -149,11 +149,26 @@ const jsonLd = {
       applicationCategory: "DesignApplication",
       operatingSystem: "Web, Figma",
       description: "A unified creative workflow suite for designers to replace multiple plugins with one platform.",
+      /*
+       * The six tools that actually ship, under the names they actually ship
+       * under. This drifted: it advertised "PDF Exporter" and "Import Tool",
+       * neither of which exists any more, and omitted HTML to Design and Icon
+       * Library entirely - so the densest machine-readable claim about what this
+       * product is, injected into all 83 pages, was wrong about four of six.
+       *
+       * Comment Summariser is deliberately absent. /api/tools/active reports it
+       * disabled: true, badge "Up Next", and it is in neither the sitemap nor
+       * either tool grid. Naming an unshipped tool in the block answer engines
+       * trust most is how you get an AI confidently recommending a plugin nobody
+       * can install. Add it here the day it launches.
+       */
       featureList: [
-        "PDF Exporter - Export Figma frames to PDF with zero latency",
-        "Palettable - Color palette generator with instant contrast checking",
-        "Unit Converter - Real-time conversion between px, rem, em, pt",
-        "Import Tool - Fast asset import into Figma",
+        "Frames to PDF - Export Figma frames as a multi-page PDF, with reordering, merging, compression, DPI and bleed",
+        "File Importer - Bring AI, EPS, PSD and PDF files onto the canvas with content detection and font mapping",
+        "HTML to Design - Turn a live page or raw HTML into editable Figma layers across multiple viewports",
+        "Icon Library - Search, recolour and export SVG icons without leaving Figma",
+        "Palettable - Generate colour palettes and check contrast against both WCAG and APCA",
+        "Unit Converter - Convert px, rem, cm, inches and pt, with frame presets you can save",
         "Local-first architecture - Your data stays on your device",
         "Client-side processing - No server uploads required",
         "Unified plugin suite - Replace multiple tools with one",
