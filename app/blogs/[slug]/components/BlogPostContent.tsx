@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { Check, ChevronRight, Link2, Instagram, Linkedin } from "lucide-react";
 import { fetchBlogBySlug } from "@/lib/blogsClient";
 import type { BlogContentBlock, BlogPostDetail } from "@/types/blog";
+import { planInternalLinks, type Segment } from "@/lib/blog-internal-links";
 
 function formatDate(value?: string) {
   if (!value) return "";
@@ -33,7 +34,7 @@ function XLogo({ className = "" }: { className?: string }) {
   );
 }
 
-function BlogBlock({ block }: { block: BlogContentBlock }) {
+function BlogBlock({ block, segments }: { block: BlogContentBlock; segments?: Segment[] }) {
   if (block.type === "heading") {
     const HeadingTag = block.level === 3 ? "h3" : "h2";
     return (
@@ -51,7 +52,22 @@ function BlogBlock({ block }: { block: BlogContentBlock }) {
   }
 
   if (block.type === "paragraph") {
-    return <p>{block.text}</p>;
+    // Without a plan for this paragraph the output is the string it always was,
+    // so untouched copy renders byte for byte as before.
+    if (!segments?.length) return <p>{block.text}</p>;
+    return (
+      <p>
+        {segments.map((seg, i) =>
+          typeof seg === "string" ? (
+            <React.Fragment key={i}>{seg}</React.Fragment>
+          ) : (
+            <Link key={i} href={seg.href} className="text-blue-600 underline underline-offset-2 hover:text-blue-700">
+              {seg.text}
+            </Link>
+          ),
+        )}
+      </p>
+    );
   }
 
   if (block.type === "image") {
@@ -102,6 +118,16 @@ export default function BlogPostContent({
   const [loading, setLoading] = useState(!initialPost);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  /*
+   * Decided once for the whole post, above any early return so the hook order
+   * never changes. Paragraphs with no plan render exactly the string they always
+   * did - see lib/blog-internal-links.ts for why this links rather than appends.
+   */
+  const internalLinks = React.useMemo(
+    () => (post ? planInternalLinks(post.contentBlocks) : new Map<number, Segment[]>()),
+    [post],
+  );
 
   useEffect(() => {
     if (!slug) return;
@@ -304,7 +330,7 @@ export default function BlogPostContent({
         {/* Left Column (Article Text) */}
         <article className="lg:w-3/4 text-[17px] text-gray-700 leading-relaxed font-normal space-y-6">
           {post.contentBlocks.map((block, index) => (
-            <BlogBlock key={`${block.type}-${index}`} block={block} />
+            <BlogBlock key={`${block.type}-${index}`} block={block} segments={internalLinks.get(index)} />
           ))}
         </article>
 
