@@ -8,7 +8,12 @@ export default function GlassModeCard({ className }: { className?: string }) {
   return (
     <div
       className={clsx(
-        "p-6 relative rounded-2xl border border-gray-100 flex flex-col justify-start items-start overflow-hidden transition-all duration-300 wayspace-cursor",
+        // text-start, because the hero section five levels up sets text-center for
+        // its own copy and every card in this grid inherits it. This card places
+        // its children with items-start, so the inherited centring left a
+        // left-aligned heading sitting above centred body copy. WayAICard pins its
+        // own alignment against the same leak.
+        "p-6 relative rounded-2xl border border-gray-100 flex flex-col justify-start items-start text-start overflow-hidden transition-all duration-300 wayspace-cursor",
         className
       )}
     >
