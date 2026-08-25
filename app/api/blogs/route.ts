@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
       readTime: body.readTime || "4 min read",
       authorName: body.authorName || "Waysorted",
       authorAvatar: body.authorAvatar || undefined,
-      coverImage: body.coverImage || "/images/og-image.8f249510.png",
+      coverImage: body.coverImage || "/images/og-image.e13cfee0.png",
       coverImageAlt: body.coverImageAlt || body.title,
       status,
       publishedAt: status === "published" ? new Date() : undefined,

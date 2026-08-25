@@ -8,7 +8,7 @@ export const metadata: Metadata = {
         description: "Sign in to continue building faster with your curated Waysorted tool stack.",
         images: [
             {
-                url: "/images/og-image.8f249510.png",
+                url: "/images/og-image.e13cfee0.png",
                 width: 1200,
                 height: 675,
                 alt: "Waysorted - Accelerate every idea with one powerful suite",
