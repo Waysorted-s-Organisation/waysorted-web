@@ -15,6 +15,10 @@ import Tool from "../models/tool";
  * anyone holding an old link. The list queries filter on isActive, so a retired
  * tool stops appearing on the homepage and in the Learning Hub grid.
  *
+ * The homepage reads /api/tools/active on the client and reflects this at once.
+ * /learning prerenders and revalidates every 300s (app/learning/page.tsx), so
+ * give it up to five minutes - it does NOT need a deploy.
+ *
  *   npm run retire:tools            dry run
  *   npm run retire:tools -- --apply
  */
