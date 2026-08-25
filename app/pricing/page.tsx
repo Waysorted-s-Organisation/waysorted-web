@@ -20,6 +20,20 @@ export const metadata: Metadata = {
     url: "https://www.waysorted.com/pricing",
     siteName: "Waysorted",
     type: "website",
+    // Declared here because this block REPLACES the root layout's openGraph
+    // rather than merging into it - so naming a title and url quietly dropped
+    // the site's share image, and /pricing was the one public page that shared
+    // with no card at all. It still had twitter:image, because it declares no
+    // twitter block and that one does inherit, which is why the gap only showed
+    // on the og:image surfaces: LinkedIn, Facebook, WhatsApp, Slack.
+    images: [
+      {
+        url: "/images/og-image.e13cfee0.png",
+        width: 1200,
+        height: 675,
+        alt: "Waysorted - Accelerate every idea with one powerful suite",
+      },
+    ],
   },
 };
 
