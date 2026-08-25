@@ -5,6 +5,7 @@ import BlogPost from "@/models/blogPost";
 import type { BlogContentBlock, BlogPostDetail } from "@/types/blog";
 import BlogPostPageClient from "./BlogPostPageClient";
 import { breadcrumbJsonLd } from "@/lib/breadcrumb-schema";
+import { faqPageJsonLd } from "@/lib/faq-schema";
 
 const siteUrl = "https://www.waysorted.com";
 
@@ -130,6 +131,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     wordCount: blocksToText(post.contentBlocks).split(/\s+/).filter(Boolean).length,
   };
 
+  /*
+   * Derived from the Q&A the post already renders, never authored - Google treats
+   * FAQPage markup that does not match visible content as a manual-action risk.
+   * Returns null for a post with no question headings, so nothing is emitted there.
+   */
+  const faq = faqPageJsonLd(post.contentBlocks, `${siteUrl}/blogs/${post.slug}`);
+
   const breadcrumb = breadcrumbJsonLd(`/blogs/${post.slug}`, [
     { name: "Blogs", path: "/blogs" },
     { name: post.title, path: `/blogs/${post.slug}` },
@@ -145,6 +153,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
+      {faq ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }}
+        />
+      ) : null}
       {/* `post` is passed down so the article body is server-rendered. Without
           it the page shipped an empty shell: the content was fetched client-side
           from /api/blogs/[slug], which robots.txt disallows, so crawlers only
