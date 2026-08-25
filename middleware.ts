@@ -59,7 +59,9 @@ export function middleware(request: NextRequest) {
    * negotiation requires is set on the Markdown response itself.
    */
   if (
-    request.method === "GET" &&
+    // HEAD as well as GET: a HEAD must describe exactly what the GET would return,
+    // and header-only probes are how a client checks the negotiation is there at all.
+    (request.method === "GET" || request.method === "HEAD") &&
     isNegotiablePath(pathname) &&
     prefersMarkdown(request.headers.get("accept"))
   ) {
