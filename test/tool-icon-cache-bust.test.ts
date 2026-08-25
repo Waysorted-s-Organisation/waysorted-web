@@ -44,3 +44,38 @@ test("nothing still points at the un-hashed names", () => {
     assert.doesNotMatch(source, /\/icons\/comment-summarizer\.svg/, `${rel} still references the old path`);
   }
 });
+
+test("the share card's filename matches its contents, and nothing references the old one", () => {
+  /*
+   * Same reasoning as the icons above, learned the hard way on this exact file.
+   *
+   * /images/og-image.png was replaced with new artwork and the edge kept serving
+   * the previous one: it had been fetched back when /images/:path* still claimed
+   * `immutable, max-age=31536000`, and shortening the header does not recall a
+   * copy already handed out under the old one. For a week after the swap, every
+   * scraper - Slack, Discord, X, LinkedIn - was still showing the retired card.
+   *
+   * So the share card carries its hash too. Replace the artwork and this test
+   * fails until the filename is regenerated, which is the whole point: a new URL
+   * is the only thing that reliably reaches a cache, and it doubles as a bust for
+   * the scrapers that key their own previews by URL.
+   */
+  const path = "/images/og-image.8f249510.png";
+  const file = new URL(`../public${path}`, import.meta.url);
+  assert.ok(existsSync(file), `${path} is missing`);
+
+  const expected = createHash("sha256").update(readFileSync(file)).digest("hex").slice(0, 8);
+  assert.equal(
+    path.split(".").at(-2),
+    expected,
+    `${path} is stale - rename it to og-image.${expected}.png and update the references`,
+  );
+
+  const root = new URL("../", import.meta.url);
+  const metadataFiles = ["app/layout.tsx", "app/page.tsx", "app/blogs/[slug]/page.tsx"];
+  for (const rel of metadataFiles) {
+    const source = readFileSync(new URL(rel, root), "utf8");
+    assert.doesNotMatch(source, /og-image\.png/, `${rel} still points at the un-hashed share card`);
+    assert.match(source, /og-image\.8f249510\.png/, `${rel} should use the hashed share card`);
+  }
+});
