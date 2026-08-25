@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
 import { createHash } from "node:crypto";
 import { getToolIconOverride } from "../lib/tool-icon-overrides";
 
@@ -78,10 +79,25 @@ test("the share card's filename matches its contents, and nothing references the
   const unhashed = /og-image\.png/;
 
   const root = new URL("../", import.meta.url);
-  const metadataFiles = ["app/layout.tsx", "app/page.tsx", "app/blogs/[slug]/page.tsx"];
-  for (const rel of metadataFiles) {
-    const source = readFileSync(new URL(rel, root), "utf8");
-    assert.doesNotMatch(source, unhashed, `${rel} still points at the un-hashed share card`);
-    assert.match(source, literal, `${rel} should use ${path}`);
-  }
+
+  // The layout is the source of truth - pages inherit its openGraph unless they
+  // declare their own. app/page.tsx used to restate the image and nothing else,
+  // which REPLACED the layout's block and cost the homepage og:type, og:url and
+  // og:site_name; it now inherits, so it must NOT be required to name the file.
+  const layout = readFileSync(new URL("app/layout.tsx", root), "utf8");
+  assert.match(layout, literal, `app/layout.tsx should use ${path}`);
+
+  // Nothing anywhere may still point at the un-hashed name, whoever declares it.
+  const appDir = new URL("app/", root).pathname;
+  const offenders: string[] = [];
+  (function walk(dir: string) {
+    for (const entry of readdirSync(dir)) {
+      const full = join(dir, entry);
+      if (statSync(full).isDirectory()) walk(full);
+      else if (/\.tsx?$/.test(entry) && unhashed.test(readFileSync(full, "utf8"))) {
+        offenders.push(relative(appDir, full));
+      }
+    }
+  })(appDir);
+  assert.deepEqual(offenders, [], `these still point at the un-hashed share card:\n  ${offenders.join("\n  ")}`);
 });

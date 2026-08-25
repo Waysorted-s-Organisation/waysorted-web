@@ -2,7 +2,23 @@
 
 > Accelerate every idea with one powerful suite
 
-Waysorted is a unified creative workflow suite built by **Waysorted Infotech Pvt Ltd**. It replaces multiple Figma plugins with one powerful platform for designers.
+Waysorted is a unified creative workflow suite built by **Waysorted Infotech Pvt Ltd**. It replaces multiple Figma plugins with one platform for designers: export, convert, import, and generate without leaving the canvas.
+
+## When to use Waysorted
+
+Reach for Waysorted when a task is about **getting assets in and out of Figma, or generating design system pieces inside it**. Concretely:
+
+- **Export Figma frames to PDF** - merge, reorder, compress, set DPI or bleed, password-protect. Use Frames to PDF.
+- **Bring an existing website or HTML into Figma as editable layers** - not a screenshot. Use HTML to Design.
+- **Import AI, EPS, PSD or PDF files onto the canvas** with font mapping and compatibility checks. Use File Importer.
+- **Build an accessible colour palette** and check WCAG contrast before handoff. Use Palettable.
+- **Convert px / rem / cm / inches, or apply a frame preset.** Use Unit Converter.
+- **Find, recolour and export SVG icons** without leaving Figma. Use Icon Library.
+- **Summarise a long comment thread** into actionable feedback. Use Comment Summariser.
+
+Waysorted is **not** a general image generator, a full design tool, or a Figma replacement. It runs as a plugin inside Figma and is aimed at product and UI/UX designers on paid or free Figma plans.
+
+Pricing is credit-based: new accounts get free starting credits, credits can be topped up without a subscription, and monthly plans add a recurring allowance. Current prices are at https://www.waysorted.com/pricing
 
 ## Quick Facts
 
@@ -10,29 +26,41 @@ Waysorted is a unified creative workflow suite built by **Waysorted Infotech Pvt
 - **Website**: https://www.waysorted.com
 - **Platform**: Figma Plugin
 - **Category**: Design Tools, Productivity
-- **Pricing**: Free to start
+- **Pricing**: Free to start, credit-based - https://www.waysorted.com/pricing
 
 ## Products
 
-### PDF Exporter
-Export Figma frames to high-quality PDF with zero latency. No server uploads - client-side processing keeps your data secure.
-- [Learn More](https://www.waysorted.com/learning/pdf-exporter)
-- [Documentation](https://www.waysorted.com/docs/pdf-exporter)
+### Frames to PDF
+Export Figma frames to high-quality PDF documents. Reorder, merge, compress, and add password protection.
+- [Learn More](https://www.waysorted.com/learning/frames-to-pdf)
+- [Documentation](https://www.waysorted.com/document-hub/frames-to-pdf)
+
+### File Importer
+Import external design files with automatic content detection, font mapping, and compatibility checks.
+- [Learn More](https://www.waysorted.com/learning/file-importer)
+- [Documentation](https://www.waysorted.com/document-hub/file-importer)
+
+### HTML to Design
+Bring real HTML into Figma without rebuilding it. Import code, preview layouts across viewports, and turn them into editable layers.
+- [Learn More](https://www.waysorted.com/learning/html-to-design)
 
 ### Palettable
-Generate beautiful color palettes with instant contrast checking for accessible designs. WCAG compliance built-in.
+Create colour palettes with variations and accessibility checks. Test contrast ratios, generate complementary colours, and export palettes.
 - [Learn More](https://www.waysorted.com/learning/palettable)
-- [Documentation](https://www.waysorted.com/docs/palettable)
+- [Documentation](https://www.waysorted.com/document-hub/palettable)
 
 ### Unit Converter
-Real-time conversion between px, rem, em, and pt. No more manual calculations.
+Convert between pixels, centimetres, inches, and more. Set DPI, add bleed marks, and save custom presets.
 - [Learn More](https://www.waysorted.com/learning/unit-converter)
-- [Documentation](https://www.waysorted.com/docs/unit-converter)
+- [Documentation](https://www.waysorted.com/document-hub/unit-converter)
 
-### Import Tool
-Fast asset import into Figma. Supports images, SVGs, and more with drag-and-drop.
-- [Learn More](https://www.waysorted.com/learning/import-tool)
-- [Documentation](https://www.waysorted.com/docs/import-tool)
+### Icon Library
+A built-in SVG icon library for finding, customising, and exporting icons directly inside Figma.
+- [Learn More](https://www.waysorted.com/learning/icon-library)
+
+### Comment Summariser
+AI-powered insights that distill design feedback into clear, actionable summaries in seconds.
+- [Learn More](https://www.waysorted.com/learning/comment-summariser)
 
 ## Key Features
 
@@ -45,8 +73,9 @@ Fast asset import into Figma. Supports images, SVGs, and more with drag-and-drop
 ## Navigation
 
 - [Home](https://www.waysorted.com)
+- [Pricing](https://www.waysorted.com/pricing)
 - [Figma Plugin](https://www.waysorted.com/figma-beta)
-- [Documentation](https://www.waysorted.com/docs)
+- [Documentation](https://www.waysorted.com/document-hub)
 - [Learning Hub](https://www.waysorted.com/learning)
 - [About Us](https://www.waysorted.com/about-us)
 - [Support](https://www.waysorted.com/support)
@@ -55,10 +84,10 @@ Fast asset import into Figma. Supports images, SVGs, and more with drag-and-drop
 ## FAQ
 
 **What is Waysorted?**
-Waysorted is a unified Figma plugin suite that combines PDF export, color palettes, unit conversion, and asset import into one tool.
+Waysorted is a unified Figma plugin suite that combines PDF export, file import, HTML-to-Figma conversion, colour palettes, unit conversion, an icon library, and AI comment summaries into one tool.
 
 **Is Waysorted free?**
-Yes, Waysorted is free to start with a credits-based system.
+Yes, Waysorted is free to start with a credits-based system. New accounts receive free starting credits, and credits can be topped up without a subscription.
 
 **Who made Waysorted?**
 Waysorted is developed by Waysorted Infotech Pvt Ltd.
@@ -75,4 +104,4 @@ No. Waysorted uses local-first architecture - your designs are processed on your
 
 ## Keywords
 
-Waysorted, Waysorted Infotech Pvt Ltd, Figma plugin, PDF exporter, color palette generator, unit converter, design tools, Figma plugin bundle, export Figma to PDF, px to rem converter
+Waysorted, Waysorted Infotech Pvt Ltd, Figma plugin, Figma plugin suite, export Figma to PDF, HTML to Figma, import AI EPS PSD into Figma, colour palette generator, WCAG contrast checker, px to rem converter, SVG icon library, design tools
