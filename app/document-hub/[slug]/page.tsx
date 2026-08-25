@@ -216,7 +216,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       type: "article",
       images: [
         {
-          url: "/images/og-image.8f249510.png",
+          url: "/images/og-image.e13cfee0.png",
           width: 1200,
           height: 675,
           alt: "Waysorted - Accelerate every idea with one powerful suite",

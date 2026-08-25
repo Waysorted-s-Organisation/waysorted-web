@@ -66,6 +66,19 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        /*
+         * This matches the PATH, not the file - a 404 under /images/ is handed the
+         * same week-long cache as a real asset. Request a hashed filename before
+         * the deploy carrying it has landed and the edge stores that 404 for seven
+         * days, which takes the URL out of service entirely. It happened to this
+         * repo: a deploy-watch loop polled og-image.8f249510.png while the build
+         * was still running, and every scraper afterwards got a 404 instead of a
+         * share card.
+         *
+         * So never poll an asset URL to find out whether a deploy has finished.
+         * Watch something that is not under this rule - the og:image tag in the
+         * HTML names the file, and the page is not cached this way.
+         */
         source: "/images/:path*",
         headers: [
           { key: "Cache-Control", value: "public, max-age=604800, stale-while-revalidate=2592000" },

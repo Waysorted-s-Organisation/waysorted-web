@@ -60,7 +60,7 @@ test("the share card's filename matches its contents, and nothing references the
    * is the only thing that reliably reaches a cache, and it doubles as a bust for
    * the scrapers that key their own previews by URL.
    */
-  const path = "/images/og-image.8f249510.png";
+  const path = "/images/og-image.e13cfee0.png";
   const file = new URL(`../public${path}`, import.meta.url);
   assert.ok(existsSync(file), `${path} is missing`);
 
@@ -71,11 +71,17 @@ test("the share card's filename matches its contents, and nothing references the
     `${path} is stale - rename it to og-image.${expected}.png and update the references`,
   );
 
+  // Built from `path` rather than written out again. Spelling the hash a second
+  // time is how this test first failed: a rename updated the string above and
+  // missed the escaped copy inside the regex.
+  const literal = new RegExp(path.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const unhashed = /og-image\.png/;
+
   const root = new URL("../", import.meta.url);
   const metadataFiles = ["app/layout.tsx", "app/page.tsx", "app/blogs/[slug]/page.tsx"];
   for (const rel of metadataFiles) {
     const source = readFileSync(new URL(rel, root), "utf8");
-    assert.doesNotMatch(source, /og-image\.png/, `${rel} still points at the un-hashed share card`);
-    assert.match(source, /og-image\.8f249510\.png/, `${rel} should use the hashed share card`);
+    assert.doesNotMatch(source, unhashed, `${rel} still points at the un-hashed share card`);
+    assert.match(source, literal, `${rel} should use ${path}`);
   }
 });

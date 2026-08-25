@@ -17,7 +17,7 @@ export const metadata: Metadata = {
         description: "Discover the tools included in the current Waysorted Beta release. Built to improve speed, focus, and productivity.",
         images: [
             {
-                url: "/images/og-image.8f249510.png",
+                url: "/images/og-image.e13cfee0.png",
                 width: 1200,
                 height: 675,
                 alt: "Waysorted - Accelerate every idea with one powerful suite",
