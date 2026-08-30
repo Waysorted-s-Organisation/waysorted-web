@@ -144,11 +144,27 @@ const nextConfig: NextConfig = {
 
   // Performance optimizations
   poweredByHeader: false, // Remove X-Powered-By header (smaller response)
-  compress: true, // Enable gzip compression
+  /*
+   * Cloudflare terminates every request and applies its own Brotli, so gzipping
+   * here only had the origin spend CPU producing bytes the edge immediately
+   * decompresses and re-compresses. Verified on the wire: responses arrive
+   * `content-encoding: br` from Cloudflare, never the gzip this produced.
+   */
+  compress: false,
 
   // Image optimization
   images: {
-    formats: ["image/avif", "image/webp"],
+    /*
+     * WebP only. AVIF was costing 5,387ms of CPU across the deviceSizes ladder for
+     * one source image where WebP costs 1,009ms - a 5.3x bill for a format whose
+     * files are perhaps 20-30% smaller. On a metered-CPU plan that trade is wrong,
+     * and it is what exhausted the Fluid Active CPU allowance on 28 Aug 2026.
+     *
+     * Dropping a format is safe for already-served bytes: /_next/image varies on
+     * Accept, so existing AVIF entries stay valid for the clients holding them and
+     * new requests simply negotiate WebP.
+     */
+    formats: ["image/webp"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
     imageSizes: [16, 32, 48, 64, 96, 128, 256],
     remotePatterns: [

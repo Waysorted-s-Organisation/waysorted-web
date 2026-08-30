@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import { getCurrentUser } from "@/lib/user";
 import BlogPost from "@/models/blogPost";
+import { purgeUrls, blogPurgePaths } from "@/lib/cloudflare-purge";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +26,15 @@ export async function POST(_req: NextRequest, context: any) {
     post.status = "published";
     post.publishedAt = post.publishedAt || new Date();
     await post.save();
+
+    /*
+     * Cloudflare fronts this origin, so until its copy is dropped a publish only
+     * changes what the origin WOULD say - readers keep the pre-publish response.
+     * Deliberately awaited: the admin who pressed Publish should not be told it
+     * succeeded before the edge agrees. purgeUrls never throws and never rejects,
+     * so a purge failure logs and leaves the publish itself intact.
+     */
+    await purgeUrls(blogPurgePaths(slug), `blog:publish:${slug}`);
 
     return NextResponse.json({ data: post.toDetail() });
   } catch (err) {

@@ -124,9 +124,26 @@ export function middleware(request: NextRequest) {
   return clearLegacyPricingCountryCookie(request, response);
 }
 
-// Run middleware on all paths except static files
+/*
+ * Run middleware on all paths except static files.
+ *
+ * public/ is excluded as well as Next's own build output. The matcher previously
+ * stopped at `_next/*`, so every request for the 289 files under public/icons
+ * (263MB) and public/images invoked this function - and on Vercel middleware runs
+ * globally BEFORE the cache, so it was billed even on an edge HIT. Measured at
+ * ~1.5ms of CPU per request against a 4-hour monthly allowance.
+ *
+ * Nothing is lost. All three jobs this function does are path-scoped and none of
+ * them applies to those directories: CORS is gated on /api/, the Markdown rewrite
+ * is gated on isNegotiablePath() which already excludes them, and the no-store
+ * headers are gated on the billing paths. The only behaviour that did reach them
+ * was the non-canonical-host X-Robots-Tag, and an image is not an indexable page.
+ *
+ * Trailing slashes are deliberate: `images` alone would also exclude a future
+ * /images-guide route.
+ */
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icons/|images/|pricingIcons/).*)",
   ],
 };

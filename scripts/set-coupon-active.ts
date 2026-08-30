@@ -5,6 +5,7 @@ import Coupon from "../models/coupon";
 import CouponRedemption from "../models/couponRedemption";
 import { normalizeCouponCode } from "../lib/billing/coupon-code";
 import { getCatalogProduct } from "../lib/billing/catalog";
+import { purgeUrls, couponPurgePaths } from "../lib/cloudflare-purge";
 
 /**
  * Turns a seeded coupon on, or back off.
@@ -288,6 +289,15 @@ async function main() {
     return;
   }
   console.log(`\nDone. ${changed} code(s) set to ${label(target)}.`);
+
+  /*
+   * The Header reads the public ladder on every marketing page view, so a coupon
+   * that is live in Mongo is still invisible until Cloudflare's copy is dropped.
+   * Only on a real write - a dry run must not touch the edge.
+   */
+  if (changed) {
+    await purgeUrls(couponPurgePaths(), "coupon:set-active");
+  }
   if (target && changed) {
     console.log("Verify a real discounted subscription reaches captured before enabling more.");
   }

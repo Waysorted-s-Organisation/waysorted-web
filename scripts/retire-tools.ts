@@ -1,6 +1,7 @@
 import "./load-env";
 import mongoose from "mongoose";
 import Tool from "../models/tool";
+import { purgeUrls, toolPurgePaths } from "../lib/cloudflare-purge";
 
 /**
  * Retires a tool by clearing its isActive flag.
@@ -69,6 +70,17 @@ async function main() {
     { $set: { isActive: false } },
   );
   console.log(`\nRetired ${result.modifiedCount} tool(s).`);
+
+  /*
+   * A retired tool keeps appearing in the Footer and on /learning until the edge
+   * copy of the catalogue is dropped - which is the same class of bug the retire
+   * script exists to fix. Purge before disconnecting so a failure is reported
+   * while the operator is still watching.
+   */
+  if (result.modifiedCount) {
+    await purgeUrls(toolPurgePaths(pending.map((tool) => tool.slug)), "tools:retire");
+  }
+
   await mongoose.disconnect();
 }
 

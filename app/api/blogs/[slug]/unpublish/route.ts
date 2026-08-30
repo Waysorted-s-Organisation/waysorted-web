@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import { getCurrentUser } from "@/lib/user";
 import BlogPost from "@/models/blogPost";
+import { purgeUrls, blogPurgePaths } from "@/lib/cloudflare-purge";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,6 +26,14 @@ export async function POST(_req: NextRequest, context: any) {
     post.status = "draft";
     post.publishedAt = undefined;
     await post.save();
+
+    /*
+     * More load-bearing than the publish purge. Unpublishing is how a post that
+     * should not be public stops being public; without this the edge keeps serving
+     * it to everyone for the life of its cache entry, and the operator has been
+     * told it is withdrawn.
+     */
+    await purgeUrls(blogPurgePaths(slug), `blog:unpublish:${slug}`);
 
     return NextResponse.json({ data: post.toDetail() });
   } catch (err) {
