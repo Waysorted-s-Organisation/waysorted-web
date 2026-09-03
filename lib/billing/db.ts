@@ -568,6 +568,7 @@ export async function createPurchaseRecord(input: {
   pricedProduct?: RegionalPricedProduct;
   pricing?: PricingContext;
   checkoutSource?: string | null;
+  attribution?: import("@/lib/utm-attribution").UtmAttribution | null;
   idempotencyKey: string;
   notes?: Record<string, unknown>;
 }) {
@@ -578,6 +579,16 @@ export async function createPurchaseRecord(input: {
 
   const pricedProduct = input.pricedProduct || product;
   const receipt = `ws_${product.code}_${Date.now()}_${randomUUID().slice(0, 8)}`;
+  const attributionCapturedAtMs = input.attribution
+    ? Date.parse(input.attribution.capturedAt)
+    : Number.NaN;
+  const now = Date.now();
+  const attributionCapturedAt =
+    Number.isFinite(attributionCapturedAtMs) &&
+    attributionCapturedAtMs <= now + 5 * 60_000 &&
+    now - attributionCapturedAtMs <= 30 * 24 * 60 * 60 * 1000
+      ? new Date(attributionCapturedAtMs)
+      : new Date(now);
 
   return Purchase.create({
     user: input.userId,
@@ -595,6 +606,9 @@ export async function createPurchaseRecord(input: {
     bonusCredits: product.bonusCredits,
     receipt,
     checkoutSource: input.checkoutSource || "website",
+    attribution: input.attribution
+      ? { ...input.attribution, capturedAt: attributionCapturedAt }
+      : undefined,
     idempotencyKey: input.idempotencyKey,
     notes: input.notes || {},
   });

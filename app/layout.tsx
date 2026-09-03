@@ -6,6 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import Clarity from "@/components/Clarity";
 import GoogleAnalytics from "@/components/GoogleAnalytics";
+import UtmAttributionCapture from "@/components/UtmAttributionCapture";
 
 const GA_TRACKING_ID = "G-KS8MVKMRYV";
 
@@ -298,6 +299,7 @@ export default function RootLayout({
       </head>
       <body className={`${hanken.className} no-scrollbar`} suppressHydrationWarning>
         <Providers>
+          <UtmAttributionCapture />
           {/* Global session loader intentionally disabled. */}
           {children}
           {/* <EarlyAccessPopup /> */}

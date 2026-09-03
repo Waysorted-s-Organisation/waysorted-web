@@ -71,7 +71,8 @@ export function middleware(request: NextRequest) {
 
   if (
     pathname.startsWith("/api/billing/") ||
-    pathname.startsWith("/api/admin/billing/")
+    pathname.startsWith("/api/admin/billing/") ||
+    pathname.startsWith("/api/admin/attribution/")
   ) {
     applyHeaders(response, API_NO_STORE_HEADERS);
   } else if (pathname === "/billing" || pathname === "/payment") {

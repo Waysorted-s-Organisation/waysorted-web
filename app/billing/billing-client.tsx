@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { formatMoney } from "@/lib/billing/money";
+import { captureCurrentUtmAttribution } from "@/lib/utm-attribution";
 
 type RazorpaySuccessResponse = {
   razorpay_payment_id: string;
@@ -334,6 +335,7 @@ export default function BillingClient({
         body: JSON.stringify({
           productCode: product.code,
           idempotencyKey: `billing-page:${product.code}:${attemptKey}`,
+          attribution: captureCurrentUtmAttribution(),
           // The exact amount rendered on the button the customer just pressed. The server rejects
           // the order with 409 pricing_quote_changed if its own price no longer matches.
           quotedAmountSubunits: product.amountPaise,
@@ -464,6 +466,7 @@ export default function BillingClient({
         body: JSON.stringify({
           productCode: product.code,
           idempotencyKey: `billing-page:subscription:${product.code}:${attemptKey}`,
+          attribution: captureCurrentUtmAttribution(),
           // See handleOrderCheckout: pins the charge to the amount the customer was shown.
           quotedAmountSubunits: product.amountPaise,
           quotedCurrency: product.currency,

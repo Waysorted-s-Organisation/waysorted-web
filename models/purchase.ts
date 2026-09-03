@@ -1,5 +1,6 @@
 import { Model, Schema, Types, model, models } from "mongoose";
 import "./user";
+import type { UtmAttribution } from "@/lib/utm-attribution";
 
 export type PurchaseKind = "starter" | "topup" | "subscription";
 export type PurchaseStatus =
@@ -35,6 +36,7 @@ export interface IPurchase {
   refundedAmountPaise: number;
   refundedCreditsApplied: number;
   checkoutSource?: string | null;
+  attribution?: Omit<UtmAttribution, "capturedAt"> & { capturedAt: Date };
   idempotencyKey: string;
   notes?: Record<string, unknown>;
   createdAt?: Date;
@@ -42,6 +44,19 @@ export interface IPurchase {
 }
 
 type PurchaseModel = Model<IPurchase>;
+
+const PurchaseAttributionSchema = new Schema(
+  {
+    utmSource: { type: String, required: true },
+    utmMedium: { type: String, default: null },
+    utmCampaign: { type: String, default: null },
+    utmTerm: { type: String, default: null },
+    utmContent: { type: String, default: null },
+    landingPath: { type: String, default: null },
+    capturedAt: { type: Date, required: true },
+  },
+  { _id: false },
+);
 
 const PurchaseSchema = new Schema<IPurchase, PurchaseModel>(
   {
@@ -73,6 +88,7 @@ const PurchaseSchema = new Schema<IPurchase, PurchaseModel>(
     refundedAmountPaise: { type: Number, required: true, default: 0, min: 0 },
     refundedCreditsApplied: { type: Number, required: true, default: 0, min: 0 },
     checkoutSource: { type: String, default: null },
+    attribution: { type: PurchaseAttributionSchema, default: undefined },
     idempotencyKey: { type: String, required: true, trim: true },
     notes: { type: Schema.Types.Mixed, default: {} },
   },
@@ -87,6 +103,7 @@ PurchaseSchema.index(
   { unique: true, name: "user_1_idempotencyKey_1" },
 );
 PurchaseSchema.index({ status: 1, grantApplied: 1, createdAt: -1 });
+PurchaseSchema.index({ "attribution.utmSource": 1, createdAt: -1 });
 PurchaseSchema.index(
   { razorpayOrderId: 1 },
   {
