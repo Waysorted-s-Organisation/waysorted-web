@@ -34,6 +34,7 @@ import {
   resolveCoupon,
 } from "@/lib/billing/coupon";
 import { couponScopedIdempotencyKey } from "@/lib/billing/coupon-discount";
+import { normalizeUtmAttribution, type UtmAttribution } from "@/lib/utm-attribution";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -48,6 +49,7 @@ type SubscriptionBody = {
   quotedCurrency?: string;
   pricingVersion?: string;
   couponCode?: string;
+  attribution?: UtmAttribution;
 };
 
 /** Seconds in one billing cycle, used to place `start_at` one full cycle out. */
@@ -67,6 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     const productCode = body.productCode?.trim() || "";
+    const attribution = normalizeUtmAttribution(body.attribution);
     const requestedCouponCode = body.couponCode?.trim().toUpperCase() || "";
     const clientAttemptKey = body.idempotencyKey?.trim() || randomUUID();
     // The coupon is part of checkout identity. Without it, a coupon applied on
@@ -480,6 +483,7 @@ export async function POST(request: NextRequest) {
           : pricedProduct,
         pricing: snapshot.pricing,
         checkoutSource: body.source?.trim() || "billing_page",
+        attribution,
         idempotencyKey,
         notes: {
           authType: auth.authType,
@@ -556,6 +560,12 @@ export async function POST(request: NextRequest) {
           pricingCountry: snapshot.pricing.country,
           currency: pricedProduct.currency,
           ...(couponResolution?.ok ? { couponCode: couponResolution.quote.code } : {}),
+          ...(purchase.attribution?.utmSource
+            ? { utmSource: purchase.attribution.utmSource }
+            : {}),
+          ...(purchase.attribution?.utmCampaign
+            ? { utmCampaign: purchase.attribution.utmCampaign }
+            : {}),
         },
       });
     } catch (providerError) {
@@ -592,6 +602,7 @@ export async function POST(request: NextRequest) {
           purchaseId: String(purchase._id),
           pricing: snapshot.pricing,
           ...(couponResolution?.ok ? { couponCode: couponResolution.quote.code } : {}),
+          ...(purchase.attribution ? { attribution: purchase.attribution } : {}),
         },
         pricing: snapshot.pricing,
         amountSubunits: pricedProduct.amountPaise,

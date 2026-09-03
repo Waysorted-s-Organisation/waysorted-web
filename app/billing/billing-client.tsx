@@ -14,6 +14,7 @@ import Image from "next/image";
 import OrderComplete, { type OrderCompleteProps } from "@/components/OrderComplete";
 import { unlockPrinterAudio } from "@/components/OrderComplete/printer-sound";
 import WaysortedLogo from "@/components/WaysortedLogo";
+import { captureCurrentUtmAttribution } from "@/lib/utm-attribution";
 
 type RazorpaySuccessResponse = {
   razorpay_payment_id: string;
@@ -457,6 +458,7 @@ export default function BillingClient({
         body: JSON.stringify({
           productCode: product.code,
           idempotencyKey: `billing-page:${product.code}:${attemptKey}`,
+          attribution: captureCurrentUtmAttribution(),
           // The exact amount rendered on the button the customer just pressed. The server rejects
           // the order with 409 pricing_quote_changed if its own price no longer matches.
           quotedAmountSubunits: product.amountPaise,
@@ -695,6 +697,7 @@ export default function BillingClient({
         body: JSON.stringify({
           productCode: product.code,
           idempotencyKey: `billing-page:subscription:${product.code}:${attemptKey}`,
+          attribution: captureCurrentUtmAttribution(),
           // See handleOrderCheckout: pins the charge to the amount the customer was shown.
           // With a coupon the customer is charged the discounted upfront, so
           // that is what must be quoted. Quoting the list price would 409
@@ -1294,7 +1297,7 @@ export default function BillingClient({
 
               {/*
                 A dropdown, not a stack of rows.
-                
+
                 The design has two plans; the real catalogue has six, and six
                 46px rows pushed the discount-code banner and the status line
                 clean off the first screen - the offer was there and nobody

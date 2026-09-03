@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import Purchase from "@/models/purchase";
 import { requireAdminUser } from "@/lib/billing/auth";
+import { normalizeUtmAttribution } from "@/lib/utm-attribution";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -14,7 +15,13 @@ export async function GET(request: NextRequest) {
     }
 
     const limit = Math.min(Number(request.nextUrl.searchParams.get("limit") || "50"), 200);
-    const purchases = await Purchase.find({})
+    const requestedUtmSource = request.nextUrl.searchParams.get("utm_source");
+    const utmSource = requestedUtmSource
+      ? normalizeUtmAttribution({ utmSource: requestedUtmSource })?.utmSource
+      : undefined;
+    const purchases = await Purchase.find(
+      utmSource ? { "attribution.utmSource": utmSource } : {},
+    )
       .sort({ createdAt: -1 })
       .limit(limit)
       .lean();

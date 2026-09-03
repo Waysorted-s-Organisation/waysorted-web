@@ -6,6 +6,7 @@ import { createRazorpayOrder } from "@/lib/billing/razorpay";
 import { getRazorpayConfig } from "@/lib/billing/env";
 import { randomUUID } from "crypto";
 import { billingErrorResponse } from "@/lib/billing/http-errors";
+import { normalizeUtmAttribution, type UtmAttribution } from "@/lib/utm-attribution";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -18,6 +19,7 @@ type OrderBody = {
   quotedAmountSubunits?: number;
   quotedCurrency?: string;
   pricingVersion?: string;
+  attribution?: UtmAttribution;
 };
 
 export async function POST(request: NextRequest) {
@@ -32,6 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     const productCode = body.productCode?.trim() || "";
+    const attribution = normalizeUtmAttribution(body.attribution);
     const clientAttemptKey = body.idempotencyKey?.trim() || randomUUID();
     const idempotencyKey = `order:${auth.user._id}:${clientAttemptKey}`;
     const product = getCatalogProduct(productCode);
@@ -127,6 +130,7 @@ export async function POST(request: NextRequest) {
         pricedProduct,
         pricing: snapshot.pricing,
         checkoutSource: body.source?.trim() || "billing_page",
+        attribution,
         idempotencyKey,
         notes: {
           authType: auth.authType,
@@ -145,6 +149,12 @@ export async function POST(request: NextRequest) {
         kind: purchase.kind,
         pricingTier: purchase.pricingTier || snapshot.pricing.tier,
         pricingCountry: purchase.pricingCountry || snapshot.pricing.country,
+        ...(purchase.attribution?.utmSource
+          ? { utmSource: purchase.attribution.utmSource }
+          : {}),
+        ...(purchase.attribution?.utmCampaign
+          ? { utmCampaign: purchase.attribution.utmCampaign }
+          : {}),
       },
     });
 
