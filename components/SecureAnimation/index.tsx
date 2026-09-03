@@ -309,7 +309,7 @@ const SecureAnimation: React.FC = () => {
         <BigEllipseSvg />
       </div>
 
-      <h1
+      <h2
         className=" top-text hanken-font  text-7xl bold capitalize text-center opacity-0 translate-y-[21vh]"
         style={{
           background: "linear-gradient(to top, #FFFFFF 0%, #828282 100%)",
@@ -318,7 +318,7 @@ const SecureAnimation: React.FC = () => {
         }}
       >
         The data you create is yours
-      </h1>
+      </h2>
 
       <div className="w-full   flex items-center justify-center top-1/2 gap-6 relative ">
         {[...Array(4)].map((_, i) => (
@@ -474,7 +474,7 @@ const SecureAnimation: React.FC = () => {
         ))}
       </div>
 
-      <h1
+      <h2
         className=" bottom-text hanken-font text-7xl bold capitalize text-center opacity-0 translate-y-[51vh]"
         style={{
           background: "linear-gradient(to top, #FFFFFF 0%, #828282 100%)",
@@ -483,9 +483,9 @@ const SecureAnimation: React.FC = () => {
         }}
       >
         yours alone
-      </h1>
+      </h2>
 
-      <h1
+      <h2
         className=" top-text-2 hanken-font  text-7xl bold capitalize text-center opacity-0 -translate-y-[8vh]"
         style={{
           background: "linear-gradient(to top, #FFFFFF 0%, #828282 100%)",
@@ -494,8 +494,8 @@ const SecureAnimation: React.FC = () => {
         }}
       >
         No one can access it
-      </h1>
-      <h1
+      </h2>
+      <h2
         className="bottom-text-2  hanken-font  text-7xl bold capitalize text-center opacity-0 translate-y-76"
         style={{
           background: "linear-gradient(to top, #FFFFFF 0%, #828282 100%)",
@@ -504,7 +504,7 @@ const SecureAnimation: React.FC = () => {
         }}
       >
         Except You
-      </h1>
+      </h2>
       <div className="blank-page bg-[#0D1218] w-full h-[20vh]"></div>
     </div>
   );

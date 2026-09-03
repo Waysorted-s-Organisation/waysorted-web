@@ -16,12 +16,25 @@ export function buildPublicCatalog(headers: Pick<Headers, "get">) {
     detectedCountry: getTrustedPricingCountry(headers),
   });
 
+  /*
+   * Subscriber top-ups ARE included, flagged rather than filtered.
+   *
+   * /pricing compares the two top-up tiers side by side, and it cannot draw the
+   * subscriber rung without its credit figures. Hiding the products meant the
+   * comparison toggle had nothing to switch to, so it silently did nothing.
+   *
+   * `requiresSubscription` is a DISPLAY flag and nothing more. It is not what
+   * stops a non-subscriber buying one: `getVisibleCatalog` decides that
+   * server-side at checkout, and still refuses regardless of anything sent from
+   * here. Starter packs stay out entirely - they are gated on being a new user,
+   * which this endpoint has no way to know.
+   */
   const catalog = CATALOG_PRODUCTS.filter(
-    (product) =>
-      product.active &&
-      product.kind !== "starter" &&
-      product.eligibility !== "subscriber",
-  ).map((product) => applyRegionalPrice(product, pricing));
+    (product) => product.active && product.kind !== "starter",
+  ).map((product) => ({
+    ...applyRegionalPrice(product, pricing),
+    requiresSubscription: product.eligibility === "subscriber",
+  }));
 
   return {
     pricingVersion: BILLING_PRICING_VERSION,

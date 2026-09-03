@@ -13,12 +13,12 @@ export default function TopSection() {
       </p>
 
       {/* Heading */}
-      <h1 className="text-2xl sm:text-4xl font-medium text-secondary-db-100 mb-14 max-w-[345px] md:max-w-none leading-tight md:leading-snug">
+      <h2 className="text-2xl sm:text-4xl font-medium text-secondary-db-100 mb-14 max-w-[345px] md:max-w-none leading-tight md:leading-snug">
         Designed to work seamlessly{" "}
         <span className="text-secondary-db-60">
           into your Software
         </span>
-      </h1>
+      </h2>
 
       {/* Buttons */}
       <div className="w-full max-w-[345px] md:max-w-none mx-auto md:flex md:justify-center overflow-hidden">

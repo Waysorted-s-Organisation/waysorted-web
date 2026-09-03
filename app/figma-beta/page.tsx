@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { permanentRedirect } from "next/navigation";
 
 export const metadata: Metadata = {
     title: "Try Waysorted Beta for Figma",
@@ -16,9 +16,9 @@ export const metadata: Metadata = {
         type: "website",
         images: [
             {
-                url: "/images/og-image.png",
+                url: "/images/og-image.e13cfee0.png",
                 width: 1200,
-                height: 630,
+                height: 675,
                 alt: "Waysorted - Accelerate every idea with one powerful suite",
             },
         ],
@@ -26,6 +26,8 @@ export const metadata: Metadata = {
 };
 
 export default function FigmaBetaPage() {
-    // Redirect to the learning/tools page or specific Figma plugin page
-    redirect("/learning");
+    // Redirect to the learning/tools page or specific Figma plugin page.
+    // Uses a permanent (308) redirect so search engines consolidate any link
+    // equity for /figma-beta into /learning instead of treating it as temporary.
+    permanentRedirect("/learning");
 }

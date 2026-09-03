@@ -48,7 +48,9 @@ export default function ToolBrief({
         </div>
         {/* Right: content, rounded on right only */}
         <div className="w-1/2 h-full bg-secondary-db-100 text-white p-4 sm:p-8 lg:p-9 rounded-r-3xl sm:rounded-r-4xl flex flex-col justify-center">
-          <h3 className="text-lg sm:text-2xl font-medium">{title}</h3>
+          {/* <h2>: this follows the page <h1> directly, so an <h3> skipped a
+              level (axe "heading-order"). Styling is unchanged. */}
+          <h2 className="text-lg sm:text-2xl font-medium">{title}</h2>
           {subtitle ? (
             <p className="mt-2 sm:mt-6 text-secondary-db-20 text-xs sm:text-sm font-regular">{subtitle}</p>
           ) : null}

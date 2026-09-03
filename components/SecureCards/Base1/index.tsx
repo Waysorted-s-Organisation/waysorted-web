@@ -27,14 +27,16 @@ const Base1: React.FC<Base1Props> = ({ title, content, libero }) => {
             />
           </svg>
 
-          <h1 className="grotesk-font text-white text-md">{title}</h1>
+          <h3 className="grotesk-font text-white text-md">{title}</h3>
         </div>
 
-        <h3
+        {/* Body copy, not a heading - it was an <h3>, which put every card's
+            description into the document outline. Styling is unchanged. */}
+        <p
           className={`grotesk-font text-white/[0.7] text-[12px] left-0 w-full ${libero}`}
         >
           {content}
-        </h3>
+        </p>
       </div>
     </div>
   );

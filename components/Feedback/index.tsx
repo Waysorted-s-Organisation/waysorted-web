@@ -94,9 +94,12 @@ export default function Feedback({
       'rounded-4xl bg-white',
       className
     )}>
-      <h3 className="text-2xl font-medium text-secondary-db-100 text-center mb-8">
+      {/* <h2>, not <h3>: this is a top-level section of the page, and as an h3 it
+          skipped a level after the page <h1> (axe "heading-order"). Styling is
+          unchanged - all of it lives in the classNames. */}
+      <h2 className="text-2xl font-medium text-secondary-db-100 text-center mb-8">
         {title}
-      </h3>
+      </h2>
 
       {/* Rating Emojis */}
       <div className="flex justify-center gap-4 mb-8">

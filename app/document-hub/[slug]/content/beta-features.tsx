@@ -1,7 +1,7 @@
 export default function BetaFeatures() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Beta Features</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Beta Features</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Beta features give early access to upcoming elements and documentation.
             </p>

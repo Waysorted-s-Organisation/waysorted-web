@@ -1,3 +1,20 @@
+import type { Metadata } from "next";
+
+/*
+ * Next injects its own `noindex` for a not-found render, and the root layout
+ * declares `index, follow` for the rest of the site. Both landed on this page, so
+ * it shipped two robots tags telling crawlers opposite things. Google resolves a
+ * conflict by taking the most restrictive, so nothing was being indexed that
+ * should not be - but "index, follow" on a 404 is a claim we never meant to make.
+ *
+ * Declaring it here overrides the layout, so both tags now say noindex. `follow`
+ * stays on: this page links back to the homepage, and a 404 is a normal place for
+ * a crawler to arrive and carry on from.
+ */
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+};
+
 import Image from "next/image";
 import Link from "next/link";
 export default function NotFound() {

@@ -161,21 +161,44 @@ export async function createRazorpayPlan(input: {
   });
 }
 
+export interface RazorpaySubscriptionAddon {
+  item: { name: string; amount: number; currency: string };
+}
+
 export async function createRazorpaySubscription(input: {
   planId: string;
   totalCount?: number;
   notes: Record<string, string>;
+  /**
+   * Unix seconds. Set one cycle ahead to discount a first cycle: the plan
+   * itself stays full price and first charges here, while the addon below is
+   * billed now as the authorisation invoice.
+   */
+  startAt?: number;
+  /**
+   * Billed immediately as the authorisation invoice. Razorpay auto-captures
+   * both this and subsequent charges, so a discount given here is never
+   * refunded.
+   */
+  addons?: RazorpaySubscriptionAddon[];
 }) {
+  const body: Record<string, unknown> = {
+    plan_id: input.planId,
+    total_count: input.totalCount ?? 100,
+    customer_notify: 1,
+    quantity: 1,
+    notes: input.notes,
+  };
+
+  // Omitted entirely when absent rather than sent as null: Razorpay rejects a
+  // null start_at, and an empty addons array changes the checkout sheet.
+  if (input.startAt !== undefined) body.start_at = input.startAt;
+  if (input.addons?.length) body.addons = input.addons;
+
   return razorpayRequest<RazorpaySubscription>({
     method: "POST",
     path: "/v1/subscriptions",
-    body: {
-      plan_id: input.planId,
-      total_count: input.totalCount ?? 100,
-      customer_notify: 1,
-      quantity: 1,
-      notes: input.notes,
-    },
+    body,
   });
 }
 

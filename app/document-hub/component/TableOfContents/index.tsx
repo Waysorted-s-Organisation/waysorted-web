@@ -21,7 +21,9 @@ interface Props {
 
 export default function TableOfContents({
   rootSelector = "[data-doc-content]",
-  minLevel = 3,
+  // Doc content runs h1 (page title) -> h2 (sections) -> h3. It used to
+  // start at h3 because the content skipped h2 entirely.
+  minLevel = 2,
   maxLevel = 3,
   topOffsetPx = 112,
   stopAtSelector = "#footer-sentinel"
@@ -111,8 +113,10 @@ export default function TableOfContents({
   }, [stopAtSelector]);
 
 
+  // db-70 not db-60: small text on a white background needs 4.5:1;
+  // db-60 is 4.24:1, db-70 is 6.95:1.
   const baseAside = (
-    <div className="text-xs font-medium uppercase tracking-wide text-secondary-db-60 mb-3">
+    <div className="text-xs font-medium uppercase tracking-wide text-secondary-db-70 mb-3">
       On this page
     </div>
   );

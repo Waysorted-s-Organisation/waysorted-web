@@ -3,6 +3,8 @@ import type { NextRequest } from "next/server";
 import { buildCorsHeaders } from "@/lib/cors";
 import { buildFigmaPatCorsHeaders } from "@/lib/figma-plugin-cors";
 import { LEGACY_PRICING_COUNTRY_COOKIE } from "@/lib/billing/regional-pricing";
+import { isNonCanonicalHost } from "@/lib/canonical-host";
+import { prefersMarkdown, isNegotiablePath } from "@/lib/markdown-negotiation";
 
 const PAGE_NO_STORE_HEADERS = {
   "Cache-Control": "private, no-store, no-cache, max-age=0, must-revalidate",
@@ -28,18 +30,47 @@ function clearLegacyPricingCountryCookie(request: NextRequest, response: NextRes
   return response;
 }
 
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hostname = request.headers.get("host") || "";
 
-  // Enforce www in production (Single-hop redirect)
+  /*
+   * The apex redirect is NOT here. Vercel owns it, at the domain level:
+   * Project Settings > Domains > waysorted.com > Redirect to Another Domain,
+   * set to 308 Permanent Redirect > www.waysorted.com.
+   *
+   * This function used to attempt the same redirect with a 301. It never ran -
+   * the platform redirect resolves at the edge before a request reaches the app,
+   * so the code was unreachable while the live response was Vercel's default 307.
+   * A temporary redirect is the wrong signal for a permanent host consolidation,
+   * and 28 of the site's 31 backlinks point at the apex, so they were all passing
+   * through it. Fixed where it actually lives rather than here.
+   */
+
+  /*
+   * Serve Markdown to agents that ask for it by name.
+   *
+   * Deliberately placed after the canonical-host redirect and before everything
+   * else, and deliberately narrow: prefersMarkdown is false for every browser
+   * Accept header, for a bare wildcard, and for an absent header, so a person
+   * never reaches this branch and the HTML path below is untouched.
+   *
+   * A rewrite, not a different response body on the same URL: the page keeps its
+   * own cache entry under its own path, so nothing here can fragment the cached
+   * HTML or let a shared cache hand Markdown to a browser. The Vary header the
+   * negotiation requires is set on the Markdown response itself.
+   */
   if (
-    process.env.NODE_ENV === "production" &&
-    hostname === "waysorted.com"
+    // HEAD as well as GET: a HEAD must describe exactly what the GET would return,
+    // and header-only probes are how a client checks the negotiation is there at all.
+    (request.method === "GET" || request.method === "HEAD") &&
+    isNegotiablePath(pathname) &&
+    prefersMarkdown(request.headers.get("accept"))
   ) {
     const url = request.nextUrl.clone();
-    url.hostname = "www.waysorted.com";
-    return NextResponse.redirect(url, 301);
+    url.pathname = `/md${pathname === "/" ? "" : pathname}`;
+    return NextResponse.rewrite(url);
   }
 
   // Handle CORS preflight requests (API only)
@@ -84,12 +115,36 @@ export function middleware(request: NextRequest) {
   // hydration), so forcing no-store only cost every visitor a full round trip for identical markup.
   // Re-add it if regional pricing is ever moved into the server render.
 
+  // Keep preview/alternate hosts out of the index entirely. Applied last so it
+  // wins over anything set above, and only for non-canonical hosts - the
+  // production site is never touched by this branch.
+  if (isNonCanonicalHost(hostname)) {
+    response.headers.set("X-Robots-Tag", "noindex, nofollow");
+  }
+
   return clearLegacyPricingCountryCookie(request, response);
 }
 
-// Run middleware on all paths except static files
+/*
+ * Run middleware on all paths except static files.
+ *
+ * public/ is excluded as well as Next's own build output. The matcher previously
+ * stopped at `_next/*`, so every request for the 289 files under public/icons
+ * (263MB) and public/images invoked this function - and on Vercel middleware runs
+ * globally BEFORE the cache, so it was billed even on an edge HIT. Measured at
+ * ~1.5ms of CPU per request against a 4-hour monthly allowance.
+ *
+ * Nothing is lost. All three jobs this function does are path-scoped and none of
+ * them applies to those directories: CORS is gated on /api/, the Markdown rewrite
+ * is gated on isNegotiablePath() which already excludes them, and the no-store
+ * headers are gated on the billing paths. The only behaviour that did reach them
+ * was the non-canonical-host X-Robots-Tag, and an image is not an indexable page.
+ *
+ * Trailing slashes are deliberate: `images` alone would also exclude a future
+ * /images-guide route.
+ */
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icons/|images/|pricingIcons/).*)",
   ],
 };

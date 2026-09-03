@@ -17,7 +17,12 @@ export interface IPurchase {
   productCode: string;
   kind: PurchaseKind;
   status: PurchaseStatus;
+  /** The amount actually charged at signup. With a coupon this is the discounted upfront. */
   amountPaise: number;
+  /** Undiscounted price, set only when a coupon applied. */
+  originalAmountPaise?: number | null;
+  discountPaise?: number | null;
+  couponCode?: string | null;
   currency: string;
   basePriceInr?: number | null;
   pricingCountry?: string | null;
@@ -69,7 +74,13 @@ const PurchaseSchema = new Schema<IPurchase, PurchaseModel>(
       default: "created",
       enum: ["created", "pending", "captured", "failed", "cancelled", "refunded", "partially_refunded"],
     },
+    // Holds the amount CHARGED, so subscriptions/verify keeps comparing the
+    // payment against the right number without an edit. The undiscounted price
+    // lives alongside it rather than replacing it.
     amountPaise: { type: Number, required: true, min: 100 },
+    originalAmountPaise: { type: Number, default: null, min: 100 },
+    discountPaise: { type: Number, default: null, min: 0 },
+    couponCode: { type: String, default: null, uppercase: true, trim: true, index: true },
     currency: { type: String, required: true, default: "INR" },
     basePriceInr: { type: Number, default: null, min: 0 },
     pricingCountry: { type: String, default: null, index: true },

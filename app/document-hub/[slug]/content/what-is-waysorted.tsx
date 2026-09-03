@@ -1,7 +1,7 @@
 export default function WhatIsWaysorted() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">What is Waysorted?</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">What is Waysorted?</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Waysorted is a centralized marketplace for design plugins, focused on speed, simplicity, and productivity. Instead of installing and managing multiple individual plugins, Waysorted allows you to access them through use-case-based bundled tools.
             </p>

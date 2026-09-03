@@ -8,6 +8,9 @@ import React from "react";
 export default function ToolListItem({ tool }: { tool: ITool }) {
   const router = useRouter();
   const isDisabled = tool.disabled === true;
+  // A coming-soon tool is not a link, so render a <span> instead of an
+  // <a> with no href.
+  const Comp = (isDisabled ? "span" : "a") as "a";
   const badge = tool.badge;
 
   const onLearnMore = (e?: React.MouseEvent<HTMLAnchorElement>) => {
@@ -84,7 +87,7 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
             href="https://figma.com/community/plugin/1532842109377504268/waysorted"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Open in Figma"
+            aria-label="Figma Plugin - opens in Figma Community"
             className={`hidden sm:inline text-xs select-none mt-1 ${isDisabled
                 ? "pointer-events-none opacity-70 text-secondary-db-80"
                 : "text-secondary-db-80 hover:text-primary-way-100"
@@ -119,22 +122,24 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
       </p>
 
       {/* Learn More / Arrow Link */}
-      <a
-        href={isDisabled ? undefined : `/learning/${tool.slug}`}
-        onClick={onLearnMore}
-        aria-label={
-          isDisabled
-            ? `${tool.name} is coming soon`
-            : `Learn more about ${tool.name}`
-        }
-        aria-disabled={isDisabled}
-        tabIndex={isDisabled ? -1 : 0}
+      {/* A disabled <a> was rendered with href={undefined}: not a link at all,
+          so Lighthouse/axe flagged it as an uncrawlable anchor. Render a plain
+          <span> when the tool is coming soon, and a real link otherwise.
+          Classes and content are identical in both branches. */}
+      <Comp
+        {...(isDisabled
+          ? { role: "note" as const }
+          : { href: `/learning/${tool.slug}`, onClick: onLearnMore })}
+        {...(isDisabled ? { "aria-label": `${tool.name} is coming soon` } : {})}
         className={`text-sm font-medium items-center flex shrink-0 ${isDisabled
             ? "text-secondary-db-40 cursor-not-allowed pointer-events-none"
             : "text-secondary-db-100 hover:text-primary-way-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-way-100 rounded"
           }`}
       >
         <span className="hidden sm:inline">Learn more</span>
+        {/* Visible label is unchanged. The tool name is exposed to screen readers
+            and becomes the anchor text search engines read. */}
+        <span className="sr-only">Learn more about {tool.name}</span>
         <span className="relative ml-1 w-3 h-2">
           <svg
             width="6"
@@ -153,7 +158,7 @@ export default function ToolListItem({ tool }: { tool: ITool }) {
             />
           </svg>
         </span>
-      </a>
+      </Comp>
     </div>
   );
 }

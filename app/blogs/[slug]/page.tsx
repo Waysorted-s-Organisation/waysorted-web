@@ -4,6 +4,8 @@ import dbConnect from "@/lib/db";
 import BlogPost from "@/models/blogPost";
 import type { BlogContentBlock, BlogPostDetail } from "@/types/blog";
 import BlogPostPageClient from "./BlogPostPageClient";
+import { breadcrumbJsonLd } from "@/lib/breadcrumb-schema";
+import { faqPageJsonLd } from "@/lib/faq-schema";
 
 const siteUrl = "https://www.waysorted.com";
 
@@ -12,7 +14,7 @@ type BlogPostPageProps = {
 };
 
 function absoluteUrl(value?: string) {
-  if (!value) return `${siteUrl}/images/og-image.png`;
+  if (!value) return `${siteUrl}/images/og-image.e13cfee0.png`;
   if (value.startsWith("http://") || value.startsWith("https://")) return value;
   return `${siteUrl}${value.startsWith("/") ? value : `/${value}`}`;
 }
@@ -73,11 +75,14 @@ export async function generateMetadata({ params }: BlogPostPageProps): Promise<M
       modifiedTime,
       authors: [post.authorName],
       tags: post.tags,
+      // No width/height: `image` is the post's own cover when it has one and the
+      // site card only as a fallback, so the size is not knowable here. The pair
+      // was hardcoded 1200x630, which described neither - covers come from
+      // Cloudinary at whatever size they were uploaded, and the fallback is
+      // 1200x675. Omitted, scrapers read the real dimensions off the file.
       images: [
         {
           url: image,
-          width: 1200,
-          height: 630,
           alt: post.coverImageAlt || post.title,
         },
       ],
@@ -126,13 +131,39 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     wordCount: blocksToText(post.contentBlocks).split(/\s+/).filter(Boolean).length,
   };
 
+  /*
+   * Derived from the Q&A the post already renders, never authored - Google treats
+   * FAQPage markup that does not match visible content as a manual-action risk.
+   * Returns null for a post with no question headings, so nothing is emitted there.
+   */
+  const faq = faqPageJsonLd(post.contentBlocks, `${siteUrl}/blogs/${post.slug}`);
+
+  const breadcrumb = breadcrumbJsonLd(`/blogs/${post.slug}`, [
+    { name: "Blogs", path: "/blogs" },
+    { name: post.title, path: `/blogs/${post.slug}` },
+  ]);
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
       />
-      <BlogPostPageClient />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
+      {faq ? (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faq) }}
+        />
+      ) : null}
+      {/* `post` is passed down so the article body is server-rendered. Without
+          it the page shipped an empty shell: the content was fetched client-side
+          from /api/blogs/[slug], which robots.txt disallows, so crawlers only
+          ever saw the header and footer. */}
+      <BlogPostPageClient initialPost={post} />
     </>
   );
 }

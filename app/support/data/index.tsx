@@ -89,7 +89,7 @@ export const faqData: FAQItem[] = [
         </Link>
         , the platform provides consistent, up-to-date assistance to resolve any
         concerns. Moreover, use the{" "}
-        <Link href="/report" className="text-primary-way-100 hover:underline">
+        <Link href="/document-hub/bug-reporting" className="text-primary-way-100 hover:underline">
           Report-a-Bug
         </Link>{" "}
         tab for reporting issues.

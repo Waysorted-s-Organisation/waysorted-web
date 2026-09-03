@@ -1,6 +1,7 @@
 import React from "react";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { breadcrumbJsonLd } from "@/lib/breadcrumb-schema";
 import GettingStarted from "./content/getting-started";
 import AccountCreationAndSetup from "./content/account-creation-and-setup";
 import BugReporting from "./content/bug-reporting";
@@ -215,9 +216,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       type: "article",
       images: [
         {
-          url: "/images/og-image.png",
+          url: "/images/og-image.e13cfee0.png",
           width: 1200,
-          height: 630,
+          height: 675,
           alt: "Waysorted - Accelerate every idea with one powerful suite",
         },
       ],
@@ -303,11 +304,22 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
     ]
   } : null;
 
+  // Home > Document Hub > {page}. Replaces the global single-item breadcrumb,
+  // which produced no rich result on any of these 53 pages.
+  const breadcrumb = breadcrumbJsonLd(`/document-hub/${slug}`, [
+    { name: "Document Hub", path: "/document-hub" },
+    { name: title, path: `/document-hub/${slug}` },
+  ]);
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
       {faqJsonLd && (
         <script

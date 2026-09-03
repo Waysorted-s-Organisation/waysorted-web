@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { hasSubscriptionEntitlement } from "@/lib/billing/subscription-status";
 import { getAuthenticatedUser } from "@/lib/billing/auth";
 import { buildBillingSnapshot, reserveCredits } from "@/lib/billing/db";
 import { resolveUsageCredits } from "@/lib/billing/usagePricing";
@@ -57,8 +58,11 @@ export async function POST(request: NextRequest) {
     const resolved = resolveUsageCredits(body);
     const snapshot = await buildBillingSnapshot(auth.user, request);
     const lowCreditThreshold = getLowCreditThreshold();
+    // "scheduled" is a paid subscriber - it is where every discounted
+    // subscription rests for its whole first cycle - and omitting it withheld
+    // loyalty pricing from exactly the customers who had just paid.
     const loyaltyEligible =
-      ["active", "cancel_scheduled"].includes(snapshot.subscription.status) ||
+      hasSubscriptionEntitlement(snapshot.subscription.status) ||
       snapshot.wallet.lifetimePurchasedCredits > 0;
     const reservationIdempotencyKey =
       body.idempotencyKey?.trim() ||

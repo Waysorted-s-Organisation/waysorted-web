@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, ChevronRight, Frown, Meh, Smile, User, Plus } from "lucide-react";
@@ -10,7 +10,13 @@ import type { BlogPostCard, BlogPostStatus } from "@/types/blog";
 
 type AdminStatusFilter = "all" | BlogPostStatus;
 
-export default function BlogsContent() {
+export default function BlogsContent({
+  initialPosts = null,
+  initialCategories = null,
+}: {
+  initialPosts?: BlogPostCard[] | null;
+  initialCategories?: string[] | null;
+}) {
   const { user } = useUser();
   const isAdmin = user?.role?.toLowerCase() === "admin";
   const [activeTab, setActiveTab] = useState("All");
@@ -21,17 +27,24 @@ export default function BlogsContent() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<AdminStatusFilter>("all");
-  const [blogPosts, setBlogPosts] = useState<BlogPostCard[]>([]);
-  const [tabs, setTabs] = useState([
-    "All",
-    "Design Best Practices",
-    "Tips and Tutorials",
-    "Way Mavens",
-    "Why Waysorted",
-    "Updates",
-  ]);
-  const [loading, setLoading] = useState(true);
+  const [blogPosts, setBlogPosts] = useState<BlogPostCard[]>(initialPosts ?? []);
+  const [tabs, setTabs] = useState(
+    initialCategories
+      ? ["All", ...initialCategories.filter((category) => category !== "All")]
+      : [
+          "All",
+          "Design Best Practices",
+          "Tips and Tutorials",
+          "Way Mavens",
+          "Why Waysorted",
+          "Updates",
+        ]
+  );
+  const [loading, setLoading] = useState(!initialPosts);
   const [error, setError] = useState<string | null>(null);
+  // True when the server already rendered the default listing, so the first
+  // client fetch would only re-request data we are already displaying.
+  const skipInitialFetchRef = useRef(Boolean(initialPosts));
 
   const ratings = [
     { id: 1, icon: <Frown className="w-6 h-6" /> },
@@ -67,6 +80,14 @@ export default function BlogsContent() {
   }, [activeTab, debouncedSearchTerm, isAdmin, statusFilter]);
 
   useEffect(() => {
+    // Skip only the very first run, and only when the server seeded us with the
+    // same default view (All categories, no search, published-only). Any later
+    // run - a tab change, a search, or `isAdmin` resolving to true - still
+    // refetches exactly as before.
+    if (skipInitialFetchRef.current) {
+      skipInitialFetchRef.current = false;
+      return;
+    }
     loadBlogs();
   }, [loadBlogs]);
 
@@ -109,7 +130,11 @@ export default function BlogsContent() {
       {/* Header Area */}
       <div className="mb-10">
         <div className="mb-6 inline-flex h-8 items-center rounded-[6px] bg-[#F3F4F6] px-2 text-[13px] font-medium text-[#0D1218]">
-          <div className="mr-2 h-5 w-5 rounded-[4px] bg-[#0D1218]"></div>
+          {/* The dark chip is the design's; it was just empty. The blogs mark is
+              white-on-transparent, which is what it is drawn for. */}
+          <span className="mr-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-[4px] bg-[#0D1218]">
+            <Image src="/icons/blogs-mark.svg" alt="" width={12} height={11} className="h-3 w-3 object-contain" />
+          </span>
           Our Blogs
         </div>
         <h1 className="text-4xl md:text-[40px] font-semibold tracking-tight text-[#0D1218]">

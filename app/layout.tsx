@@ -1,6 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Hanken_Grotesk } from "next/font/google";
+import { Hanken_Grotesk, Roboto_Mono } from "next/font/google";
 import { Providers } from "./providers";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
@@ -16,83 +16,33 @@ const hanken = Hanken_Grotesk({
   variable: "--font-hanken",
 });
 
+// Only the printed receipt on the order-complete screen uses this. A receipt is
+// a column of aligned figures, and that alignment is the whole reason the design
+// is monospaced - a proportional font makes the amounts wander.
+const robotoMono = Roboto_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-roboto-mono",
+});
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.waysorted.com"),
-  alternates: {
-    canonical: "/",
-    languages: {
-      'en': '/',
-      'x-default': '/',
-    },
-  },
+  // NOTE: Do not set `alternates.canonical` here. Metadata in the App Router is
+  // inherited by every child segment that does not override it, so a canonical
+  // on the root layout makes every page declare itself a duplicate of the
+  // homepage. Each route must declare its own canonical instead.
   title: {
     default: "Waysorted - Accelerate every idea with one powerful suite",
     template: "%s | Waysorted",
   },
   description:
     "Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.",
-  keywords: [
-    // Brand keywords
-    "Waysorted Infotech Pvt Ltd",
-    "Waysorted Infotech",
-    "Waysorted",
-    "Waysorted plugin",
-    "Waysorted Figma",
-    "Waysorted beta",
-    "Waysorted tools",
-    "waysorted.com",
-    // Product keywords
-    "Figma plugin",
-    "Figma plugin bundle",
-    "Figma plugin marketplace",
-    "Frames to PDF",
-    "File Importer",
-    "PDF exporter Figma",
-    "Palettable color palette",
-    "unit converter plugin",
-    "import tool Figma",
-    "Figma PDF export plugin",
-    "Figma color palette plugin",
-    "px to rem converter Figma",
-    // Category keywords
-    "design tools",
-    "design workflow",
-    "designer productivity tools",
-    "UI/UX tools",
-    "one powerful suite",
-    "unified tool suite",
-    "design plugin collection",
-    "best Figma plugins 2024",
-    "top Figma plugins",
-    // Action keywords
-    "accelerate design workflow",
-    "productivity for designers",
-    "Figma design plugins",
-    "export Figma to PDF",
-    "convert px to rem Figma",
-    // Speed semantic cluster (GEO)
-    "fast design tools",
-    "zero latency",
-    "instant export",
-    "real-time collaboration",
-    "client-side processing",
-    // Security semantic cluster (GEO)
-    "secure design platform",
-    "local-first architecture",
-    "data privacy",
-    "encrypted workflows",
-    "GDPR compliant design tools",
-    // Comparison keywords (GEO)
-    "Figma plugin alternative",
-    "all-in-one design solution",
-    "replace multiple plugins",
-    "Figma plugin to export PDF",
-    "free Figma plugin bundle",
-    // Competitor Alternatives (GEO)
-    "Magicul alternative",
-    "Convertify alternative",
-    "Figma to PDF alternative",
-  ],
+  // `keywords` intentionally removed. Google has ignored the meta keywords tag
+  // since 2009 and it is not a ranking signal on any major engine, so the 52
+  // entries here bought nothing. The list also carried competitor brand names
+  // ("Magicul alternative", "Convertify alternative") and filler like
+  // "zero latency", which is the only part that carried any downside.
+  // Rankings come from the page's actual content, not from a keyword list.
   authors: [{ name: "Waysorted" }],
   creator: "Waysorted",
   publisher: "Waysorted",
@@ -107,9 +57,9 @@ export const metadata: Metadata = {
       "Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.",
     images: [
       {
-        url: "/images/og-image.png",
+        url: "/images/og-image.e13cfee0.png",
         width: 1200,
-        height: 630,
+        height: 675,
         alt: "Waysorted - Unified Tools Hub for Designers",
       },
     ],
@@ -119,7 +69,7 @@ export const metadata: Metadata = {
     title: "Waysorted - Accelerate every idea with one powerful suite",
     description:
       "Discover one unified tool suite which works across softwares. Explore a collection of tools built to accelerate workflow and get work done faster.",
-    images: ["/images/og-image.png"],
+    images: ["/images/og-image.e13cfee0.png"],
   },
   robots: {
     index: true,
@@ -144,6 +94,10 @@ const jsonLd = {
       "@id": "https://www.waysorted.com/#organization",
       name: "Waysorted",
       legalName: "Waysorted Infotech Pvt Ltd",
+      // Organization carried no description of its own. url, logo, sameAs, address
+      // and contactPoint were all already here.
+      description:
+        "Waysorted is a unified Figma plugin suite for designers - export, convert, import and generate without leaving the canvas.",
       url: "https://www.waysorted.com",
       logo: {
         "@type": "ImageObject",
@@ -151,10 +105,15 @@ const jsonLd = {
         width: 512,
         height: 512,
       },
+      // All URLs verified reachable. Broken `sameAs` entries stop Google from
+      // consolidating these profiles onto the Waysorted entity:
+      // - linkedin.com/company/waysorted returned 404 (the handle is waysortedhq)
+      // - discord.gg/waysorted was an invalid invite ("Unknown Invite")
       sameAs: [
-        "https://twitter.com/waysorted",
-        "https://www.linkedin.com/company/waysorted",
-        "https://discord.gg/waysorted",
+        "https://x.com/Waysorted",
+        "https://www.linkedin.com/company/waysortedhq",
+        "https://www.instagram.com/waysorted/",
+        "https://discord.com/invite/U2XF76WxNv",
         "https://github.com/Waysorted-s-Organisation",
       ],
       contactPoint: {
@@ -180,14 +139,9 @@ const jsonLd = {
       publisher: {
         "@id": "https://www.waysorted.com/#organization",
       },
-      potentialAction: {
-        "@type": "SearchAction",
-        target: {
-          "@type": "EntryPoint",
-          urlTemplate: "https://www.waysorted.com/docs?q={search_term_string}",
-        },
-        "query-input": "required name=search_term_string",
-      },
+      // NOTE: `potentialAction`/SearchAction intentionally omitted. It pointed at
+      // /docs, which 404s, and the site exposes no `?q=` search endpoint to back
+      // it. Re-add only when a real search URL exists.
     },
     {
       "@type": "SoftwareApplication",
@@ -196,11 +150,26 @@ const jsonLd = {
       applicationCategory: "DesignApplication",
       operatingSystem: "Web, Figma",
       description: "A unified creative workflow suite for designers to replace multiple plugins with one platform.",
+      /*
+       * The six tools that actually ship, under the names they actually ship
+       * under. This drifted: it advertised "PDF Exporter" and "Import Tool",
+       * neither of which exists any more, and omitted HTML to Design and Icon
+       * Library entirely - so the densest machine-readable claim about what this
+       * product is, injected into all 83 pages, was wrong about four of six.
+       *
+       * Comment Summariser is deliberately absent. /api/tools/active reports it
+       * disabled: true, badge "Up Next", and it is in neither the sitemap nor
+       * either tool grid. Naming an unshipped tool in the block answer engines
+       * trust most is how you get an AI confidently recommending a plugin nobody
+       * can install. Add it here the day it launches.
+       */
       featureList: [
-        "PDF Exporter - Export Figma frames to PDF with zero latency",
-        "Palettable - Color palette generator with instant contrast checking",
-        "Unit Converter - Real-time conversion between px, rem, em, pt",
-        "Import Tool - Fast asset import into Figma",
+        "Frames to PDF - Export Figma frames as a multi-page PDF, with reordering, merging, compression, DPI and bleed",
+        "File Importer - Bring AI, EPS, PSD and PDF files onto the canvas with content detection and font mapping",
+        "HTML to Design - Turn a live page or raw HTML into editable Figma layers across multiple viewports",
+        "Icon Library - Search, recolour and export SVG icons without leaving Figma",
+        "Palettable - Generate colour palettes and check contrast against both WCAG and APCA",
+        "Unit Converter - Convert px, rem, cm, inches and pt, with frame presets you can save",
         "Local-first architecture - Your data stays on your device",
         "Client-side processing - No server uploads required",
         "Unified plugin suite - Replace multiple tools with one",
@@ -208,10 +177,10 @@ const jsonLd = {
       keywords: "Figma plugin, design tools, productivity, fast, secure, local-first, zero latency",
       softwareVersion: "1.0.0",
       releaseNotes: "https://www.waysorted.com/release-notes",
-      screenshot: "https://www.waysorted.com/images/og-image.png",
+      screenshot: "https://www.waysorted.com/images/og-image.e13cfee0.png",
       softwareHelp: {
         "@type": "CreativeWork",
-        url: "https://www.waysorted.com/docs",
+        url: "https://www.waysorted.com/document-hub/what-is-waysorted",
       },
       offers: {
         "@type": "Offer",
@@ -219,29 +188,17 @@ const jsonLd = {
         priceCurrency: "USD",
         availability: "https://schema.org/InStock",
       },
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: "4.8",
-        ratingCount: "100",
-        bestRating: "5",
-        worstRating: "1",
-      },
+      // NOTE: `aggregateRating` intentionally omitted. Google's review-snippet
+      // policy disallows self-serving ratings that are not backed by reviews
+      // visible on the page. Re-add only alongside real, on-page reviews.
       author: {
         "@id": "https://www.waysorted.com/#organization",
       },
     },
-    {
-      "@type": "BreadcrumbList",
-      "@id": "https://www.waysorted.com/#breadcrumb",
-      itemListElement: [
-        {
-          "@type": "ListItem",
-          position: 1,
-          name: "Home",
-          item: "https://www.waysorted.com",
-        },
-      ],
-    },
+    // NOTE: no BreadcrumbList here. A global one emitted the same single
+    // "Home" item on every page, which produces no breadcrumb rich result and
+    // reused the homepage's @id across every URL. Real trails are emitted
+    // per-page via lib/breadcrumb-schema.ts.
     {
       "@type": "ItemList",
       itemListElement: [
@@ -279,6 +236,19 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/*
+          Feed autodiscovery, declared here rather than through metadata.alternates.
+          A page's `alternates` REPLACES the root's instead of merging, and every
+          route sets its own canonical (see the note above), so a types entry on the
+          root was silently dropped everywhere except /blogs - which declares its
+          own. In the head it is inherited by every page unconditionally.
+        */}
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="Waysorted Blog"
+          href="https://www.waysorted.com/blogs/rss.xml"
+        />
         {/* Preconnect to external domains for faster loading */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -297,7 +267,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className={`${hanken.className} no-scrollbar`} suppressHydrationWarning>
+      <body className={`${hanken.className} ${robotoMono.variable} no-scrollbar`} suppressHydrationWarning>
         <Providers>
           <UtmAttributionCapture />
           {/* Global session loader intentionally disabled. */}

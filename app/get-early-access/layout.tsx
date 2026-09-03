@@ -3,6 +3,9 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
     title: "Try Waysorted Beta for Figma",
     description: "Use Waysorted inside Figma to work smarter with bundled, use-case-based plugins. Get early access to the beta.",
+    alternates: {
+        canonical: "https://www.waysorted.com/get-early-access",
+    },
     keywords: [
         "Waysorted beta",
         "Figma plugin beta",
@@ -15,9 +18,9 @@ export const metadata: Metadata = {
         description: "Use Waysorted inside Figma to work smarter with bundled, use-case-based plugins.",
         images: [
             {
-                url: "/images/og-image.png",
+                url: "/images/og-image.e13cfee0.png",
                 width: 1200,
-                height: 630,
+                height: 675,
                 alt: "Waysorted - Accelerate every idea with one powerful suite",
             },
         ],

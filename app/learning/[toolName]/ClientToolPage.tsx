@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useBanner } from '@/context/BannerContext'
 import Header from '@/components/Header'
 import ToolBriefCarousel from './components/ToolBriefCarousel'
@@ -14,15 +14,24 @@ import type { ITool, ISlide } from '@/models/tool'
 interface ClientToolPageProps {
   initialTool: ITool | null
   toolName: string
+  initialSlides?: ISlide[]
+  initialTools?: ITool[]
 }
 
-export default function ClientToolPage({ initialTool, toolName }: ClientToolPageProps) {
+export default function ClientToolPage({
+  initialTool,
+  toolName,
+  initialSlides = [],
+  initialTools = [],
+}: ClientToolPageProps) {
   const { showBanner, setShowBanner } = useBanner()
-  const router = useRouter()
 
+  // Seeded from the server so the slides and the "Explore More" links are in the
+  // initial HTML. They used to be fetched from /api/tools/*, which robots.txt
+  // disallows, so crawlers never saw them.
   const [tool, setTool] = useState<ITool | null>(initialTool)
-  const [slides, setSlides] = useState<ISlide[]>([])
-  const [allTools, setAllTools] = useState<ITool[]>([])
+  const [slides, setSlides] = useState<ISlide[]>(initialSlides)
+  const [allTools, setAllTools] = useState<ITool[]>(initialTools)
   const [loading, setLoading] = useState(!initialTool)
 
   useEffect(() => {
@@ -71,8 +80,13 @@ export default function ClientToolPage({ initialTool, toolName }: ClientToolPage
       }
     }
 
-    if (toolName) {
+    const alreadyHydrated =
+      Boolean(initialTool) && initialSlides.length > 0 && initialTools.length > 0
+
+    if (toolName && !alreadyHydrated) {
       fetchData()
+    } else if (toolName) {
+      setLoading(false)
     } else {
       setTool(null)
       setSlides([])
@@ -83,7 +97,7 @@ export default function ClientToolPage({ initialTool, toolName }: ClientToolPage
     return () => {
       mounted = false
     }
-  }, [toolName, initialTool])
+  }, [toolName, initialTool, initialSlides, initialTools])
 
   if (!tool && !loading) {
     return null
@@ -99,13 +113,15 @@ export default function ClientToolPage({ initialTool, toolName }: ClientToolPage
 
         {/* Breadcrumb */}
         <div className="max-w-7xl mx-auto px-4 sm:px-5 my-6 sm:my-16">
-          <nav className="text-base font-medium text-secondary-db-100/50">
-            <span
+          {/* Crawlable <Link>s, and db-70 instead of the /50 opacity blend
+              (3.55:1) so breadcrumb text clears WCAG AA. */}
+          <nav aria-label="Breadcrumb" className="text-base font-medium text-secondary-db-70">
+            <Link
+              href="/"
               className="cursor-pointer hover:text-secondary-db-100 hover:border-b-2 hover:border-b-primary-way-100"
-              onClick={() => router.push('/')}
             >
               Home
-            </span>
+            </Link>
             <Image
               src="/icons/chevron-right.svg"
               alt="Arrow Right"
@@ -113,12 +129,12 @@ export default function ClientToolPage({ initialTool, toolName }: ClientToolPage
               height={7}
               className="inline-block mx-2"
             />
-            <span
-              className="text-secondary-db-100/50 text-base font-medium hover:text-secondary-db-100 cursor-pointer hover:border-b-2 hover:border-b-primary-way-100"
-              onClick={() => router.push('/learning')}
+            <Link
+              href="/learning"
+              className="text-secondary-db-70 text-base font-medium hover:text-secondary-db-100 cursor-pointer hover:border-b-2 hover:border-b-primary-way-100"
             >
               Learning Hub
-            </span>
+            </Link>
             <Image
               src="/icons/chevron-right.svg"
               alt="Arrow Right"

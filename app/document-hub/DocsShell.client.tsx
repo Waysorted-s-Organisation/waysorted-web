@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState, useMemo, PropsWithChildren } from "react";
 import Image from "next/image";
 import { useBanner } from "@/context/BannerContext";
@@ -23,7 +23,7 @@ export interface SidebarItem {
 const sidebarData: SidebarItem[] = [
   {
     title: "General",
-    links: ["Getting Started", "What is Waysorted", "Account Creation and Setup", "Quick Integration with Figma", "Accessing Waysorted in Figma", "FAQs"]
+    links: ["Getting Started", "What is Waysorted", "All in One Tools", "Supported Platforms", "Account Creation and Setup", "Quick Integration with Figma", "Accessing Waysorted in Figma", "Whats Coming Next", "FAQs"]
   },
   {
     title: "Waysorted's Plugin Suite",
@@ -35,7 +35,7 @@ const sidebarData: SidebarItem[] = [
   },
   {
     title: "Account and Workspace",
-    links: ["Profile and Settings", "Account Settings Navigation", "Profile and Settings Overview", "Profile Photo", "Linked Accounts and Integrations", "Notifications Preferences", "Beta Features"]
+    links: ["Account and Workspace", "Profile and Settings", "Account Settings Navigation", "Profile and Settings Overview", "Profile Photo", "Linked Accounts and Integrations", "Notifications Preferences", "Beta Features"]
   },
   {
     title: "Tools Reference",
@@ -55,7 +55,14 @@ const sidebarData: SidebarItem[] = [
   },
   {
     title: "Credits and Usage",
-    links: ["Overview", "Earning Credits", "Using Credits", "Managing Credits"]
+    links: ["Credits and Usage", "Overview", "Earning Credits", "Using Credits", "Managing Credits"]
+  },
+  {
+    // These pages already existed with 1,000+ words each but were in the
+    // sitemap with no internal link pointing at them, so Google had no path to
+    // them and no signal that they mattered.
+    title: "Design Standards",
+    links: ["Accessibility WCAG", "Handoff Standards", "Waysorted Principles"]
   },
   {
     title: "Waysorted API Documentation",
@@ -76,7 +83,6 @@ export default function DocsShell({
 }: PropsWithChildren<DocsShellInnerProps>) {
   const [searchTerm, setSearchTerm] = useState("");
   const { showBanner, setShowBanner } = useBanner();
-  const router = useRouter();
   const pathname = usePathname();
   const [openSection, setOpenSection] = useState<string | null>("General");
   const [activeLink, setActiveLink] = useState<string | null>(null);
@@ -159,8 +165,8 @@ export default function DocsShell({
           
           {!isMobileSearchOpen && (
             <div className="mt-6 mb-4">
-              <nav className="text-sm font-medium text-secondary-db-100/50 mb-4">
-                <span onClick={() => router.push("/")} className="cursor-pointer">Home</span>
+              <nav aria-label="Breadcrumb" className="text-sm font-medium text-secondary-db-70 mb-4">
+                <Link href="/" className="cursor-pointer">Home</Link>
                 <Image
                   src="/icons/chevron-right.svg"
                   alt="Arrow Right"
@@ -183,7 +189,10 @@ export default function DocsShell({
                  </div>
                  <span className="font-medium text-sm text-secondary-db-100">WayDocs</span>
               </div>
-              <h1 className="text-3xl font-semibold text-secondary-db-100">Document Hub</h1>
+              {/* Section label, not the page heading. Each doc page now carries
+                  its own <h1>; this used to make all 53 doc pages share the
+                  identical "Document Hub" <h1>. Styling unchanged. */}
+              <p className="text-3xl font-semibold text-secondary-db-100">Document Hub</p>
             </div>
           )}
 
@@ -359,13 +368,15 @@ export default function DocsShell({
           <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 
           <div className="max-w-7xl bg-white mx-auto px-5 pt-24 pb-4">
-            <nav className="text-base font-medium text-secondary-db-100/50">
-              <span
+            {/* Crawlable breadcrumb links, and db-70 in place of the /50
+                opacity blend so the text clears WCAG AA on white. */}
+            <nav aria-label="Breadcrumb" className="text-base font-medium text-secondary-db-70">
+              <Link
+                href="/"
                 className="cursor-pointer hover:text-secondary-db-100 hover:border-b-2 hover:border-b-primary-way-10"
-                onClick={() => router.push("/")}
               >
                 Home
-              </span>
+              </Link>
               <Image
                 src="/icons/chevron-right.svg"
                 alt="Arrow Right"
@@ -373,12 +384,12 @@ export default function DocsShell({
                 height={4}
                 className="inline-block mx-2"
               />
-              <span
+              <Link
+                href="/document-hub"
                 className="text-primary-way-100 text-base font-medium cursor-pointer"
-                onClick={() => router.push("/document-hub")}
               >
                 Document Hub
-              </span>
+              </Link>
             </nav>
           </div>
 
@@ -398,9 +409,9 @@ export default function DocsShell({
                   </span>
                 </span>
               </div>
-              <h1 className="text-4xl w-lg font-semibold text-secondary-db-100 leading-tight">
+              <p className="text-4xl w-lg font-semibold text-secondary-db-100 leading-tight">
                 Document Hub
-              </h1>
+              </p>
             </div>
           </div>
 
@@ -525,7 +536,7 @@ export default function DocsShell({
               </div>
             </main>
 
-            <TableOfContents topOffsetPx={112} maxLevel={4} />
+            <TableOfContents topOffsetPx={112} maxLevel={3} />
           </div>
         </main>
 

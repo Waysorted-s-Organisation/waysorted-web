@@ -7,6 +7,7 @@ import { useParams } from "next/navigation";
 import { Check, ChevronRight, Link2, Instagram, Linkedin } from "lucide-react";
 import { fetchBlogBySlug } from "@/lib/blogsClient";
 import type { BlogContentBlock, BlogPostDetail } from "@/types/blog";
+import { planInternalLinks, type Segment } from "@/lib/blog-internal-links";
 
 function formatDate(value?: string) {
   if (!value) return "";
@@ -33,7 +34,7 @@ function XLogo({ className = "" }: { className?: string }) {
   );
 }
 
-function BlogBlock({ block }: { block: BlogContentBlock }) {
+function BlogBlock({ block, segments }: { block: BlogContentBlock; segments?: Segment[] }) {
   if (block.type === "heading") {
     const HeadingTag = block.level === 3 ? "h3" : "h2";
     return (
@@ -51,7 +52,22 @@ function BlogBlock({ block }: { block: BlogContentBlock }) {
   }
 
   if (block.type === "paragraph") {
-    return <p>{block.text}</p>;
+    // Without a plan for this paragraph the output is the string it always was,
+    // so untouched copy renders byte for byte as before.
+    if (!segments?.length) return <p>{block.text}</p>;
+    return (
+      <p>
+        {segments.map((seg, i) =>
+          typeof seg === "string" ? (
+            <React.Fragment key={i}>{seg}</React.Fragment>
+          ) : (
+            <Link key={i} href={seg.href} className="text-blue-600 underline underline-offset-2 hover:text-blue-700">
+              {seg.text}
+            </Link>
+          ),
+        )}
+      </p>
+    );
   }
 
   if (block.type === "image") {
@@ -90,17 +106,42 @@ function BlogBlock({ block }: { block: BlogContentBlock }) {
   return null;
 }
 
-export default function BlogPostContent() {
+export default function BlogPostContent({
+  initialPost = null,
+}: {
+  initialPost?: BlogPostDetail | null;
+}) {
   const params = useParams<{ slug: string }>();
   const slug = params?.slug;
   const [activeToc, setActiveToc] = useState(0);
-  const [post, setPost] = useState<BlogPostDetail | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [post, setPost] = useState<BlogPostDetail | null>(initialPost);
+  const [loading, setLoading] = useState(!initialPost);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
+  /*
+   * Decided once for the whole post, above any early return so the hook order
+   * never changes. Paragraphs with no plan render exactly the string they always
+   * did - see lib/blog-internal-links.ts for why this links rather than appends.
+   */
+  const internalLinks = React.useMemo(
+    () => (post ? planInternalLinks(post.contentBlocks, post.slug) : new Map<number, Segment[]>()),
+    [post],
+  );
+
   useEffect(() => {
     if (!slug) return;
+
+    // The server component already resolved this post and handed it to us, so
+    // the full article is in the initial HTML where crawlers can read it.
+    // Skip the client refetch: it would be a redundant request, and /api/ is
+    // disallowed in robots.txt so a crawler could never complete it anyway.
+    if (initialPost && initialPost.slug === slug) {
+      setPost(initialPost);
+      setLoading(false);
+      setError(null);
+      return;
+    }
 
     let mounted = true;
     setLoading(true);
@@ -123,7 +164,7 @@ export default function BlogPostContent() {
     return () => {
       mounted = false;
     };
-  }, [slug]);
+  }, [slug, initialPost]);
 
   useEffect(() => {
     if (!post?.tableOfContents.length) return;
@@ -212,10 +253,13 @@ export default function BlogPostContent() {
       {/* Author and Share Icons */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div className="flex items-center text-sm text-gray-600 font-medium">
-          <div className="w-6 h-6 bg-gray-900 rounded-full flex items-center justify-center mr-3">
-            {/* Minimal White W */}
-            <span className="text-white text-[10px] font-bold">W</span>
-          </div>
+          {/* The avatar comes from the post's own authorAvatar. It used to be a
+              hardcoded "W" glyph, which stood in for every author regardless. */}
+          {post.authorAvatar ? (
+            <div className="relative mr-3 h-6 w-6 shrink-0 overflow-hidden rounded-full">
+              <Image src={post.authorAvatar} alt="" fill className="object-cover" />
+            </div>
+          ) : null}
           <span>{post.authorName}</span>
           <span className="mx-2 text-gray-300">•</span>
           <span>{publishedDate}</span>
@@ -286,7 +330,7 @@ export default function BlogPostContent() {
         {/* Left Column (Article Text) */}
         <article className="lg:w-3/4 text-[17px] text-gray-700 leading-relaxed font-normal space-y-6">
           {post.contentBlocks.map((block, index) => (
-            <BlogBlock key={`${block.type}-${index}`} block={block} />
+            <BlogBlock key={`${block.type}-${index}`} block={block} segments={internalLinks.get(index)} />
           ))}
         </article>
 

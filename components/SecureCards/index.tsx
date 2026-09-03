@@ -22,9 +22,9 @@ export default function SecureCards() {
       </span>
 
       {/* Heading */}
-      <h1 className="text-3xl lg:text-5xl font-semibold mb-4 bg-gradient-to-b from-white to-[#828282] bg-clip-text text-transparent">
+      <h2 className="text-3xl lg:text-5xl font-semibold mb-4 bg-gradient-to-b from-white to-[#828282] bg-clip-text text-transparent">
         We keep your data secure
-      </h1>
+      </h2>
 
       {/* Description */}
       <p className="max-w-3xl lg:max-w-6xl text-base leading-relaxed mb-12 bg-[linear-gradient(to_bottom,#FFF_0%,#A8A8A8_48%,#F1F1F1_100%)] bg-clip-text text-transparent">

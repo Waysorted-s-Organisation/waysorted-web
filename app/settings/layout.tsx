@@ -10,9 +10,9 @@ export const metadata: Metadata = {
     openGraph: {
         images: [
             {
-                url: "/images/og-image.png",
+                url: "/images/og-image.e13cfee0.png",
                 width: 1200,
-                height: 630,
+                height: 675,
                 alt: "Waysorted - Accelerate every idea with one powerful suite",
             },
         ],

@@ -10,7 +10,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import GlowStarButton from "@/components/GlowStarButton";
 import PricingCard from "./components/PricingCard";
-import BillingDetailsModal, { type BillingDetails } from "@/components/BillingDetailsModal";
 import { useUser } from "@/hooks/useUser";
 import {
   getCreditPresentation,
@@ -34,6 +33,8 @@ type CatalogProduct = {
   pricingCountryName?: string;
   pricingTier?: "tier_1" | "tier_2" | "tier_3";
   pricingRiskFlags?: string[];
+  /** Shown to everyone, buyable only by subscribers. Enforced server-side. */
+  requiresSubscription?: boolean;
 };
 
 export type PricingPayload = {
@@ -122,40 +123,7 @@ export default function PricingClient({
   const [selectedTopupIndex, setSelectedTopupIndex] = useState(0);
   const [pricingData, setPricingData] = useState<PricingPayload | null>(initialPricingData);
   const [pricingError, setPricingError] = useState<string | null>(initialPricingError);
-  const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
-
-  const requireBillingDetails = (action: () => void) => {
-    if (!user) {
-      action();
-      return;
-    }
-    if (user.billing?.billingDetails) {
-      action();
-      return;
-    }
-    setPendingAction(() => action);
-    setIsBillingModalOpen(true);
-  };
-
-  const handleBillingSubmit = async (details: BillingDetails) => {
-    const res = await fetch("/api/billing/details", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(details),
-    });
-    if (!res.ok) {
-      const data = await res.json();
-      throw new Error(data.error || "Failed to save billing details");
-    }
-
-    setIsBillingModalOpen(false);
-    if (pendingAction) {
-      pendingAction();
-      setPendingAction(null);
-    }
-  };
 
   useEffect(() => {
     // The server normally supplies the country-aware catalog in the initial HTML.
@@ -218,6 +186,56 @@ export default function PricingClient({
     };
   }, [pricingData]);
 
+  /*
+   * What this visitor may actually buy, straight from the authenticated snapshot.
+   *
+   * The snapshot's catalog IS `getVisibleCatalog({ isNewUser, hasActiveSubscription })`
+   * - the same function checkout enforces with - so asking it "what can I buy"
+   * gives the identical answer rather than a second guess at subscription status
+   * that could drift from it.
+   *
+   * Signed out, this stays empty and the subscriber rung is view-only, which is
+   * the correct default: an anonymous visitor is not a subscriber.
+   */
+  const [purchasableCodes, setPurchasableCodes] = useState<string[] | null>(null);
+  const [purchasableLookupFailed, setPurchasableLookupFailed] = useState(false);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      // Signed out, nothing to look up. Not "nothing is purchasable" - the
+      // checkout hand-off still routes through /login as it always has.
+      setPurchasableCodes(null);
+      setPurchasableLookupFailed(false);
+      return;
+    }
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/billing/snapshot", { headers: { Accept: "application/json" } });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = await res.json();
+        // The snapshot is nested under `billing`, the same shape
+        // app/billing/billing-client.tsx reads. Reading json.catalog silently
+        // yielded [] for every signed-in user, which locked subscribers out of
+        // the very tier this exists to sell them.
+        const catalog: { code: string }[] = json?.billing?.catalog ?? [];
+        if (active) {
+          setPurchasableCodes(catalog.map((product) => product.code));
+          setPurchasableLookupFailed(false);
+        }
+      } catch {
+        if (active) {
+          setPurchasableCodes(null);
+          setPurchasableLookupFailed(true);
+        }
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [user, loading]);
+
   const topupMarks = useMemo(
     () => [
       ...topupProducts.map((product) => ({
@@ -247,8 +265,57 @@ export default function PricingClient({
     }
   }, [availablePaygModes.standard, availablePaygModes.subscriber, paygMode, pricingData]);
 
+  /*
+   * Whether the rung on screen is one this visitor can actually buy.
+   *
+   * Switching to the subscriber tier is always allowed - that is the comparison
+   * the toggle exists to make. Only the CTA changes: a non-subscriber looking at
+   * subscriber pricing is sent to the plans rather than to a checkout that
+   * getVisibleCatalog would refuse.
+   *
+   * Null means the snapshot has not answered yet; treat that as locked so the
+   * button never flickers from buyable to not.
+   */
+  const activeTopupCode = activeTopup?.product?.code ?? "";
+  const activeTopupNeedsSubscription = Boolean(activeTopup?.product?.requiresSubscription);
+
+  /*
+   * Locked when we can show a price but cannot sell it.
+   *
+   * Signed out, or while the snapshot is still in flight, only the subscriber
+   * rung is locked - an anonymous visitor definitionally is not a subscriber,
+   * and everything else still routes through /login exactly as before.
+   *
+   * Once the snapshot answers, it decides both directions. A subscriber sees
+   * ONLY subscriber top-ups from getVisibleCatalog, so the standard rung is
+   * refused for them too; gating only on requiresSubscription would still have
+   * handed them to a checkout that swaps the product out underneath them.
+   */
+  const activeTopupLocked =
+    purchasableCodes === null
+      ? activeTopupNeedsSubscription
+      : Boolean(activeTopupCode) && !purchasableCodes.includes(activeTopupCode);
+
+  // Only claim someone needs a subscription when we actually read their plan.
+  const lockedBecauseNotSubscribed =
+    activeTopupLocked && activeTopupNeedsSubscription && !purchasableLookupFailed;
+
   function goToCheckout(productCode: string | null) {
     if (!productCode) return;
+
+    /*
+     * Second gate, behind the CTA's. A subscriber-only product this visitor
+     * cannot buy must never reach /billing: getVisibleCatalog rejects it there,
+     * so the customer would land on a dead checkout having been sent by us.
+     */
+    const requested = pricingData?.catalog.find((item) => item.code === productCode);
+    if (purchasableCodes === null) {
+      // Plan unknown (signed out, or the snapshot has not answered). Only the
+      // subscriber tier is certainly out of reach; the rest routes via /login.
+      if (requested?.requiresSubscription) return;
+    } else if (!purchasableCodes.includes(productCode)) {
+      return;
+    }
 
     // Carry the price the customer actually looked at across the hand-off. /pricing may render the
     // unauthenticated catalog (detected country, no pricing lock) while /billing prices from the
@@ -257,6 +324,21 @@ export default function PricingClient({
     // number against itself, which cannot detect the drift the customer would experience.
     const quoted = pricingData?.catalog.find((item) => item.code === productCode);
     const params = new URLSearchParams({ product: productCode, autostart: "1" });
+    // Carry a discount code across the hand-off. Without this, a customer who
+    // arrived on /pricing with a code silently lost it and was charged full
+    // price - the page builds this URL, so anything not added here is dropped.
+    //
+    // Read from location at click time rather than through useSearchParams.
+    // This page is statically prerendered for SEO, and that hook forces the
+    // whole subtree out of the prerender unless it sits behind a Suspense
+    // fallback - which would empty the pricing content out of the static HTML.
+    // The code is only needed when this handler runs, so there is nothing to
+    // gain from making it reactive.
+    const carriedCoupon =
+      typeof window === "undefined"
+        ? null
+        : new URLSearchParams(window.location.search).get("coupon")?.trim().toUpperCase();
+    if (carriedCoupon) params.set("coupon", carriedCoupon);
     if (quoted && pricingData) {
       params.set("qa", String(quoted.amountPaise));
       params.set("qc", quoted.currency);
@@ -269,17 +351,20 @@ export default function PricingClient({
       return;
     }
 
-    requireBillingDetails(() => router.push(target));
+    // Straight to checkout.
+    //
+    // This used to open a seven-field billing form first. Nothing functional
+    // consumes those details: Razorpay owns the invoice, and the only reader in
+    // the repo feeds `declaredBillingCountry` into an advisory risk flag that no
+    // path blocks, reprices or refuses on. Settings calls them "details for
+    // future invoices" and treats them as optional - so this was a form standing
+    // between a customer and paying us, for information we do not need to take
+    // the payment. They remain addable from settings.
+    router.push(target);
   }
 
   return (
     <main className={`min-h-screen bg-[#F6F7FB] ${showBanner ? "pt-24" : "pt-16"}`}>
-      <BillingDetailsModal
-        isOpen={isBillingModalOpen}
-        onClose={() => setIsBillingModalOpen(false)}
-        onSubmit={handleBillingSubmit}
-        initialData={user?.billing?.billingDetails}
-      />
 
       <Header showBanner={showBanner} setShowBanner={setShowBanner} />
 
@@ -339,7 +424,7 @@ export default function PricingClient({
             {pricingError ? <div className="mt-3 text-[12px] text-[#B42318]">{pricingError}</div> : null}
           </div>
 
-          <section className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
+          <section id="pricing-plans" className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
             {!pricingData
               ? Array.from({ length: 3 }, (_, index) => (
                   <div
@@ -372,15 +457,26 @@ export default function PricingClient({
             })}
           </section>
 
-          <div className="mx-auto mt-8 max-w-[790px] rounded-[15.31px] border border-[#ECEFF5] bg-white p-6 md:p-3">
+          {/* md:w-fit rather than a fixed 790px: the card now ends where its content
+              ends, so there is no slack to distribute. Centring the row inside a fixed
+              width only moved the dead space - it split 57px of it onto BOTH sides,
+              spoiling the left edge that was already correct. Padding is symmetric too;
+              md:p-3 was half the mobile p-6, which is the other half of "keep equal
+              margin everywhere". */}
+          <div className="mx-auto mt-8 w-full max-w-[790px] rounded-[15.31px] border border-[#ECEFF5] bg-white p-6 md:w-fit md:px-5 md:py-4">
             <div className="flex flex-col items-center text-center md:flex-row md:text-left gap-4">
-              <Image
-                src="/pricingIcons/Credit topup message icon.png"
-                alt="Not ready for a plan?"
-                width={48}
-                height={48}
-                className="h-[48px] w-[48px] shrink-0 object-contain"
-              />
+              {/* In the design the lavender tile is the CONTAINER and the gift is a
+                  23x25 violet glyph inset inside it, so only the glyph is an asset.
+                  The old PNG baked both together at 52px and had no @2x. */}
+              <div className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-[8px] bg-[#F1EAFE]">
+                <Image
+                  src="/pricingIcons/credit-topup-gift.svg"
+                  alt=""
+                  width={22}
+                  height={24}
+                  className="h-6 w-[22px] object-contain"
+                />
+              </div>
               {/* Mobile text layout */}
               <div className="md:hidden">
                 <p className="text-[18px] font-semibold text-[#111827]">Not ready for a plan?</p>
@@ -397,10 +493,14 @@ export default function PricingClient({
             </div>
           </div>
 
-          <section className="mt-10 flex flex-col gap-8 md:flex-row md:items-stretch md:justify-center md:gap-[50px]">
+          {/* mt-14 (56px) matches the design: the banner ends at y1058 and the
+              pay-as-you-go group starts at y1111 in the 1280-wide pricing frame. */}
+          <section className="mt-14 flex flex-col gap-8 md:flex-row md:items-stretch md:justify-center md:gap-[50px]">
             <div className="w-full px-[25px] md:px-0 md:w-[434px] md:py-8 flex flex-col">
               <div className="flex items-center gap-2">
-                <Image src="/pricingIcons/Pay as you go.png" alt="" width={32} height={32} className="h-8 w-8" />
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center">
+                  <Image src="/pricingIcons/pay-as-you-go-gift.svg" alt="" width={32} height={32} className="max-h-full max-w-full object-contain" />
+                </span>
                 <h2 className="text-2xl md:text-[32px] font-medium text-[#111827]">Pay as you go</h2>
               </div>
 
@@ -411,7 +511,7 @@ export default function PricingClient({
 
               <ul className="mt-6 space-y-4">
                 {[
-                  "Includes all core Waysorted features",
+                  "Includes all Premium Waysorted features",
                   "Regular updates with ongoing support",
                   "Credits never expires, reset when needed",
                 ].map((item) => (
@@ -430,21 +530,19 @@ export default function PricingClient({
                     <button
                       type="button"
                       onClick={() => setPaygMode("standard")}
-                      disabled={!availablePaygModes.standard}
                       className={paygMode === "standard" ? "text-[#111827]" : "text-[#6B7280]"}
                     >
                       Non Subscriber
                     </button>
+                    {/* Always switchable: it is a comparison, not a purchase choice.
+                        Whether the rung on show can be bought is the CTA's problem. */}
                     <button
                       type="button"
-                      onClick={() => {
-                        const nextMode = paygMode === "standard" ? "subscriber" : "standard";
-                        if (nextMode === "subscriber" && !availablePaygModes.subscriber) return;
-                        if (nextMode === "standard" && !availablePaygModes.standard) return;
-                        setPaygMode(nextMode);
-                      }}
+                      role="switch"
+                      aria-checked={paygMode === "subscriber"}
+                      onClick={() => setPaygMode(paygMode === "standard" ? "subscriber" : "standard")}
                       className="relative h-[20px] w-[38px] rounded-full bg-[#111827]"
-                      aria-label="Toggle pay as you go mode"
+                      aria-label="Compare subscriber credit pricing"
                     >
                       <span
                         className={`absolute top-[2px] h-4 w-4 rounded-full bg-white transition-all ${
@@ -455,7 +553,6 @@ export default function PricingClient({
                     <button
                       type="button"
                       onClick={() => setPaygMode("subscriber")}
-                      disabled={!availablePaygModes.subscriber}
                       className={paygMode === "subscriber" ? "text-[#111827]" : "text-[#6B7280]"}
                     >
                       Subscribed User
@@ -466,7 +563,9 @@ export default function PricingClient({
                   </div>
 
                   <div className="mt-5">
-                    <p className="text-[40px] font-bold leading-none tracking-tight text-[#111827] md:text-[45px]">
+                    {/* 40px at 0% tracking is the design's value; the md:45px step and
+                        tracking-tight were both off-spec. */}
+                    <p className="text-[40px] font-semibold leading-none text-[#111827]">
                       {activeTopup?.value || "--"} Credits
                     </p>
                   </div>
@@ -531,16 +630,45 @@ export default function PricingClient({
                   </div>
                 </div>
 
-                <GlowStarButton
-                  type="button"
-                  onClick={() => goToCheckout(activeTopup?.product?.code || null)}
-                  disabled={!activeTopup?.product}
-                  className="mt-auto h-[42px] w-full rounded-[10px] bg-[#111827] text-[16px] font-semibold text-white disabled:opacity-60 cursor-pointer shrink-0"
-                  starCount={18}
-                  enterDurationSec={0.35}
-                >
-                  Purchase credits
-                </GlowStarButton>
+                {activeTopupLocked ? (
+                  /* We can show the price but not sell it. Never hand off to a
+                     checkout getVisibleCatalog would refuse. */
+                  <div className="mt-auto shrink-0">
+                    <GlowStarButton
+                      type="button"
+                      onClick={() => {
+                        if (lockedBecauseNotSubscribed) {
+                          document.getElementById("pricing-plans")?.scrollIntoView({ behavior: "smooth" });
+                          return;
+                        }
+                        setPaygMode(activeTopupNeedsSubscription ? "standard" : "subscriber");
+                      }}
+                      className="h-[42px] w-full rounded-[10px] bg-[#111827] text-[16px] font-semibold text-white cursor-pointer"
+                      starCount={18}
+                      enterDurationSec={0.35}
+                    >
+                      {lockedBecauseNotSubscribed ? "Subscribe to unlock" : "See your rate"}
+                    </GlowStarButton>
+                    <p className="mt-2 text-center text-[12px] leading-[1.35] text-[#8A94A6]">
+                      {lockedBecauseNotSubscribed
+                        ? "These rates apply once you are on a plan."
+                        : purchasableLookupFailed
+                          ? "We could not check your plan just now. Reload to try again."
+                          : "Your plan uses the other rate."}
+                    </p>
+                  </div>
+                ) : (
+                  <GlowStarButton
+                    type="button"
+                    onClick={() => goToCheckout(activeTopup?.product?.code || null)}
+                    disabled={!activeTopup?.product}
+                    className="mt-auto h-[42px] w-full rounded-[10px] bg-[#111827] text-[16px] font-semibold text-white disabled:opacity-60 cursor-pointer shrink-0"
+                    starCount={18}
+                    enterDurationSec={0.35}
+                  >
+                    Purchase credits
+                  </GlowStarButton>
+                )}
               </div>
             </div>
           </section>

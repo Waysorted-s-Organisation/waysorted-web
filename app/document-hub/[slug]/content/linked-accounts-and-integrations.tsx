@@ -1,7 +1,7 @@
 export default function LinkedAccountsAndIntegrations() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Linked Accounts and Integrations</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Linked Accounts and Integrations</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Connect third-party services to enable faster access and enhanced functionality.
             </p>

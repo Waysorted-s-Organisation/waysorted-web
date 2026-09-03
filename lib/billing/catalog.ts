@@ -163,7 +163,10 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceInr: 149,
     amountPaise: 14900,
     creditsGranted: 150,
-    bonusCredits: 0,
+    // A subscription's bonus is granted ONCE, the first time this user buys this plan -
+    // see applySubscriptionCycleCredits. It is not part of the monthly allowance, and it
+    // is separate from the 100-credit signup StarterGrant.
+    bonusCredits: 25,
     billingCycle: "monthly",
     currency: "INR",
     active: true,
@@ -177,7 +180,7 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceInr: 349,
     amountPaise: 34900,
     creditsGranted: 550,
-    bonusCredits: 0,
+    bonusCredits: 50,
     billingCycle: "monthly",
     currency: "INR",
     active: true,
@@ -191,7 +194,7 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
     priceInr: 749,
     amountPaise: 74900,
     creditsGranted: 1500,
-    bonusCredits: 0,
+    bonusCredits: 100,
     billingCycle: "monthly",
     currency: "INR",
     active: true,
@@ -242,14 +245,25 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
 ];
 
 export const FEATURE_PRICING: FeaturePricingRule[] = [
+  { featureCode: "frame_generation", credits: 5, description: "Frame generation" },
+  { featureCode: "bleed", credits: 2.5, description: "Bleed option" },
+  {
+    featureCode: "ai_contrast",
+    credits: 2.5,
+    description: "Enhance contrast with AI",
+    requiresSubscription: true,
+  },
   { featureCode: "dpi_150", credits: 2, description: "150 DPI export" },
   { featureCode: "dpi_300", credits: 5, description: "300 DPI export" },
   { featureCode: "cmyk", credits: 2, description: "CMYK export" },
   { featureCode: "resolution_low", credits: 0, description: "Low resolution" },
   { featureCode: "resolution_medium", credits: 2, description: "Medium resolution" },
   { featureCode: "resolution_high", credits: 5, description: "High resolution" },
-  { featureCode: "bleed", credits: 2, description: "Bleed option" },
-  { featureCode: "preset_standard", credits: 0, description: "Standard preset" },
+  {
+    featureCode: "preset_standard",
+    credits: 0,
+    description: "Standard preset",
+  },
   {
     featureCode: "preset_customizable",
     credits: 0,
@@ -268,36 +282,74 @@ export const FEATURE_PRICING: FeaturePricingRule[] = [
     credits: 10,
     description: "Summarize selected comments",
   },
+  {
+    featureCode: "comment_page_scope",
+    // Page scopes cost 5 * 2 = 10 credits and require a paid plan.
+    credits: 5,
+    description: "Process one Comment Summarizer Page scope",
+    requiresSubscription: true,
+  },
+  {
+    featureCode: "comment_section_scope_paid",
+    // Paid Section runs cost 2.5 * 2 = 5 credits.
+    credits: 2.5,
+    description: "Process one paid Comment Summarizer Section scope",
+    requiresSubscription: true,
+  },
+  {
+    featureCode: "comment_section_scope_free",
+    // Free Section runs cost 5 * 2 = 10 credits and remain limited in-plugin.
+    credits: 5,
+    description: "Process one free Comment Summarizer Section scope",
+  },
+  {
+    featureCode: "icon_create_component",
+    // Applies 2x multiplier: 1 * 2 = 2 credits
+    credits: 1,
+    description: "Create Component for Icon Library",
+  },
+  {
+    featureCode: "icon_export_code",
+    // Applies 2x multiplier: 1.5 * 2 = 3 credits
+    credits: 1.5,
+    description: "Export Code for Icon Library",
+  },
+  {
+    featureCode: "icon_create_component_export_code",
+    // Applies 2x multiplier: 2 * 2 = 4 credits
+    credits: 2,
+    description: "Create Component and Export Code for Icon Library",
+  },
 ];
 
 export const AI_IMPORT_PRICING: FileImportPricingRule[] = [
-  { featureCode: "import_ai", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 15 },
-  { featureCode: "import_ai", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 20 },
-  { featureCode: "import_ai", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 30 },
+  { featureCode: "import_ai", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 9 },
+  { featureCode: "import_ai", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 12.5 },
+  { featureCode: "import_ai", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 17.5 },
 ];
 
 export const EPS_IMPORT_PRICING: FileImportPricingRule[] = [
-  { featureCode: "import_eps", sizeLabel: "small", maxBytes: 8 * 1024 * 1024, credits: 15 },
-  { featureCode: "import_eps", sizeLabel: "medium", maxBytes: 30 * 1024 * 1024, credits: 22 },
-  { featureCode: "import_eps", sizeLabel: "large", maxBytes: 100 * 1024 * 1024, credits: 35 },
+  { featureCode: "import_eps", sizeLabel: "small", maxBytes: 8 * 1024 * 1024, credits: 9 },
+  { featureCode: "import_eps", sizeLabel: "medium", maxBytes: 30 * 1024 * 1024, credits: 14 },
+  { featureCode: "import_eps", sizeLabel: "large", maxBytes: 100 * 1024 * 1024, credits: 20 },
 ];
 
 export const PSD_IMPORT_PRICING: FileImportPricingRule[] = [
-  { featureCode: "import_psd", sizeLabel: "small", maxBytes: 10 * 1024 * 1024, credits: 15 },
-  { featureCode: "import_psd", sizeLabel: "medium", maxBytes: 50 * 1024 * 1024, credits: 25 },
-  { featureCode: "import_psd", sizeLabel: "large", maxBytes: 200 * 1024 * 1024, credits: 40 },
+  { featureCode: "import_psd", sizeLabel: "small", maxBytes: 10 * 1024 * 1024, credits: 10 },
+  { featureCode: "import_psd", sizeLabel: "medium", maxBytes: 50 * 1024 * 1024, credits: 15 },
+  { featureCode: "import_psd", sizeLabel: "large", maxBytes: 200 * 1024 * 1024, credits: 22.5 },
 ];
 
 export const PDF_EDITABLE_IMPORT_PRICING: FileImportPricingRule[] = [
-  { featureCode: "import_pdf_editable", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 15 },
-  { featureCode: "import_pdf_editable", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 20 },
-  { featureCode: "import_pdf_editable", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 30 },
+  { featureCode: "import_pdf_editable", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 9 },
+  { featureCode: "import_pdf_editable", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 12.5 },
+  { featureCode: "import_pdf_editable", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 17.5 },
 ];
 
 export const PDF_IMAGE_IMPORT_PRICING: FileImportPricingRule[] = [
-  { featureCode: "import_pdf_image", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 15 },
-  { featureCode: "import_pdf_image", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 20 },
-  { featureCode: "import_pdf_image", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 30 },
+  { featureCode: "import_pdf_image", sizeLabel: "small", maxBytes: 5 * 1024 * 1024, credits: 9 },
+  { featureCode: "import_pdf_image", sizeLabel: "medium", maxBytes: 25 * 1024 * 1024, credits: 12.5 },
+  { featureCode: "import_pdf_image", sizeLabel: "large", maxBytes: 75 * 1024 * 1024, credits: 17.5 },
 ];
 
 export function getCatalogProduct(code: string) {
@@ -308,7 +360,11 @@ export function isSubscriptionActive(
   status: string | null | undefined,
   renewsAt?: Date | null,
 ) {
-  if (status === "active" || status === "cancel_scheduled") {
+  // "scheduled" is a paid, authorised mandate whose first charge is booked for a
+  // future date - which is exactly what a discounted first cycle looks like for
+  // its whole first period. Excluding it showed a paying customer as having no
+  // subscription, withheld their capabilities and swapped their top-up pricing.
+  if (status === "active" || status === "cancel_scheduled" || status === "scheduled") {
     return Boolean(renewsAt) && renewsAt!.getTime() >= Date.now();
   }
   return false;

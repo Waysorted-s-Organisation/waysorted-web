@@ -3,35 +3,21 @@
 import React, { useState, useRef, useEffect, MouseEvent } from "react";
 import clsx from "clsx";
 import Image from "next/image";
+import products from "../../data/products.json";
 // 1. Import the default function directly
 // 1. Import removed for dynamic loading
 
-const TOOLS_DATA = [
-  {
-    id: 1,
-    name: "Frames to PDF",
-    src: "/icons/wayspace-1.svg",
-    textColor: "text-secondary-db-100",
-  },
-  {
-    id: 2,
-    name: "Palettable",
-    src: "/icons/wayspace-2.svg",
-    textColor: "text-secondary-db-100",
-  },
-  {
-    id: 3,
-    name: "Unit Convertor",
-    src: "/icons/wayspace-3.svg",
-    textColor: "text-secondary-db-100",
-  },
-  {
-    id: 4,
-    name: "Font Importer",
-    src: "/icons/wayspace-4.svg",
-    textColor: "text-secondary-db-100",
-  },
-];
+// The wayspace-N artwork is a decorative variant of the product whose id is N in
+// data/products.json, so take the names from there rather than restating them here —
+// they had drifted out of sync (tiles 1 and 2 were labelled with each other's product).
+const WAYSPACE_TILE_IDS = [1, 2, 3, 4];
+
+const TOOLS_DATA = WAYSPACE_TILE_IDS.map((id) => ({
+  id,
+  name: products.find((product) => product.id === id)?.name ?? "",
+  src: `/icons/wayspace-${id}.svg`,
+  textColor: "text-secondary-db-100",
+}));
 
 const INFINITE_TOOLS = [...TOOLS_DATA, ...TOOLS_DATA, ...TOOLS_DATA];
 
@@ -174,6 +160,12 @@ export default function WayspaceCard({ className }: { className?: string }) {
 
                 <button
                   onClick={(e) => toggleFavorite(tool.id, e)}
+                  aria-label={
+                    favorites.includes(tool.id)
+                      ? `Remove ${tool.name} from favourites`
+                      : `Add ${tool.name} to favourites`
+                  }
+                  aria-pressed={favorites.includes(tool.id)}
                   className={clsx(
                     "absolute -top-1 -right-1 w-7 h-7 bg-white rounded-full shadow-md flex items-center justify-center transition-all duration-200 cursor-pointer z-10",
                     favorites.includes(tool.id)
@@ -240,7 +232,9 @@ export default function WayspaceCard({ className }: { className?: string }) {
             <div
               key={i}
               // Updated fixed width/height using standard Tailwind arbitrary value
-              className="h-[4.5rem] w-[4.5rem] aspect-square rounded-xl bg-[#ECF2FF] flex items-center justify-center text-[#91adea] text-sm"
+              // #91adea on #ECF2FF was 2.0:1 - well under WCAG AA (4.5:1) for
+              // this placeholder text. #4767AE keeps the muted blue and is 4.9:1.
+              className="h-[4.5rem] w-[4.5rem] aspect-square rounded-xl bg-[#ECF2FF] flex items-center justify-center text-[#4767AE] text-sm"
             >
               {placeholderLabels[i]}
             </div>

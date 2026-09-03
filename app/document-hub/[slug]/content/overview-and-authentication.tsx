@@ -1,9 +1,9 @@
 export default function OverviewAndAuthentication() {
   return (
     <>
-      <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Overview and Authentication</h2>
+      <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Overview and Authentication</h1>
 
-      <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Service Overview</h3>
+      <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Service Overview</h2>
       <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
         Waysorted exposes four core APIs, each handling a specific file transformation need in design workflows:
       </p>

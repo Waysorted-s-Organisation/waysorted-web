@@ -1,4 +1,6 @@
 import mongoose, { ClientSession, HydratedDocument } from "mongoose";
+import { LIVE_SUBSCRIPTION_STATUSES } from "@/lib/billing/subscription-status";
+import { getPlanUi } from "@/app/pricing/pricing-presentation";
 import { randomUUID } from "crypto";
 import type { NextRequest } from "next/server";
 import dbConnect from "@/lib/db";
@@ -66,6 +68,23 @@ export type BillingSnapshot = {
     customizablePresets: boolean;
     canPurchaseTopups: boolean;
     canPurchaseStarterPack: boolean;
+    /**
+     * Premium tool gates, decided HERE rather than in the plugin.
+     *
+     * The plugin already reads `capabilities.manualFrameSelection` and
+     * `capabilities.paletteAi` and falls back to its own hand-written status set
+     * when they are absent - which they always were, so the fallback was the
+     * only code that ever ran. Four copies of that set existed across the two
+     * repos and every one of them had drifted, most recently by omitting
+     * "scheduled" and locking out every discounted subscriber for their whole
+     * first cycle.
+     *
+     * Emitting them makes the server the single decider and turns the plugin's
+     * copies into dead code that cannot drift again.
+     */
+    manualFrameSelection: boolean;
+    paletteAi: boolean;
+    aiContrast: boolean;
   };
   pricingVersion: string;
   pricing: PricingContext;
@@ -87,13 +106,21 @@ const SIGNUP_STARTER_GRANT_CREDITS = 100;
 const EXISTING_FREE_PLAN_CUTOFF = new Date("2026-05-03T00:00:00.000Z");
 
 function formatBillingPlanName(planCode: string | null, status: string) {
-  if (!(status === "active" || status === "cancel_scheduled" || status === "payment_pending")) {
+  if (
+    !(
+      status === "active" ||
+      status === "cancel_scheduled" ||
+      status === "payment_pending" ||
+      // A discounted subscription rests here for its entire first cycle.
+      // Returning null showed the customer no plan name at all for 30 days.
+      status === "scheduled"
+    )
+  ) {
     return null;
   }
-  if (planCode === "sub_month_1" || planCode === "sub_year_1599") return "Discover";
-  if (planCode === "sub_month_2" || planCode === "sub_year_3499") return "Core";
-  if (planCode === "sub_month_3" || planCode === "sub_year_7499") return "Pro";
-  return "Active";
+  // Same source as /pricing, checkout and billing history, rather than a fourth
+  // copy of the mapping that can drift from the other three.
+  return (planCode ? getPlanUi(planCode)?.planName : null) || "Active";
 }
 
 function buildSubscriptionPresentation(input: {
@@ -120,6 +147,26 @@ function buildSubscriptionPresentation(input: {
       description: effectiveDate
         ? `${planName || "Subscription"} stays active until ${effectiveDate.toISOString()}.`
         : `${planName || "Subscription"} cancellation is scheduled for period end.`,
+    };
+  }
+
+  /**
+   * A paid mandate whose first charge is booked ahead.
+   *
+   * Every discounted subscription rests here for its ENTIRE first cycle: the
+   * plan is created full-price with `start_at` one cycle out, and the discount
+   * is collected on day 0 as an addon. Without this branch the customer fell
+   * through to the default below and was told "Free / Inactive / No active
+   * subscription" for thirty days after paying us - and the same status drove
+   * whether /billing even offered them a Cancel button.
+   */
+  if (input.status === "scheduled") {
+    return {
+      planName,
+      statusLabel: "Active",
+      description: input.renewsAt
+        ? `${planName || "Subscription"} plan active. First full charge on ${input.renewsAt.toISOString()}.`
+        : `${planName || "Subscription"} plan active.`,
     };
   }
 
@@ -201,7 +248,22 @@ export async function ensureUserBilling(
   session?: ClientSession,
 ) {
   const openingCredits = typeof user.creditsRemaining === "number" ? user.creditsRemaining : 0;
-  const upsertResult = await UserBilling.findOneAndUpdate(
+
+  /**
+   * Two of these can run at once, and the loser used to 500.
+   *
+   * `user` carries a unique index. When a page fires several billing calls
+   * together - the checkout page asks for the snapshot, the current
+   * subscription and the profile on mount - concurrent upserts BOTH match
+   * nothing and BOTH attempt the insert. Mongo lets one through and rejects the
+   * other with E11000, which surfaced as a 500 from whichever endpoint lost:
+   * /api/billing/snapshot, /api/billing/subscriptions/current and /api/me all
+   * failed intermittently, and checkout cannot render without the snapshot.
+   *
+   * The loser's row exists by definition - the winner just created it - so the
+   * duplicate key is not a failure, it is the answer. Read it back.
+   */
+  const upsert = async () => UserBilling.findOneAndUpdate(
     { user: user._id },
     {
       $setOnInsert: {
@@ -222,6 +284,18 @@ export async function ensureUserBilling(
       session,
     },
   );
+
+  let upsertResult;
+  try {
+    upsertResult = await upsert();
+  } catch (error) {
+    if ((error as { code?: number })?.code !== 11000) throw error;
+    const existing = await UserBilling.findOne({ user: user._id }).session(session ?? null);
+    if (!existing) throw error;
+    // The winner seeds the opening ledger entry; the loser must not seed it again.
+    return existing;
+  }
+
   const billing = upsertResult.value;
   if (!billing) throw new Error("Unable to initialize billing wallet.");
 
@@ -478,7 +552,40 @@ export async function resolveUserPricingContext(
     }),
   ];
   billing.pricingRiskFlags = Array.from(new Set(riskFlags));
-  await billing.save({ session });
+
+  /**
+   * Written with updateOne, NOT save(), and that is load-bearing.
+   *
+   * UserBilling sets `optimisticConcurrency: true` so that credit writes cannot
+   * silently clobber each other - that protection must stay. But it applies to
+   * every save(), and this function persists a geo OBSERVATION on every read.
+   * The checkout page asks for the snapshot, the current subscription and the
+   * profile on mount; all three land here, all three save(), and the version
+   * check rejected the losers with a VersionError that surfaced as a 500. The
+   * result was an intermittently blank checkout - "Unable to load billing
+   * snapshot." - on a page where nothing was actually wrong.
+   *
+   * None of these fields is derived from the document's prior state: they come
+   * from this request's country. Last writer wins is the correct semantic, and
+   * a concurrent request writing the same observed country writes the same
+   * values anyway. Money is untouched here.
+   */
+  await UserBilling.updateOne(
+    { _id: billing._id },
+    {
+      $set: {
+        pricingCountry: billing.pricingCountry,
+        pricingTier: billing.pricingTier,
+        pricingCurrency: billing.pricingCurrency,
+        pricingLockReason: billing.pricingLockReason,
+        pricingLockedAt: billing.pricingLockedAt,
+        pricingUpgradeCandidateCountry: billing.pricingUpgradeCandidateCountry,
+        pricingUpgradeCandidateSeenAt: billing.pricingUpgradeCandidateSeenAt,
+        pricingRiskFlags: billing.pricingRiskFlags,
+      },
+    },
+    { session },
+  );
 
   // Geo-only: derived from this request's trusted country, never from the stored record.
   return withPricingRiskFlags(pricingContext, billing.pricingRiskFlags);
@@ -552,6 +659,11 @@ export async function buildBillingSnapshot(user: IUser, request?: NextRequest | 
       customizablePresets: hasActiveSubscription,
       canPurchaseTopups: true,
       canPurchaseStarterPack: isNewUser,
+      // The plugin reads these and only falls back to its own status set when
+      // they are missing. They were always missing.
+      manualFrameSelection: hasActiveSubscription,
+      paletteAi: hasActiveSubscription,
+      aiContrast: hasActiveSubscription,
     },
     pricingVersion: billing.pricingVersion,
     pricing,
@@ -603,7 +715,20 @@ export async function createPurchaseRecord(input: {
     pricingCurrency: input.pricing?.currency || pricedProduct.currency,
     pricingRiskFlags: input.pricing?.riskFlags || [],
     creditsGranted: product.creditsGranted,
-    bonusCredits: product.bonusCredits,
+    /*
+     * A subscription row opens with no bonus and is stamped later with whatever
+     * was actually granted against its payment.
+     *
+     * recordRefundAdjustment reverses `creditsGranted + bonusCredits` off this
+     * row, so the figure has to be what the cycle path really issued, not what
+     * the catalogue advertises. The cycle path grants the plan bonus once per
+     * (user, plan), so the two disagree in both directions: copying the catalogue
+     * figure in here clawed a welcome bonus back off a re-subscription that had
+     * never granted one, and leaving it at zero let a full refund of a first-ever
+     * cycle keep the bonus that same payment had just paid for. Only
+     * applySubscriptionCycleCredits knows which happened, so it writes it back.
+     */
+    bonusCredits: product.kind === "subscription" ? 0 : product.bonusCredits,
     receipt,
     checkoutSource: input.checkoutSource || "website",
     attribution: input.attribution
@@ -900,12 +1025,11 @@ export async function applySubscriptionCycleCredits(input: {
     const existingSubscription = await Subscription.findById(input.subscription._id).session(session);
     if (!existingSubscription) throw new Error("Subscription not found.");
     const ledgerKey = `subscription-cycle:${existingSubscription._id}:${input.cycleKey}`;
-    const totalGranted = product.creditsGranted + product.bonusCredits;
 
     try {
       await CreditLedger.create([{
         user: existingSubscription.user,
-        deltaCredits: totalGranted,
+        deltaCredits: product.creditsGranted,
         balanceAfter: null,
         reason: "subscription_cycle_grant",
         subscription: existingSubscription._id,
@@ -915,13 +1039,88 @@ export async function applySubscriptionCycleCredits(input: {
           paymentId: input.paymentId || null,
           planCode: existingSubscription.planCode,
           purchasedCredits: product.creditsGranted,
-          bonusCredits: product.bonusCredits,
         },
       }], { session });
     } catch (error) {
       if ((error as { code?: number }).code === 11000) return existingSubscription;
       throw error;
     }
+
+    /*
+     * The plan bonus is a welcome, not an allowance: it lands the first time this user
+     * buys this plan and never again, so it must not ride along on the cycle grant the
+     * way a one-time pack's bonus rides on applyPurchaseCredits.
+     *
+     * The key is (user, planCode) rather than the subscription id on purpose - cancelling
+     * and resubscribing to the same plan creates a new subscription, and that must not
+     * re-issue the bonus.
+     *
+     * CHECK, don't catch. A duplicate key inside a transaction aborts it SERVER-side, so
+     * swallowing the E11000 and carrying on leaves every following write failing with
+     * NoSuchTransaction - which carries the TransientTransactionError label, so
+     * withTransaction retries the whole callback in a hot loop until its 120s deadline and
+     * then throws. That turned the second cycle of every monthly subscription into a
+     * two-minute hang that granted nothing. The catch is gone; a read decides instead.
+     *
+     * The read is inside the transaction, so the window for two cycles of the same
+     * (user, plan) to both see "absent" is vanishingly small - and if they do, the insert
+     * throws, this transaction rolls back whole, and the caller's existing retry (webhook
+     * redelivery, the cycle reconciler) re-runs it against a state where the read now
+     * finds the row. Never a partial grant.
+     */
+    const planBonusKey = `subscription-plan-bonus:${existingSubscription.user}:${existingSubscription.planCode}`;
+    let bonusGranted = 0;
+    if (product.bonusCredits > 0) {
+      const alreadyWelcomed = await CreditLedger.exists({ idempotencyKey: planBonusKey }).session(session);
+      if (!alreadyWelcomed) {
+        await CreditLedger.create([{
+          user: existingSubscription.user,
+          deltaCredits: product.bonusCredits,
+          balanceAfter: null,
+          reason: "bonus_grant",
+          subscription: existingSubscription._id,
+          idempotencyKey: planBonusKey,
+          metadata: {
+            cycleKey: input.cycleKey,
+            paymentId: input.paymentId || null,
+            planCode: existingSubscription.planCode,
+            bonusCredits: product.bonusCredits,
+          },
+        }], { session });
+        bonusGranted = product.bonusCredits;
+      }
+    }
+
+    /*
+     * Tell the Purchase row what this payment actually bought.
+     *
+     * recordRefundAdjustment reverses `creditsGranted + bonusCredits` off the row
+     * alone - it has no way to ask whether the bonus was issued. On a first-ever
+     * cycle the bonus IS issued against this payment, so a row left at zero makes
+     * a full refund reverse the allowance and leave the bonus behind: refunded in
+     * full, 100 credits kept, and nothing anywhere reverses a
+     * `subscription-plan-bonus:` row afterwards.
+     *
+     * Renewals and re-subscriptions grant no bonus, so bonusGranted is 0 and the
+     * row is left alone - which is what stops the opposite error, clawing back a
+     * welcome bonus a later cycle never paid for.
+     *
+     * Renewals carry no Purchase row at all; the update simply matches nothing,
+     * and with no row there is nothing to refund either.
+     */
+    if (bonusGranted > 0 && input.paymentId) {
+      await Purchase.updateOne(
+        {
+          razorpayPaymentId: input.paymentId,
+          user: existingSubscription.user,
+          kind: "subscription",
+        },
+        { $set: { bonusCredits: bonusGranted } },
+        { session },
+      );
+    }
+
+    const totalGranted = product.creditsGranted + bonusGranted;
 
     const lockedSubscription = await Subscription.findByIdAndUpdate(
       existingSubscription._id,
@@ -940,7 +1139,7 @@ export async function applySubscriptionCycleCredits(input: {
         $inc: {
           availableCredits: totalGranted,
           lifetimePurchasedCredits: product.creditsGranted,
-          lifetimeBonusCredits: product.bonusCredits,
+          lifetimeBonusCredits: bonusGranted,
         },
         $set: {
           subscriptionStatus: lockedSubscription.status === "cancel_scheduled" ? "cancel_scheduled" : "active",
@@ -957,9 +1156,17 @@ export async function applySubscriptionCycleCredits(input: {
 
     await CreditLedger.updateOne(
       { idempotencyKey: ledgerKey },
-      { $set: { balanceAfter: billing.availableCredits } },
+      { $set: { balanceAfter: billing.availableCredits - bonusGranted } },
       { session },
     );
+
+    if (bonusGranted > 0) {
+      await CreditLedger.updateOne(
+        { idempotencyKey: planBonusKey },
+        { $set: { balanceAfter: billing.availableCredits } },
+        { session },
+      );
+    }
 
     return lockedSubscription;
   });
@@ -1577,7 +1784,11 @@ export async function recordProcessorReservationStatus(input: {
 export async function findCurrentSubscription(userId: string) {
   return Subscription.findOne({
     user: userId,
-    status: { $in: ["payment_pending", "active", "cancel_scheduled", "halted"] },
+    // MUST match the one_live_subscription_per_user partial index in models/subscription.ts. If a
+    // live status is missing here, the create route cannot see the existing subscription, proceeds
+    // to make a second one, and the unique index rejects the insert with an opaque E11000 - after a
+    // payable provider subscription has already been created and leaked.
+    status: { $in: [...LIVE_SUBSCRIPTION_STATUSES] },
   }).sort({ updatedAt: -1 });
 }
 
@@ -1607,11 +1818,30 @@ export async function recordRefundAdjustment(input: {
     const deltaCreditsToReverse = Math.max(0, targetCreditsToReverse - (purchase.refundedCreditsApplied || 0));
 
     purchase.refundedAmountPaise = cumulativeRefundAmount;
-    const appliedCredits = Math.min(
-      deltaCreditsToReverse,
-      Math.max(0, Number(billing.availableCredits)),
-    );
+    // Reversed against available AND held credits.
+    //
+    // Held credits are the customer's, merely reserved by in-flight work, and
+    // ignoring them made the clawback silently do nothing: a wallet at
+    // available 0 / held 150 reversed 0 credits while both callers set
+    // creditAdjustmentApplied unconditionally, so nothing ever retried. The
+    // hold then returned to spendable within a day and the customer kept
+    // credits for a refunded purchase. One production wallet sits at
+    // available 0 / held 300 right now.
+    const reversibleCredits =
+      Math.max(0, Number(billing.availableCredits)) + Math.max(0, Number(billing.heldCredits || 0));
+    const appliedCredits = Math.min(deltaCreditsToReverse, reversibleCredits);
     const clawbackShortfallCredits = deltaCreditsToReverse - appliedCredits;
+    if (clawbackShortfallCredits > 0) {
+      // Surfaced rather than swallowed: the caller marks the adjustment applied
+      // regardless, so a silent shortfall is a permanent under-reversal.
+      console.error("[billing] refund clawback could not reverse the full amount", {
+        purchaseId: String(purchase._id),
+        userId: String(purchase.user),
+        wanted: deltaCreditsToReverse,
+        reversed: appliedCredits,
+        shortfall: clawbackShortfallCredits,
+      });
+    }
     purchase.refundedCreditsApplied = (purchase.refundedCreditsApplied || 0) + appliedCredits;
     await purchase.save({ session });
 
@@ -1619,9 +1849,24 @@ export async function recordRefundAdjustment(input: {
       return purchase;
     }
 
+    // Take from available first, then from held. The condition guards the
+    // combined balance, so a reversal is never applied against a wallet that
+    // cannot cover it.
+    const fromAvailable = Math.min(appliedCredits, Math.max(0, Number(billing.availableCredits)));
+    const fromHeld = appliedCredits - fromAvailable;
     const updatedBilling = await UserBilling.findOneAndUpdate(
-      { user: purchase.user, availableCredits: { $gte: appliedCredits } },
-      { $inc: { availableCredits: -appliedCredits, lifetimeRefundedCredits: appliedCredits } },
+      {
+        user: purchase.user,
+        availableCredits: { $gte: fromAvailable },
+        ...(fromHeld > 0 ? { heldCredits: { $gte: fromHeld } } : {}),
+      },
+      {
+        $inc: {
+          availableCredits: -fromAvailable,
+          ...(fromHeld > 0 ? { heldCredits: -fromHeld } : {}),
+          lifetimeRefundedCredits: appliedCredits,
+        },
+      },
       { new: true, session },
     );
     if (!updatedBilling) throw new Error("Unable to apply refund credit adjustment.");

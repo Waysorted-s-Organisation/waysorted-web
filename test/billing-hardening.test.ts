@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { resolveMaximumImportPricing } from "../lib/billing/catalog";
 import { formatMoney, minorUnitMultiplier } from "../lib/billing/money";
 import { resolveUsageCredits } from "../lib/billing/usagePricing";
 import { isSubscriptionActive } from "../lib/billing/catalog";
@@ -12,6 +13,10 @@ test("currency subunits use explicit zero and three decimal conventions", () => 
 });
 
 test("import reservations hold the maximum tier regardless of client-declared size", () => {
+  const maximumImportPricing = resolveMaximumImportPricing("psd");
+  assert.ok(maximumImportPricing);
+  const expectedMaximumHoldCredits = maximumImportPricing.credits * 2;
+
   const tinyClaim = resolveUsageCredits({
     featureCode: "import_file",
     toolCode: "psd",
@@ -22,8 +27,8 @@ test("import reservations hold the maximum tier regardless of client-declared si
     toolCode: "psd",
     sizeBytes: 190 * 1024 * 1024,
   });
-  assert.equal(tinyClaim.creditsRequired, 80);
-  assert.equal(largeClaim.creditsRequired, 80);
+  assert.equal(tinyClaim.creditsRequired, expectedMaximumHoldCredits);
+  assert.equal(largeClaim.creditsRequired, expectedMaximumHoldCredits);
   assert.equal(tinyClaim.selectedOptions.provisionalMaximumHold, true);
 });
 
@@ -69,4 +74,33 @@ test("comment summaries use authoritative fixed single and batch prices", () => 
   assert.equal(actionable.creditsRequired, 5);
   assert.equal(oneCommentBatch.creditsRequired, 20);
   assert.equal(manyCommentBatch.creditsRequired, 20);
+});
+
+test("comment page scopes cost 10 credits per reservation", () => {
+  const pageScope = resolveUsageCredits({
+    featureCode: "comment_page_scope",
+    toolCode: "comment_summarizer",
+    selectedOptions: { creditsRequired: 1, pageCount: 999 },
+  });
+
+  assert.equal(pageScope.creditsRequired, 10);
+  assert.equal(pageScope.requiresSubscription, true);
+});
+
+test("comment Section scopes use plan-aware authoritative prices", () => {
+  const paidSection = resolveUsageCredits({
+    featureCode: "comment_section_scope_paid",
+    toolCode: "comment_summarizer",
+    selectedOptions: { creditsRequired: 999 },
+  });
+  const freeSection = resolveUsageCredits({
+    featureCode: "comment_section_scope_free",
+    toolCode: "comment_summarizer",
+    selectedOptions: { creditsRequired: 1 },
+  });
+
+  assert.equal(paidSection.creditsRequired, 5);
+  assert.equal(paidSection.requiresSubscription, true);
+  assert.equal(freeSection.creditsRequired, 10);
+  assert.equal(freeSection.requiresSubscription, false);
 });

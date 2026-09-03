@@ -84,6 +84,11 @@ const UserBillingSchema = new Schema<IUserBilling, UserBillingModel>(
       enum: [
         "inactive",
         "payment_pending",
+        // A mandate authorised with its first charge booked for a future date.
+        // The reconciler writes it, and findOneAndUpdate runs without
+        // runValidators - so its absence here was silent, and every consumer
+        // treated a paying customer as having no subscription at all.
+        "scheduled",
         "active",
         "cancel_scheduled",
         "cancelled",

@@ -3,9 +3,9 @@ import Link from "next/link";
 export default function TermsOfService() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Terms & Conditions</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Terms & Conditions</h1>
 
-            <h3 id="introduction" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">1. Introduction</h3>
+            <h2 id="introduction" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">1. Introduction</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 These Terms & Conditions (&quot;Terms&quot;) govern your access to and use of the website https://www.waysorted.com and any related products, tools, plugins, features, or services operated by Waysorted Infotech Pvt. Ltd. (collectively, the &quot;Service&quot;).
             </p>
@@ -25,7 +25,7 @@ export default function TermsOfService() {
                 Waysorted Infotech Pvt. Ltd. reserves the right to update or modify these Terms at any time in accordance with the section titled &quot;Changes to the Terms&quot;.
             </p>
 
-            <h3 id="definitions" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">2. Definitions and Interpretation</h3>
+            <h2 id="definitions" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">2. Definitions and Interpretation</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 <strong>Interpretation</strong>
             </p>
@@ -48,7 +48,7 @@ export default function TermsOfService() {
                 <li>&quot;User&quot;, &quot;You&quot;, or &quot;Your&quot; means the individual accessing or using the Service, or the legal entity on behalf of which such individual is accessing or using the Service.</li>
             </ul>
 
-            <h3 id="eligibility" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">3. Eligibility</h3>
+            <h2 id="eligibility" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">3. Eligibility</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 To access or use the Service, you must be at least 13 years of age.
             </p>
@@ -66,7 +66,7 @@ export default function TermsOfService() {
                 The Company reserves the right to refuse access to the Service or terminate an Account if it becomes aware that a User does not meet the eligibility requirements described in this section.
             </p>
 
-            <h3 id="accounts" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">4. Accounts and Registration</h3>
+            <h2 id="accounts" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">4. Accounts and Registration</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 To access certain features of the Service, you may be required to create an Account.
             </p>
@@ -87,7 +87,7 @@ export default function TermsOfService() {
                 The Company reserves the right to suspend or terminate your Account if it determines, in its sole discretion, that you have violated these Terms or engaged in conduct that is harmful to the Service, other users, or the Company.
             </p>
 
-            <h3 id="use-of-service" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">5. Use of the Service</h3>
+            <h2 id="use-of-service" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">5. Use of the Service</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 You agree to use the Service only for lawful purposes and in accordance with these Terms.
             </p>
@@ -102,7 +102,7 @@ export default function TermsOfService() {
                 <li>To engage in any other conduct that restricts or inhibits anyone&apos;s use or enjoyment of the Service, or which, as determined by us, may harm the Company or users of the Service</li>
             </ul>
 
-            <h3 id="intellectual-property" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">6. Intellectual Property Rights</h3>
+            <h2 id="intellectual-property" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">6. Intellectual Property Rights</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 The Service and all content made available through it, including but not limited to the platform design, user interface, software, code, trademarks, logos, text, graphics, and other materials, are owned by or licensed to Waysorted Infotech Pvt. Ltd. and are protected by applicable intellectual property laws.
             </p>
@@ -116,7 +116,7 @@ export default function TermsOfService() {
                 All rights not expressly granted to you under these Terms are reserved by Waysorted Infotech Pvt. Ltd.
             </p>
 
-            <h3 id="third-party" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">7. Third-Party Tools, Plugins, and Services</h3>
+            <h2 id="third-party" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">7. Third-Party Tools, Plugins, and Services</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 The Service may integrate, display, distribute, or provide access to tools, plugins, services, content, or websites operated by third parties (&quot;Third-Party Services&quot;). These Third-Party Services are provided for your convenience and may be governed by their own terms, conditions, and privacy policies.
             </p>
@@ -127,7 +127,7 @@ export default function TermsOfService() {
                 The Company shall not be liable for any loss, damage, or issues arising from your access to or use of Third-Party Services, including any transactions, data handling, or interactions between you and such third parties. You acknowledge that the inclusion or availability of Third-Party Services through the Service does not imply any partnership, sponsorship, or endorsement unless expressly stated otherwise.
             </p>
 
-            <h3 id="beta-features" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">8. Free, Beta, or Trial Features</h3>
+            <h2 id="beta-features" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">8. Free, Beta, or Trial Features</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 The Company may, from time to time, offer certain features, tools, or services free of charge, on a trial basis, or as beta or experimental offerings (&quot;Free or Beta Features&quot;).
             </p>
@@ -141,7 +141,7 @@ export default function TermsOfService() {
                 To the extent permitted by applicable law, the Company shall not be responsible for any issues arising solely from the experimental nature of Free or Beta Features, including changes to functionality or availability.
             </p>
 
-            <h3 id="feedback" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">9. Error Reporting and Feedback</h3>
+            <h2 id="feedback" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">9. Error Reporting and Feedback</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 The Service may include mechanisms that allow you to report errors, bugs, performance issues, or provide general feedback, suggestions, or ideas regarding the Service (&quot;Feedback&quot;).
             </p>
@@ -155,7 +155,7 @@ export default function TermsOfService() {
                 Submitting Feedback does not create any obligation, partnership, or intellectual property rights in favor of the user beyond those expressly stated in these Terms.
             </p>
 
-            <h3 id="links" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">10. Links to Other Websites</h3>
+            <h2 id="links" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">10. Links to Other Websites</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 The Service may contain links to third-party websites, tools, or services that are not owned or controlled by Waysorted Infotech Pvt. Ltd.
             </p>
@@ -169,7 +169,7 @@ export default function TermsOfService() {
                 Your interactions with third-party websites or services are governed solely by their respective terms and policies.
             </p>
 
-            <h3 id="termination" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">11. Termination</h3>
+            <h2 id="termination" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">11. Termination</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 We may terminate or suspend your account and bar access to Service immediately, without prior notice or liability, under our sole discretion, for any reason whatsoever and without limitation, including but not limited to a breach of Terms.
             </p>
@@ -180,7 +180,7 @@ export default function TermsOfService() {
                 All provisions of Terms which by their nature should survive termination shall survive termination, including, without limitation, ownership provisions, warranty disclaimers, indemnity and limitations of liability.
             </p>
 
-            <h3 id="disclaimers" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">12. Disclaimers</h3>
+            <h2 id="disclaimers" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">12. Disclaimers</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 The Service is currently provided as part of a beta or early-access release. During this phase, certain features, tools, or functionalities may be updated, modified, or refined based on user feedback and ongoing development.
             </p>
@@ -191,7 +191,7 @@ export default function TermsOfService() {
                 Nothing in this section is intended to exclude or limit any rights you may have under applicable law.
             </p>
 
-            <h3 id="liability" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">13. Limitation of Liability</h3>
+            <h2 id="liability" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">13. Limitation of Liability</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 To the extent permitted by applicable law, Waysorted Infotech Pvt. Ltd. shall not be liable for indirect or consequential damages arising solely from the use of the Service during its beta phase, such as temporary service interruptions or changes in features.
             </p>
@@ -202,14 +202,14 @@ export default function TermsOfService() {
                 This limitation does not apply to liabilities that cannot be limited or excluded under applicable law.
             </p>
 
-            <h3 id="indemnification" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">14. Indemnification</h3>
+            <h2 id="indemnification" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">14. Indemnification</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 You agree to indemnify and hold harmless Waysorted Infotech Pvt. Ltd., including its directors, officers, employees, and partners, from and against any claims, damages, losses, liabilities, or expenses, including reasonable legal fees, arising out of or related to your use of the Service in violation of these Terms, your violation of any applicable law or regulation, any content or material you submit or make available through the Service, or any misuse of the Service that causes harm to the Company or other users. This indemnification obligation applies only to the extent permitted by applicable law and does not limit any rights you may have under consumer protection or data protection laws.
             </p>
 
-            <h3 id="privacy" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">15. Privacy</h3>
+            <h2 id="privacy" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">15. Privacy</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
-                Your privacy is important to us. Our collection, use, storage, and processing of personal data in connection with your use of the Service are governed by our <Link href="/docs/privacy-policy" className="text-primary-way-100 hover:underline">Privacy Policy</Link>, which forms an integral part of these Terms.
+                Your privacy is important to us. Our collection, use, storage, and processing of personal data in connection with your use of the Service are governed by our <Link href="/document-hub/privacy-policy" className="text-primary-way-100 hover:underline">Privacy Policy</Link>, which forms an integral part of these Terms.
             </p>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mt-4">
                 By accessing or using the Service, you acknowledge that you have read and understood the Privacy Policy and agree to the practices described therein. If you do not agree with the Privacy Policy, you should not use the Service.
@@ -218,7 +218,7 @@ export default function TermsOfService() {
                 The Privacy Policy explains, among other things, what information we collect, how we use it, how it is protected, and the rights available to you under applicable data protection laws.
             </p>
 
-            <h3 id="changes" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">16. Changes to the Terms</h3>
+            <h2 id="changes" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">16. Changes to the Terms</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 As the Service is in a beta or early-access stage, we may update or modify these Terms from time to time to reflect changes in features, functionality, or legal requirements.
             </p>
@@ -229,7 +229,7 @@ export default function TermsOfService() {
                 We encourage you to review these Terms periodically during the beta phase.
             </p>
 
-            <h3 id="governing-law" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">17. Governing Law and Jurisdiction</h3>
+            <h2 id="governing-law" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">17. Governing Law and Jurisdiction</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 These Terms shall be governed by and construed in accordance with the laws of India, without regard to its conflict of law principles. Any disputes arising out of or relating to these Terms or the use of the Service shall be subject to the exclusive jurisdiction of the competent courts.
             </p>
@@ -237,17 +237,17 @@ export default function TermsOfService() {
                 Nothing in this section is intended to limit any rights available to you under applicable consumer protection or data protection laws.
             </p>
 
-            <h3 id="severability" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">18. Severability</h3>
+            <h2 id="severability" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">18. Severability</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 If any provision of these Terms is held to be invalid, illegal, or unenforceable under applicable law, such provision shall be modified or limited to the minimum extent necessary to make it valid and enforceable. If such modification is not possible, the affected provision shall be severed from these Terms, and the remaining provisions shall continue in full force and effect.
             </p>
 
-            <h3 id="waiver" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">19. Waiver</h3>
+            <h2 id="waiver" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">19. Waiver</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 The failure of Waysorted Infotech Pvt. Ltd. to enforce any right or provision of these Terms shall not be deemed a waiver of such right or provision. Any waiver of any provision of these Terms will be effective only if made in writing and signed by an authorized representative of the Company.
             </p>
 
-            <h3 id="assignment" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">20. Assignment</h3>
+            <h2 id="assignment" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">20. Assignment</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 You may not assign or transfer these Terms, in whole or in part, without the prior written consent of Waysorted Infotech Pvt. Ltd. The Company may assign or transfer these Terms, in whole or in part, in connection with a merger, acquisition, corporate restructuring, or sale of assets, or as otherwise permitted by applicable law.
             </p>
@@ -255,7 +255,7 @@ export default function TermsOfService() {
                 Any attempted assignment in violation of this section shall be null and void.
             </p>
 
-            <h3 id="acknowledgement" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">21. Acknowledgement</h3>
+            <h2 id="acknowledgement" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">21. Acknowledgement</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 By accessing or using the Service, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions. You further acknowledge that these Terms constitute a legally binding agreement between you and Waysorted Infotech Pvt. Ltd.
             </p>
@@ -263,7 +263,7 @@ export default function TermsOfService() {
                 If you do not agree to these Terms, you must not access or use the Service.
             </p>
 
-            <h3 id="contact" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">22. Contact Information</h3>
+            <h2 id="contact" className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">22. Contact Information</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 If you have any questions, concerns, or feedback regarding these Terms or the Service, you may contact us at:
             </p>

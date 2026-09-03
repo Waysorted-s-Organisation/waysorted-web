@@ -1,6 +1,6 @@
 "use client"
 import Image from 'next/image';
-import { useRouter } from "next/navigation";
+import Link from 'next/link';
 
 interface ResourcesMenuProps {
   isOpen: boolean;
@@ -8,16 +8,10 @@ interface ResourcesMenuProps {
 }
 
 export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps) {
-  const router = useRouter();
-  const handleClick = (link: string) => () => {
-    router.push(`/${link}`);
-  };
-
   const menuItems = [
     { title: 'Learning Hub', link: 'learning', desc: 'Quick tips and tutorials to get you started fast.', icon: '/icons/learning.svg' },
     { title: 'Document Hub', link: 'document-hub/getting-started', desc: 'Everything you need, explained in detail.', icon: '/icons/documentation.svg' },
-    { title: 'Blogs', link: 'blogs', desc: 'Guides, ideas, and updates from Waysorted.', icon: '/icons/learning.svg' },
-    { title: 'Release Notes', link: 'notes', desc: 'Discover What\'s new & Enhancements.', icon: '/icons/release-notes.svg' }
+    { title: 'Blogs', link: 'blogs', desc: 'Guides, ideas, and updates from Waysorted.', icon: '/icons/blogs.svg' },
   ];
 
   return (
@@ -27,10 +21,10 @@ export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps)
     >
       <div className="grid grid-cols-2 gap-2 p-2 rounded-md bg-white m-2">
         {menuItems.map((item, idx) => (
-          <button
+          <Link
             key={idx}
+            href={`/${item.link}`}
             className="flex items-start space-x-3 rounded-lg hover:bg-primary-way-20 cursor-pointer p-2 w-full text-left focus:outline-primary-way-20 transition-colors"
-            onClick={handleClick(item.link)}
           >
             <div className="flex-shrink-0 rounded-md">
               <Image src={item.icon} alt={item.title} title={item.title} width={57} height={57} />
@@ -43,7 +37,7 @@ export default function ResourcesMenu({ isOpen, className }: ResourcesMenuProps)
                 {item.desc}
               </p>
             </div>
-          </button>
+          </Link>
         ))}
       </div>
     </div>

@@ -26,7 +26,9 @@ const BADGE_STYLES: Record<
   new: {
     defaultLabel: "New",
     textClass: "text-white",
-    bgClass: "bg-tertiary-green-500",
+    // green-600, not 500: white on 500 is 3.42:1, below WCAG AA for this small
+    // badge text. The dot stays on 500 - it carries no text.
+    bgClass: "bg-tertiary-green-600",
     dotClass: "bg-tertiary-green-500",
   },
   "up next": {

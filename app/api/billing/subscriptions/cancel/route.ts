@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cancelRazorpaySubscription, fetchRazorpaySubscription } from "@/lib/billing/razorpay";
-import { getAuthenticatedUser } from "@/lib/billing/auth";
+import { getAuthenticatedUser, getBridgeAuthenticatedUser } from "@/lib/billing/auth";
 import { findCurrentSubscription, updateBillingSubscriptionState } from "@/lib/billing/db";
 import {
   buildSubscriptionCancelledEvent,
   emitNotificationEvent,
 } from "@/lib/notifications";
 import { billingErrorResponse } from "@/lib/billing/http-errors";
+import { releaseCoupon } from "@/lib/billing/coupon";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -15,7 +16,14 @@ export const fetchCache = "force-no-store";
 export async function POST(request: NextRequest) {
   try {
     await request.json().catch(() => ({}));
-    const auth = await getAuthenticatedUser(request);
+    // Bridge auth too. A customer arriving from the plugin holds only the
+    // bridge cookie, and checkout now renders a Cancel button for them - a
+    // subscription in "scheduled", which is where every discounted one rests for
+    // its whole first cycle. Without this the button was there and answered 401:
+    // a subscription they could see and could not end.
+    const auth =
+      (await getAuthenticatedUser(request)) ||
+      (await getBridgeAuthenticatedUser("billing:checkout"));
 
     if (!auth?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -60,6 +68,12 @@ export async function POST(request: NextRequest) {
     const cancelAtCycleEnd = subscription.status !== "payment_pending";
 
     let providerAlreadyCancelled = false;
+    // Set when Razorpay refuses a cycle-end cancellation and we fall back to an
+    // immediate one. Without it the local row recorded "cancel_scheduled" - "you
+    // keep access until the period ends" - for a subscription that no longer
+    // existed at the provider, and the coupon release below was skipped, so the
+    // customer could never use their one-per-user code again.
+    let cancelledImmediatelyAsFallback = false;
     try {
       await cancelRazorpaySubscription(subscription.providerSubscriptionId, cancelAtCycleEnd);
     } catch (error) {
@@ -70,12 +84,34 @@ export async function POST(request: NextRequest) {
         throw error;
       } else {
         await cancelRazorpaySubscription(subscription.providerSubscriptionId, false);
+        cancelledImmediatelyAsFallback = true;
       }
     }
 
-    const localCancelAtCycleEnd = providerAlreadyCancelled ? false : cancelAtCycleEnd;
+    const localCancelAtCycleEnd =
+      providerAlreadyCancelled || cancelledImmediatelyAsFallback ? false : cancelAtCycleEnd;
+    // A cancelled pending checkout concludes no other flow: the reconciler
+    // scans only payment_pending, so once this row moves to cancelled nothing
+    // would ever free the coupon claim and the customer could never use the
+    // code again. Only a reserved row is touched - a redeemed one represents
+    // money that moved.
+    if (!localCancelAtCycleEnd) {
+      await releaseCoupon({
+        subscriptionId: subscription.providerSubscriptionId,
+        reason: "subscription_cancelled_by_user",
+      }).catch((error) => {
+        console.error("[billing] coupon release on cancellation failed", {
+          subscriptionId: subscription.providerSubscriptionId,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      });
+    }
+
     subscription.status = localCancelAtCycleEnd ? "cancel_scheduled" : "cancelled";
     subscription.cancelAtCycleEnd = localCancelAtCycleEnd;
+    // Stamped on the immediate path, which never recorded when the subscription
+    // actually ended - leaving a cancelled row with no cancellation date.
+    if (!localCancelAtCycleEnd) subscription.canceledAt = subscription.canceledAt || new Date();
     await subscription.save();
 
     await updateBillingSubscriptionState({

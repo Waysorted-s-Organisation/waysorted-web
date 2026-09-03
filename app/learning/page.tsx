@@ -4,6 +4,19 @@ import dbConnect from "@/lib/toolsdb";
 import Tool, { ITool } from "@/models/tool";
 import { applyToolIconOverrides } from "@/lib/tool-icon-overrides";
 
+/*
+ * The tool roster lives in Mongo, so this page cannot be a build-time snapshot.
+ *
+ * It prerenders and hands the result to LearnClient as initialTools, and that
+ * component returns early from its fetch whenever the server supplied any - so
+ * nothing on the client ever corrects a stale list. Retiring a tool
+ * (scripts/retire-tools.ts) changed the database and left this page listing it
+ * anyway, with no deploy in sight to rebuild it.
+ *
+ * 300s matches app/blogs/page.tsx, the other database-backed list page.
+ */
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: "Explore Beta Release Tools",
   description:
@@ -19,9 +32,9 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/og-image.png",
+        url: "/images/og-image.e13cfee0.png",
         width: 1200,
-        height: 630,
+        height: 675,
         alt: "Waysorted - Accelerate every idea with one powerful suite",
       },
     ],
@@ -55,7 +68,9 @@ async function getTools() {
   try {
     await dbConnect();
     // Select only needed fields for the grid to optimize performance (exclude iconData and slides)
-    const all = await Tool.find({})
+    // isActive only - a retired tool should not be listed, but a `disabled` one
+    // still is, because that is what the "Unlock's soon" badge is for.
+    const all = await Tool.find({ isActive: true })
       .select('name slug heading description shortDescription icon isAI badge disabled isActive category tagline tags version')
       .lean() as any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
 

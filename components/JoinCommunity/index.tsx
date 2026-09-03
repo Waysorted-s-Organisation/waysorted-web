@@ -7,9 +7,11 @@ const JoinCommunity = () => {
   return (
     <section className="bg-white flex flex-col items-center justify-center px-4 py-16 sm:py-24 md:py-40">
       {/* Heading (unchanged) */}
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-secondary-db-100 text-center leading-tight select-none">
+      {/* Section heading, not the page topic - this is shared across /about-us,
+          /support and /learning/[tool], where it was creating a second <h1>. */}
+      <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-secondary-db-100 text-center leading-tight select-none">
         Join Our Community
-      </h1>
+      </h2>
 
       {/* Subheading (unchanged) */}
       <p className="mt-3 sm:mt-4 text-secondary-db-80 font-medium

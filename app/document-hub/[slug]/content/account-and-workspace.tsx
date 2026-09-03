@@ -3,12 +3,12 @@
 export default function AccountAndWorkspace() {
     return (
         <>
-            <h2 className="text-2xl font-semibold text-secondary-db-100 mb-4">Account and Workspace</h2>
+            <h1 className="text-2xl font-semibold text-secondary-db-100 mb-4">Account and Workspace</h1>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed mb-6">
                 This section covers your personal account management, workspace settings, integrations, and data preferences within Waysorted.
             </p>
 
-            <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Account Settings Navigation</h3>
+            <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Account Settings Navigation</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Use the sidebar to navigate different account areas:
             </p>
@@ -22,7 +22,7 @@ export default function AccountAndWorkspace() {
                 <li><span className="text-secondary-db-100">Beta Features:</span> Try experimental features</li>
             </ul>
 
-            <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Profile & Settings Overview</h3>
+            <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Profile & Settings Overview</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 The Profile & Settings area is the central place to manage your Waysorted account. Here you can update your profile, control preferences, manage credits and subscriptions, configure notifications and integrations, and access beta features.
             </p>
@@ -33,7 +33,7 @@ export default function AccountAndWorkspace() {
                 Access: Top navigation → Profile icon → Account settings → General
             </p>
 
-            <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Profile Photo</h3>
+            <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Profile Photo</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Your profile photo appears across Waysorted in collaborations, comments, and the marketplace.
             </p>
@@ -46,7 +46,7 @@ export default function AccountAndWorkspace() {
                 Tip: Use a professional photo for public or creator profiles.
             </p>
 
-            <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Linked Accounts & Integrations</h3>
+            <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Linked Accounts & Integrations</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Connect third-party apps to your account for a connected and streamlined workflow.
             </p>
@@ -57,7 +57,7 @@ export default function AccountAndWorkspace() {
                 <li>Google (Sign-in, Sync contacts)</li>
             </ul>
 
-            <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Notifications Preferences</h3>
+            <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Notifications Preferences</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Control how you receive notifications. Visit Notifications settings to:
             </p>
@@ -68,7 +68,7 @@ export default function AccountAndWorkspace() {
                 <li>Control push and SMS settings if available</li>
             </ul>
 
-            <h3 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Beta Features</h3>
+            <h2 className="text-xl font-semibold text-secondary-db-100 mt-10 mb-4">Beta Features</h2>
             <p className="text-secondary-db-70 font-regular text-xl leading-relaxed">
                 Beta features give early access to upcoming elements and documentation.
             </p>
