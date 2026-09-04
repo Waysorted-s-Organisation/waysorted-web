@@ -22,6 +22,5 @@ GET /api/admin/billing/purchases?utm_source=madhura
 The response includes all matching purchase states. Count only `captured`, `partially_refunded`, or
 `refunded` records when reporting completed sales; `created` and `pending` are checkout attempts.
 
-Administrators can create and copy reusable campaign links at `/admin/attribution`. Campaign source
-and campaign pairs are unique, and destinations are limited to paths on the configured Waysorted
-origin.
+Campaign links are created and copied from the separate Waysorted Operations dashboard. The public
+site only captures attribution and attaches it to checkout records.
