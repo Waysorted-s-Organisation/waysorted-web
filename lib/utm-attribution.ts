@@ -1,8 +1,10 @@
 export const UTM_ATTRIBUTION_STORAGE_KEY = "waysorted_utm_attribution_v1";
+export const UTM_ATTRIBUTION_VISITOR_KEY = "waysorted_attribution_visitor_v1";
 export const UTM_ATTRIBUTION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 
 const MAX_UTM_VALUE_LENGTH = 120;
 const MAX_LANDING_PATH_LENGTH = 500;
+const UTM_QUERY_KEYS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"] as const;
 
 export type UtmAttribution = {
   utmSource: string;
@@ -11,10 +13,19 @@ export type UtmAttribution = {
   utmTerm?: string;
   utmContent?: string;
   landingPath?: string;
+  visitorId?: string;
   capturedAt: string;
 };
 
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+
+export type AttributionOpenPayload = {
+  eventId: string;
+  visitorId: string;
+  attribution: UtmAttribution;
+};
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function cleanText(value: unknown, maxLength: number) {
   if (typeof value !== "string") return undefined;
@@ -45,6 +56,9 @@ export function normalizeUtmAttribution(value: unknown): UtmAttribution | null {
     utmTerm: cleanText(input.utmTerm, MAX_UTM_VALUE_LENGTH),
     utmContent: cleanText(input.utmContent, MAX_UTM_VALUE_LENGTH),
     landingPath: cleanText(input.landingPath, MAX_LANDING_PATH_LENGTH),
+    ...(typeof input.visitorId === "string" && UUID_PATTERN.test(input.visitorId)
+      ? { visitorId: input.visitorId }
+      : {}),
     capturedAt,
   };
 }
@@ -63,6 +77,19 @@ export function attributionFromSearchParams(
     landingPath,
     capturedAt,
   });
+}
+
+export function attributionLandingPath(
+  pathname: string,
+  params: Pick<URLSearchParams, "get">,
+) {
+  const tracked = new URLSearchParams();
+  for (const key of UTM_QUERY_KEYS) {
+    const value = params.get(key);
+    if (value) tracked.set(key, value);
+  }
+  const query = tracked.toString();
+  return `${pathname}${query ? `?${query}` : ""}`.slice(0, MAX_LANDING_PATH_LENGTH);
 }
 
 export function readStoredUtmAttribution(
@@ -98,12 +125,45 @@ export function captureCurrentUtmAttribution(): UtmAttribution | null {
   );
 
   try {
+    const attribution = current || readStoredUtmAttribution(window.localStorage);
+    if (!attribution) return null;
+    const visitorId = getOrCreateAttributionVisitorId(
+      window.localStorage,
+      () => window.crypto.randomUUID(),
+    );
+    const enriched = visitorId ? { ...attribution, visitorId } : attribution;
     if (current) {
-      window.localStorage.setItem(UTM_ATTRIBUTION_STORAGE_KEY, JSON.stringify(current));
-      return current;
+      window.localStorage.setItem(UTM_ATTRIBUTION_STORAGE_KEY, JSON.stringify(enriched));
     }
-    return readStoredUtmAttribution(window.localStorage);
+    return enriched;
   } catch {
     return current;
   }
+}
+
+export function getOrCreateAttributionVisitorId(
+  storage: StorageLike,
+  createId: () => string,
+) {
+  const existing = storage.getItem(UTM_ATTRIBUTION_VISITOR_KEY);
+  if (existing && UUID_PATTERN.test(existing)) return existing;
+  const visitorId = createId();
+  if (!UUID_PATTERN.test(visitorId)) return null;
+  storage.setItem(UTM_ATTRIBUTION_VISITOR_KEY, visitorId);
+  return visitorId;
+}
+
+export function buildAttributionOpenPayload(
+  attribution: UtmAttribution,
+  visitorId: string,
+  pageLoadId: string,
+): AttributionOpenPayload | null {
+  const normalized = normalizeUtmAttribution(attribution);
+  const safePageLoadId = String(pageLoadId).replace(/[^0-9]/g, "").slice(0, 20);
+  if (!normalized || !UUID_PATTERN.test(visitorId) || !safePageLoadId) return null;
+  return {
+    eventId: `${visitorId}:${safePageLoadId}`,
+    visitorId,
+    attribution: { ...normalized, visitorId },
+  };
 }

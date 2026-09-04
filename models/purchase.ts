@@ -58,6 +58,7 @@ const PurchaseAttributionSchema = new Schema(
     utmTerm: { type: String, default: null },
     utmContent: { type: String, default: null },
     landingPath: { type: String, default: null },
+    visitorId: { type: String, default: null },
     capturedAt: { type: Date, required: true },
   },
   { _id: false },
