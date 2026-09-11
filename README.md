@@ -99,6 +99,20 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
+## Canva importer gateway
+
+File Importer → Canva reaches the existing Python capture backend only through
+the authenticated `/api/figma/canva/*` gateway.
+
+- `CANVA_IMPORTER_BACKEND_URL` is the Python service base URL. Production accepts
+  HTTPS only; local development may use `http://localhost` or `http://127.0.0.1`.
+- `CANVA_IMPORTER_SERVICE_TOKEN` is optional. When present, Waysorted forwards it
+  to the Python service as `X-Waysorted-Service-Token`.
+
+The gateway accepts a valid Waysorted cookie or plugin bearer token and only
+forwards the capture-job, capture-metadata, cancellation, and page-image routes
+used by the plugin.
+
 ## Notification Producer
 
 Account activation, preference, feedback, billing, credit, and tool-usage
